@@ -744,12 +744,14 @@
   refreshLastWeek();
 
   function rankOf(s) {
-    if (s < 300)  return "🚽 똥밭에 굴렀다";
-    if (s < 800)  return "🧻 그래도 휴지는 챙겼다";
-    if (s < 1600) return "🏃 제법 잘 피하는데?";
-    if (s < 3000) return "😎 똥 회피 고수";
-    if (s < 5000) return "⚡ 똥을 초월한 자";
-    return "👑 똥피하기 마스터";
+    // 대략 생존 시간 기준: 30초 / 1분 / 2분 / 3분 / 5분 / 그 이상
+    if (s < 3500)   return "🚽 똥밭에 굴렀다";
+    if (s < 8000)   return "🧻 그래도 휴지는 챙겼다";
+    if (s < 18000)  return "🏃 제법 잘 피하는데?";
+    if (s < 30000)  return "😎 똥 회피 고수";
+    if (s < 60000)  return "⚡ 똥을 초월한 자";
+    if (s < 120000) return "👑 똥피하기 마스터";
+    return "💩 똥신(糞神) 강림";
   }
 
   /* ---------- 그리기 ---------- */
