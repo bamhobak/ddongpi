@@ -403,7 +403,8 @@
     { min: 26, max: 31, score: 15, w: 14 },
     { min: 31, max: 37, score: 20, w: 11 },
     { min: 37, max: 44, score: 30, w: 8  },
-    { min: 44, max: 52, score: 50, w: 5  }
+    { min: 44, max: 52, score: 50, w: 5  },
+    { min: 52, max: 62, score: 75, w: 3  }   // 초대형 — 가장 드물다
   ];
   const FEVER_W_TOTAL = FEVER_SIZES.reduce((a, b) => a + b.w, 0);
   function pickFeverSize() {
@@ -535,10 +536,10 @@
       if (powered) {
         // 뚜니핑 타임: 똥이 폭포처럼 쏟아지고 속도도 2배 이상
         const n = 3 + Math.floor(Math.random() * 4);   // 스폰당 3~6개 (평균 4.5개)
-        if (items.length < 80) {
+        if (items.length < 100) {
           for (let k = 0; k < n; k++) spawnPoop(2.2 + Math.random() * 0.9);
         }
-        spawnTimer = 0.14 * widthFactor;               // 간격 2배 → 낙하량은 정확히 절반
+        spawnTimer = (0.14 / 1.3) * widthFactor;        // 간격 ÷1.3 → 낙하량 +30%
       } else {
         spawnPoop();
         if (level >= 3 && Math.random() < .35) spawnPoop();
@@ -571,7 +572,8 @@
             let gain = it.gain;
             if (!gain) gain = it.sz < 18 ? 3 : (it.sz < 23 ? 10 : 20);
             let tone, burstN, note, textSize;
-            if (gain >= 50)      { tone = "#ff3b3b"; burstN = 42; note = 1800; textSize = 34; }
+            if (gain >= 75)      { tone = "#ff2170"; burstN = 54; note = 2000; textSize = 40; }
+            else if (gain >= 50) { tone = "#ff3b3b"; burstN = 42; note = 1800; textSize = 34; }
             else if (gain >= 30) { tone = "#ff6a2a"; burstN = 34; note = 1650; textSize = 30; }
             else if (gain >= 20) { tone = "#ff8f3a"; burstN = 26; note = 1500; textSize = 27; }
             else if (gain >= 15) { tone = "#ffcc33"; burstN = 18; note = 1350; textSize = 24; }
@@ -583,7 +585,7 @@
             if (gain >= 15 || (gain >= 10 && Math.random() < .5)) {
               popText(it.x, it.y, "+" + gain, tone, textSize);
             }
-            if (gain >= 30) { shake = Math.max(shake, gain >= 50 ? 16 : 10); }
+            if (gain >= 30) { shake = Math.max(shake, gain >= 75 ? 22 : (gain >= 50 ? 16 : 10)); }
             items.splice(i, 1);
             if (gain >= 20 || Math.random() < .5) beep(note + Math.random() * 200, .06, "square", .04);
             continue;
