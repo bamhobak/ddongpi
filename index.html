@@ -20,11 +20,19 @@
     touch-action: none;
   }
   body { position: fixed; inset: 0; }
-  #app { height: 100%; display: flex; align-items: center; justify-content: center; }
+  #app {
+    height: 100%;
+    display: flex; align-items: center; justify-content: center;
+    /* 노치·둥근 모서리·홈바에 화면이 잘리지 않도록 */
+    padding: env(safe-area-inset-top) env(safe-area-inset-right)
+             env(safe-area-inset-bottom) env(safe-area-inset-left);
+  }
   #stage {
     position: relative;
-    width: min(100vw, 520px);
-    height: min(100dvh, 780px);
+    width: 100%;
+    height: 100%;
+    max-width: 520px;
+    max-height: 780px;
     overflow: hidden;
     box-shadow: 0 20px 60px rgba(0,0,0,.6);
   }
@@ -138,8 +146,10 @@
     };
   }
 
-  const H = 720;          // 논리 높이 고정
-  let W = 480;            // 논리 너비 — 기기 화면 비율에 맞춰 계산
+  const BASE_H = 720;     // 기준 논리 높이
+  let H = BASE_H;         // 논리 높이 — 화면 비율에 맞춰 유동
+  let W = 480;            // 논리 너비 — 화면 비율에 맞춰 유동
+  let items = [], particles = [], floats = [], clouds = [];
   const cv = document.getElementById("cv");
   const ctx = cv.getContext("2d");
   const stage = document.getElementById("stage");
@@ -167,17 +177,31 @@
   const DRAW_R = 40;                 // 캐릭터 도안 기준 반지름
   const player = { x: 240, y: H - 72, r: 32, tx: 240, tilt: 0 };  // 실제 크기 = 도안의 80%
 
+  const MIN_W = 340, MAX_W = 620;    // 논리 가로 허용 범위
+
   function layout() {
     const rect = stage.getBoundingClientRect();
-    const ratio = rect.width / Math.max(1, rect.height);
-    W = Math.round(Math.max(320, Math.min(600, H * ratio)));
+    const bw = Math.max(1, rect.width), bh = Math.max(1, rect.height);
+    const ratio = bw / bh;
+
+    // 화면 비율과 논리 캔버스 비율을 '항상 똑같이' 맞춘다.
+    // 가로가 범위를 벗어나면 가로를 자르는 대신 세로를 늘리고 줄여서 비율을 유지 → 잘림/찌그러짐 없음
+    H = BASE_H;
+    W = Math.round(H * ratio);
+    if (W < MIN_W)      { W = MIN_W; H = Math.round(W / ratio); }
+    else if (W > MAX_W) { W = MAX_W; H = Math.round(W / ratio); }
+
     const dpr = Math.min(window.devicePixelRatio || 1, 2);
-    cv.width = Math.round(W * dpr);
+    cv.width  = Math.round(W * dpr);
     cv.height = Math.round(H * dpr);
     ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
     baseScale = dpr;
+
+    player.y  = H - 72;
     player.x  = Math.max(player.r, Math.min(W - player.r, player.x));
     player.tx = Math.max(player.r, Math.min(W - player.r, player.tx));
+    for (const it of items) it.x = Math.max(it.r, Math.min(W - it.r, it.x));
+    for (const c of clouds) if (c.x > W + c.s) c.x = Math.random() * W;
   }
   let baseScale = 1;
   window.addEventListener("resize", layout);
@@ -259,7 +283,6 @@
   const STATE = { READY: 0, PLAY: 1, OVER: 2 };
   let state = STATE.READY;
 
-  let items = [], particles = [], floats = [], clouds = [];
   let score = 0, lives = 3, level = 1, elapsed = 0;
   let spawnTimer = 0, itemTimer = 0;
   let invUntil = 0, powerUntil = 0;
@@ -310,12 +333,12 @@
   }
 
   for (let i = 0; i < 6; i++) {
-    clouds.push({ x: Math.random() * 480, y: Math.random() * H * .7, s: 30 + Math.random() * 50, v: 4 + Math.random() * 10 });
+    clouds.push({ x: Math.random() * W, y: Math.random() * H * .7, s: 30 + Math.random() * 50, v: 4 + Math.random() * 10 });
   }
 
   /* ---------- 스폰 ---------- */
   function spawnPoop(mul) {
-    const m = mul || 1;
+    const m = (mul || 1) * (H / BASE_H);   // 화면이 길면 그만큼 빨리 떨어져야 체감이 같다
     const r = 14 + Math.random() * 13;
     items.push({
       type: "poop", emoji: "💩",
@@ -342,7 +365,7 @@
     items.push({
       type: pick.type, emoji: pick.emoji,
       x: r + Math.random() * (W - r * 2), y: -r - 10,
-      r: r, vx: (Math.random() - .5) * 30, vy: 110 + level * 6,
+      r: r, vx: (Math.random() - .5) * 30, vy: (110 + level * 6) * (H / BASE_H),
       rot: 0, vr: 0, size: r * 2, bob: Math.random() * 6.28
     });
   }
