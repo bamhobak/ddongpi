@@ -347,7 +347,7 @@
       vx: (Math.random() - .5) * (24 + level * 8),
       vy: (215 + level * 30 + Math.random() * 110) * m,
       rot: Math.random() * 6.28, vr: (Math.random() - .5) * 5,
-      size: r * 2, fast: m > 1
+      size: r * 2, sz: r, fast: m > 1
     });
   }
   const BONUS = [
@@ -467,11 +467,19 @@
       if (hit) {
         if (it.type === "poop") {
           if (powered) {
-            burst(it.x, it.y, "#ffb03a", 12);
-            score += 10;
-            if (Math.random() < .5) popText(it.x, it.y, "+10", "#ffd23f");
+            // 피버타임엔 똥 크기가 곧 점수 — 큰 놈이 훨씬 짭짤하다 (반지름 14~27)
+            let gain, tone, note;
+            if (it.sz < 18)      { gain = 5;  tone = "#ffe3a8"; note = 900;  }
+            else if (it.sz < 23) { gain = 20; tone = "#ffd23f"; note = 1150; }
+            else                 { gain = 50; tone = "#ff8f3a"; note = 1450; }
+            score += gain;
+            burst(it.x, it.y, tone, gain >= 50 ? 22 : (gain >= 20 ? 14 : 8));
+            // 큰 건 항상, 중간은 절반만 표시 — 작은 건 화면이 지저분해지니 생략
+            if (gain >= 50 || (gain >= 20 && Math.random() < .5)) {
+              popText(it.x, it.y, "+" + gain, tone);
+            }
             items.splice(i, 1);
-            if (Math.random() < .4) beep(900 + Math.random() * 500, .05, "square", .03);
+            if (Math.random() < .5) beep(note + Math.random() * 200, .05, "square", .03);
             continue;
           }
           if (!invincible) {
