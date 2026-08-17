@@ -71,13 +71,48 @@
   }
   .board li + li { border-top: 1px solid rgba(255,255,255,.06); }
   .board .rk { width: 22px; text-align: center; flex: none; color: #8b90a0; font-weight: 700; }
-  .board li:nth-child(1) .rk, .board li:nth-child(2) .rk, .board li:nth-child(3) .rk { color: #ffd23f; }
   .board .nm {
     flex: 1; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
     text-align: left; color: #fff;
   }
   .board .sc { flex: none; font-weight: 700; color: #ffd23f; font-variant-numeric: tabular-nums; }
-  .board li.me { background: rgba(255,210,63,.16); border-radius: 8px; padding: 4px 6px; }
+
+  /* 1~3위는 금·은·동으로 따로 */
+  .board li.p1, .board li.p2, .board li.p3 {
+    margin: 3px 0; padding: 6px 8px; border-radius: 9px;
+    border-left: 3px solid;
+  }
+  .board li.p1 + li, .board li.p2 + li, .board li.p3 + li { border-top: 0; }
+  .board li.p1 {
+    border-left-color: #ffcc33;
+    background: linear-gradient(90deg, rgba(255,204,51,.26), rgba(255,204,51,.04));
+    box-shadow: 0 0 14px rgba(255,204,51,.18);
+  }
+  .board li.p1 .nm { color: #ffe9a8; font-weight: 800; text-shadow: 0 0 10px rgba(255,204,51,.45); }
+  .board li.p1 .sc { color: #ffcc33; font-size: 1.12em; text-shadow: 0 0 10px rgba(255,204,51,.4); }
+
+  .board li.p2 {
+    border-left-color: #cfd6e0;
+    background: linear-gradient(90deg, rgba(207,214,224,.20), rgba(207,214,224,.03));
+  }
+  .board li.p2 .nm { color: #eef2f7; font-weight: 700; }
+  .board li.p2 .sc { color: #dfe6ef; font-size: 1.05em; }
+
+  .board li.p3 {
+    border-left-color: #e0894a;
+    background: linear-gradient(90deg, rgba(224,137,74,.20), rgba(224,137,74,.03));
+  }
+  .board li.p3 .nm { color: #ffd6b0; font-weight: 700; }
+  .board li.p3 .sc { color: #f0a166; font-size: 1.03em; }
+
+  .board li.p1 .rk, .board li.p2 .rk, .board li.p3 .rk { font-size: 1.15em; }
+  /* 내 기록 강조 — 금·은·동 색을 덮지 않도록 테두리로만 표시 */
+  .board li.me {
+    outline: 2px solid rgba(255,210,63,.9);
+    outline-offset: -2px;
+    border-radius: 9px;
+    padding: 5px 7px;
+  }
   .board .empty { font-size: 13px; color: #7f8494; padding: 6px 0; }
   .board[hidden] { display: none; }
   .board.last { background: rgba(255,210,63,.09); }
@@ -249,18 +284,23 @@
   if (window.visualViewport) window.visualViewport.addEventListener("resize", layout);
   layout();
 
-  /* ---------- 주인공 얼굴 ----------
-     같은 폴더의 player.png (없으면 player.jpg) 를 자동으로 쓴다.
-     둘 다 없으면 코드로 그린 캐릭터가 나온다. */
-  let face = null;
-  const probe = new Image();
-  probe.onload = () => { if (!face) face = probe; };
-  probe.onerror = () => {
-    const p2 = new Image();
-    p2.onload = () => { if (!face) face = p2; };
-    p2.src = "player.jpg";
+  /* ---------- 주인공 스프라이트 ----------
+     왼쪽으로 갈 때 player_left.png, 오른쪽으로 갈 때 player_right.png.
+     cx/cy 는 이미지 안에서 '머리 중심' 위치(비율) — 판정 원과 머리를 맞추는 기준점.
+     headRatio 는 머리 지름 / 이미지 높이. 실제 이미지를 측정해 넣은 값이다.
+     이미지가 없으면 코드로 그린 기본 캐릭터로 넘어간다. */
+  const SPR = {
+    left:  { img: null, aspect: 0.683, cx: 0.449, cy: 0.192 },
+    right: { img: null, aspect: 0.692, cx: 0.583, cy: 0.204 }
   };
-  probe.src = "player.png";
+  const SPR_HEAD_RATIO = 0.66;     // 두 이미지 평균 — 방향 전환 시 크기가 튀지 않게 공통값 사용
+  let facing = "right";
+
+  for (const key of ["left", "right"]) {
+    const img = new Image();
+    img.onload = () => { SPR[key].img = img; };
+    img.src = "player_" + key + ".png";
+  }
 
   /* ---------- 사운드 ---------- */
   let ac = null;
@@ -324,6 +364,7 @@
     spawnTimer = 0; itemTimer = 3.5;
     invUntil = 0; powerUntil = 0; shield = false;
     shake = 0; flash = 0; feverFlash = 0; fever = false; feverT = 0;
+    facing = "right";
     player.x = player.tx = W / 2;
     state = STATE.PLAY;
     startScreen.classList.add("hidden");
@@ -423,6 +464,8 @@
 
     const prev = player.x;
     player.x += (player.tx - player.x) * Math.min(1, dt * 20);
+    if (player.x - prev < -0.25) facing = "left";
+    else if (player.x - prev > 0.25) facing = "right";   // 멈춰 있으면 마지막 방향 유지
     player.tilt += (((player.x - prev) / Math.max(dt, .001) / 900) - player.tilt) * Math.min(1, dt * 10);
     player.tilt = Math.max(-.35, Math.min(.35, player.tilt));
 
@@ -673,7 +716,10 @@
     const medal = ["🥇", "🥈", "🥉"];
     list.forEach((row, i) => {
       const li = document.createElement("li");
-      if (myRowKey && row.name + "|" + row.score === myRowKey) li.className = "me";
+      const cls = [];
+      if (i < 3) cls.push("p" + (i + 1));                                   // 금·은·동
+      if (myRowKey && row.name + "|" + row.score === myRowKey) cls.push("me");
+      li.className = cls.join(" ");
       const rk = document.createElement("span");
       rk.className = "rk";
       rk.textContent = i < 3 ? medal[i] : (i + 1);
@@ -798,6 +844,54 @@
 
   function drawPlayer(now) {
     const blink = now < invUntil && Math.floor(now / 90) % 2 === 0;
+    const spr = SPR[facing].img ? SPR[facing] : null;
+
+    if (spr) {
+      const sh = (player.r * 2) / SPR_HEAD_RATIO;   // 머리 지름 = 판정원 지름
+      const sw = sh * spr.aspect;
+      ctx.save();
+      ctx.translate(player.x, player.y);
+      ctx.rotate(player.tilt * 0.35);               // 달리는 그림이라 기울기는 살짝만
+      ctx.globalAlpha = blink ? .35 : 1;
+
+      // 발밑 그림자
+      ctx.save();
+      ctx.globalAlpha *= .22;
+      ctx.fillStyle = "#000";
+      ctx.beginPath();
+      ctx.ellipse(0, sh * (1 - spr.cy) - 4, sw * .3, 7, 0, 0, 6.283);
+      ctx.fill();
+      ctx.restore();
+
+      ctx.drawImage(spr.img, -sw * spr.cx, -sh * spr.cy, sw, sh);
+
+      if (now < powerUntil) {
+        ctx.beginPath();
+        ctx.arc(0, 0, player.r + 14 + Math.sin(now / 90) * 3, 0, 6.283);
+        ctx.strokeStyle = "rgba(255,255,255,.85)";
+        ctx.lineWidth = 4; ctx.setLineDash([10, 8]);
+        ctx.lineDashOffset = -now / 20;
+        ctx.stroke();
+        ctx.setLineDash([]);
+        ctx.globalAlpha = .22 + feverT * .18;
+        ctx.fillStyle = "#fff";
+        ctx.beginPath(); ctx.arc(0, 0, player.r + 14, 0, 6.283); ctx.fill();
+        ctx.globalAlpha = 1;
+      }
+      ctx.restore();
+
+      if (shield) {
+        ctx.save();
+        ctx.translate(player.x, player.y - player.r - 21);
+        ctx.font = "32px serif";
+        ctx.textAlign = "center"; ctx.textBaseline = "middle";
+        ctx.fillText("☂️", 0, 0);
+        ctx.restore();
+      }
+      return;
+    }
+
+    /* ---- 이미지가 없을 때: 코드로 그린 기본 캐릭터 ---- */
     const R = DRAW_R;                      // 원본 도안 기준 반지름
     ctx.save();
     ctx.translate(player.x, player.y);
@@ -826,21 +920,15 @@
     ctx.arc(0, 0, R, 0, 6.283);
     ctx.closePath();
     ctx.clip();
-    if (face && face.width) {
-      const s = Math.max((R * 2) / face.width, (R * 2) / face.height);
-      const dw = face.width * s, dh = face.height * s;
-      ctx.drawImage(face, -dw / 2, -dh / 2, dw, dh);
-    } else {
-      ctx.fillStyle = "#ffe0bd";
-      ctx.fillRect(-R, -R, R * 2, R * 2);
-      ctx.fillStyle = "#3b2a1d";
-      ctx.beginPath(); ctx.arc(-13, -6, 4.5, 0, 6.283); ctx.fill();
-      ctx.beginPath(); ctx.arc(13, -6, 4.5, 0, 6.283); ctx.fill();
-      ctx.strokeStyle = "#3b2a1d"; ctx.lineWidth = 3; ctx.lineCap = "round";
-      ctx.beginPath(); ctx.arc(0, 6, 12, .2, Math.PI - .2); ctx.stroke();
-      ctx.fillStyle = "#6b4a2f";
-      ctx.beginPath(); ctx.arc(0, -R * .55, R * .95, Math.PI, 0); ctx.fill();
-    }
+    ctx.fillStyle = "#ffe0bd";
+    ctx.fillRect(-R, -R, R * 2, R * 2);
+    ctx.fillStyle = "#3b2a1d";
+    ctx.beginPath(); ctx.arc(-13, -6, 4.5, 0, 6.283); ctx.fill();
+    ctx.beginPath(); ctx.arc(13, -6, 4.5, 0, 6.283); ctx.fill();
+    ctx.strokeStyle = "#3b2a1d"; ctx.lineWidth = 3; ctx.lineCap = "round";
+    ctx.beginPath(); ctx.arc(0, 6, 12, .2, Math.PI - .2); ctx.stroke();
+    ctx.fillStyle = "#6b4a2f";
+    ctx.beginPath(); ctx.arc(0, -R * .55, R * .95, Math.PI, 0); ctx.fill();
     ctx.restore();
 
     ctx.beginPath();
