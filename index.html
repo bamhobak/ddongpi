@@ -390,9 +390,29 @@
   }
 
   /* ---------- 스폰 ---------- */
+  /* 피버타임 낙하물 크기 등급 — 클수록 드물고 점수가 크다 */
+  const FEVER_SIZES = [
+    { min: 14, max: 18, score: 5,   w: 24 },
+    { min: 18, max: 23, score: 20,  w: 28 },
+    { min: 23, max: 28, score: 50,  w: 20 },
+    { min: 28, max: 34, score: 120, w: 14 },
+    { min: 34, max: 42, score: 250, w: 9  },
+    { min: 42, max: 52, score: 500, w: 5  }
+  ];
+  const FEVER_W_TOTAL = FEVER_SIZES.reduce((a, b) => a + b.w, 0);
+  function pickFeverSize() {
+    let n = Math.random() * FEVER_W_TOTAL;
+    for (const s of FEVER_SIZES) { if (n < s.w) return s; n -= s.w; }
+    return FEVER_SIZES[0];
+  }
+
   function spawnPoop(mul) {
     const m = (mul || 1) * (H / BASE_H);   // 화면이 길면 그만큼 빨리 떨어져야 체감이 같다
-    const r = 14 + Math.random() * 13;
+    // 피버타임에 나온 것은 외형·점수를 스스로 기억한다 → 피버가 끝나도 모습이 바뀌지 않는다
+    const inFever = fever;
+    const cls = inFever ? pickFeverSize() : null;
+    const r = cls ? cls.min + Math.random() * (cls.max - cls.min)
+                  : 14 + Math.random() * 13;
     items.push({
       type: "poop", emoji: "💩",
       x: r + Math.random() * (W - r * 2), y: -r - 10,
@@ -400,7 +420,9 @@
       vx: (Math.random() - .5) * (24 + level * 8),
       vy: (215 + level * 30 + Math.random() * 110) * m,
       rot: Math.random() * 6.28, vr: (Math.random() - .5) * 5,
-      size: r * 2, sz: r, fast: m > 1
+      size: r * 2, sz: r, fast: m > 1,
+      skin: inFever ? "fever" : "poop",
+      gain: cls ? cls.score : 0
     });
   }
   const BONUS = [
@@ -430,7 +452,9 @@
                        life: .6 + Math.random() * .4, t: 0, c: color, r: 2 + Math.random() * 4 });
     }
   }
-  function popText(x, y, text, color) { floats.push({ x, y, text, color, t: 0, life: 1 }); }
+  function popText(x, y, text, color, size) {
+    floats.push({ x, y, text, color, t: 0, life: 1, size: size || 22 });
+  }
 
   /* ---------- 업데이트 ---------- */
   function update(dt, now) {
@@ -526,19 +550,26 @@
       if (hit) {
         if (it.type === "poop") {
           if (powered) {
-            // 피버타임엔 똥 크기가 곧 점수 — 큰 놈이 훨씬 짭짤하다 (반지름 14~27)
-            let gain, tone, note;
-            if (it.sz < 18)      { gain = 5;  tone = "#ffe3a8"; note = 900;  }
-            else if (it.sz < 23) { gain = 20; tone = "#ffd23f"; note = 1150; }
-            else                 { gain = 50; tone = "#ff8f3a"; note = 1450; }
+            // 크기가 곧 점수. 피버 중 생성된 건 자기 점수를 갖고 있고,
+            // 피버 전에 떨어지던 일반 똥은 크기로 환산한다.
+            let gain = it.gain;
+            if (!gain) gain = it.sz < 18 ? 5 : (it.sz < 23 ? 20 : 50);
+            let tone, burstN, note, textSize;
+            if (gain >= 500)      { tone = "#ff3b3b"; burstN = 42; note = 1800; textSize = 34; }
+            else if (gain >= 250) { tone = "#ff6a2a"; burstN = 34; note = 1650; textSize = 30; }
+            else if (gain >= 120) { tone = "#ff8f3a"; burstN = 26; note = 1500; textSize = 26; }
+            else if (gain >= 50)  { tone = "#ffcc33"; burstN = 18; note = 1350; textSize = 22; }
+            else if (gain >= 20)  { tone = "#ffd23f"; burstN = 12; note = 1150; textSize = 22; }
+            else                  { tone = "#ffe3a8"; burstN = 8;  note = 900;  textSize = 22; }
             score += gain;
-            burst(it.x, it.y, tone, gain >= 50 ? 22 : (gain >= 20 ? 14 : 8));
+            burst(it.x, it.y, tone, burstN);
             // 큰 건 항상, 중간은 절반만 표시 — 작은 건 화면이 지저분해지니 생략
             if (gain >= 50 || (gain >= 20 && Math.random() < .5)) {
-              popText(it.x, it.y, "+" + gain, tone);
+              popText(it.x, it.y, "+" + gain.toLocaleString(), tone, textSize);
             }
+            if (gain >= 250) { shake = Math.max(shake, gain >= 500 ? 16 : 10); }
             items.splice(i, 1);
-            if (Math.random() < .5) beep(note + Math.random() * 200, .05, "square", .03);
+            if (gain >= 120 || Math.random() < .5) beep(note + Math.random() * 200, .06, "square", .04);
             continue;
           }
           if (!invincible) {
@@ -1011,7 +1042,7 @@
       const bob = it.bob !== undefined ? Math.sin(it.bob) * 4 : 0;
       ctx.translate(it.x, it.y + bob);
       ctx.rotate(it.rot);
-      if (fever && it.type === "poop" && feverPoop) {
+      if (it.skin === "fever" && feverPoop) {
         ctx.drawImage(feverPoop, -it.size / 2, -it.size / 2, it.size, it.size);
       } else {
         ctx.font = it.size + "px serif";
@@ -1072,7 +1103,7 @@
     ctx.textBaseline = "middle";
     for (const f of floats) {
       ctx.globalAlpha = Math.max(0, 1 - f.t / f.life);
-      ctx.font = "700 22px system-ui, sans-serif";
+      ctx.font = "800 " + (f.size || 22) + "px system-ui, sans-serif";
       ctx.lineWidth = 4; ctx.strokeStyle = "rgba(0,0,0,.35)";
       ctx.strokeText(f.text, f.x, f.y);
       ctx.fillStyle = f.color;
