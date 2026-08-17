@@ -107,14 +107,6 @@
   .screen h1 { font-size: clamp(26px, 7vw, 36px); letter-spacing: -1px; }
   .screen h2 { font-size: clamp(22px, 6vw, 30px); }
   .screen p { font-size: clamp(13px, 3.6vw, 15px); line-height: 1.6; color: #c8cbd6; }
-  .legend {
-    display: grid; grid-template-columns: auto auto; gap: 5px 14px;
-    font-size: clamp(12px, 3.4vw, 14px); color: #b9bdc9;
-    background: rgba(255,255,255,.05);
-    padding: 12px 16px; border-radius: 12px;
-  }
-  .legend b { color: #fff; font-weight: 600; }
-
   button, .filebtn {
     appearance: none; border: 0; cursor: pointer;
     font: inherit; font-weight: 700;
@@ -158,13 +150,6 @@
     <div id="startScreen" class="screen">
       <h1>💩 이피재피똥피 💩</h1>
       <p id="howto">하늘에서 똥이 쏟아진다!<br>화면을 손가락으로 끌어서 피하세요</p>
-      <div class="legend">
-        <b>💩 똥</b><span>맞으면 목숨 -1</span>
-        <b>🧻 휴지</b><span>🔥 피버타임 10초!<br>무적 + 똥 폭포 (개당 +10점)</span>
-        <b>☂️ 우산</b><span>한 방 막아주는 방패</span>
-        <b>⭐ 별</b><span>보너스 +50점</span>
-        <b>❤️ 하트</b><span>목숨 +1 (최대 5)</span>
-      </div>
       <div class="board">
         <h3>🏆 이번 주 TOP 10</h3>
         <ol id="boardStart"><li class="empty">불러오는 중…</li></ol>
