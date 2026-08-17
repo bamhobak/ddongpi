@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="ko">
 <head>
 <meta charset="utf-8">
@@ -50,6 +50,52 @@
     -webkit-backdrop-filter: blur(6px); backdrop-filter: blur(6px);
   }
   .screen.hidden { display: none; }
+  .screen { overflow-y: auto; }
+
+  /* ---- 랭킹판 ---- */
+  .board {
+    width: 100%; max-width: 320px;
+    background: rgba(255,255,255,.06);
+    border-radius: 14px; padding: 12px 14px;
+  }
+  .board h3 {
+    font-size: 13px; font-weight: 700; color: #ffd23f;
+    letter-spacing: .5px; margin-bottom: 8px;
+  }
+  .board ol { list-style: none; }
+  .board li {
+    display: flex; align-items: center; gap: 8px;
+    font-size: clamp(12px, 3.4vw, 14px);
+    padding: 4px 0; color: #d5d8e2;
+  }
+  .board li + li { border-top: 1px solid rgba(255,255,255,.06); }
+  .board .rk { width: 22px; text-align: center; flex: none; color: #8b90a0; font-weight: 700; }
+  .board li:nth-child(1) .rk, .board li:nth-child(2) .rk, .board li:nth-child(3) .rk { color: #ffd23f; }
+  .board .nm {
+    flex: 1; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+    text-align: left; color: #fff;
+  }
+  .board .sc { flex: none; font-weight: 700; color: #ffd23f; font-variant-numeric: tabular-nums; }
+  .board li.me { background: rgba(255,210,63,.16); border-radius: 8px; padding: 4px 6px; }
+  .board .empty { font-size: 13px; color: #7f8494; padding: 6px 0; }
+
+  /* ---- 이름 등록 ---- */
+  #nameRow { display: none; flex-direction: column; align-items: center; gap: 10px; width: 100%; }
+  #nameRow.on { display: flex; }
+  #nameRow .tag {
+    font-size: 14px; font-weight: 700; color: #ffd23f;
+  }
+  #nameForm { display: flex; gap: 8px; width: 100%; max-width: 320px; }
+  #nameInput {
+    flex: 1; min-width: 0;
+    font: inherit; font-size: 16px;
+    padding: 12px 14px; border-radius: 12px;
+    border: 2px solid rgba(255,255,255,.18);
+    background: rgba(255,255,255,.08); color: #fff;
+  }
+  #nameInput::placeholder { color: #757a8a; }
+  #nameInput:focus { outline: none; border-color: #ffd23f; }
+  #btnSave { padding: 12px 20px; font-size: 15px; flex: none; }
   .screen h1 { font-size: clamp(26px, 7vw, 36px); letter-spacing: -1px; }
   .screen h2 { font-size: clamp(22px, 6vw, 30px); }
   .screen p { font-size: clamp(13px, 3.6vw, 15px); line-height: 1.6; color: #c8cbd6; }
@@ -111,9 +157,13 @@
         <b>⭐ 별</b><span>보너스 +50점</span>
         <b>❤️ 하트</b><span>목숨 +1 (최대 5)</span>
       </div>
+      <div class="board">
+        <h3>🏆 명예의 전당 TOP 10</h3>
+        <ol id="boardStart"><li class="empty">불러오는 중…</li></ol>
+      </div>
       <button id="btnStart">시작하기</button>
       <label class="filebtn">📷 주인공 사진 넣기<input type="file" id="file" accept="image/*"></label>
-      <div class="hint">최고기록 <span id="bestStart">0</span>점</div>
+      <div class="hint">내 최고기록 <span id="bestStart">0</span>점</div>
     </div>
 
     <div id="overScreen" class="screen hidden">
@@ -121,6 +171,21 @@
       <div class="big" id="finalScore">0</div>
       <div class="sub" id="bestLine">최고기록 0</div>
       <p id="rankLine"></p>
+
+      <div id="nameRow">
+        <div class="tag" id="nameTag">🎉 TOP 10 진입! 이름을 남기세요</div>
+        <div id="nameForm">
+          <input id="nameInput" type="text" maxlength="12" placeholder="이름 (최대 12자)"
+                 autocomplete="off" autocorrect="off" spellcheck="false">
+          <button id="btnSave">등록</button>
+        </div>
+      </div>
+
+      <div class="board">
+        <h3>🏆 명예의 전당 TOP 10</h3>
+        <ol id="boardOver"><li class="empty">불러오는 중…</li></ol>
+      </div>
+
       <button id="btnRetry">다시 하기</button>
       <label class="filebtn">📷 사진 바꾸기<input type="file" id="file2" accept="image/*"></label>
     </div>
@@ -170,6 +235,7 @@
 
   const LS_BEST = "epjpddongpi_best";
   const LS_IMG  = "epjpddongpi_face";
+  const LS_NAME = "epjpddongpi_name";
   let best = parseInt(localStorage.getItem(LS_BEST) || "0", 10) || 0;
   elBestStart.textContent = best;
 
@@ -329,6 +395,7 @@
     state = STATE.PLAY;
     startScreen.classList.add("hidden");
     overScreen.classList.add("hidden");
+    nameRow.classList.remove("on");
     beep(660, .1, "square", .04);
   }
 
@@ -532,7 +599,145 @@
     overScreen.classList.remove("hidden");
     beep(220, .4, "sawtooth", .06);
     if (navigator.vibrate) navigator.vibrate(120);
+
+    // 전체 랭킹: 최신 TOP 10을 다시 받아보고 진입했으면 이름 입력을 띄운다
+    pendingScore = s; pendingLevel = level;
+    myRowKey = null;
+    nameRow.classList.remove("on");
+    btnSave.disabled = false;
+    btnSave.textContent = "등록";
+    nameTag.textContent = "🎉 TOP 10 진입! 이름을 남기세요";
+    refreshBoards(boardOver).then(() => {
+      if (state === STATE.OVER && qualifies(s)) {
+        nameRow.classList.add("on");
+        nameInput.value = localStorage.getItem(LS_NAME) || "";
+        const r = topList.findIndex(v => s > v.score);
+        nameTag.textContent = "🎉 " + (r < 0 ? topList.length + 1 : r + 1) + "위 진입! 이름을 남기세요";
+      }
+    });
   }
+  /* ---------- 전체 랭킹 (Supabase) ---------- */
+  // 이 게임 전용 Supabase 프로젝트 정보 (Settings → API 에서 복사)
+  // 비워두면 랭킹 기능만 꺼지고 게임은 그대로 돌아간다.
+  const SB_URL   = "";
+  const SB_KEY   = "";
+  const SB_TABLE = "ddongpi_scores";
+  const TOP_N    = 10;
+  const SB_ON    = !!(SB_URL && SB_KEY);   // 설정 전에는 랭킹만 꺼지고 게임은 정상 동작
+
+  const boardStart = document.getElementById("boardStart");
+  const boardOver  = document.getElementById("boardOver");
+  const nameRow    = document.getElementById("nameRow");
+  const nameTag    = document.getElementById("nameTag");
+  const nameInput  = document.getElementById("nameInput");
+  const btnSave    = document.getElementById("btnSave");
+
+  let topList = [];
+  let myRowKey = null;   // 방금 등록한 내 기록 강조용
+
+  function sbHeaders(extra) {
+    return Object.assign({ apikey: SB_KEY, Authorization: "Bearer " + SB_KEY }, extra || {});
+  }
+
+  async function fetchTop() {
+    const url = SB_URL + "/rest/v1/" + SB_TABLE +
+      "?select=name,score,created_at&order=score.desc,created_at.asc&limit=" + TOP_N;
+    const res = await fetch(url, { headers: sbHeaders() });
+    if (!res.ok) throw new Error("HTTP " + res.status);
+    return res.json();
+  }
+
+  async function submitScore(name, sc, lv) {
+    const res = await fetch(SB_URL + "/rest/v1/" + SB_TABLE, {
+      method: "POST",
+      headers: sbHeaders({ "Content-Type": "application/json", Prefer: "return=minimal" }),
+      body: JSON.stringify({ name: name, score: sc, level: lv })
+    });
+    if (!res.ok) throw new Error("HTTP " + res.status + " " + (await res.text()).slice(0, 120));
+  }
+
+  function renderBoard(el, list, msg) {
+    el.innerHTML = "";
+    if (msg) {
+      const li = document.createElement("li");
+      li.className = "empty";
+      li.textContent = msg;
+      el.appendChild(li);
+      return;
+    }
+    if (!list.length) {
+      const li = document.createElement("li");
+      li.className = "empty";
+      li.textContent = "아직 기록이 없습니다. 첫 주인공이 되어보세요!";
+      el.appendChild(li);
+      return;
+    }
+    const medal = ["🥇", "🥈", "🥉"];
+    list.forEach((row, i) => {
+      const li = document.createElement("li");
+      if (myRowKey && row.name + "|" + row.score === myRowKey) li.className = "me";
+      const rk = document.createElement("span");
+      rk.className = "rk";
+      rk.textContent = i < 3 ? medal[i] : (i + 1);
+      const nm = document.createElement("span");
+      nm.className = "nm";
+      nm.textContent = row.name;               // textContent → HTML 삽입 불가
+      const sc = document.createElement("span");
+      sc.className = "sc";
+      sc.textContent = Number(row.score).toLocaleString();
+      li.append(rk, nm, sc);
+      el.appendChild(li);
+    });
+  }
+
+  async function refreshBoards(target) {
+    const els = target ? [target] : [boardStart, boardOver];
+    if (!SB_ON) {
+      els.forEach(el => renderBoard(el, null, "전체 랭킹 준비 중입니다"));
+      return;
+    }
+    try {
+      topList = await fetchTop();
+      els.forEach(el => renderBoard(el, topList));
+    } catch (e) {
+      els.forEach(el => renderBoard(el, null, "랭킹을 불러오지 못했습니다 (오프라인?)"));
+    }
+  }
+
+  function qualifies(sc) {
+    if (!SB_ON || sc <= 0) return false;
+    if (topList.length < TOP_N) return true;
+    return sc > topList[topList.length - 1].score;
+  }
+
+  async function saveMyScore() {
+    const name = nameInput.value.trim().slice(0, 12);
+    if (!name) { nameInput.focus(); return; }
+    btnSave.disabled = true;
+    btnSave.textContent = "등록 중…";
+    try {
+      await submitScore(name, pendingScore, pendingLevel);
+      try { localStorage.setItem(LS_NAME, name); } catch (e) {}
+      myRowKey = name + "|" + pendingScore;
+      nameRow.classList.remove("on");
+      await refreshBoards(boardOver);
+      refreshBoards(boardStart);
+    } catch (e) {
+      nameTag.textContent = "등록 실패 — 다시 시도해주세요";
+      btnSave.disabled = false;
+    }
+    btnSave.textContent = "등록";
+  }
+
+  let pendingScore = 0, pendingLevel = 1;
+  btnSave.addEventListener("click", saveMyScore);
+  nameInput.addEventListener("keydown", e => {
+    e.stopPropagation();
+    if (e.key === "Enter") { e.preventDefault(); saveMyScore(); }
+  });
+
+  refreshBoards();
+
   function rankOf(s) {
     if (s < 300)  return "🚽 똥밭에 굴렀다";
     if (s < 800)  return "🧻 그래도 휴지는 챙겼다";

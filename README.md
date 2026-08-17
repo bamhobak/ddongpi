@@ -25,5 +25,16 @@
 
 10초마다 레벨업 — 똥이 더 빠르고 더 많이 떨어집니다. 레벨 6부터는 초고속 똥도 섞여 떨어집니다.
 
+## 🏆 전체 랭킹 (TOP 10)
+모든 사람이 하나의 명예의 전당을 공유합니다. 게임이 끝났을 때 TOP 10 안에 들면 이름을 남길 수 있습니다.
+
+설정 방법:
+1. [supabase.com](https://supabase.com/dashboard) 에서 이 게임 전용 프로젝트를 새로 만듭니다 (무료).
+2. SQL Editor 에 [`supabase_leaderboard.sql`](supabase_leaderboard.sql) 내용을 붙여넣고 Run.
+3. Settings → API 의 **Project URL** 과 **publishable(anon) key** 를 `index.html` 상단 `SB_URL`, `SB_KEY` 에 넣습니다.
+
+`SB_URL`/`SB_KEY` 가 비어 있으면 랭킹만 표시되지 않고 게임은 정상 동작합니다.
+등록된 기록은 수정·삭제가 불가능하며(RLS), 이름은 12자·점수는 범위 제한이 걸려 있습니다.
+
 ## 구성
 `index.html` 파일 하나로 끝. 외부 라이브러리 없음.
