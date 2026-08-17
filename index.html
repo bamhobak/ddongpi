@@ -164,7 +164,8 @@
   elBestStart.textContent = best;
 
   /* ---------- 화면 크기 맞추기 ---------- */
-  const player = { x: 240, y: H - 78, r: 40, tx: 240, tilt: 0 };
+  const DRAW_R = 40;                 // 캐릭터 도안 기준 반지름
+  const player = { x: 240, y: H - 72, r: 32, tx: 240, tilt: 0 };  // 실제 크기 = 도안의 80%
 
   function layout() {
     const rect = stage.getBoundingClientRect();
@@ -375,8 +376,16 @@
     if (shake > 0) shake = Math.max(0, shake - dt * 40);
     if (flash > 0) flash = Math.max(0, flash - dt * 3);
     if (feverFlash > 0) feverFlash = Math.max(0, feverFlash - dt * 2.5);
+
+    const wasFever = fever;
     fever = state === STATE.PLAY && now < powerUntil;
     feverT = fever ? (powerUntil - now) / 10000 : 0;
+    // 피버 끝나는 순간엔 화면이 똥으로 가득 차 있으니 1초 무적으로 숨 돌릴 틈을 준다
+    if (wasFever && !fever && state === STATE.PLAY) {
+      invUntil = Math.max(invUntil, now + 1000);
+      popText(player.x, player.y - 70, "휴… 세이프", "#fff");
+      beep(520, .12, "triangle", .04);
+    }
 
     if (state !== STATE.PLAY) return;
 
@@ -553,51 +562,53 @@
 
   function drawPlayer(now) {
     const blink = now < invUntil && Math.floor(now / 90) % 2 === 0;
+    const R = DRAW_R;                      // 원본 도안 기준 반지름
     ctx.save();
     ctx.translate(player.x, player.y);
     ctx.rotate(player.tilt);
+    ctx.scale(player.r / R, player.r / R); // 실제 크기로 축소
     ctx.globalAlpha = blink ? .35 : 1;
 
     ctx.save();
     ctx.globalAlpha *= .25;
     ctx.fillStyle = "#000";
     ctx.beginPath();
-    ctx.ellipse(0, player.r + 26, player.r * .8, 9, 0, 0, 6.283);
+    ctx.ellipse(0, R + 26, R * .8, 9, 0, 0, 6.283);
     ctx.fill();
     ctx.restore();
 
     ctx.fillStyle = "#f4f1ea";
     ctx.strokeStyle = "#d8d3c7";
     ctx.lineWidth = 2;
-    const bw = player.r * 1.35, bh = 52;
-    ctx.beginPath(); ctx.roundRect(-bw / 2, player.r * .55, bw, bh, 14); ctx.fill(); ctx.stroke();
-    ctx.beginPath(); ctx.roundRect(-bw / 2 - 13, player.r * .7, 14, 34, 8); ctx.fill(); ctx.stroke();
-    ctx.beginPath(); ctx.roundRect(bw / 2 - 1, player.r * .7, 14, 34, 8); ctx.fill(); ctx.stroke();
+    const bw = R * 1.35, bh = 52;
+    ctx.beginPath(); ctx.roundRect(-bw / 2, R * .55, bw, bh, 14); ctx.fill(); ctx.stroke();
+    ctx.beginPath(); ctx.roundRect(-bw / 2 - 13, R * .7, 14, 34, 8); ctx.fill(); ctx.stroke();
+    ctx.beginPath(); ctx.roundRect(bw / 2 - 1, R * .7, 14, 34, 8); ctx.fill(); ctx.stroke();
 
     ctx.save();
     ctx.beginPath();
-    ctx.arc(0, 0, player.r, 0, 6.283);
+    ctx.arc(0, 0, R, 0, 6.283);
     ctx.closePath();
     ctx.clip();
     if (face && face.width) {
-      const s = Math.max((player.r * 2) / face.width, (player.r * 2) / face.height);
+      const s = Math.max((R * 2) / face.width, (R * 2) / face.height);
       const dw = face.width * s, dh = face.height * s;
       ctx.drawImage(face, -dw / 2, -dh / 2, dw, dh);
     } else {
       ctx.fillStyle = "#ffe0bd";
-      ctx.fillRect(-player.r, -player.r, player.r * 2, player.r * 2);
+      ctx.fillRect(-R, -R, R * 2, R * 2);
       ctx.fillStyle = "#3b2a1d";
       ctx.beginPath(); ctx.arc(-13, -6, 4.5, 0, 6.283); ctx.fill();
       ctx.beginPath(); ctx.arc(13, -6, 4.5, 0, 6.283); ctx.fill();
       ctx.strokeStyle = "#3b2a1d"; ctx.lineWidth = 3; ctx.lineCap = "round";
       ctx.beginPath(); ctx.arc(0, 6, 12, .2, Math.PI - .2); ctx.stroke();
       ctx.fillStyle = "#6b4a2f";
-      ctx.beginPath(); ctx.arc(0, -player.r * .55, player.r * .95, Math.PI, 0); ctx.fill();
+      ctx.beginPath(); ctx.arc(0, -R * .55, R * .95, Math.PI, 0); ctx.fill();
     }
     ctx.restore();
 
     ctx.beginPath();
-    ctx.arc(0, 0, player.r, 0, 6.283);
+    ctx.arc(0, 0, R, 0, 6.283);
     ctx.strokeStyle = "#fff";
     ctx.lineWidth = 4;
     ctx.stroke();
@@ -605,7 +616,7 @@
     if (now < powerUntil) {
       const t = feverT;
       ctx.beginPath();
-      ctx.arc(0, 6, player.r + 16 + Math.sin(now / 90) * 3, 0, 6.283);
+      ctx.arc(0, 6, R + 16 + Math.sin(now / 90) * 3, 0, 6.283);
       ctx.strokeStyle = "rgba(255,255,255,.85)";
       ctx.lineWidth = 4; ctx.setLineDash([10, 8]);
       ctx.lineDashOffset = -now / 20;
@@ -613,15 +624,15 @@
       ctx.setLineDash([]);
       ctx.globalAlpha = .25 + t * .2;
       ctx.fillStyle = "#fff";
-      ctx.beginPath(); ctx.arc(0, 6, player.r + 16, 0, 6.283); ctx.fill();
+      ctx.beginPath(); ctx.arc(0, 6, R + 16, 0, 6.283); ctx.fill();
       ctx.globalAlpha = 1;
     }
     ctx.restore();
 
     if (shield) {
       ctx.save();
-      ctx.translate(player.x, player.y - player.r - 26);
-      ctx.font = "40px serif";
+      ctx.translate(player.x, player.y - player.r - 21);
+      ctx.font = "32px serif";
       ctx.textAlign = "center"; ctx.textBaseline = "middle";
       ctx.fillText("☂️", 0, 0);
       ctx.restore();
