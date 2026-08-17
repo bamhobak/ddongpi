@@ -98,7 +98,7 @@
       <p id="howto">하늘에서 똥이 쏟아진다!<br>화면을 손가락으로 끌어서 피하세요</p>
       <div class="legend">
         <b>💩 똥</b><span>맞으면 목숨 -1</span>
-        <b>🧻 휴지</b><span>4초 무적 (똥 박살)</span>
+        <b>🧻 휴지</b><span>🔥 피버타임 10초!<br>무적 + 똥 폭포 (개당 +10점)</span>
         <b>☂️ 우산</b><span>한 방 막아주는 방패</span>
         <b>⭐ 별</b><span>보너스 +50점</span>
         <b>❤️ 하트</b><span>목숨 +1 (최대 5)</span>
@@ -263,7 +263,8 @@
   let spawnTimer = 0, itemTimer = 0;
   let invUntil = 0, powerUntil = 0;
   let shield = false;
-  let shake = 0, flash = 0;
+  let shake = 0, flash = 0, feverFlash = 0;
+  let fever = false, feverT = 0;
   let last = 0;
 
   const keys = {};
@@ -299,7 +300,7 @@
     score = 0; lives = 3; level = 1; elapsed = 0;
     spawnTimer = 0; itemTimer = 3.5;
     invUntil = 0; powerUntil = 0; shield = false;
-    shake = 0; flash = 0;
+    shake = 0; flash = 0; feverFlash = 0; fever = false; feverT = 0;
     player.x = player.tx = W / 2;
     state = STATE.PLAY;
     startScreen.classList.add("hidden");
@@ -312,16 +313,17 @@
   }
 
   /* ---------- 스폰 ---------- */
-  function spawnPoop() {
-    const r = 15 + Math.random() * 13;
+  function spawnPoop(mul) {
+    const m = mul || 1;
+    const r = 14 + Math.random() * 13;
     items.push({
       type: "poop", emoji: "💩",
       x: r + Math.random() * (W - r * 2), y: -r - 10,
       r: r * 0.82,
-      vx: (Math.random() - .5) * (20 + level * 6),
-      vy: 130 + level * 16 + Math.random() * 70,
-      rot: Math.random() * 6.28, vr: (Math.random() - .5) * 4,
-      size: r * 2
+      vx: (Math.random() - .5) * (24 + level * 8),
+      vy: (215 + level * 30 + Math.random() * 110) * m,
+      rot: Math.random() * 6.28, vr: (Math.random() - .5) * 5,
+      size: r * 2, fast: m > 1
     });
   }
   const BONUS = [
@@ -372,36 +374,51 @@
     }
     if (shake > 0) shake = Math.max(0, shake - dt * 40);
     if (flash > 0) flash = Math.max(0, flash - dt * 3);
+    if (feverFlash > 0) feverFlash = Math.max(0, feverFlash - dt * 2.5);
+    fever = state === STATE.PLAY && now < powerUntil;
+    feverT = fever ? (powerUntil - now) / 10000 : 0;
 
     if (state !== STATE.PLAY) return;
 
     elapsed += dt;
-    level = 1 + Math.floor(elapsed / 14);
+    level = 1 + Math.floor(elapsed / 10);
     score += dt * 6;
 
-    const kSpeed = 480 * dt;
+    const kSpeed = 560 * dt;
     if (keys.ArrowLeft  || keys.a || keys.A) player.tx -= kSpeed;
     if (keys.ArrowRight || keys.d || keys.D) player.tx += kSpeed;
     player.tx = Math.max(player.r, Math.min(W - player.r, player.tx));
 
     const prev = player.x;
-    player.x += (player.tx - player.x) * Math.min(1, dt * 16);
+    player.x += (player.tx - player.x) * Math.min(1, dt * 20);
     player.tilt += (((player.x - prev) / Math.max(dt, .001) / 900) - player.tilt) * Math.min(1, dt * 10);
     player.tilt = Math.max(-.35, Math.min(.35, player.tilt));
+
+    const powered = now < powerUntil;      // 🔥 피버타임
+    const invincible = now < invUntil;
 
     // 화면이 좁으면 그만큼 똥도 덜 떨어지게(체감 난이도 유지)
     const widthFactor = 480 / W;
     spawnTimer -= dt;
     if (spawnTimer <= 0) {
-      spawnPoop();
-      if (level >= 4 && Math.random() < .25) spawnPoop();
-      spawnTimer = Math.max(0.22, 0.78 - level * 0.045) * widthFactor * (0.7 + Math.random() * 0.6);
+      if (powered) {
+        // 피버타임: 똥이 폭포처럼 쏟아지고 속도도 2배 이상
+        const n = 2 + Math.floor(Math.random() * 3);
+        if (items.length < 90) {
+          for (let k = 0; k < n; k++) spawnPoop(2.2 + Math.random() * 0.9);
+        }
+        spawnTimer = 0.07 * widthFactor;
+      } else {
+        spawnPoop();
+        if (level >= 3 && Math.random() < .35) spawnPoop();
+        if (level >= 6 && Math.random() < .30) spawnPoop(1.6);   // 초고속 똥
+        spawnTimer = Math.max(0.13, 0.52 - level * 0.042) * widthFactor * (0.7 + Math.random() * 0.6);
+      }
     }
-    itemTimer -= dt;
-    if (itemTimer <= 0) { spawnBonus(); itemTimer = 6 + Math.random() * 6; }
-
-    const powered = now < powerUntil;
-    const invincible = now < invUntil;
+    if (!powered) {
+      itemTimer -= dt;
+      if (itemTimer <= 0) { spawnBonus(); itemTimer = 7 + Math.random() * 6; }
+    }
 
     for (let i = items.length - 1; i >= 0; i--) {
       const it = items[i];
@@ -418,10 +435,11 @@
       if (hit) {
         if (it.type === "poop") {
           if (powered) {
-            burst(it.x, it.y, "#8a5a2b", 14);
-            popText(it.x, it.y, "+5", "#ffd23f");
-            score += 5; items.splice(i, 1);
-            beep(880, .06, "square", .04);
+            burst(it.x, it.y, "#ffb03a", 12);
+            score += 10;
+            if (Math.random() < .5) popText(it.x, it.y, "+10", "#ffd23f");
+            items.splice(i, 1);
+            if (Math.random() < .4) beep(900 + Math.random() * 500, .05, "square", .03);
             continue;
           }
           if (!invincible) {
@@ -443,7 +461,14 @@
             continue;
           }
         } else {
-          if (it.type === "paper")    { powerUntil = now + 4000; popText(player.x, player.y - 60, "🧻 무적 4초!", "#fff"); beep(1200, .12, "square", .05); }
+          if (it.type === "paper")    {
+            powerUntil = now + 10000; feverFlash = 1;
+            popText(player.x, player.y - 70, "🔥 FEVER TIME!", "#ffd23f");
+            beep(700, .1, "square", .05);
+            beep(1100, .12, "square", .05);
+            beep(1500, .18, "square", .05);
+            if (navigator.vibrate) navigator.vibrate([40, 40, 80]);
+          }
           if (it.type === "umbrella") { shield = true;            popText(player.x, player.y - 60, "☂️ 방패!",   "#7ec8ff"); beep(900, .12, "triangle", .05); }
           if (it.type === "star")     { score += 50;              popText(it.x, it.y, "+50", "#ffd23f"); beep(1400, .1, "square", .05); }
           if (it.type === "heart")    { lives = Math.min(5, lives + 1); popText(it.x, it.y, "❤️ +1", "#ff8fb0"); beep(1000, .15, "sine", .06); }
@@ -477,22 +502,40 @@
     if (navigator.vibrate) navigator.vibrate(120);
   }
   function rankOf(s) {
-    if (s < 150)  return "🚽 똥밭에 굴렀다";
-    if (s < 400)  return "🧻 그래도 휴지는 챙겼다";
-    if (s < 800)  return "🏃 제법 잘 피하는데?";
-    if (s < 1500) return "😎 똥 회피 고수";
-    if (s < 2500) return "⚡ 똥을 초월한 자";
+    if (s < 300)  return "🚽 똥밭에 굴렀다";
+    if (s < 800)  return "🧻 그래도 휴지는 챙겼다";
+    if (s < 1600) return "🏃 제법 잘 피하는데?";
+    if (s < 3000) return "😎 똥 회피 고수";
+    if (s < 5000) return "⚡ 똥을 초월한 자";
     return "👑 똥피하기 마스터";
   }
 
   /* ---------- 그리기 ---------- */
-  function drawBackground() {
+  function drawBackground(now) {
     const g = ctx.createLinearGradient(0, 0, 0, H);
-    g.addColorStop(0, "#89c6ff");
-    g.addColorStop(.55, "#bfe0ff");
-    g.addColorStop(1, "#e9f4ff");
+    if (fever) {
+      const p = 0.5 + Math.sin(now / 70) * 0.5;
+      g.addColorStop(0, "#ff5a2e");
+      g.addColorStop(.5, p > .5 ? "#ff9d2e" : "#ffb92e");
+      g.addColorStop(1, "#ffe08a");
+    } else {
+      g.addColorStop(0, "#89c6ff");
+      g.addColorStop(.55, "#bfe0ff");
+      g.addColorStop(1, "#e9f4ff");
+    }
     ctx.fillStyle = g;
     ctx.fillRect(0, 0, W, H);
+
+    // 피버타임 속도선
+    if (fever) {
+      ctx.strokeStyle = "rgba(255,255,255,.35)";
+      ctx.lineWidth = 3;
+      for (let i = 0; i < 14; i++) {
+        const x = ((i * 137 + now * 0.05) % (W + 40)) - 20;
+        const y = ((i * 311 + now * 1.6) % (H + 160)) - 80;
+        ctx.beginPath(); ctx.moveTo(x, y); ctx.lineTo(x, y + 70); ctx.stroke();
+      }
+    }
 
     ctx.fillStyle = "rgba(255,255,255,.75)";
     for (const c of clouds) {
@@ -560,7 +603,7 @@
     ctx.stroke();
 
     if (now < powerUntil) {
-      const t = (powerUntil - now) / 4000;
+      const t = feverT;
       ctx.beginPath();
       ctx.arc(0, 6, player.r + 16 + Math.sin(now / 90) * 3, 0, 6.283);
       ctx.strokeStyle = "rgba(255,255,255,.85)";
@@ -619,6 +662,22 @@
     let s = "";
     for (let i = 0; i < lives; i++) s += "❤️";
     ctx.fillText(s, W - 14, top + 2);
+
+    // 🔥 피버타임 게이지
+    if (fever) {
+      const bw = Math.min(260, W - 60), bx = (W - bw) / 2, by = top + 76;
+      ctx.textAlign = "center";
+      ctx.font = "800 22px system-ui, sans-serif";
+      ctx.lineWidth = 5; ctx.strokeStyle = "rgba(120,30,0,.55)";
+      ctx.strokeText("🔥 FEVER TIME 🔥", W / 2, top + 46);
+      ctx.fillStyle = "#fff";
+      ctx.fillText("🔥 FEVER TIME 🔥", W / 2, top + 46);
+
+      ctx.fillStyle = "rgba(0,0,0,.28)";
+      ctx.beginPath(); ctx.roundRect(bx, by, bw, 10, 5); ctx.fill();
+      ctx.fillStyle = "#fff36b";
+      ctx.beginPath(); ctx.roundRect(bx, by, bw * feverT, 10, 5); ctx.fill();
+    }
     ctx.restore();
   }
 
@@ -646,6 +705,10 @@
       ctx.fillStyle = "rgba(255,60,60," + (flash * .35) + ")";
       ctx.fillRect(0, 0, W, H);
     }
+    if (feverFlash > 0) {
+      ctx.fillStyle = "rgba(255,240,180," + (feverFlash * .6) + ")";
+      ctx.fillRect(0, 0, W, H);
+    }
   }
 
   function frame(now) {
@@ -659,7 +722,7 @@
     ctx.clearRect(0, 0, W, H);
     ctx.save();
     if (shake > 0) ctx.translate((Math.random() - .5) * shake, (Math.random() - .5) * shake);
-    drawBackground();
+    drawBackground(now);
     drawItems();
     if (state !== STATE.OVER) drawPlayer(now);
     drawEffects();
