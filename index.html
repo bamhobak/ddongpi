@@ -255,6 +255,11 @@
 
   const MIN_W = 340, MAX_W = 620;    // 논리 가로 허용 범위
 
+  /* 전체 난이도 배율. 낙하 속도와 낙하 빈도에 각각 제곱근을 적용해서
+     둘을 합친 체감 난이도가 정확히 이 배율이 되게 한다. 값 하나만 고치면 된다. */
+  const DIFF = 1.1;
+  const DIFF_F = Math.sqrt(DIFF);    // 1.0488
+
   function layout() {
     const rect = stage.getBoundingClientRect();
     const bw = Math.max(1, rect.width), bh = Math.max(1, rect.height);
@@ -392,7 +397,7 @@
   /* ---------- 스폰 ---------- */
   /* 뚜니핑 타임 낙하물 크기 등급 — 클수록 드물고 점수가 크다 */
   const FEVER_SIZES = [
-    { min: 14, max: 18, score: 2,  w: 22 },
+    { min: 14, max: 18, score: 3,  w: 22 },
     { min: 18, max: 22, score: 5,  w: 22 },
     { min: 22, max: 26, score: 10, w: 18 },
     { min: 26, max: 31, score: 15, w: 14 },
@@ -419,7 +424,7 @@
       x: r + Math.random() * (W - r * 2), y: -r - 10,
       r: r * 0.82,
       vx: (Math.random() - .5) * (24 + level * 8),
-      vy: (215 + level * 30 + Math.random() * 110) * m,
+      vy: (215 + level * 30 + Math.random() * 110) * m * DIFF_F,
       rot: Math.random() * 6.28, vr: (Math.random() - .5) * 5,
       size: r * 2, sz: r, fast: m > 1,
       skin: inFever ? "fever" : "poop",
@@ -528,7 +533,7 @@
         spawnPoop();
         if (level >= 3 && Math.random() < .35) spawnPoop();
         if (level >= 6 && Math.random() < .30) spawnPoop(1.6);   // 초고속 똥
-        spawnTimer = Math.max(0.13, 0.52 - level * 0.042) * widthFactor * (0.7 + Math.random() * 0.6);
+        spawnTimer = Math.max(0.13, 0.52 - level * 0.042) / DIFF_F * widthFactor * (0.7 + Math.random() * 0.6);
       }
     }
     if (!powered) {
@@ -554,7 +559,7 @@
             // 크기가 곧 점수. 뚜니핑 타임 중 생성된 건 자기 점수를 갖고 있고,
             // 뚜니핑 타임 전에 떨어지던 일반 똥은 크기로 환산한다.
             let gain = it.gain;
-            if (!gain) gain = it.sz < 18 ? 2 : (it.sz < 23 ? 10 : 20);
+            if (!gain) gain = it.sz < 18 ? 3 : (it.sz < 23 ? 10 : 20);
             let tone, burstN, note, textSize;
             if (gain >= 50)      { tone = "#ff3b3b"; burstN = 42; note = 1800; textSize = 34; }
             else if (gain >= 30) { tone = "#ff6a2a"; burstN = 34; note = 1650; textSize = 30; }
@@ -841,14 +846,14 @@
   refreshLastWeek();
 
   function rankOf(s) {
-    // 실제 기록 분포 기준(최고 실력자 생존 약 115초, 환산 19,000점대).
-    // 중간 실력이 😎, 잘하는 사람이 ⚡, 최고기록 보유자가 👑 에 닿도록 잡았다.
-    if (s < 3000)  return "🚽 똥밭에 굴렀다";
-    if (s < 6000)  return "🧻 그래도 휴지는 챙겼다";
-    if (s < 10000) return "🏃 제법 잘 피하는데?";
-    if (s < 14000) return "😎 똥 회피 고수";
-    if (s < 18000) return "⚡ 똥을 초월한 자";
-    if (s < 25000) return "👑 똥피하기 마스터";
+    // 현재 점수 체계(생존 2점/초, 별 누진, 뚜니핑 크기별)로 계산한 생존 시간별 점수 기준.
+    // 30초 / 45초 / 1분 / 75초 / 90초 / 2분 / 그 이상에 대응한다.
+    if (s < 1400)  return "🚽 똥밭에 굴렀다";
+    if (s < 2000)  return "🧻 그래도 휴지는 챙겼다";
+    if (s < 3500)  return "🏃 제법 잘 피하는데?";
+    if (s < 5000)  return "😎 똥 회피 고수";
+    if (s < 7000)  return "⚡ 똥을 초월한 자";
+    if (s < 10000) return "👑 똥피하기 마스터";
     return "💩 똥신(糞神) 강림";
   }
 
