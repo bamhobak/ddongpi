@@ -6,7 +6,8 @@
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="theme-color" content="#12131a">
-<title>💩 이피재피똥피</title>
+<title>이피재피똥피</title>
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ctext x='50' y='52' font-size='84' text-anchor='middle' dominant-baseline='central'%3E%F0%9F%92%A9%3C/text%3E%3C/svg%3E">
 <style>
   * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
   html, body {
@@ -107,7 +108,7 @@
   .screen h1 { font-size: clamp(26px, 7vw, 36px); letter-spacing: -1px; }
   .screen h2 { font-size: clamp(22px, 6vw, 30px); }
   .screen p { font-size: clamp(13px, 3.6vw, 15px); line-height: 1.6; color: #c8cbd6; }
-  button, .filebtn {
+  button {
     appearance: none; border: 0; cursor: pointer;
     font: inherit; font-weight: 700;
     font-size: clamp(16px, 4.4vw, 18px);
@@ -115,13 +116,7 @@
     padding: 14px 36px; border-radius: 999px;
     transition: transform .08s ease, filter .15s ease;
   }
-  button:active, .filebtn:active { transform: scale(.96); }
-  .filebtn {
-    background: rgba(255,255,255,.14); color: #fff;
-    font-size: clamp(13px, 3.6vw, 14px); padding: 11px 22px;
-    display: inline-block;
-  }
-  .filebtn input { display: none; }
+  button:active { transform: scale(.96); }
 
   .big { font-size: clamp(38px, 11vw, 48px); font-weight: 800; color: #ffd23f; }
   .sub { font-size: 14px; color: #9aa0ae; }
@@ -130,14 +125,6 @@
     bottom: max(12px, env(safe-area-inset-bottom));
     font-size: 12px; color: #6d7383; text-align: center; padding: 0 16px;
   }
-  #drop {
-    position: absolute; inset: 0; display: none;
-    align-items: center; justify-content: center;
-    background: rgba(255,210,63,.18);
-    border: 3px dashed #ffd23f;
-    font-size: 20px; font-weight: 700; z-index: 20;
-  }
-  #stage.dragging #drop { display: flex; }
 </style>
 </head>
 <body>
@@ -145,11 +132,8 @@
   <div id="stage">
     <canvas id="cv"></canvas>
 
-    <div id="drop">여기에 사진을 놓으세요 📷</div>
-
     <div id="startScreen" class="screen">
       <h1>💩 이피재피똥피 💩</h1>
-      <p id="howto">하늘에서 똥이 쏟아진다!<br>화면을 손가락으로 끌어서 피하세요</p>
       <div class="board">
         <h3>🏆 이번 주 TOP 10</h3>
         <ol id="boardStart"><li class="empty">불러오는 중…</li></ol>
@@ -160,7 +144,6 @@
         <ol id="boardLast"></ol>
       </div>
       <button id="btnStart">시작하기</button>
-      <label class="filebtn">📷 주인공 사진 넣기<input type="file" id="file" accept="image/*"></label>
       <div class="hint">내 최고기록 <span id="bestStart">0</span>점</div>
     </div>
 
@@ -186,7 +169,6 @@
       </div>
 
       <button id="btnRetry">다시 하기</button>
-      <label class="filebtn">📷 사진 바꾸기<input type="file" id="file2" accept="image/*"></label>
     </div>
   </div>
 </div>
@@ -217,7 +199,6 @@
   const cv = document.getElementById("cv");
   const ctx = cv.getContext("2d");
   const stage = document.getElementById("stage");
-  const isTouch = matchMedia("(pointer: coarse)").matches;
 
   const startScreen = document.getElementById("startScreen");
   const overScreen  = document.getElementById("overScreen");
@@ -227,13 +208,7 @@
   const elRank  = document.getElementById("rankLine");
   const elTitle = document.getElementById("overTitle");
 
-  if (!isTouch) {
-    document.getElementById("howto").innerHTML =
-      "하늘에서 똥이 쏟아진다!<br>마우스 · ← → 키로 피하세요";
-  }
-
   const LS_BEST = "epjpddongpi_best";
-  const LS_IMG  = "epjpddongpi_face";
   const LS_NAME = "epjpddongpi_name";
   let best = parseInt(localStorage.getItem(LS_BEST) || "0", 10) || 0;
   elBestStart.textContent = best;
@@ -274,59 +249,18 @@
   if (window.visualViewport) window.visualViewport.addEventListener("resize", layout);
   layout();
 
-  /* ---------- 주인공 사진 ---------- */
+  /* ---------- 주인공 얼굴 ----------
+     같은 폴더의 player.png (없으면 player.jpg) 를 자동으로 쓴다.
+     둘 다 없으면 코드로 그린 캐릭터가 나온다. */
   let face = null;
-  function setFace(src) {
-    const img = new Image();
-    img.onload = () => { face = img; };
-    img.src = src;
-  }
-  const saved = localStorage.getItem(LS_IMG);
-  if (saved) setFace(saved);
-  else {
-    const probe = new Image();
-    probe.onload = () => { if (!face) face = probe; };
-    probe.onerror = () => {
-      const p2 = new Image();
-      p2.onload = () => { if (!face) face = p2; };
-      p2.src = "player.jpg";
-    };
-    probe.src = "player.png";
-  }
-  function loadFile(f) {
-    if (!f || !f.type.startsWith("image/")) return;
-    const fr = new FileReader();
-    fr.onload = () => {
-      // 폰 사진은 용량이 커서 저장 전에 축소
-      const tmp = new Image();
-      tmp.onload = () => {
-        const size = 320;
-        const c = document.createElement("canvas");
-        c.width = c.height = size;
-        const cx = c.getContext("2d");
-        const s = Math.max(size / tmp.width, size / tmp.height);
-        cx.drawImage(tmp, (size - tmp.width * s) / 2, (size - tmp.height * s) / 2,
-                     tmp.width * s, tmp.height * s);
-        const url = c.toDataURL("image/jpeg", 0.9);
-        setFace(url);
-        try { localStorage.setItem(LS_IMG, url); } catch (e) {}
-      };
-      tmp.onerror = () => setFace(fr.result);
-      tmp.src = fr.result;
-    };
-    fr.readAsDataURL(f);
-  }
-  document.getElementById("file").addEventListener("change", e => loadFile(e.target.files[0]));
-  document.getElementById("file2").addEventListener("change", e => loadFile(e.target.files[0]));
-
-  let dragDepth = 0;
-  window.addEventListener("dragenter", e => { e.preventDefault(); dragDepth++; stage.classList.add("dragging"); });
-  window.addEventListener("dragover",  e => e.preventDefault());
-  window.addEventListener("dragleave", () => { if (--dragDepth <= 0) { dragDepth = 0; stage.classList.remove("dragging"); } });
-  window.addEventListener("drop", e => {
-    e.preventDefault(); dragDepth = 0; stage.classList.remove("dragging");
-    if (e.dataTransfer.files.length) loadFile(e.dataTransfer.files[0]);
-  });
+  const probe = new Image();
+  probe.onload = () => { if (!face) face = probe; };
+  probe.onerror = () => {
+    const p2 = new Image();
+    p2.onload = () => { if (!face) face = p2; };
+    p2.src = "player.jpg";
+  };
+  probe.src = "player.png";
 
   /* ---------- 사운드 ---------- */
   let ac = null;
