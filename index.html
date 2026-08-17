@@ -282,7 +282,7 @@
   const STATE = { READY: 0, PLAY: 1, OVER: 2 };
   let state = STATE.READY;
 
-  let score = 0, lives = 3, level = 1, elapsed = 0;
+  let score = 0, lives = 3, level = 1, elapsed = 0, starCount = 0;
   let spawnTimer = 0, itemTimer = 0;
   let invUntil = 0, powerUntil = 0;
   let shield = false;
@@ -320,7 +320,7 @@
   function reset() {
     layout();
     items = []; particles = []; floats = [];
-    score = 0; lives = 3; level = 1; elapsed = 0;
+    score = 0; lives = 3; level = 1; elapsed = 0; starCount = 0;
     spawnTimer = 0; itemTimer = 3.5;
     invUntil = 0; powerUntil = 0; shield = false;
     shake = 0; flash = 0; feverFlash = 0; fever = false; feverT = 0;
@@ -502,7 +502,15 @@
             if (navigator.vibrate) navigator.vibrate([40, 40, 80]);
           }
           if (it.type === "umbrella") { shield = true;            popText(player.x, player.y - 60, "☂️ 방패!",   "#7ec8ff"); beep(900, .12, "triangle", .05); }
-          if (it.type === "star")     { score += 50;              popText(it.x, it.y, "+50", "#ffd23f"); beep(1400, .1, "square", .05); }
+          if (it.type === "star")     {
+            // 먹을수록 커진다: 1번째 500 → 2번째 1,000 → 3번째 1,500 …
+            starCount++;
+            const gain = 500 * starCount;
+            score += gain;
+            popText(it.x, it.y, "⭐×" + starCount + "  +" + gain.toLocaleString(), "#ffd23f");
+            beep(1400, .1, "square", .05);
+            beep(1750, .12, "square", .04);
+          }
           if (it.type === "heart")    { lives = Math.min(5, lives + 1); popText(it.x, it.y, "❤️ +1", "#ff8fb0"); beep(1000, .15, "sine", .06); }
           burst(it.x, it.y, "#ffd23f", 16);
           items.splice(i, 1);
@@ -632,7 +640,8 @@
     const res = await fetch(SB_URL + "/rest/v1/" + SB_TABLE, {
       method: "POST",
       headers: sbHeaders({ "Content-Type": "application/json", Prefer: "return=minimal" }),
-      body: JSON.stringify({ name: name, score: sc, level: lv })
+      // DB 제약(최대 100만점)에 걸려 등록이 실패하지 않도록 방어
+      body: JSON.stringify({ name: name, score: Math.min(1000000, Math.max(0, sc)), level: lv })
     });
     if (!res.ok) throw new Error("HTTP " + res.status + " " + (await res.text()).slice(0, 120));
   }
