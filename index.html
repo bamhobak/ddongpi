@@ -303,6 +303,14 @@
     img.src = "player_" + key + ".png";
   }
 
+  // 피버타임에는 똥 이모지 대신 이 이미지가 떨어진다
+  let feverPoop = null;
+  {
+    const img = new Image();
+    img.onload = () => { feverPoop = img; };
+    img.src = "poop_fever.png";
+  }
+
   /* ---------- 사운드 ---------- */
   let ac = null;
   function beep(freq, dur, type, vol) {
@@ -328,6 +336,7 @@
   let invUntil = 0, powerUntil = 0;
   let shield = false;
   let hurtUntil = 0;               // 똥에 맞은 직후 (아픈 그림 표시)
+  let skyT = 0;                    // 0 = 맑은 하늘, 1 = 가장 어두운 하늘 (레벨에 따라)
   let shake = 0, flash = 0, feverFlash = 0;
   let fever = false, feverT = 0;
   let last = 0;
@@ -366,6 +375,7 @@
     spawnTimer = 0; itemTimer = 3.5;
     invUntil = 0; powerUntil = 0; hurtUntil = 0; shield = false;
     shake = 0; flash = 0; feverFlash = 0; fever = false; feverT = 0;
+    skyT = 0;
     facing = "right";
     player.x = player.tx = W / 2;
     state = STATE.PLAY;
@@ -458,6 +468,10 @@
     elapsed += dt;
     level = 1 + Math.floor(elapsed / 10);
     score += dt * 6;
+
+    // 레벨이 오를수록 하늘이 진해진다. 단계마다 값이 바뀌지만 색은 부드럽게 따라간다.
+    const skyTarget = Math.min(1, (level - 1) / 11);
+    skyT += (skyTarget - skyT) * Math.min(1, dt * 2);
 
     const kSpeed = 560 * dt;
     if (keys.ArrowLeft  || keys.a || keys.A) player.tx -= kSpeed;
@@ -805,6 +819,22 @@
   }
 
   /* ---------- 그리기 ---------- */
+  // 맑은 하늘(레벨 1) → 어두운 하늘(레벨 12 이상). 위·중간·아래 세 구간 색을 각각 보간한다.
+  const SKY_LIGHT = [[137, 198, 255], [191, 224, 255], [233, 244, 255]];
+  const SKY_DARK  = [[18, 44, 98],  [32, 74, 142],   [66, 116, 184]];
+  function skyColor(i) {
+    const a = SKY_LIGHT[i], b = SKY_DARK[i];
+    return "rgb(" + Math.round(a[0] + (b[0] - a[0]) * skyT) + ","
+                  + Math.round(a[1] + (b[1] - a[1]) * skyT) + ","
+                  + Math.round(a[2] + (b[2] - a[2]) * skyT) + ")";
+  }
+  function lerpHex(t, from, to) {                 // 땅·구름을 하늘에 맞춰 같이 어둡게
+    const f = from, o = to;
+    return "rgb(" + Math.round(f[0] + (o[0] - f[0]) * t) + ","
+                  + Math.round(f[1] + (o[1] - f[1]) * t) + ","
+                  + Math.round(f[2] + (o[2] - f[2]) * t) + ")";
+  }
+
   function drawBackground(now) {
     const g = ctx.createLinearGradient(0, 0, 0, H);
     if (fever) {
@@ -813,9 +843,9 @@
       g.addColorStop(.5, p > .5 ? "#ff9d2e" : "#ffb92e");
       g.addColorStop(1, "#ffe08a");
     } else {
-      g.addColorStop(0, "#89c6ff");
-      g.addColorStop(.55, "#bfe0ff");
-      g.addColorStop(1, "#e9f4ff");
+      g.addColorStop(0, skyColor(0));
+      g.addColorStop(.55, skyColor(1));
+      g.addColorStop(1, skyColor(2));
     }
     ctx.fillStyle = g;
     ctx.fillRect(0, 0, W, H);
@@ -831,7 +861,9 @@
       }
     }
 
-    ctx.fillStyle = "rgba(255,255,255,.75)";
+    // 하늘이 어두워지면 구름도 같이 가라앉는다
+    ctx.fillStyle = fever ? "rgba(255,255,255,.75)"
+                          : "rgba(255,255,255," + (0.75 - skyT * 0.45).toFixed(2) + ")";
     for (const c of clouds) {
       ctx.beginPath();
       ctx.arc(c.x, c.y, c.s * .5, 0, 6.283);
@@ -839,9 +871,10 @@
       ctx.arc(c.x - c.s * .45, c.y + 8, c.s * .32, 0, 6.283);
       ctx.fill();
     }
-    ctx.fillStyle = "#7bbf6a";
+    const gt = fever ? 0 : skyT;
+    ctx.fillStyle = lerpHex(gt, [123, 191, 106], [34, 74, 46]);
     ctx.fillRect(0, H - 34, W, 34);
-    ctx.fillStyle = "#6aad5b";
+    ctx.fillStyle = lerpHex(gt, [106, 173, 91], [46, 92, 58]);
     ctx.fillRect(0, H - 34, W, 6);
   }
 
@@ -978,8 +1011,12 @@
       const bob = it.bob !== undefined ? Math.sin(it.bob) * 4 : 0;
       ctx.translate(it.x, it.y + bob);
       ctx.rotate(it.rot);
-      ctx.font = it.size + "px serif";
-      ctx.fillText(it.emoji, 0, 0);
+      if (fever && it.type === "poop" && feverPoop) {
+        ctx.drawImage(feverPoop, -it.size / 2, -it.size / 2, it.size, it.size);
+      } else {
+        ctx.font = it.size + "px serif";
+        ctx.fillText(it.emoji, 0, 0);
+      }
       ctx.restore();
     }
   }
