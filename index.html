@@ -519,11 +519,11 @@
     if (spawnTimer <= 0) {
       if (powered) {
         // 피버타임: 똥이 폭포처럼 쏟아지고 속도도 2배 이상
-        const n = 3 + Math.floor(Math.random() * 4);   // 평균 4.5개 (이전 3개 대비 +50%)
-        if (items.length < 135) {
+        const n = 3 + Math.floor(Math.random() * 4);   // 스폰당 3~6개 (평균 4.5개)
+        if (items.length < 80) {
           for (let k = 0; k < n; k++) spawnPoop(2.2 + Math.random() * 0.9);
         }
-        spawnTimer = 0.07 * widthFactor;
+        spawnTimer = 0.14 * widthFactor;               // 간격 2배 → 낙하량은 정확히 절반
       } else {
         spawnPoop();
         if (level >= 3 && Math.random() < .35) spawnPoop();
