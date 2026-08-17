@@ -392,12 +392,13 @@
   /* ---------- 스폰 ---------- */
   /* 피버타임 낙하물 크기 등급 — 클수록 드물고 점수가 크다 */
   const FEVER_SIZES = [
-    { min: 14, max: 18, score: 5,   w: 24 },
-    { min: 18, max: 23, score: 20,  w: 28 },
-    { min: 23, max: 28, score: 50,  w: 20 },
-    { min: 28, max: 34, score: 120, w: 14 },
-    { min: 34, max: 42, score: 250, w: 9  },
-    { min: 42, max: 52, score: 500, w: 5  }
+    { min: 14, max: 18, score: 5,   w: 22 },
+    { min: 18, max: 22, score: 10,  w: 22 },
+    { min: 22, max: 26, score: 20,  w: 18 },
+    { min: 26, max: 31, score: 30,  w: 14 },
+    { min: 31, max: 37, score: 50,  w: 11 },
+    { min: 37, max: 44, score: 75,  w: 8  },
+    { min: 44, max: 52, score: 100, w: 5  }
   ];
   const FEVER_W_TOTAL = FEVER_SIZES.reduce((a, b) => a + b.w, 0);
   function pickFeverSize() {
@@ -555,21 +556,21 @@
             let gain = it.gain;
             if (!gain) gain = it.sz < 18 ? 5 : (it.sz < 23 ? 20 : 50);
             let tone, burstN, note, textSize;
-            if (gain >= 500)      { tone = "#ff3b3b"; burstN = 42; note = 1800; textSize = 34; }
-            else if (gain >= 250) { tone = "#ff6a2a"; burstN = 34; note = 1650; textSize = 30; }
-            else if (gain >= 120) { tone = "#ff8f3a"; burstN = 26; note = 1500; textSize = 26; }
-            else if (gain >= 50)  { tone = "#ffcc33"; burstN = 18; note = 1350; textSize = 22; }
-            else if (gain >= 20)  { tone = "#ffd23f"; burstN = 12; note = 1150; textSize = 22; }
-            else                  { tone = "#ffe3a8"; burstN = 8;  note = 900;  textSize = 22; }
+            if (gain >= 100)     { tone = "#ff3b3b"; burstN = 42; note = 1800; textSize = 34; }
+            else if (gain >= 75) { tone = "#ff6a2a"; burstN = 34; note = 1650; textSize = 30; }
+            else if (gain >= 50) { tone = "#ff8f3a"; burstN = 26; note = 1500; textSize = 27; }
+            else if (gain >= 30) { tone = "#ffcc33"; burstN = 18; note = 1350; textSize = 24; }
+            else if (gain >= 20) { tone = "#ffd23f"; burstN = 12; note = 1150; textSize = 22; }
+            else                 { tone = "#ffe3a8"; burstN = 8;  note = 900;  textSize = 22; }
             score += gain;
             burst(it.x, it.y, tone, burstN);
             // 큰 건 항상, 중간은 절반만 표시 — 작은 건 화면이 지저분해지니 생략
-            if (gain >= 50 || (gain >= 20 && Math.random() < .5)) {
-              popText(it.x, it.y, "+" + gain.toLocaleString(), tone, textSize);
+            if (gain >= 30 || (gain >= 20 && Math.random() < .5)) {
+              popText(it.x, it.y, "+" + gain, tone, textSize);
             }
-            if (gain >= 250) { shake = Math.max(shake, gain >= 500 ? 16 : 10); }
+            if (gain >= 75) { shake = Math.max(shake, gain >= 100 ? 16 : 10); }
             items.splice(i, 1);
-            if (gain >= 120 || Math.random() < .5) beep(note + Math.random() * 200, .06, "square", .04);
+            if (gain >= 50 || Math.random() < .5) beep(note + Math.random() * 200, .06, "square", .04);
             continue;
           }
           if (!invincible) {
@@ -618,7 +619,9 @@
       }
 
       if (it.y - it.r > H + 20) {
-        if (it.type === "poop") score += 3;
+        // 피버타임 낙하물은 워낙 많이 쏟아져서, 안 먹고 흘려보낸 것에 점수를 주면
+        // 가만히 있어도 점수가 폭등한다. 피버 것은 0점 — 직접 받아야만 점수가 오른다.
+        if (it.type === "poop" && it.skin !== "fever") score += 3;
         items.splice(i, 1);
       }
     }
