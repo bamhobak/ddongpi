@@ -78,6 +78,9 @@
   .board .sc { flex: none; font-weight: 700; color: #ffd23f; font-variant-numeric: tabular-nums; }
   .board li.me { background: rgba(255,210,63,.16); border-radius: 8px; padding: 4px 6px; }
   .board .empty { font-size: 13px; color: #7f8494; padding: 6px 0; }
+  .board[hidden] { display: none; }
+  .board.last { background: rgba(255,210,63,.09); }
+  .board.last h3 { color: #ffe08a; }
   .board .note {
     margin-top: 8px; padding-top: 8px;
     border-top: 1px solid rgba(255,255,255,.08);
@@ -166,6 +169,10 @@
         <h3>🏆 이번 주 TOP 10</h3>
         <ol id="boardStart"><li class="empty">불러오는 중…</li></ol>
         <div class="note" id="noteStart"></div>
+      </div>
+      <div class="board last" id="lastBoard" hidden>
+        <h3 id="lastTitle">👑 지난주 명예의 전당</h3>
+        <ol id="boardLast"></ol>
       </div>
       <button id="btnStart">시작하기</button>
       <label class="filebtn">📷 주인공 사진 넣기<input type="file" id="file" accept="image/*"></label>
@@ -650,14 +657,19 @@
      기록을 지우는 게 아니라 '이번 주 것만' 보여주는 방식이라 초기화가 실패할 일이 없다.
      보는 사람 폰의 시간대와 무관하게 항상 한국시간 기준으로 계산한다. */
   const KST = 9 * 60 * 60 * 1000;
-  function weekStartMs() {
+  function weekStartMs(weeksAgo) {                        // 0 = 이번 주, 1 = 지난주
     const k = new Date(Date.now() + KST);                 // UTC 값으로 읽으면 한국 벽시계
     const mondayIndex = (k.getUTCDay() + 6) % 7;          // 월=0 … 일=6
-    const kstMidnight = Date.UTC(k.getUTCFullYear(), k.getUTCMonth(), k.getUTCDate() - mondayIndex);
+    const kstMidnight = Date.UTC(k.getUTCFullYear(), k.getUTCMonth(),
+                                 k.getUTCDate() - mondayIndex - (weeksAgo || 0) * 7);
     return kstMidnight - KST;                             // 실제 UTC 시각
   }
+  function kstDateLabel(ms) {                             // "8.10" 형태
+    const k = new Date(ms + KST);
+    return (k.getUTCMonth() + 1) + "." + k.getUTCDate();
+  }
   function resetNote() {
-    const left = weekStartMs() + 7 * 24 * 3600 * 1000 - Date.now();
+    const left = weekStartMs(0) + 7 * 24 * 3600 * 1000 - Date.now();
     const d = Math.floor(left / 86400000);
     const h = Math.floor(left / 3600000) % 24;
     const m = Math.floor(left / 60000) % 60;
@@ -665,14 +677,36 @@
     return "월요일 0시에 새로 시작 · 초기화까지 " + remain;
   }
 
-  async function fetchTop() {
-    const url = SB_URL + "/rest/v1/" + SB_TABLE +
+  async function fetchRange(fromMs, toMs, limit) {
+    let url = SB_URL + "/rest/v1/" + SB_TABLE +
       "?select=name,score,created_at" +
-      "&created_at=gte." + encodeURIComponent(new Date(weekStartMs()).toISOString()) +
-      "&order=score.desc,created_at.asc&limit=" + TOP_N;
+      "&created_at=gte." + encodeURIComponent(new Date(fromMs).toISOString());
+    if (toMs) url += "&created_at=lt." + encodeURIComponent(new Date(toMs).toISOString());
+    url += "&order=score.desc,created_at.asc&limit=" + limit;
     const res = await fetch(url, { headers: sbHeaders() });
     if (!res.ok) throw new Error("HTTP " + res.status);
     return res.json();
+  }
+
+  function fetchTop() {
+    return fetchRange(weekStartMs(0), null, TOP_N);
+  }
+
+  // 지난주 1~3위 — 기록이 있을 때만 시작 화면에 띄운다
+  async function refreshLastWeek() {
+    const lastBoard = document.getElementById("lastBoard");
+    if (!SB_ON) return;
+    const from = weekStartMs(1), to = weekStartMs(0);
+    try {
+      const list = await fetchRange(from, to, 3);
+      if (!list.length) { lastBoard.hidden = true; return; }
+      document.getElementById("lastTitle").textContent =
+        "👑 지난주 명예의 전당 (" + kstDateLabel(from) + "~" + kstDateLabel(to - 1) + ")";
+      renderBoard(document.getElementById("boardLast"), list);
+      lastBoard.hidden = false;
+    } catch (e) {
+      lastBoard.hidden = true;
+    }
   }
 
   async function submitScore(name, sc, lv) {
@@ -771,6 +805,7 @@
   });
 
   refreshBoards();
+  refreshLastWeek();
 
   function rankOf(s) {
     if (s < 300)  return "🚽 똥밭에 굴렀다";
