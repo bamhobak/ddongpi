@@ -303,7 +303,7 @@
     img.src = "player_" + key + ".png";
   }
 
-  // 피버타임에는 똥 이모지 대신 이 이미지가 떨어진다
+  // 뚜니핑 타임에는 똥 이모지 대신 이 이미지가 떨어진다
   let feverPoop = null;
   {
     const img = new Image();
@@ -390,15 +390,15 @@
   }
 
   /* ---------- 스폰 ---------- */
-  /* 피버타임 낙하물 크기 등급 — 클수록 드물고 점수가 크다 */
+  /* 뚜니핑 타임 낙하물 크기 등급 — 클수록 드물고 점수가 크다 */
   const FEVER_SIZES = [
-    { min: 14, max: 18, score: 5,   w: 22 },
-    { min: 18, max: 22, score: 10,  w: 22 },
-    { min: 22, max: 26, score: 20,  w: 18 },
-    { min: 26, max: 31, score: 30,  w: 14 },
-    { min: 31, max: 37, score: 50,  w: 11 },
-    { min: 37, max: 44, score: 75,  w: 8  },
-    { min: 44, max: 52, score: 100, w: 5  }
+    { min: 14, max: 18, score: 2,  w: 22 },
+    { min: 18, max: 22, score: 5,  w: 22 },
+    { min: 22, max: 26, score: 10, w: 18 },
+    { min: 26, max: 31, score: 15, w: 14 },
+    { min: 31, max: 37, score: 20, w: 11 },
+    { min: 37, max: 44, score: 30, w: 8  },
+    { min: 44, max: 52, score: 50, w: 5  }
   ];
   const FEVER_W_TOTAL = FEVER_SIZES.reduce((a, b) => a + b.w, 0);
   function pickFeverSize() {
@@ -409,7 +409,7 @@
 
   function spawnPoop(mul) {
     const m = (mul || 1) * (H / BASE_H);   // 화면이 길면 그만큼 빨리 떨어져야 체감이 같다
-    // 피버타임에 나온 것은 외형·점수를 스스로 기억한다 → 피버가 끝나도 모습이 바뀌지 않는다
+    // 뚜니핑 타임에 나온 것은 외형·점수를 스스로 기억한다 → 뚜니핑 타임이 끝나도 모습이 바뀌지 않는다
     const inFever = fever;
     const cls = inFever ? pickFeverSize() : null;
     const r = cls ? cls.min + Math.random() * (cls.max - cls.min)
@@ -481,7 +481,7 @@
     const wasFever = fever;
     fever = state === STATE.PLAY && now < powerUntil;
     feverT = fever ? (powerUntil - now) / 10000 : 0;
-    // 피버 끝나는 순간엔 화면이 똥으로 가득 차 있으니 1초 무적으로 숨 돌릴 틈을 준다
+    // 뚜니핑 타임 끝나는 순간엔 화면이 똥으로 가득 차 있으니 1초 무적으로 숨 돌릴 틈을 준다
     if (wasFever && !fever && state === STATE.PLAY) {
       invUntil = Math.max(invUntil, now + 1000);
       popText(player.x, player.y - 70, "휴… 세이프", "#fff");
@@ -492,7 +492,7 @@
 
     elapsed += dt;
     level = 1 + Math.floor(elapsed / 10);
-    score += dt * 6;
+    score += dt * 2;                       // 생존 시간: 초당 2점
 
     // 레벨이 오를수록 하늘이 진해진다. 단계마다 값이 바뀌지만 색은 부드럽게 따라간다.
     const skyTarget = Math.min(1, (level - 1) / 11);
@@ -510,7 +510,7 @@
     player.tilt += (((player.x - prev) / Math.max(dt, .001) / 900) - player.tilt) * Math.min(1, dt * 10);
     player.tilt = Math.max(-.35, Math.min(.35, player.tilt));
 
-    const powered = now < powerUntil;      // 🔥 피버타임
+    const powered = now < powerUntil;      // 🔥 뚜니핑 타임
     const invincible = now < invUntil;
 
     // 화면이 좁으면 그만큼 똥도 덜 떨어지게(체감 난이도 유지)
@@ -518,7 +518,7 @@
     spawnTimer -= dt;
     if (spawnTimer <= 0) {
       if (powered) {
-        // 피버타임: 똥이 폭포처럼 쏟아지고 속도도 2배 이상
+        // 뚜니핑 타임: 똥이 폭포처럼 쏟아지고 속도도 2배 이상
         const n = 3 + Math.floor(Math.random() * 4);   // 스폰당 3~6개 (평균 4.5개)
         if (items.length < 80) {
           for (let k = 0; k < n; k++) spawnPoop(2.2 + Math.random() * 0.9);
@@ -551,26 +551,26 @@
       if (hit) {
         if (it.type === "poop") {
           if (powered) {
-            // 크기가 곧 점수. 피버 중 생성된 건 자기 점수를 갖고 있고,
-            // 피버 전에 떨어지던 일반 똥은 크기로 환산한다.
+            // 크기가 곧 점수. 뚜니핑 타임 중 생성된 건 자기 점수를 갖고 있고,
+            // 뚜니핑 타임 전에 떨어지던 일반 똥은 크기로 환산한다.
             let gain = it.gain;
-            if (!gain) gain = it.sz < 18 ? 5 : (it.sz < 23 ? 20 : 50);
+            if (!gain) gain = it.sz < 18 ? 2 : (it.sz < 23 ? 10 : 20);
             let tone, burstN, note, textSize;
-            if (gain >= 100)     { tone = "#ff3b3b"; burstN = 42; note = 1800; textSize = 34; }
-            else if (gain >= 75) { tone = "#ff6a2a"; burstN = 34; note = 1650; textSize = 30; }
-            else if (gain >= 50) { tone = "#ff8f3a"; burstN = 26; note = 1500; textSize = 27; }
-            else if (gain >= 30) { tone = "#ffcc33"; burstN = 18; note = 1350; textSize = 24; }
-            else if (gain >= 20) { tone = "#ffd23f"; burstN = 12; note = 1150; textSize = 22; }
+            if (gain >= 50)      { tone = "#ff3b3b"; burstN = 42; note = 1800; textSize = 34; }
+            else if (gain >= 30) { tone = "#ff6a2a"; burstN = 34; note = 1650; textSize = 30; }
+            else if (gain >= 20) { tone = "#ff8f3a"; burstN = 26; note = 1500; textSize = 27; }
+            else if (gain >= 15) { tone = "#ffcc33"; burstN = 18; note = 1350; textSize = 24; }
+            else if (gain >= 10) { tone = "#ffd23f"; burstN = 12; note = 1150; textSize = 22; }
             else                 { tone = "#ffe3a8"; burstN = 8;  note = 900;  textSize = 22; }
             score += gain;
             burst(it.x, it.y, tone, burstN);
             // 큰 건 항상, 중간은 절반만 표시 — 작은 건 화면이 지저분해지니 생략
-            if (gain >= 30 || (gain >= 20 && Math.random() < .5)) {
+            if (gain >= 15 || (gain >= 10 && Math.random() < .5)) {
               popText(it.x, it.y, "+" + gain, tone, textSize);
             }
-            if (gain >= 75) { shake = Math.max(shake, gain >= 100 ? 16 : 10); }
+            if (gain >= 30) { shake = Math.max(shake, gain >= 50 ? 16 : 10); }
             items.splice(i, 1);
-            if (gain >= 50 || Math.random() < .5) beep(note + Math.random() * 200, .06, "square", .04);
+            if (gain >= 20 || Math.random() < .5) beep(note + Math.random() * 200, .06, "square", .04);
             continue;
           }
           if (!invincible) {
@@ -595,7 +595,7 @@
         } else {
           if (it.type === "paper")    {
             powerUntil = now + 10000; feverFlash = 1;
-            popText(player.x, player.y - 70, "🔥 FEVER TIME!", "#ffd23f");
+            popText(player.x, player.y - 70, "🔥 뚜니핑 타임!", "#ffd23f", 26);
             beep(700, .1, "square", .05);
             beep(1100, .12, "square", .05);
             beep(1500, .18, "square", .05);
@@ -619,8 +619,8 @@
       }
 
       if (it.y - it.r > H + 20) {
-        // 피버타임 낙하물은 워낙 많이 쏟아져서, 안 먹고 흘려보낸 것에 점수를 주면
-        // 가만히 있어도 점수가 폭등한다. 피버 것은 0점 — 직접 받아야만 점수가 오른다.
+        // 뚜니핑 타임 낙하물은 워낙 많이 쏟아져서, 안 먹고 흘려보낸 것에 점수를 주면
+        // 가만히 있어도 점수가 폭등한다. 뚜니핑 타임 것은 0점 — 직접 받아야만 점수가 오른다.
         if (it.type === "poop" && it.skin !== "fever") score += 3;
         items.splice(i, 1);
       }
@@ -884,7 +884,7 @@
     ctx.fillStyle = g;
     ctx.fillRect(0, 0, W, H);
 
-    // 피버타임 속도선
+    // 뚜니핑 타임 속도선
     if (fever) {
       ctx.strokeStyle = "rgba(255,255,255,.35)";
       ctx.lineWidth = 3;
@@ -1076,15 +1076,15 @@
     for (let i = 0; i < lives; i++) s += "❤️";
     ctx.fillText(s, W - 14, top + 2);
 
-    // 🔥 피버타임 게이지
+    // 🔥 뚜니핑 타임 게이지
     if (fever) {
       const bw = Math.min(260, W - 60), bx = (W - bw) / 2, by = top + 76;
       ctx.textAlign = "center";
       ctx.font = "800 22px system-ui, sans-serif";
       ctx.lineWidth = 5; ctx.strokeStyle = "rgba(120,30,0,.55)";
-      ctx.strokeText("🔥 FEVER TIME 🔥", W / 2, top + 46);
+      ctx.strokeText("🔥 뚜니핑 타임 🔥", W / 2, top + 46);
       ctx.fillStyle = "#fff";
-      ctx.fillText("🔥 FEVER TIME 🔥", W / 2, top + 46);
+      ctx.fillText("🔥 뚜니핑 타임 🔥", W / 2, top + 46);
 
       ctx.fillStyle = "rgba(0,0,0,.28)";
       ctx.beginPath(); ctx.roundRect(bx, by, bw, 10, 5); ctx.fill();
