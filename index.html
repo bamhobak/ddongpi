@@ -641,7 +641,7 @@
     const inFever = fever;
     const cls = inFever ? pickFeverSize() : null;
     let r = (cls ? cls.min + Math.random() * (cls.max - cls.min)
-                 : 14 + Math.random() * 13) * aug.poopMul;
+                 : 12.6 + Math.random() * 11.7) * aug.poopMul;   // 기본 크기 10% 축소
     r = Math.min(r, (W - 24) / 2);        // 화면보다 커지지 않게
     const vy = (215 + level * 30 + Math.random() * 110) * m * DIFF_F * aug.fallMul;
     items.push({
@@ -659,7 +659,7 @@
     });
   }
   const BONUS = [
-    { type: "moon",     emoji: "🌙", w: 60 },   // 증강 선택 — 가장 자주 나온다
+    { type: "moon",     emoji: "🌙", w: 80 },   // 증강 선택 — 가장 자주 나온다
     { type: "fullmoon", emoji: "🌕", w: 6  },   // 보름달 — 증강 3연속. 초승달의 10%
     { type: "paper",    emoji: "🧻", w: 26 },
     { type: "umbrella", emoji: "☂️", w: 22 },
@@ -670,7 +670,7 @@
      각자의 평균 간격 = 기본 10초 ÷ 그 아이템의 비중 → 전체 등장 빈도는 예전과 같지만
      서로 독립이라 운이 맞으면 두세 개가 한꺼번에 쏟아진다. */
   const BONUS_W_TOTAL = BONUS.reduce((a, b) => a + b.w, 0);
-  const BONUS_BASE = 10;                 // 아이템 전체의 평균 등장 간격(초)
+  const BONUS_BASE = 8.5;                // 아이템 전체의 평균 등장 간격(초)
 
   function bonusInterval(b) {
     const lvFactor = Math.max(0.5, 1 / (1 + (level - 1) * 0.06));   // 레벨이 오르면 더 자주
@@ -691,7 +691,7 @@
     }
     const r = 20;
     // 낙하 속도에 변화를 주되, 너무 빠르면 못 먹고 지나가버려서 위쪽을 눌러 잡았다
-    const vy = (110 + level * 6) * (H / BASE_H) * (0.6 + Math.random() * 0.65);
+    const vy = (110 + level * 6) * (H / BASE_H) * (0.6 + Math.random() * 0.5);
     items.push({
       type: pick.type, emoji: pick.emoji,
       x: r + Math.random() * (W - r * 2), y: -r - 10,
@@ -890,7 +890,7 @@
             // 크기가 곧 점수. 뚜니핑 타임 중 생성된 건 자기 점수를 갖고 있고,
             // 뚜니핑 타임 전에 떨어지던 일반 똥은 크기로 환산한다.
             let gain = it.gain;
-            if (!gain) gain = it.sz < 18 ? 2 : (it.sz < 23 ? 5 : 10);
+            if (!gain) gain = it.sz < 16.2 ? 2 : (it.sz < 20.7 ? 5 : 10);
             let tone, burstN, note, textSize;
             if (gain >= 110)     { tone = "#c86bff"; burstN = 80; note = 2200; textSize = 48; }
             else if (gain >= 40) { tone = "#ff2170"; burstN = 54; note = 2000; textSize = 40; }
