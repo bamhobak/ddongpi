@@ -390,6 +390,7 @@
     poopMul: 1,         // 똥 크기 배율
     itemRateMul: 1,     // 아이템 등장 간격 배율(작을수록 자주)
     feverRateMul: 1,    // 뚜니핑 낙하 간격 배율(작을수록 많이 쏟아짐)
+    giant: 0,           // 대왕 뚜니핑 등장 스택
     maxLives: 5
   };
   let augCount = {};    // 증강별 획득 횟수
@@ -415,6 +416,8 @@
       go: () => { shields += 3; } },
     { id: "lucky",      ic: "🍀", nm: "행운",       ds: "아이템이 25% 더 자주 등장",
       go: () => { aug.itemRateMul *= 0.8; } },
+    { id: "giant",      ic: "🌝", nm: "대왕 뚜니핑", ds: "뚜니핑 타임에 2배 크기 대왕 등장 (225점)",
+      go: () => { aug.giant++; } },
     { id: "downpour",   ic: "🌧️", nm: "뚜니핑 폭우", ds: "뚜니핑 타임 낙하량 +25%",
       go: () => { aug.feverRateMul *= 0.8; } }
   ];
@@ -531,7 +534,7 @@
     augCount = {};
     aug.feverBonus = 0; aug.dodgeMul = 1; aug.starMul = 1; aug.timeMul = 1;
     aug.feverScoreMul = 1; aug.fallMul = 1; aug.hitboxMul = 1; aug.poopMul = 1;
-    aug.itemRateMul = 1; aug.feverRateMul = 1; aug.maxLives = 5;
+    aug.itemRateMul = 1; aug.feverRateMul = 1; aug.giant = 0; aug.maxLives = 5;
     augScreen.classList.add("hidden");
     facing = "right";
     player.x = player.tx = W / 2;
@@ -558,11 +561,17 @@
     { min: 44, max: 52, score: 50, w: 5  },
     { min: 52, max: 62, score: 75, w: 3  }   // 초대형 — 가장 드물다
   ];
-  const FEVER_W_TOTAL = FEVER_SIZES.reduce((a, b) => a + b.w, 0);
+  // 대왕 뚜니핑 — 기존 최대(52~62)의 2배 크기, 점수는 최대 등급(75)의 3배
+  const GIANT = { min: 104, max: 124, score: 225, w: 3, giant: true };
   function pickFeverSize() {
-    let n = Math.random() * FEVER_W_TOTAL;
-    for (const s of FEVER_SIZES) { if (n < s.w) return s; n -= s.w; }
-    return FEVER_SIZES[0];
+    const list = aug.giant > 0
+      ? FEVER_SIZES.concat([{ min: GIANT.min, max: GIANT.max, score: GIANT.score,
+                              w: GIANT.w * aug.giant, giant: true }])
+      : FEVER_SIZES;
+    const total = list.reduce((a, b) => a + b.w, 0);
+    let n = Math.random() * total;
+    for (const s of list) { if (n < s.w) return s; n -= s.w; }
+    return list[0];
   }
 
   /* 낙하 각도. 좌우 속도를 낙하 속도에 비례시켜서 레벨이 올라도 기울기 느낌이 일정하다.
@@ -576,8 +585,9 @@
     // 뚜니핑 타임에 나온 것은 외형·점수를 스스로 기억한다 → 뚜니핑 타임이 끝나도 모습이 바뀌지 않는다
     const inFever = fever;
     const cls = inFever ? pickFeverSize() : null;
-    const r = (cls ? cls.min + Math.random() * (cls.max - cls.min)
-                   : 14 + Math.random() * 13) * aug.poopMul;
+    let r = (cls ? cls.min + Math.random() * (cls.max - cls.min)
+                 : 14 + Math.random() * 13) * aug.poopMul;
+    r = Math.min(r, (W - 24) / 2);        // 화면보다 커지지 않게
     const vy = (215 + level * 30 + Math.random() * 110) * m * DIFF_F * aug.fallMul;
     items.push({
       type: "poop", emoji: "💩",
@@ -588,7 +598,8 @@
       rot: Math.random() * 6.28, vr: (Math.random() - .5) * 5,
       size: r * 2, sz: r, fast: m > 1,
       skin: inFever ? "fever" : "poop",
-      gain: cls ? cls.score : 0
+      gain: cls ? cls.score : 0,
+      giant: !!(cls && cls.giant)
     });
   }
   const BONUS = [
@@ -656,6 +667,12 @@
     // 뚜니핑 타임 끝나는 순간엔 화면이 똥으로 가득 차 있으니 1초 무적으로 숨 돌릴 틈을 준다
     if (wasFever && !fever && state === STATE.PLAY) {
       invUntil = Math.max(invUntil, now + 1000);
+      for (let i = items.length - 1; i >= 0; i--) {
+        if (items[i].giant) {                     // 대왕은 피할 수 없는 크기라 같이 사라진다
+          burst(items[i].x, items[i].y, "#c86bff", 26);
+          items.splice(i, 1);
+        }
+      }
       popText(player.x, player.y - 70, "휴… 세이프", "#fff");
       beep(520, .12, "triangle", .04);
     }
@@ -732,7 +749,8 @@
             let gain = it.gain;
             if (!gain) gain = it.sz < 18 ? 3 : (it.sz < 23 ? 10 : 20);
             let tone, burstN, note, textSize;
-            if (gain >= 75)      { tone = "#ff2170"; burstN = 54; note = 2000; textSize = 40; }
+            if (gain >= 225)     { tone = "#c86bff"; burstN = 80; note = 2200; textSize = 48; }
+            else if (gain >= 75) { tone = "#ff2170"; burstN = 54; note = 2000; textSize = 40; }
             else if (gain >= 50) { tone = "#ff3b3b"; burstN = 42; note = 1800; textSize = 34; }
             else if (gain >= 30) { tone = "#ff6a2a"; burstN = 34; note = 1650; textSize = 30; }
             else if (gain >= 20) { tone = "#ff8f3a"; burstN = 26; note = 1500; textSize = 27; }
@@ -746,7 +764,9 @@
             if (gain >= 15 || (gain >= 10 && Math.random() < .5)) {
               popText(it.x, it.y, "+" + gain, tone, textSize);
             }
-            if (gain >= 30) { shake = Math.max(shake, gain >= 75 ? 22 : (gain >= 50 ? 16 : 10)); }
+            if (gain >= 30) {
+              shake = Math.max(shake, gain >= 225 ? 32 : (gain >= 75 ? 22 : (gain >= 50 ? 16 : 10)));
+            }
             items.splice(i, 1);
             if (gain >= 20 || Math.random() < .5) beep(note + Math.random() * 200, .06, "square", .04);
             continue;
@@ -1292,13 +1312,15 @@
 
     // 🔥 뚜니핑 타임 게이지
     if (fever) {
-      const bw = Math.min(260, W - 60), bx = (W - bw) / 2, by = top + 76;
+      // 점수·레벨과 겹치지 않도록 화면 한가운데에 표시
+      const bw = Math.min(260, W - 60), bx = (W - bw) / 2, by = H / 2 + 8;
+      const ty = H / 2 - 24;
       ctx.textAlign = "center";
       ctx.font = "800 22px system-ui, sans-serif";
       ctx.lineWidth = 5; ctx.strokeStyle = "rgba(120,30,0,.55)";
-      ctx.strokeText("🔥 뚜니핑 타임 🔥", W / 2, top + 46);
+      ctx.strokeText("🔥 뚜니핑 타임 🔥", W / 2, ty);
       ctx.fillStyle = "#fff";
-      ctx.fillText("🔥 뚜니핑 타임 🔥", W / 2, top + 46);
+      ctx.fillText("🔥 뚜니핑 타임 🔥", W / 2, ty);
 
       ctx.fillStyle = "rgba(0,0,0,.28)";
       ctx.beginPath(); ctx.roundRect(bx, by, bw, 10, 5); ctx.fill();
