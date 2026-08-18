@@ -154,6 +154,29 @@
   }
   button:active { transform: scale(.96); }
 
+  /* ---- 🌙 증강 선택 ---- */
+  #augList { display: flex; flex-direction: column; gap: 10px; width: 100%; max-width: 340px; }
+  .augCard {
+    display: flex; align-items: center; gap: 12px;
+    width: 100%; text-align: left;
+    padding: 13px 15px; border-radius: 14px;
+    background: rgba(255,255,255,.07);
+    border: 2px solid rgba(255,255,255,.12);
+    color: #fff; font: inherit; font-weight: 400;
+    cursor: pointer; transition: transform .08s ease, border-color .15s ease, background .15s ease;
+  }
+  .augCard:hover { background: rgba(255,210,63,.14); border-color: #ffd23f; }
+  .augCard:active { transform: scale(.97); }
+  .augCard .ic { font-size: 30px; flex: none; line-height: 1; }
+  .augCard .tx { flex: 1; min-width: 0; }
+  .augCard .nm2 { font-size: 15px; font-weight: 700; color: #ffd23f; }
+  .augCard .ds { font-size: 13px; color: #c8cbd6; margin-top: 2px; }
+  .augCard .cnt {
+    flex: none; font-size: 11px; font-weight: 700; color: #12131a;
+    background: #ffd23f; border-radius: 999px; padding: 3px 8px;
+  }
+  #augScreen h2 { color: #ffd23f; }
+
   .big { font-size: clamp(38px, 11vw, 48px); font-weight: 800; color: #ffd23f; }
   .sub { font-size: 14px; color: #9aa0ae; }
   .hint {
@@ -181,6 +204,12 @@
       </div>
       <button id="btnStart">시작하기</button>
       <div class="hint">내 최고기록 <span id="bestStart">0</span>점</div>
+    </div>
+
+    <div id="augScreen" class="screen hidden">
+      <h2>🌙 증강 선택</h2>
+      <p>하나를 골라 강화하세요<br>같은 증강을 또 고르면 효과가 쌓입니다</p>
+      <div id="augList"></div>
     </div>
 
     <div id="overScreen" class="screen hidden">
@@ -333,7 +362,91 @@
   }
 
   /* ---------- 게임 상태 ---------- */
-  const STATE = { READY: 0, PLAY: 1, OVER: 2 };
+  const STATE = { READY: 0, PLAY: 1, OVER: 2, AUG: 3 };
+
+  /* ---------- 🌙 증강 ----------
+     달을 먹으면 게임이 멈추고 3개 중 하나를 고른다. 같은 것을 또 고르면 효과가 쌓인다. */
+  const aug = {
+    feverBonus: 0,      // 뚜니핑 타임 추가 시간(ms)
+    dodgeMul: 1,        // 피한 똥 점수 배율
+    starMul: 1,         // 별 점수 배율
+    timeMul: 1,         // 생존 점수 배율
+    feverScoreMul: 1,   // 뚜니핑 낙하물 점수 배율
+    fallMul: 1,         // 낙하 속도 배율
+    hitboxMul: 1,       // 피격 판정 배율
+    moveMul: 1,         // 이동 반응 배율
+    itemRateMul: 1,     // 아이템 등장 간격 배율(작을수록 자주)
+    magnet: 0,          // 아이템 자석 반경
+    maxLives: 5
+  };
+  let augCount = {};    // 증강별 획득 횟수
+
+  const AUGMENTS = [
+    { id: "fever_time", ic: "🔥", nm: "뚜니핑 연장", ds: "뚜니핑 타임 +2초",
+      go: () => { aug.feverBonus += 2000; } },
+    { id: "dodge2x",    ic: "💩", nm: "회피 달인",   ds: "피한 똥 점수 2배",
+      go: () => { aug.dodgeMul *= 2; } },
+    { id: "star50",     ic: "⭐", nm: "별빛 증폭",   ds: "별 점수 +50%",
+      go: () => { aug.starMul += 0.5; } },
+    { id: "time2x",     ic: "⏱️", nm: "시간 가속",   ds: "생존 점수 2배",
+      go: () => { aug.timeMul *= 2; } },
+    { id: "fever50",    ic: "🌙", nm: "뚜니핑 대박", ds: "뚜니핑 낙하물 점수 +50%",
+      go: () => { aug.feverScoreMul += 0.5; } },
+    { id: "slow",       ic: "🐢", nm: "느린 하늘",   ds: "똥 낙하 속도 10% 감소",
+      go: () => { aug.fallMul *= 0.9; } },
+    { id: "small",      ic: "🎯", nm: "날렵한 몸",   ds: "피격 판정 12% 감소",
+      go: () => { aug.hitboxMul *= 0.88; } },
+    { id: "speed",      ic: "👟", nm: "빠른 발",     ds: "좌우 이동 반응 30% 상승",
+      go: () => { aug.moveMul *= 1.3; } },
+    { id: "life",       ic: "❤️", nm: "강철 체력",   ds: "목숨 +1 (최대치도 함께 +1)",
+      go: () => { aug.maxLives++; lives++; } },
+    { id: "lucky",      ic: "🍀", nm: "행운",       ds: "아이템이 25% 더 자주 등장",
+      go: () => { aug.itemRateMul *= 0.8; } },
+    { id: "magnet",     ic: "🧲", nm: "자석",       ds: "가까운 아이템이 끌려온다",
+      go: () => { aug.magnet += 75; } }
+  ];
+
+  const augScreen = document.getElementById("augScreen");
+  const augList   = document.getElementById("augList");
+
+  function openAugment() {
+    state = STATE.AUG;
+    const pool = AUGMENTS.slice();
+    const picks = [];
+    while (picks.length < 3 && pool.length) {
+      picks.push(pool.splice(Math.floor(Math.random() * pool.length), 1)[0]);
+    }
+    augList.innerHTML = "";
+    for (const a of picks) {
+      const card = document.createElement("button");
+      card.className = "augCard";
+      const ic = document.createElement("span"); ic.className = "ic"; ic.textContent = a.ic;
+      const tx = document.createElement("span"); tx.className = "tx";
+      const nm = document.createElement("div");  nm.className = "nm2"; nm.textContent = a.nm;
+      const ds = document.createElement("div");  ds.className = "ds";  ds.textContent = a.ds;
+      tx.append(nm, ds);
+      card.append(ic, tx);
+      if (augCount[a.id]) {
+        const cnt = document.createElement("span");
+        cnt.className = "cnt";
+        cnt.textContent = "보유 " + augCount[a.id];
+        card.appendChild(cnt);
+      }
+      card.addEventListener("click", () => {
+        a.go();
+        augCount[a.id] = (augCount[a.id] || 0) + 1;
+        augScreen.classList.add("hidden");
+        state = STATE.PLAY;
+        popText(player.x, player.y - 70, a.ic + " " + a.nm, "#ffd23f", 24);
+        beep(900, .09, "square", .05);
+        beep(1350, .13, "square", .05);
+      });
+      augList.appendChild(card);
+    }
+    augScreen.classList.remove("hidden");
+    beep(1100, .1, "triangle", .05);
+    if (navigator.vibrate) navigator.vibrate(40);
+  }
   let state = STATE.READY;
 
   let score = 0, lives = 3, level = 1, elapsed = 0, starCount = 0;
@@ -343,14 +456,15 @@
   let hurtUntil = 0;               // 똥에 맞은 직후 (아픈 그림 표시)
   let skyT = 0;                    // 0 = 맑은 하늘, 1 = 가장 어두운 하늘 (레벨에 따라)
   let shake = 0, flash = 0, feverFlash = 0;
-  let fever = false, feverT = 0;
+  let fever = false, feverT = 0, feverDur = 10000;
   let last = 0;
 
   const keys = {};
   window.addEventListener("keydown", e => {
     keys[e.key] = true;
     if (e.key === " " || e.key === "Enter") {
-      if (state !== STATE.PLAY) { e.preventDefault(); reset(); }
+      // 증강 선택 중에는 재시작되면 안 된다
+      if (state === STATE.READY || state === STATE.OVER) { e.preventDefault(); reset(); }
     }
   });
   window.addEventListener("keyup", e => { keys[e.key] = false; });
@@ -381,6 +495,11 @@
     invUntil = 0; powerUntil = 0; hurtUntil = 0; shield = false;
     shake = 0; flash = 0; feverFlash = 0; fever = false; feverT = 0;
     skyT = 0;
+    augCount = {};
+    aug.feverBonus = 0; aug.dodgeMul = 1; aug.starMul = 1; aug.timeMul = 1;
+    aug.feverScoreMul = 1; aug.fallMul = 1; aug.hitboxMul = 1; aug.moveMul = 1;
+    aug.itemRateMul = 1; aug.magnet = 0; aug.maxLives = 5;
+    augScreen.classList.add("hidden");
     facing = "right";
     player.x = player.tx = W / 2;
     state = STATE.PLAY;
@@ -426,7 +545,7 @@
     const cls = inFever ? pickFeverSize() : null;
     const r = cls ? cls.min + Math.random() * (cls.max - cls.min)
                   : 14 + Math.random() * 13;
-    const vy = (215 + level * 30 + Math.random() * 110) * m * DIFF_F;
+    const vy = (215 + level * 30 + Math.random() * 110) * m * DIFF_F * aug.fallMul;
     items.push({
       type: "poop", emoji: "💩",
       x: r + Math.random() * (W - r * 2), y: -r - 10,
@@ -440,6 +559,7 @@
     });
   }
   const BONUS = [
+    { type: "moon",     emoji: "🌙", w: 60 },   // 증강 선택 — 가장 자주 나온다
     { type: "paper",    emoji: "🧻", w: 26 },
     { type: "umbrella", emoji: "☂️", w: 22 },
     { type: "star",     emoji: "⭐", w: 30 },
@@ -449,7 +569,7 @@
     const total = BONUS.reduce((a, b) => a + b.w, 0);
     let n = Math.random() * total, pick = BONUS[0];
     for (const b of BONUS) { if (n < b.w) { pick = b; break; } n -= b.w; }
-    if (pick.type === "heart" && lives >= 5) pick = BONUS[2];
+    if (pick.type === "heart" && lives >= aug.maxLives) pick = BONUS[3];   // 목숨 꽉 차면 별로 대체
     const r = 20;
     const vy = (110 + level * 6) * (H / BASE_H);
     items.push({
@@ -496,7 +616,7 @@
 
     const wasFever = fever;
     fever = state === STATE.PLAY && now < powerUntil;
-    feverT = fever ? (powerUntil - now) / 10000 : 0;
+    feverT = fever ? (powerUntil - now) / feverDur : 0;
     // 뚜니핑 타임 끝나는 순간엔 화면이 똥으로 가득 차 있으니 1초 무적으로 숨 돌릴 틈을 준다
     if (wasFever && !fever && state === STATE.PLAY) {
       invUntil = Math.max(invUntil, now + 1000);
@@ -508,19 +628,19 @@
 
     elapsed += dt;
     level = 1 + Math.floor(elapsed / 10);
-    score += dt * Math.pow(2, level - 1);  // 생존 점수: 레벨마다 2배 (1, 2, 4, 8, 16 …)
+    score += dt * Math.pow(2, level - 1) * aug.timeMul;   // 생존 점수: 레벨마다 2배 (1, 2, 4, 8, 16 …)
 
     // 레벨이 오를수록 하늘이 진해진다. 단계마다 값이 바뀌지만 색은 부드럽게 따라간다.
     const skyTarget = Math.min(1, (level - 1) / 11);
     skyT += (skyTarget - skyT) * Math.min(1, dt * 2);
 
-    const kSpeed = 560 * dt;
+    const kSpeed = 560 * dt * aug.moveMul;
     if (keys.ArrowLeft  || keys.a || keys.A) player.tx -= kSpeed;
     if (keys.ArrowRight || keys.d || keys.D) player.tx += kSpeed;
     player.tx = Math.max(player.r, Math.min(W - player.r, player.tx));
 
     const prev = player.x;
-    player.x += (player.tx - player.x) * Math.min(1, dt * 20);
+    player.x += (player.tx - player.x) * Math.min(1, dt * 20 * aug.moveMul);
     if (player.x - prev < -0.25) facing = "left";
     else if (player.x - prev > 0.25) facing = "right";   // 멈춰 있으면 마지막 방향 유지
     player.tilt += (((player.x - prev) / Math.max(dt, .001) / 900) - player.tilt) * Math.min(1, dt * 10);
@@ -549,7 +669,7 @@
     }
     if (!powered) {
       itemTimer -= dt;
-      if (itemTimer <= 0) { spawnBonus(); itemTimer = 7 + Math.random() * 6; }
+      if (itemTimer <= 0) { spawnBonus(); itemTimer = (7 + Math.random() * 6) * aug.itemRateMul; }
     }
 
     for (let i = items.length - 1; i >= 0; i--) {
@@ -562,7 +682,15 @@
       if (it.bob !== undefined) it.bob += dt * 4;
 
       const dx = it.x - player.x, dy = it.y - player.y;
-      const hit = Math.hypot(dx, dy) < it.r + player.r * .78;
+      if (aug.magnet > 0 && it.type !== "poop") {
+        const d = Math.hypot(dx, dy);
+        if (d < aug.magnet && d > 1) {
+          const pull = 420 * dt * (1 - d / aug.magnet);
+          it.x -= dx / d * pull;
+          it.y -= dy / d * pull * 0.5;
+        }
+      }
+      const hit = Math.hypot(dx, dy) < it.r + player.r * .78 * aug.hitboxMul;
 
       if (hit) {
         if (it.type === "poop") {
@@ -579,6 +707,7 @@
             else if (gain >= 15) { tone = "#ffcc33"; burstN = 18; note = 1350; textSize = 24; }
             else if (gain >= 10) { tone = "#ffd23f"; burstN = 12; note = 1150; textSize = 22; }
             else                 { tone = "#ffe3a8"; burstN = 8;  note = 900;  textSize = 22; }
+            gain = Math.round(gain * aug.feverScoreMul);
             score += gain;
             burst(it.x, it.y, tone, burstN);
             // 큰 건 항상, 중간은 절반만 표시 — 작은 건 화면이 지저분해지니 생략
@@ -611,7 +740,8 @@
           }
         } else {
           if (it.type === "paper")    {
-            powerUntil = now + 10000; feverFlash = 1;
+            feverDur = 10000 + aug.feverBonus;
+            powerUntil = now + feverDur; feverFlash = 1;
             popText(player.x, player.y - 70, "🔥 뚜니핑 타임!", "#ffd23f", 26);
             beep(700, .1, "square", .05);
             beep(1100, .12, "square", .05);
@@ -622,13 +752,19 @@
           if (it.type === "star")     {
             // 먹을수록 커진다: 1번째 500 → 2번째 1,000 → 3번째 1,500 …
             starCount++;
-            const gain = 500 * starCount;
+            const gain = Math.round(500 * starCount * aug.starMul);
             score += gain;
             popText(it.x, it.y, "⭐×" + starCount + "  +" + gain.toLocaleString(), "#ffd23f");
             beep(1400, .1, "square", .05);
             beep(1750, .12, "square", .04);
           }
-          if (it.type === "heart")    { lives = Math.min(5, lives + 1); popText(it.x, it.y, "❤️ +1", "#ff8fb0"); beep(1000, .15, "sine", .06); }
+          if (it.type === "moon")     {
+            burst(it.x, it.y, "#cfe4ff", 20);
+            items.splice(i, 1);
+            openAugment();                 // 게임이 멈추고 3개 중 하나를 고른다
+            return;                        // 멈춘 프레임에서 나머지 처리는 건너뛴다
+          }
+          if (it.type === "heart")    { lives = Math.min(aug.maxLives, lives + 1); popText(it.x, it.y, "❤️ +1", "#ff8fb0"); beep(1000, .15, "sine", .06); }
           burst(it.x, it.y, "#ffd23f", 16);
           items.splice(i, 1);
           continue;
@@ -638,7 +774,7 @@
       if (it.y - it.r > H + 20) {
         // 뚜니핑 타임 낙하물은 워낙 많이 쏟아져서, 안 먹고 흘려보낸 것에 점수를 주면
         // 가만히 있어도 점수가 폭등한다. 뚜니핑 타임 것은 0점 — 직접 받아야만 점수가 오른다.
-        if (it.type === "poop" && it.skin !== "fever") score += 3;
+        if (it.type === "poop" && it.skin !== "fever") score += 3 * aug.dodgeMul;
         items.splice(i, 1);
       }
     }
@@ -646,6 +782,7 @@
 
   function gameOver() {
     state = STATE.OVER;
+    augScreen.classList.add("hidden");
     const s = Math.floor(score);
     burst(player.x, player.y, "#8a5a2b", 40);
     shake = 30;
@@ -1086,6 +1223,27 @@
     ctx.font = "600 13px system-ui, sans-serif";
     ctx.fillStyle = "rgba(255,255,255,.9)";
     ctx.fillText("LEVEL " + level, 17, top + 32);
+
+    // 보유 증강 — 아이콘과 중첩 횟수
+    const owned = AUGMENTS.filter(a => augCount[a.id]);
+    if (owned.length) {
+      ctx.font = "15px serif";
+      let x = 17;
+      for (const a of owned) {
+        ctx.fillStyle = "#fff";
+        ctx.fillText(a.ic, x, top + 52);
+        const n = augCount[a.id];
+        if (n > 1) {
+          ctx.font = "700 10px system-ui, sans-serif";
+          ctx.fillStyle = "#ffd23f";
+          ctx.fillText("x" + n, x + 16, top + 56);
+          ctx.font = "15px serif";
+          x += 30;
+        } else {
+          x += 21;
+        }
+      }
+    }
 
     ctx.textAlign = "right";
     ctx.font = "24px serif";
