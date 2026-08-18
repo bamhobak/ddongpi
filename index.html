@@ -425,34 +425,34 @@
   let augCount = {};    // 증강별 획득 횟수
 
   const AUGMENTS = [
-    { id: "fever_time", ic: "🔥", nm: "뚜니핑 연장", ds: "뚜니핑 타임 +2초",
+    { id: "fever_time", ic: "🔥", nm: "뚜니핑 연장", ds: "뚜니핑 타임이 길어진다",
       go: () => { aug.feverBonus += 2000; } },
-    { id: "star50",     ic: "⭐", nm: "별빛 증폭",   ds: "별 점수 +50%",
+    { id: "star50",     ic: "⭐", nm: "별빛 증폭",   ds: "별 점수가 올라간다",
       go: () => { aug.starMul += 0.5; } },
-    { id: "time2x",     ic: "⏱️", nm: "시간 가속",   ds: "생존 점수 1.5배",
+    { id: "time2x",     ic: "⏱️", nm: "시간 가속",   ds: "버틴 시간 점수가 올라간다",
       go: () => { aug.timeMul *= 1.5; } },
-    { id: "fever50",    ic: "🌙", nm: "뚜니핑 대박", ds: "뚜니핑 낙하물 점수 +50%",
+    { id: "fever50",    ic: "🌙", nm: "뚜니핑 대박", ds: "뚜니핑 낙하물 점수가 올라간다",
       go: () => { aug.feverScoreMul += 0.5; } },
-    { id: "slow",       ic: "🐢", nm: "느린 하늘",   ds: "똥 낙하 속도 10% 감소",
+    { id: "slow",       ic: "🐢", nm: "느린 하늘",   ds: "똥이 더 느리게 떨어진다",
       go: () => { aug.fallMul *= 0.9; } },
-    { id: "small",      ic: "🎯", nm: "날렵한 몸",   ds: "캐릭터와 피격 판정 12% 감소",
+    { id: "small",      ic: "🎯", nm: "날렵한 몸",   ds: "몸집이 작아져 잘 맞지 않는다",
       go: () => { aug.hitboxMul *= 0.88; } },
-    { id: "tinypoop",   ic: "🫧", nm: "작아진 똥",   ds: "떨어지는 똥 크기 12% 감소",
+    { id: "tinypoop",   ic: "🫧", nm: "작아진 똥",   ds: "떨어지는 똥이 작아진다",
       go: () => { aug.poopMul *= 0.88; } },
-    { id: "umbrella3",  ic: "☂️", nm: "우산 3개",   ds: "방패 3개를 한 번에 얻는다",
+    { id: "umbrella3",  ic: "☂️", nm: "우산 다발", ds: "방패를 한 번에 여러 개 얻는다",
       go: () => { shields += 3; } },
-    { id: "helper",     ic: "🦸", nm: "도와줘 정연핑", ds: "3초마다 날아와 지나가는 자리의 똥을 부순다 (겹칠수록 인원 증가)",
+    { id: "helper",     ic: "🦸", nm: "도와줘 정연핑", ds: "정연핑이 지나가는 자리의 똥을 부순다",
       go: () => { aug.helper++; helperTimer = Math.min(helperTimer, 0.6); } },
-    { id: "helperRush", ic: "💥", nm: "정연핑 대폭주", ds: "정연핑이 3배로 커지고 2초마다 출격",
+    { id: "helperRush", ic: "💥", nm: "정연핑 대폭주", ds: "정연핑이 거대해지고 더 자주 출격한다",
       hidden: true, once: true, cond: () => aug.helper > 0,
       go: () => { aug.helperRush = true; } },
     { id: "magnet",     ic: "🧲", nm: "자석",       ds: "넓은 범위의 아이템이 끌려온다",
       once: true, go: () => { aug.magnet = 240; } },
-    { id: "lucky",      ic: "🍀", nm: "행운",       ds: "아이템이 25% 더 자주 등장",
+    { id: "lucky",      ic: "🍀", nm: "행운",       ds: "아이템이 더 자주 등장한다",
       go: () => { aug.itemRateMul *= 0.8; } },
-    { id: "giant",      ic: "🌝", nm: "대왕 뚜니핑", ds: "뚜니핑 타임에 2배 크기 대왕이 등장",
+    { id: "giant",      ic: "🌝", nm: "대왕 뚜니핑", ds: "뚜니핑 타임에 대왕이 등장한다",
       once: true, go: () => { aug.giant = 1; } },
-    { id: "downpour",   ic: "🌧️", nm: "뚜니핑 폭우", ds: "뚜니핑 타임 낙하량 +40%",
+    { id: "downpour",   ic: "🌧️", nm: "뚜니핑 폭우", ds: "뚜니핑 타임에 더 많이 쏟아진다",
       go: () => { aug.feverRateMul /= 1.4; } }
   ];
 
@@ -644,6 +644,7 @@
       rot: Math.random() * 6.28, vr: (Math.random() - .5) * 5,
       size: r * 2, sz: r, fast: m > 1,
       skin: inFever ? "fever" : "poop",
+      face: Math.floor(Math.random() * 8),   // 표정 (0~1은 기본 얼굴)
       gain: cls ? cls.score : 0,
       giant: !!(cls && cls.giant)
     });
@@ -1427,6 +1428,72 @@
     }
   }
 
+  /* 똥 위에 덧그리는 표정. 이모지 폰트가 기기마다 달라서, 눈·입을 새로 그리는 대신
+     어느 폰트에서나 자연스럽게 얹히는 장식(선글라스·눈썹·홍조 등)으로 표현한다. */
+  function drawPoopFace(kind, S) {
+    ctx.save();
+    ctx.lineCap = "round";
+    switch (kind) {
+      case 2:   // 성난 눈썹
+        ctx.strokeStyle = "#2b1a10";
+        ctx.lineWidth = Math.max(2, S * 0.045);
+        ctx.beginPath();
+        ctx.moveTo(-S * 0.27, -S * 0.22); ctx.lineTo(-S * 0.09, -S * 0.13);
+        ctx.moveTo( S * 0.27, -S * 0.22); ctx.lineTo( S * 0.09, -S * 0.13);
+        ctx.stroke();
+        break;
+      case 3:   // 선글라스
+        ctx.fillStyle = "#15161c";
+        ctx.beginPath();
+        ctx.roundRect(-S * 0.31, -S * 0.16, S * 0.62, S * 0.15, S * 0.06);
+        ctx.fill();
+        ctx.fillStyle = "rgba(255,255,255,.5)";
+        ctx.beginPath();
+        ctx.roundRect(-S * 0.26, -S * 0.14, S * 0.10, S * 0.04, S * 0.02);
+        ctx.fill();
+        break;
+      case 4:   // 뿅 간 눈 (X)
+        ctx.strokeStyle = "#2b1a10";
+        ctx.lineWidth = Math.max(2, S * 0.04);
+        for (const sx of [-1, 1]) {
+          const cx = sx * S * 0.17, cy = -S * 0.07, d = S * 0.06;
+          ctx.beginPath();
+          ctx.moveTo(cx - d, cy - d); ctx.lineTo(cx + d, cy + d);
+          ctx.moveTo(cx + d, cy - d); ctx.lineTo(cx - d, cy + d);
+          ctx.stroke();
+        }
+        break;
+      case 5:   // 발그레한 볼
+        ctx.fillStyle = "rgba(255,120,140,.55)";
+        for (const sx of [-1, 1]) {
+          ctx.beginPath();
+          ctx.ellipse(sx * S * 0.27, S * 0.06, S * 0.09, S * 0.055, 0, 0, 6.283);
+          ctx.fill();
+        }
+        break;
+      case 6:   // 식은땀
+        ctx.fillStyle = "#8fd4ff";
+        ctx.beginPath();
+        ctx.moveTo(S * 0.28, -S * 0.34);
+        ctx.quadraticCurveTo(S * 0.36, -S * 0.20, S * 0.28, -S * 0.16);
+        ctx.quadraticCurveTo(S * 0.20, -S * 0.20, S * 0.28, -S * 0.34);
+        ctx.fill();
+        break;
+      case 7:   // 분노 표시
+        ctx.strokeStyle = "#ff3b3b";
+        ctx.lineWidth = Math.max(2, S * 0.035);
+        for (const [ox, oy] of [[0, 0], [S * 0.09, S * 0.05]]) {
+          ctx.beginPath();
+          ctx.moveTo(S * 0.20 + ox, -S * 0.32 + oy);
+          ctx.lineTo(S * 0.27 + ox, -S * 0.26 + oy);
+          ctx.lineTo(S * 0.20 + ox, -S * 0.20 + oy);
+          ctx.stroke();
+        }
+        break;
+    }
+    ctx.restore();
+  }
+
   function drawItems() {
     ctx.textAlign = "center";
     ctx.textBaseline = "middle";
@@ -1440,6 +1507,9 @@
       } else {
         ctx.font = it.size + "px serif";
         ctx.fillText(it.emoji, 0, 0);
+        if (it.type === "poop" && it.face > 1 && it.size >= 34) {
+          drawPoopFace(it.face, it.size);
+        }
       }
       ctx.restore();
     }
