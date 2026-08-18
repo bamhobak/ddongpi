@@ -374,7 +374,6 @@
     feverScoreMul: 1,   // 뚜니핑 낙하물 점수 배율
     fallMul: 1,         // 낙하 속도 배율
     hitboxMul: 1,       // 피격 판정 배율
-    moveMul: 1,         // 이동 반응 배율
     itemRateMul: 1,     // 아이템 등장 간격 배율(작을수록 자주)
     magnet: 0,          // 아이템 자석 반경
     maxLives: 5
@@ -396,8 +395,6 @@
       go: () => { aug.fallMul *= 0.9; } },
     { id: "small",      ic: "🎯", nm: "날렵한 몸",   ds: "피격 판정 12% 감소",
       go: () => { aug.hitboxMul *= 0.88; } },
-    { id: "speed",      ic: "👟", nm: "빠른 발",     ds: "좌우 이동 반응 30% 상승",
-      go: () => { aug.moveMul *= 1.3; } },
     { id: "life",       ic: "❤️", nm: "강철 체력",   ds: "목숨 +1 (최대치도 함께 +1)",
       go: () => { aug.maxLives++; lives++; } },
     { id: "lucky",      ic: "🍀", nm: "행운",       ds: "아이템이 25% 더 자주 등장",
@@ -497,7 +494,7 @@
     skyT = 0;
     augCount = {};
     aug.feverBonus = 0; aug.dodgeMul = 1; aug.starMul = 1; aug.timeMul = 1;
-    aug.feverScoreMul = 1; aug.fallMul = 1; aug.hitboxMul = 1; aug.moveMul = 1;
+    aug.feverScoreMul = 1; aug.fallMul = 1; aug.hitboxMul = 1;
     aug.itemRateMul = 1; aug.magnet = 0; aug.maxLives = 5;
     augScreen.classList.add("hidden");
     facing = "right";
@@ -634,13 +631,13 @@
     const skyTarget = Math.min(1, (level - 1) / 11);
     skyT += (skyTarget - skyT) * Math.min(1, dt * 2);
 
-    const kSpeed = 560 * dt * aug.moveMul;
+    const kSpeed = 560 * dt;
     if (keys.ArrowLeft  || keys.a || keys.A) player.tx -= kSpeed;
     if (keys.ArrowRight || keys.d || keys.D) player.tx += kSpeed;
     player.tx = Math.max(player.r, Math.min(W - player.r, player.tx));
 
     const prev = player.x;
-    player.x += (player.tx - player.x) * Math.min(1, dt * 20 * aug.moveMul);
+    player.x += (player.tx - player.x) * Math.min(1, dt * 20);
     if (player.x - prev < -0.25) facing = "left";
     else if (player.x - prev > 0.25) facing = "right";   // 멈춰 있으면 마지막 방향 유지
     player.tilt += (((player.x - prev) / Math.max(dt, .001) / 900) - player.tilt) * Math.min(1, dt * 10);
