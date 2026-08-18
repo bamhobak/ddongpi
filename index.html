@@ -767,7 +767,7 @@
 
     // ---- 도와줘 정연핑 ----
     if (aug.helper > 0) {
-      const cycle = aug.helperRush ? 2.5 : 3;     // 대폭주면 2.5초마다
+      const cycle = 3;                            // 3초에 한 차례 (대폭주는 크기만 키운다)
       helperTimer -= dt;
       if (helperTimer <= 0 && helperQueue <= 0) {
         helperTimer = cycle;
