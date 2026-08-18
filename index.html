@@ -357,8 +357,8 @@
     img.src = "helper.png";
   }
   const HELPER_ASPECT = 0.793;   // 이미지 가로/세로
-  const HELPER_H = 96;           // 화면에 그릴 높이
-  const HELPER_R = 46;           // 똥을 부수는 반경
+  const HELPER_H = 110;          // 화면에 그릴 높이 (기존 96에서 15% 확대)
+  const HELPER_R = 53;           // 똥을 부수는 반경 (크기에 맞춰 함께 확대)
   let helpers = [];
   let helperTimer = 0;
 
@@ -428,14 +428,14 @@
       go: () => { aug.poopMul *= 0.88; } },
     { id: "umbrella3",  ic: "☂️", nm: "우산 3개",   ds: "방패 3개를 한 번에 얻는다",
       go: () => { shields += 3; } },
-    { id: "helper",     ic: "🦸", nm: "도와줘 정연핑", ds: "3초마다 날아와 지나가는 자리의 똥을 부순다 (1회 한정)",
+    { id: "helper",     ic: "🦸", nm: "도와줘 정연핑", ds: "3초마다 날아와 지나가는 자리의 똥을 부순다",
       once: true, go: () => { aug.helper = true; helperTimer = 0.6; } },
-    { id: "magnet",     ic: "🧲", nm: "자석",       ds: "넓은 범위의 아이템이 끌려온다 (1회 한정)",
+    { id: "magnet",     ic: "🧲", nm: "자석",       ds: "넓은 범위의 아이템이 끌려온다",
       once: true, go: () => { aug.magnet = 240; } },
     { id: "lucky",      ic: "🍀", nm: "행운",       ds: "아이템이 25% 더 자주 등장",
       go: () => { aug.itemRateMul *= 0.8; } },
     { id: "giant",      ic: "🌝", nm: "대왕 뚜니핑", ds: "뚜니핑 타임에 2배 크기 대왕이 등장",
-      go: () => { aug.giant++; } },
+      once: true, go: () => { aug.giant = 1; } },
     { id: "downpour",   ic: "🌧️", nm: "뚜니핑 폭우", ds: "뚜니핑 타임 낙하량 +40%",
       go: () => { aug.feverRateMul /= 1.4; } }
   ];
@@ -726,12 +726,13 @@
       helperTimer -= dt;
       if (helperTimer <= 0) {
         helperTimer = 3;                       // 3초에 한 번
-        const fromLeft = Math.random() < 0.5;  // 아래 좌/우 구석에서 비스듬히 솟아오른다
-        const vy = -(560 + Math.random() * 160);
-        const vx = (fromLeft ? 1 : -1) * (190 + Math.random() * 170);
+        const fromLeft = Math.random() < 0.5;  // 아래 좌/우에서 비스듬히 솟아오른다
+        // 거의 수직(약 6도)부터 크게 누운 궤적(약 54도)까지 매번 달라진다
+        const vy = -(460 + Math.random() * 300);
+        const vx = (fromLeft ? 1 : -1) * (80 + Math.random() * 560);
         helpers.push({
-          x: fromLeft ? -40 + Math.random() * (W * 0.35)
-                      : W + 40 - Math.random() * (W * 0.35),
+          x: fromLeft ? -40 + Math.random() * (W * 0.5)
+                      : W + 40 - Math.random() * (W * 0.5),
           y: H + 60,
           vx: vx, vy: vy
         });
@@ -748,8 +749,17 @@
         const it = items[i];
         if (it.type !== "poop") continue;
         if (Math.hypot(it.x - hp.x, it.y - hp.y) < HELPER_R + it.r) {
-          burst(it.x, it.y, "#ffd23f", 14);
-          score += 3 * aug.dodgeMul;
+          if (it.skin === "fever") {
+            // 뚜니핑 타임 낙하물은 직접 받았을 때와 같은 점수를 준다
+            let g = it.gain || (it.sz < 18 ? 2 : (it.sz < 23 ? 5 : 10));
+            g = Math.round(g * aug.feverScoreMul);
+            score += g;
+            burst(it.x, it.y, g >= 25 ? "#ff3b3b" : "#ffd23f", g >= 25 ? 30 : 16);
+            if (g >= 15) popText(it.x, it.y, "+" + g, "#ffd23f", g >= 40 ? 30 : 24);
+          } else {
+            score += 3 * aug.dodgeMul;
+            burst(it.x, it.y, "#ffd23f", 14);
+          }
           items.splice(i, 1);
         }
       }
