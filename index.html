@@ -791,7 +791,12 @@
     }
     if (!powered) {
       itemTimer -= dt;
-      if (itemTimer <= 0) { spawnBonus(); itemTimer = (7 + Math.random() * 6) * aug.itemRateMul; }
+      if (itemTimer <= 0) {
+        spawnBonus();
+        // 레벨이 오를수록 똥이 빽빽해져 아이템 먹기가 어려워지므로, 등장 간격도 함께 짧아진다
+        const lvFactor = Math.max(0.5, 1 / (1 + (level - 1) * 0.06));
+        itemTimer = (7 + Math.random() * 6) * aug.itemRateMul * lvFactor;
+      }
     }
 
     for (let i = items.length - 1; i >= 0; i--) {
