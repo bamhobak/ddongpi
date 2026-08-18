@@ -661,10 +661,10 @@
      각자의 평균 간격 = 기본 10초 ÷ 그 아이템의 비중 → 전체 등장 빈도는 예전과 같지만
      서로 독립이라 운이 맞으면 두세 개가 한꺼번에 쏟아진다. */
   const BONUS_W_TOTAL = BONUS.reduce((a, b) => a + b.w, 0);
-  const BONUS_BASE = 10;                 // 아이템 전체의 평균 등장 간격(초)
+  const BONUS_BASE = 14;                 // 아이템 전체의 평균 등장 간격(초)
 
   function bonusInterval(b) {
-    const lvFactor = Math.max(0.5, 1 / (1 + (level - 1) * 0.06));   // 레벨이 오르면 더 자주
+    const lvFactor = Math.max(0.55, 1 / (1 + (level - 1) * 0.045)); // 레벨이 오르면 더 자주
     const mean = BONUS_BASE / (b.w / BONUS_W_TOTAL) * aug.itemRateMul * lvFactor;
     /* 지수분포로 뽑는다. 평균 간격은 그대로지만 "직전에 나왔는지"가 다음 등장에
        전혀 영향을 주지 않아서, 연달아 두 번 나오기도 하고 한참 안 나오기도 한다.
