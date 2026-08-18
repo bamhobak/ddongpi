@@ -887,9 +887,9 @@
             beep(900, .12, "triangle", .05);
           }
           if (it.type === "star")     {
-            // 먹을수록 커진다: 1번째 500 → 2번째 1,000 → 3번째 1,500 …
+            // 먹을 때마다 2배: 1번째 500 → 2번째 1,000 → 3번째 2,000 → 4번째 4,000 …
             starCount++;
-            const gain = Math.round(500 * starCount * aug.starMul);
+            const gain = Math.round(500 * Math.pow(2, starCount - 1) * aug.starMul);
             score += gain;
             popText(it.x, it.y, "⭐×" + starCount + "  +" + gain.toLocaleString(), "#ffd23f");
             beep(1400, .1, "square", .05);
