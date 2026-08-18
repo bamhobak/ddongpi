@@ -176,6 +176,18 @@
     background: #ffd23f; border-radius: 999px; padding: 3px 8px;
   }
   #augScreen h2 { color: #ffd23f; }
+  /* 히든 증강 — 조건을 만족했을 때만 후보에 오른다 */
+  .augCard.hid {
+    border-color: #c86bff;
+    background: linear-gradient(90deg, rgba(200,107,255,.22), rgba(200,107,255,.06));
+    box-shadow: 0 0 16px rgba(200,107,255,.25);
+  }
+  .augCard.hid:hover { background: rgba(200,107,255,.3); border-color: #d99cff; }
+  .augCard.hid .nm2 { color: #e0b3ff; }
+  .augCard .badge {
+    flex: none; font-size: 10px; font-weight: 800; letter-spacing: .5px;
+    color: #12131a; background: #c86bff; border-radius: 999px; padding: 3px 8px;
+  }
 
   .big { font-size: clamp(38px, 11vw, 48px); font-weight: 800; color: #ffd23f; }
   .sub { font-size: 14px; color: #9aa0ae; }
@@ -359,8 +371,11 @@
   const HELPER_ASPECT = 0.793;   // 이미지 가로/세로
   const HELPER_H = 110;          // 화면에 그릴 높이 (기존 96에서 15% 확대)
   const HELPER_R = 53;           // 똥을 부수는 반경 (크기에 맞춰 함께 확대)
+  function helperScale() { return aug.helperRush ? 3 : 1; }   // 히든 '대폭주' 시 3배
   let helpers = [];
   let helperTimer = 0;
+  let helperQueue = 0;      // 이번 차례에 아직 안 나온 인원
+  let helperGap = 0;        // 다음 한 명까지 남은 시간
 
   // 뚜니핑 타임에는 똥 이모지 대신 이 이미지가 떨어진다
   let feverPoop = null;
@@ -404,6 +419,7 @@
     giant: 0,           // 대왕 뚜니핑 등장 스택
     magnet: 0,          // 아이템 자석 반경 (1회 한정 증강)
     helper: 0,          // 도와줘 정연핑 인원 (증강을 겹칠수록 1명씩 증가)
+    helperRush: false,  // 히든: 정연핑 대폭주 (크기 3배, 주기 2초)
     maxLives: 5
   };
   let augCount = {};    // 증강별 획득 횟수
@@ -427,6 +443,9 @@
       go: () => { shields += 3; } },
     { id: "helper",     ic: "🦸", nm: "도와줘 정연핑", ds: "3초마다 날아와 지나가는 자리의 똥을 부순다 (겹칠수록 인원 증가)",
       go: () => { aug.helper++; helperTimer = Math.min(helperTimer, 0.6); } },
+    { id: "helperRush", ic: "💥", nm: "정연핑 대폭주", ds: "정연핑이 3배로 커지고 2초마다 출격",
+      hidden: true, once: true, cond: () => aug.helper > 0,
+      go: () => { aug.helperRush = true; } },
     { id: "magnet",     ic: "🧲", nm: "자석",       ds: "넓은 범위의 아이템이 끌려온다",
       once: true, go: () => { aug.magnet = 240; } },
     { id: "lucky",      ic: "🍀", nm: "행운",       ds: "아이템이 25% 더 자주 등장",
@@ -457,8 +476,9 @@
     augTitle.textContent = augTotal > 1
       ? "🌕 보름달! 증강 " + augTotal + "연속 (" + (augTotal - augRemain + 1) + "/" + augTotal + ")"
       : "⭐ 증강 선택 🌙";
-    // once 증강은 이미 가진 것이면 후보에서 제외한다
-    const pool = AUGMENTS.filter(a => !(a.once && augCount[a.id]));
+    // once 증강은 이미 가진 것이면 제외하고, 히든 증강은 조건을 만족할 때만 후보에 넣는다
+    const pool = AUGMENTS.filter(a =>
+      !(a.once && augCount[a.id]) && (!a.hidden || a.cond()));
     const picks = [];
     while (picks.length < 3 && pool.length) {
       picks.push(pool.splice(Math.floor(Math.random() * pool.length), 1)[0]);
@@ -473,6 +493,13 @@
       const ds = document.createElement("div");  ds.className = "ds";  ds.textContent = a.ds;
       tx.append(nm, ds);
       card.append(ic, tx);
+      if (a.hidden) {
+        card.classList.add("hid");
+        const badge = document.createElement("span");
+        badge.className = "badge";
+        badge.textContent = "히든";
+        card.appendChild(badge);
+      }
       if (augCount[a.id]) {
         const cnt = document.createElement("span");
         cnt.className = "cnt";
@@ -552,7 +579,8 @@
     aug.feverBonus = 0; aug.starMul = 1; aug.timeMul = 1;
     aug.feverScoreMul = 1; aug.fallMul = 1; aug.hitboxMul = 1; aug.poopMul = 1;
     aug.itemRateMul = 1; aug.feverRateMul = 1; aug.giant = 0; aug.magnet = 0;
-    aug.helper = 0; helpers = []; helperTimer = 0; aug.maxLives = 5;
+    aug.helper = 0; aug.helperRush = false;
+    helpers = []; helperTimer = 0; helperQueue = 0; helperGap = 0; aug.maxLives = 5;
     augScreen.classList.add("hidden");
     facing = "right";
     player.x = player.tx = W / 2;
@@ -736,10 +764,19 @@
 
     // ---- 도와줘 정연핑 ----
     if (aug.helper > 0) {
+      const cycle = aug.helperRush ? 2 : 3;       // 대폭주면 2초마다
       helperTimer -= dt;
-      if (helperTimer <= 0) {
-        helperTimer = 3;                          // 3초에 한 번
-        for (let k = 0; k < aug.helper; k++) {    // 증강을 겹친 수만큼 한 명씩 더
+      if (helperTimer <= 0 && helperQueue <= 0) {
+        helperTimer = cycle;
+        helperQueue = aug.helper;                 // 이번 차례 출격 인원
+        helperGap = 0;                            // 첫 명은 바로
+      }
+      if (helperQueue > 0) {
+        helperGap -= dt;
+        if (helperGap <= 0) {
+          // 한 명씩 시차를 두고 내보낸다 (한 차례가 다음 주기를 넘지 않도록 간격을 조절)
+          helperGap = Math.min(0.7, cycle * 0.75 / Math.max(1, aug.helper));
+          helperQueue--;
           const fromLeft = Math.random() < 0.5;   // 아래 좌/우에서 비스듬히 솟아오른다
           // 수직에서 8~34도 사이. 너무 눕히면 옆으로 금방 빠져나가서 범위를 좁혔다
           const speed = 620 + Math.random() * 180;
@@ -747,13 +784,13 @@
           helpers.push({
             x: fromLeft ? -30 + Math.random() * (W * 0.45)
                         : W + 30 - Math.random() * (W * 0.45),
-            y: H + 60 + k * 150,                  // 뒤따라오는 인원은 시차를 두고 등장
+            y: H + 60,
             vx: (fromLeft ? 1 : -1) * speed * Math.sin(ang),
             vy: -speed * Math.cos(ang)
           });
+          beep(760, .12, "triangle", .05);
+          beep(1140, .14, "triangle", .04);
         }
-        beep(760, .12, "triangle", .05);
-        beep(1140, .14, "triangle", .04);
       }
     }
     for (let k = helpers.length - 1; k >= 0; k--) {
@@ -764,7 +801,7 @@
       for (let i = items.length - 1; i >= 0; i--) {
         const it = items[i];
         if (it.type !== "poop") continue;
-        if (Math.hypot(it.x - hp.x, it.y - hp.y) < HELPER_R + it.r) {
+        if (Math.hypot(it.x - hp.x, it.y - hp.y) < HELPER_R * helperScale() + it.r) {
           if (it.skin === "fever") {
             // 뚜니핑 타임 낙하물은 직접 받았을 때와 같은 점수를 준다
             let g = it.gain || (it.sz < 18 ? 2 : (it.sz < 23 ? 5 : 10));
@@ -1350,7 +1387,7 @@
   // 원본 그림이 '오른쪽 → 왼쪽' 방향이라, 왼쪽 → 오른쪽으로 날 때만 좌우를 뒤집는다
   function drawHelpers() {
     if (!helperImg) return;
-    const hh = HELPER_H, hw = hh * HELPER_ASPECT;
+    const hh = HELPER_H * helperScale(), hw = hh * HELPER_ASPECT;
     for (const hp of helpers) {
       ctx.save();
       ctx.translate(hp.x, hp.y);
