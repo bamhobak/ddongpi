@@ -371,7 +371,7 @@
   const HELPER_ASPECT = 0.793;   // 이미지 가로/세로
   const HELPER_H = 110;          // 화면에 그릴 높이 (기존 96에서 15% 확대)
   const HELPER_R = 53;           // 똥을 부수는 반경 (크기에 맞춰 함께 확대)
-  function helperScale() { return aug.helperRush ? 1.3 : 1; } // 히든 '대폭주' 시 1.3배 (면적 1.69배)
+  function helperScale() { return aug.helperRush ? 1.4 : 1; } // 히든 '대폭주' 시 1.4배 (면적 1.96배)
   let helpers = [];
   let helperTimer = 0;
   let helperQueue = 0;      // 이번 차례에 아직 안 나온 인원
