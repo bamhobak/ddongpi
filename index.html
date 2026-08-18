@@ -502,7 +502,7 @@
   let state = STATE.READY;
 
   let score = 0, lives = 3, level = 1, elapsed = 0, starCount = 0;
-  let spawnTimer = 0, itemTimer = 0;
+  let spawnTimer = 0;
   let invUntil = 0, powerUntil = 0;
   let shields = 0;                 // 남은 방패 수 — 우산 아이템은 최대 1, 증강으로만 여러 개
   let hurtUntil = 0;               // 똥에 맞은 직후 (아픈 그림 표시)
@@ -543,7 +543,8 @@
     layout();
     items = []; particles = []; floats = [];
     score = 0; lives = 3; level = 1; elapsed = 0; starCount = 0;
-    spawnTimer = 0; itemTimer = 3.5;
+    spawnTimer = 0;
+    resetBonusTimers(true);              // 시작 직후 한꺼번에 몰리지 않게 시차를 둔다
     invUntil = 0; powerUntil = 0; hurtUntil = 0; shields = 0;
     shake = 0; flash = 0; feverFlash = 0; fever = false; feverT = 0;
     skyT = 0;
@@ -627,10 +628,25 @@
     { type: "star",     emoji: "⭐", w: 30 },
     { type: "heart",    emoji: "❤️", w: 14 }
   ];
-  function spawnBonus() {
-    const total = BONUS.reduce((a, b) => a + b.w, 0);
-    let n = Math.random() * total, pick = BONUS[0];
-    for (const b of BONUS) { if (n < b.w) { pick = b; break; } n -= b.w; }
+  /* 아이템은 종류마다 자기 타이머로 따로 굴러간다.
+     각자의 평균 간격 = 기본 10초 ÷ 그 아이템의 비중 → 전체 등장 빈도는 예전과 같지만
+     서로 독립이라 운이 맞으면 두세 개가 한꺼번에 쏟아진다. */
+  const BONUS_W_TOTAL = BONUS.reduce((a, b) => a + b.w, 0);
+  const BONUS_BASE = 10;                 // 아이템 전체의 평균 등장 간격(초)
+
+  function bonusInterval(b) {
+    const lvFactor = Math.max(0.5, 1 / (1 + (level - 1) * 0.06));   // 레벨이 오르면 더 자주
+    const mean = BONUS_BASE / (b.w / BONUS_W_TOTAL);
+    return mean * (0.7 + Math.random() * 0.6) * aug.itemRateMul * lvFactor;
+  }
+  function resetBonusTimers(spread) {
+    for (const b of BONUS) {
+      b.t = bonusInterval(b) * (spread ? (0.15 + Math.random() * 0.85) : 1);
+    }
+  }
+
+  function spawnBonus(picked) {
+    let pick = picked;
     if (pick.type === "heart" && lives >= aug.maxLives) {
       pick = BONUS.find(b => b.type === "star");    // 목숨 꽉 차면 별로 대체
     }
@@ -790,12 +806,12 @@
       }
     }
     if (!powered) {
-      itemTimer -= dt;
-      if (itemTimer <= 0) {
-        spawnBonus();
-        // 레벨이 오를수록 똥이 빽빽해져 아이템 먹기가 어려워지므로, 등장 간격도 함께 짧아진다
-        const lvFactor = Math.max(0.5, 1 / (1 + (level - 1) * 0.06));
-        itemTimer = (7 + Math.random() * 6) * aug.itemRateMul * lvFactor;
+      for (const b of BONUS) {           // 종류별로 따로 세다가 각자 때가 되면 떨어진다
+        b.t -= dt;
+        if (b.t <= 0) {
+          spawnBonus(b);
+          b.t = bonusInterval(b);
+        }
       }
     }
 
