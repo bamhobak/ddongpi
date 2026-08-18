@@ -207,8 +207,7 @@
     </div>
 
     <div id="augScreen" class="screen hidden">
-      <h2 id="augTitle">🌙 증강 선택</h2>
-      <p>하나를 골라 강화하세요<br>같은 증강을 또 고르면 효과가 쌓입니다</p>
+      <h2 id="augTitle">⭐ 증강 선택 🌙</h2>
       <div id="augList"></div>
     </div>
 
@@ -444,7 +443,7 @@
   function showAugmentPick() {
     augTitle.textContent = augTotal > 1
       ? "🌕 보름달! 증강 " + augTotal + "연속 (" + (augTotal - augRemain + 1) + "/" + augTotal + ")"
-      : "🌙 증강 선택";
+      : "⭐ 증강 선택 🌙";
     // once 증강은 이미 가진 것이면 후보에서 제외한다
     const pool = AUGMENTS.filter(a => !(a.once && augCount[a.id]));
     const picks = [];
