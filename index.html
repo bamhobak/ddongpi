@@ -508,7 +508,7 @@
 
     elapsed += dt;
     level = 1 + Math.floor(elapsed / 10);
-    score += dt * 2;                       // 생존 시간: 초당 2점
+    score += dt * level;                   // 생존 시간: 레벨과 같은 점수를 초당 (레벨1=1점/초 … 레벨10=10점/초)
 
     // 레벨이 오를수록 하늘이 진해진다. 단계마다 값이 바뀌지만 색은 부드럽게 따라간다.
     const skyTarget = Math.min(1, (level - 1) / 11);
