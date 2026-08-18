@@ -393,7 +393,6 @@
      달을 먹으면 게임이 멈추고 3개 중 하나를 고른다. 같은 것을 또 고르면 효과가 쌓인다. */
   const aug = {
     feverBonus: 0,      // 뚜니핑 타임 추가 시간(ms)
-    dodgeMul: 1,        // 피한 똥 점수 배율
     starMul: 1,         // 별 점수 배율
     timeMul: 1,         // 생존 점수 배율
     feverScoreMul: 1,   // 뚜니핑 낙하물 점수 배율
@@ -412,12 +411,10 @@
   const AUGMENTS = [
     { id: "fever_time", ic: "🔥", nm: "뚜니핑 연장", ds: "뚜니핑 타임 +2초",
       go: () => { aug.feverBonus += 2000; } },
-    { id: "dodge2x",    ic: "💩", nm: "회피 달인",   ds: "피한 똥 점수 2배",
-      go: () => { aug.dodgeMul *= 2; } },
     { id: "star50",     ic: "⭐", nm: "별빛 증폭",   ds: "별 점수 +50%",
       go: () => { aug.starMul += 0.5; } },
-    { id: "time2x",     ic: "⏱️", nm: "시간 가속",   ds: "생존 점수 2배",
-      go: () => { aug.timeMul *= 2; } },
+    { id: "time2x",     ic: "⏱️", nm: "시간 가속",   ds: "생존 점수 1.5배",
+      go: () => { aug.timeMul *= 1.5; } },
     { id: "fever50",    ic: "🌙", nm: "뚜니핑 대박", ds: "뚜니핑 낙하물 점수 +50%",
       go: () => { aug.feverScoreMul += 0.5; } },
     { id: "slow",       ic: "🐢", nm: "느린 하늘",   ds: "똥 낙하 속도 10% 감소",
@@ -551,7 +548,7 @@
     shake = 0; flash = 0; feverFlash = 0; fever = false; feverT = 0;
     skyT = 0;
     augCount = {};
-    aug.feverBonus = 0; aug.dodgeMul = 1; aug.starMul = 1; aug.timeMul = 1;
+    aug.feverBonus = 0; aug.starMul = 1; aug.timeMul = 1;
     aug.feverScoreMul = 1; aug.fallMul = 1; aug.hitboxMul = 1; aug.poopMul = 1;
     aug.itemRateMul = 1; aug.feverRateMul = 1; aug.giant = 0; aug.magnet = 0;
     aug.helper = 0; helpers = []; helperTimer = 0; aug.maxLives = 5;
@@ -760,7 +757,7 @@
             burst(it.x, it.y, g >= 25 ? "#ff3b3b" : "#ffd23f", g >= 25 ? 30 : 16);
             if (g >= 15) popText(it.x, it.y, "+" + g, "#ffd23f", g >= 40 ? 30 : 24);
           } else {
-            score += 3 * aug.dodgeMul;
+            score += 3;
             burst(it.x, it.y, "#ffd23f", 14);
           }
           items.splice(i, 1);
@@ -916,7 +913,7 @@
       if (it.y - it.r > H + 20) {
         // 뚜니핑 타임 낙하물은 워낙 많이 쏟아져서, 안 먹고 흘려보낸 것에 점수를 주면
         // 가만히 있어도 점수가 폭등한다. 뚜니핑 타임 것은 0점 — 직접 받아야만 점수가 오른다.
-        if (it.type === "poop" && it.skin !== "fever") score += 3 * aug.dodgeMul;
+        if (it.type === "poop" && it.skin !== "fever") score += 3;
         items.splice(i, 1);
       }
     }
