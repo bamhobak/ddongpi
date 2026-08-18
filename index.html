@@ -644,7 +644,8 @@
       rot: Math.random() * 6.28, vr: (Math.random() - .5) * 5,
       size: r * 2, sz: r, fast: m > 1,
       skin: inFever ? "fever" : "poop",
-      face: Math.floor(Math.random() * 8),   // 표정 (0~1은 기본 얼굴)
+      eye: Math.floor(Math.random() * 6),    // 눈 6종
+      mouth: Math.floor(Math.random() * 5),  // 입 5종 → 조합 30가지
       gain: cls ? cls.score : 0,
       giant: !!(cls && cls.giant)
     });
@@ -1428,70 +1429,142 @@
     }
   }
 
-  /* 똥 위에 덧그리는 표정. 이모지 폰트가 기기마다 달라서, 눈·입을 새로 그리는 대신
-     어느 폰트에서나 자연스럽게 얹히는 장식(선글라스·눈썹·홍조 등)으로 표현한다. */
-  function drawPoopFace(kind, S) {
-    ctx.save();
+  /* ---------- 똥 그리기 ----------
+     이모지는 기기마다 눈 위치·모양이 달라 표정을 손댈 수 없어서 캔버스로 직접 그린다.
+     3단으로 쌓인 몸통 + 눈 6종 × 입 5종 조합으로 표정이 매번 달라진다. */
+  const POOP_TIERS = [
+    { cy:  0.30, rx: 0.47, ry: 0.20 },
+    { cy:  0.04, rx: 0.35, ry: 0.17 },
+    { cy: -0.19, rx: 0.23, ry: 0.135 }
+  ];
+
+  function drawPoopBody(S) {
+    const g = ctx.createLinearGradient(0, -S * 0.45, 0, S * 0.5);
+    g.addColorStop(0, "#b98552");
+    g.addColorStop(0.5, "#8d5c31");
+    g.addColorStop(1, "#5c3a1d");
+    ctx.beginPath();
+    for (const t of POOP_TIERS) ctx.ellipse(0, t.cy * S, t.rx * S, t.ry * S, 0, 0, 6.283);
+    ctx.moveTo(-S * 0.10, -S * 0.25);                       // 꼭지
+    ctx.quadraticCurveTo(0, -S * 0.46, S * 0.10, -S * 0.25);
+    ctx.fillStyle = g;
+    ctx.fill();
+    ctx.strokeStyle = "rgba(58,33,13,.45)";                 // 단 사이 경계선
+    ctx.lineWidth = Math.max(1, S * 0.02);
+    ctx.stroke();
+    ctx.fillStyle = "rgba(255,255,255,.16)";                // 왼쪽 위 광택
+    ctx.beginPath();
+    ctx.ellipse(-S * 0.11, -S * 0.22, S * 0.07, S * 0.04, -0.5, 0, 6.283);
+    ctx.fill();
+  }
+
+  function drawPoopEyes(kind, S) {
+    const ex = S * 0.135, ey = -S * 0.025;
+    const white = "#fff", dark = "#2b1a10";
     ctx.lineCap = "round";
+    ctx.lineJoin = "round";
     switch (kind) {
-      case 2:   // 성난 눈썹
-        ctx.strokeStyle = "#2b1a10";
-        ctx.lineWidth = Math.max(2, S * 0.045);
-        ctx.beginPath();
-        ctx.moveTo(-S * 0.27, -S * 0.22); ctx.lineTo(-S * 0.09, -S * 0.13);
-        ctx.moveTo( S * 0.27, -S * 0.22); ctx.lineTo( S * 0.09, -S * 0.13);
-        ctx.stroke();
-        break;
-      case 3:   // 선글라스
-        ctx.fillStyle = "#15161c";
-        ctx.beginPath();
-        ctx.roundRect(-S * 0.31, -S * 0.16, S * 0.62, S * 0.15, S * 0.06);
-        ctx.fill();
-        ctx.fillStyle = "rgba(255,255,255,.5)";
-        ctx.beginPath();
-        ctx.roundRect(-S * 0.26, -S * 0.14, S * 0.10, S * 0.04, S * 0.02);
-        ctx.fill();
-        break;
-      case 4:   // 뿅 간 눈 (X)
-        ctx.strokeStyle = "#2b1a10";
-        ctx.lineWidth = Math.max(2, S * 0.04);
+      case 0:                                               // 동그란 기본 눈
         for (const sx of [-1, 1]) {
-          const cx = sx * S * 0.17, cy = -S * 0.07, d = S * 0.06;
+          ctx.fillStyle = white;
+          ctx.beginPath(); ctx.ellipse(sx * ex, ey, S * 0.085, S * 0.095, 0, 0, 6.283); ctx.fill();
+          ctx.fillStyle = dark;
+          ctx.beginPath(); ctx.arc(sx * ex + sx * S * 0.012, ey + S * 0.012, S * 0.045, 0, 6.283); ctx.fill();
+        }
+        break;
+      case 1:                                               // 웃는 반달 눈
+        ctx.strokeStyle = dark; ctx.lineWidth = S * 0.045;
+        for (const sx of [-1, 1]) {
           ctx.beginPath();
-          ctx.moveTo(cx - d, cy - d); ctx.lineTo(cx + d, cy + d);
-          ctx.moveTo(cx + d, cy - d); ctx.lineTo(cx - d, cy + d);
+          ctx.arc(sx * ex, ey + S * 0.03, S * 0.075, Math.PI * 1.15, Math.PI * 1.85);
           ctx.stroke();
         }
         break;
-      case 5:   // 발그레한 볼
-        ctx.fillStyle = "rgba(255,120,140,.55)";
+      case 2:                                               // 뿅 간 X 눈
+        ctx.strokeStyle = dark; ctx.lineWidth = S * 0.042;
         for (const sx of [-1, 1]) {
+          const cx = sx * ex, d = S * 0.06;
           ctx.beginPath();
-          ctx.ellipse(sx * S * 0.27, S * 0.06, S * 0.09, S * 0.055, 0, 0, 6.283);
+          ctx.moveTo(cx - d, ey - d); ctx.lineTo(cx + d, ey + d);
+          ctx.moveTo(cx + d, ey - d); ctx.lineTo(cx - d, ey + d);
+          ctx.stroke();
+        }
+        break;
+      case 3:                                               // 짝눈
+        ctx.fillStyle = white;
+        ctx.beginPath(); ctx.ellipse(-ex, ey, S * 0.10, S * 0.11, 0, 0, 6.283); ctx.fill();
+        ctx.beginPath(); ctx.ellipse(ex, ey, S * 0.055, S * 0.06, 0, 0, 6.283); ctx.fill();
+        ctx.fillStyle = dark;
+        ctx.beginPath(); ctx.arc(-ex, ey + S * 0.015, S * 0.05, 0, 6.283); ctx.fill();
+        ctx.beginPath(); ctx.arc(ex, ey, S * 0.028, 0, 6.283); ctx.fill();
+        break;
+      case 4:                                               // 성난 눈 (눈썹)
+        for (const sx of [-1, 1]) {
+          ctx.fillStyle = white;
+          ctx.beginPath(); ctx.ellipse(sx * ex, ey + S * 0.01, S * 0.08, S * 0.075, 0, 0, 6.283); ctx.fill();
+          ctx.fillStyle = dark;
+          ctx.beginPath(); ctx.arc(sx * ex, ey + S * 0.02, S * 0.04, 0, 6.283); ctx.fill();
+        }
+        ctx.strokeStyle = dark; ctx.lineWidth = S * 0.045;
+        ctx.beginPath();
+        ctx.moveTo(-ex - S * 0.09, ey - S * 0.13); ctx.lineTo(-ex + S * 0.05, ey - S * 0.06);
+        ctx.moveTo( ex + S * 0.09, ey - S * 0.13); ctx.lineTo( ex - S * 0.05, ey - S * 0.06);
+        ctx.stroke();
+        break;
+      case 5:                                               // 하트 눈
+        ctx.fillStyle = "#ff5d7a";
+        for (const sx of [-1, 1]) {
+          const cx = sx * ex, r = S * 0.055;
+          ctx.beginPath();
+          ctx.moveTo(cx, ey + r * 0.9);
+          ctx.bezierCurveTo(cx - r * 1.5, ey - r * 0.4, cx - r * 0.5, ey - r * 1.4, cx, ey - r * 0.35);
+          ctx.bezierCurveTo(cx + r * 0.5, ey - r * 1.4, cx + r * 1.5, ey - r * 0.4, cx, ey + r * 0.9);
           ctx.fill();
         }
         break;
-      case 6:   // 식은땀
-        ctx.fillStyle = "#8fd4ff";
-        ctx.beginPath();
-        ctx.moveTo(S * 0.28, -S * 0.34);
-        ctx.quadraticCurveTo(S * 0.36, -S * 0.20, S * 0.28, -S * 0.16);
-        ctx.quadraticCurveTo(S * 0.20, -S * 0.20, S * 0.28, -S * 0.34);
-        ctx.fill();
+    }
+  }
+
+  function drawPoopMouth(kind, S) {
+    const my = S * 0.14, dark = "#3a2412";
+    ctx.lineCap = "round";
+    switch (kind) {
+      case 0:                                               // 웃음
+        ctx.strokeStyle = dark; ctx.lineWidth = S * 0.04;
+        ctx.beginPath(); ctx.arc(0, my - S * 0.05, S * 0.11, 0.25, Math.PI - 0.25); ctx.stroke();
         break;
-      case 7:   // 분노 표시
-        ctx.strokeStyle = "#ff3b3b";
-        ctx.lineWidth = Math.max(2, S * 0.035);
-        for (const [ox, oy] of [[0, 0], [S * 0.09, S * 0.05]]) {
-          ctx.beginPath();
-          ctx.moveTo(S * 0.20 + ox, -S * 0.32 + oy);
-          ctx.lineTo(S * 0.27 + ox, -S * 0.26 + oy);
-          ctx.lineTo(S * 0.20 + ox, -S * 0.20 + oy);
-          ctx.stroke();
-        }
+      case 1:                                               // 벌린 입
+        ctx.fillStyle = dark;
+        ctx.beginPath(); ctx.ellipse(0, my, S * 0.08, S * 0.065, 0, 0, 6.283); ctx.fill();
+        break;
+      case 2:                                               // 이빨
+        ctx.fillStyle = dark;
+        ctx.beginPath(); ctx.ellipse(0, my, S * 0.11, S * 0.07, 0, 0, 6.283); ctx.fill();
+        ctx.fillStyle = "#fff";
+        ctx.beginPath(); ctx.rect(-S * 0.075, my - S * 0.07, S * 0.15, S * 0.035); ctx.fill();
+        break;
+      case 3:                                               // 삐죽
+        ctx.strokeStyle = dark; ctx.lineWidth = S * 0.035;
+        ctx.beginPath();
+        ctx.moveTo(-S * 0.10, my);
+        ctx.quadraticCurveTo(-S * 0.03, my - S * 0.06, 0, my);
+        ctx.quadraticCurveTo(S * 0.03, my + S * 0.06, S * 0.10, my);
+        ctx.stroke();
+        break;
+      case 4:                                               // 혀 내밀기
+        ctx.fillStyle = dark;
+        ctx.beginPath(); ctx.ellipse(0, my, S * 0.09, S * 0.06, 0, 0, 6.283); ctx.fill();
+        ctx.fillStyle = "#ff7d94";
+        ctx.beginPath(); ctx.ellipse(0, my + S * 0.05, S * 0.05, S * 0.045, 0, 0, 6.283); ctx.fill();
         break;
     }
-    ctx.restore();
+  }
+
+  function drawPoop(it) {
+    const S = it.size;
+    drawPoopBody(S);
+    drawPoopEyes(it.eye, S);
+    drawPoopMouth(it.mouth, S);
   }
 
   function drawItems() {
@@ -1504,12 +1577,11 @@
       ctx.rotate(it.rot);
       if (it.skin === "fever" && feverPoop) {
         ctx.drawImage(feverPoop, -it.size / 2, -it.size / 2, it.size, it.size);
+      } else if (it.type === "poop") {
+        drawPoop(it);
       } else {
         ctx.font = it.size + "px serif";
         ctx.fillText(it.emoji, 0, 0);
-        if (it.type === "poop" && it.face > 1 && it.size >= 34) {
-          drawPoopFace(it.face, it.size);
-        }
       }
       ctx.restore();
     }
