@@ -434,11 +434,11 @@
     { id: "fever50",    ic: "🌙", nm: "뚜니핑 대박", ds: "뚜니핑 낙하물 점수 증가",
       go: () => { aug.feverScoreMul += 0.5; } },
     { id: "slow",       ic: "🐢", nm: "느린 하늘",   ds: "똥이 느리게 떨어진다",
-      go: () => { aug.fallMul *= 0.9; } },
+      go: () => { aug.fallMul *= 0.85; } },
     { id: "small",      ic: "🎯", nm: "날렵한 몸",   ds: "몸집이 작아진다",
-      go: () => { aug.hitboxMul *= 0.88; } },
+      go: () => { aug.hitboxMul *= 0.82; } },
     { id: "tinypoop",   ic: "🫧", nm: "작아진 똥",   ds: "똥이 작아진다",
-      go: () => { aug.poopMul *= 0.88; } },
+      go: () => { aug.poopMul *= 0.82; } },
     { id: "umbrella3",  ic: "☂️", nm: "우산 다발", ds: "우산을 3개 얻는다",
       go: () => { shields += 3; } },
     { id: "helper",     ic: "🦸", nm: "도와줘 정연핑", ds: "정연핑이 지나가는 자리의 똥을 부순다",
@@ -644,8 +644,10 @@
       rot: Math.random() * 6.28, vr: (Math.random() - .5) * 5,
       size: r * 2, sz: r, fast: m > 1,
       skin: inFever ? "fever" : "poop",
-      eye: Math.floor(Math.random() * 6),    // 눈 6종
-      mouth: Math.floor(Math.random() * 5),  // 입 5종 → 조합 30가지
+      pstyle: makePoopStyle(),               // 몸통 형태·색조
+      eye: Math.floor(Math.random() * 9),    // 눈 9종
+      mouth: Math.floor(Math.random() * 7),  // 입 7종
+      extra: Math.random() < 0.35 ? 1 + Math.floor(Math.random() * 3) : 0,
       gain: cls ? cls.score : 0,
       giant: !!(cls && cls.giant)
     });
@@ -1430,95 +1432,114 @@
   }
 
   /* ---------- 똥 그리기 ----------
-     이모지는 기기마다 눈 위치·모양이 달라 표정을 손댈 수 없어서 캔버스로 직접 그린다.
-     3단으로 쌓인 몸통 + 눈 6종 × 입 5종 조합으로 표정이 매번 달라진다. */
-  const POOP_TIERS = [
-    { cy:  0.30, rx: 0.47, ry: 0.20 },
-    { cy:  0.04, rx: 0.35, ry: 0.17 },
-    { cy: -0.19, rx: 0.23, ry: 0.135 }
+     이모지는 기기마다 눈 모양이 달라 표정을 손댈 수 없어서 캔버스로 직접 그린다.
+     몸통(단 수·기울기·색조)과 얼굴(눈·입·부가표현)을 매번 새로 뽑아 조합한다. */
+  const POOP_TONES = [
+    ["185,133,82",  "141,92,49",  "92,58,29"],    // 기본 갈색
+    ["154,106,63",  "113,73,31",  "71,44,18"],    // 진한 갈색
+    ["199,150,98",  "160,107,58", "109,71,38"],   // 밝은 갈색
+    ["168,154,82",  "125,112,48", "79,71,28"]     // 상한 듯한 올리브색
   ];
 
-  function drawPoopBody(S) {
-    const g = ctx.createLinearGradient(0, -S * 0.45, 0, S * 0.5);
-    g.addColorStop(0, "#b98552");
-    g.addColorStop(0.5, "#8d5c31");
-    g.addColorStop(1, "#5c3a1d");
-    ctx.beginPath();
-    for (const t of POOP_TIERS) {
-      // moveTo 없이 ellipse 를 연달아 부르면 앞 타원 끝점에서 직선이 이어져 버린다
-      ctx.moveTo(t.rx * S, t.cy * S);
-      ctx.ellipse(0, t.cy * S, t.rx * S, t.ry * S, 0, 0, 6.283);
+  function makePoopStyle() {
+    const n = 2 + Math.floor(Math.random() * 3);        // 2~4단
+    const lean = (Math.random() - 0.5) * 0.12;          // 단마다 좌우로 밀리는 정도
+    const tiers = [];
+    let y = 0.34, rx = 0.44 + Math.random() * 0.06;
+    for (let i = 0; i < n; i++) {
+      const ry = rx * (0.40 + Math.random() * 0.14);
+      tiers.push({ cx: lean * i, cy: y, rx: rx, ry: ry });
+      y -= ry * (1.35 + Math.random() * 0.25);
+      rx *= 0.68 + Math.random() * 0.12;
     }
-    ctx.moveTo(-S * 0.10, -S * 0.25);                       // 꼭지
-    ctx.quadraticCurveTo(0, -S * 0.46, S * 0.10, -S * 0.25);
+    const top = tiers[tiers.length - 1];
+    // 얼굴은 위쪽 단에 얹는다 (단이 3개 이상이면 위에서 두 번째와 걸쳐서)
+    const f = tiers.length >= 3 ? tiers[tiers.length - 2] : top;
+    return {
+      tiers: tiers,
+      tone: Math.floor(Math.random() * POOP_TONES.length),
+      tip: Math.random() < 0.7,
+      tipX: top.cx, tipY: top.cy - top.ry,
+      fx: (f.cx + top.cx) / 2,
+      fy: (f.cy + top.cy) / 2 + (tiers.length >= 3 ? 0.01 : -0.02),
+      fs: Math.min(1.15, Math.max(0.8, f.rx / 0.3))     // 얼굴 크기 배율
+    };
+  }
+
+  function drawPoopBody(S, st) {
+    const c = POOP_TONES[st.tone];
+    const g = ctx.createLinearGradient(0, -S * 0.45, 0, S * 0.5);
+    g.addColorStop(0, "rgb(" + c[0] + ")");
+    g.addColorStop(0.5, "rgb(" + c[1] + ")");
+    g.addColorStop(1, "rgb(" + c[2] + ")");
+    ctx.beginPath();
+    for (const t of st.tiers) {
+      // moveTo 없이 ellipse 를 연달아 부르면 앞 타원 끝점에서 직선이 이어져 버린다
+      ctx.moveTo((t.cx + t.rx) * S, t.cy * S);
+      ctx.ellipse(t.cx * S, t.cy * S, t.rx * S, t.ry * S, 0, 0, 6.283);
+    }
+    if (st.tip) {
+      ctx.moveTo((st.tipX - 0.09) * S, (st.tipY + 0.05) * S);
+      ctx.quadraticCurveTo(st.tipX * S, (st.tipY - 0.16) * S,
+                           (st.tipX + 0.09) * S, (st.tipY + 0.05) * S);
+    }
     ctx.fillStyle = g;
     ctx.fill();
-    ctx.strokeStyle = "rgba(58,33,13,.45)";                 // 단 사이 경계선
-    ctx.lineWidth = Math.max(1, S * 0.02);
+    ctx.strokeStyle = "rgba(52,30,12,.42)";              // 단 사이 경계선
+    ctx.lineWidth = Math.max(1, S * 0.019);
     ctx.stroke();
-    ctx.fillStyle = "rgba(255,255,255,.16)";                // 왼쪽 위 광택
+    const t0 = st.tiers[st.tiers.length - 1];            // 왼쪽 위 광택
+    ctx.fillStyle = "rgba(255,255,255,.15)";
     ctx.beginPath();
-    ctx.ellipse(-S * 0.11, -S * 0.22, S * 0.07, S * 0.04, -0.5, 0, 6.283);
+    ctx.ellipse((t0.cx - t0.rx * 0.42) * S, (t0.cy - t0.ry * 0.45) * S,
+                t0.rx * 0.32 * S, t0.ry * 0.3 * S, -0.5, 0, 6.283);
     ctx.fill();
   }
 
-  function drawPoopEyes(kind, S) {
-    const ex = S * 0.135, ey = -S * 0.025;
+  function drawPoopEyes(kind, S, k) {
+    const R = S * k, ex = R * 0.125, ey = 0;
     const white = "#fff", dark = "#2b1a10";
-    ctx.lineCap = "round";
-    ctx.lineJoin = "round";
+    ctx.lineCap = "round"; ctx.lineJoin = "round";
+    function ball(sx, rw, rh, pr) {
+      ctx.fillStyle = white;
+      ctx.beginPath(); ctx.ellipse(sx * ex, ey, R * rw, R * rh, 0, 0, 6.283); ctx.fill();
+      ctx.fillStyle = dark;
+      ctx.beginPath(); ctx.arc(sx * ex + sx * R * 0.012, ey + R * 0.012, R * pr, 0, 6.283); ctx.fill();
+    }
+    function arcEye(sx) {
+      ctx.beginPath();
+      ctx.arc(sx * ex, ey + R * 0.03, R * 0.075, Math.PI * 1.15, Math.PI * 1.85);
+      ctx.stroke();
+    }
     switch (kind) {
-      case 0:                                               // 동그란 기본 눈
-        for (const sx of [-1, 1]) {
-          ctx.fillStyle = white;
-          ctx.beginPath(); ctx.ellipse(sx * ex, ey, S * 0.085, S * 0.095, 0, 0, 6.283); ctx.fill();
-          ctx.fillStyle = dark;
-          ctx.beginPath(); ctx.arc(sx * ex + sx * S * 0.012, ey + S * 0.012, S * 0.045, 0, 6.283); ctx.fill();
-        }
+      case 0: ball(-1, .085, .095, .045); ball(1, .085, .095, .045); break;
+      case 1:                                             // 웃는 반달
+        ctx.strokeStyle = dark; ctx.lineWidth = R * 0.045;
+        arcEye(-1); arcEye(1);
         break;
-      case 1:                                               // 웃는 반달 눈
-        ctx.strokeStyle = dark; ctx.lineWidth = S * 0.045;
+      case 2:                                             // 뿅 간 X 눈
+        ctx.strokeStyle = dark; ctx.lineWidth = R * 0.042;
         for (const sx of [-1, 1]) {
-          ctx.beginPath();
-          ctx.arc(sx * ex, ey + S * 0.03, S * 0.075, Math.PI * 1.15, Math.PI * 1.85);
-          ctx.stroke();
-        }
-        break;
-      case 2:                                               // 뿅 간 X 눈
-        ctx.strokeStyle = dark; ctx.lineWidth = S * 0.042;
-        for (const sx of [-1, 1]) {
-          const cx = sx * ex, d = S * 0.06;
+          const cx = sx * ex, d = R * 0.06;
           ctx.beginPath();
           ctx.moveTo(cx - d, ey - d); ctx.lineTo(cx + d, ey + d);
           ctx.moveTo(cx + d, ey - d); ctx.lineTo(cx - d, ey + d);
           ctx.stroke();
         }
         break;
-      case 3:                                               // 짝눈
-        ctx.fillStyle = white;
-        ctx.beginPath(); ctx.ellipse(-ex, ey, S * 0.10, S * 0.11, 0, 0, 6.283); ctx.fill();
-        ctx.beginPath(); ctx.ellipse(ex, ey, S * 0.055, S * 0.06, 0, 0, 6.283); ctx.fill();
-        ctx.fillStyle = dark;
-        ctx.beginPath(); ctx.arc(-ex, ey + S * 0.015, S * 0.05, 0, 6.283); ctx.fill();
-        ctx.beginPath(); ctx.arc(ex, ey, S * 0.028, 0, 6.283); ctx.fill();
-        break;
-      case 4:                                               // 성난 눈 (눈썹)
-        for (const sx of [-1, 1]) {
-          ctx.fillStyle = white;
-          ctx.beginPath(); ctx.ellipse(sx * ex, ey + S * 0.01, S * 0.08, S * 0.075, 0, 0, 6.283); ctx.fill();
-          ctx.fillStyle = dark;
-          ctx.beginPath(); ctx.arc(sx * ex, ey + S * 0.02, S * 0.04, 0, 6.283); ctx.fill();
-        }
-        ctx.strokeStyle = dark; ctx.lineWidth = S * 0.045;
+      case 3: ball(-1, .10, .11, .05); ball(1, .055, .06, .028); break;   // 짝눈
+      case 4:                                             // 성난 눈
+        ball(-1, .08, .075, .04); ball(1, .08, .075, .04);
+        ctx.strokeStyle = dark; ctx.lineWidth = R * 0.045;
         ctx.beginPath();
-        ctx.moveTo(-ex - S * 0.09, ey - S * 0.13); ctx.lineTo(-ex + S * 0.05, ey - S * 0.06);
-        ctx.moveTo( ex + S * 0.09, ey - S * 0.13); ctx.lineTo( ex - S * 0.05, ey - S * 0.06);
+        ctx.moveTo(-ex - R * 0.09, ey - R * 0.13); ctx.lineTo(-ex + R * 0.05, ey - R * 0.06);
+        ctx.moveTo(ex + R * 0.09, ey - R * 0.13); ctx.lineTo(ex - R * 0.05, ey - R * 0.06);
         ctx.stroke();
         break;
-      case 5:                                               // 하트 눈
+      case 5:                                             // 하트 눈
         ctx.fillStyle = "#ff5d7a";
         for (const sx of [-1, 1]) {
-          const cx = sx * ex, r = S * 0.055;
+          const cx = sx * ex, r = R * 0.055;
           ctx.beginPath();
           ctx.moveTo(cx, ey + r * 0.9);
           ctx.bezierCurveTo(cx - r * 1.5, ey - r * 0.4, cx - r * 0.5, ey - r * 1.4, cx, ey - r * 0.35);
@@ -1526,49 +1547,123 @@
           ctx.fill();
         }
         break;
+      case 6:                                             // 졸린 눈
+        ctx.strokeStyle = dark; ctx.lineWidth = R * 0.04;
+        for (const sx of [-1, 1]) {
+          ctx.beginPath();
+          ctx.arc(sx * ex, ey - R * 0.02, R * 0.075, Math.PI * 0.15, Math.PI * 0.85);
+          ctx.stroke();
+        }
+        break;
+      case 7:                                             // 윙크
+        ball(-1, .085, .095, .045);
+        ctx.strokeStyle = dark; ctx.lineWidth = R * 0.045;
+        arcEye(1);
+        break;
+      case 8:                                             // 소용돌이 눈
+        ctx.strokeStyle = dark; ctx.lineWidth = R * 0.032;
+        for (const sx of [-1, 1]) {
+          ctx.beginPath();
+          for (let a = 0; a < 10; a += 0.25) {
+            const rr = R * 0.012 * a;
+            const px = sx * ex + Math.cos(a) * rr, py = ey + Math.sin(a) * rr;
+            if (a === 0) ctx.moveTo(px, py); else ctx.lineTo(px, py);
+          }
+          ctx.stroke();
+        }
+        break;
     }
   }
 
-  function drawPoopMouth(kind, S) {
-    const my = S * 0.14, dark = "#3a2412";
+  function drawPoopMouth(kind, S, k) {
+    const R = S * k, my = R * 0.16, dark = "#3a2412";
     ctx.lineCap = "round";
     switch (kind) {
-      case 0:                                               // 웃음
-        ctx.strokeStyle = dark; ctx.lineWidth = S * 0.04;
-        ctx.beginPath(); ctx.arc(0, my - S * 0.05, S * 0.11, 0.25, Math.PI - 0.25); ctx.stroke();
+      case 0:                                             // 웃음
+        ctx.strokeStyle = dark; ctx.lineWidth = R * 0.04;
+        ctx.beginPath(); ctx.arc(0, my - R * 0.05, R * 0.11, 0.25, Math.PI - 0.25); ctx.stroke();
         break;
-      case 1:                                               // 벌린 입
+      case 1:                                             // 벌린 입
         ctx.fillStyle = dark;
-        ctx.beginPath(); ctx.ellipse(0, my, S * 0.08, S * 0.065, 0, 0, 6.283); ctx.fill();
+        ctx.beginPath(); ctx.ellipse(0, my, R * 0.08, R * 0.065, 0, 0, 6.283); ctx.fill();
         break;
-      case 2:                                               // 이빨
+      case 2:                                             // 이빨
         ctx.fillStyle = dark;
-        ctx.beginPath(); ctx.ellipse(0, my, S * 0.11, S * 0.07, 0, 0, 6.283); ctx.fill();
+        ctx.beginPath(); ctx.ellipse(0, my, R * 0.11, R * 0.07, 0, 0, 6.283); ctx.fill();
         ctx.fillStyle = "#fff";
-        ctx.beginPath(); ctx.rect(-S * 0.075, my - S * 0.07, S * 0.15, S * 0.035); ctx.fill();
+        ctx.fillRect(-R * 0.075, my - R * 0.07, R * 0.15, R * 0.035);
         break;
-      case 3:                                               // 삐죽
-        ctx.strokeStyle = dark; ctx.lineWidth = S * 0.035;
+      case 3:                                             // 삐죽
+        ctx.strokeStyle = dark; ctx.lineWidth = R * 0.035;
         ctx.beginPath();
-        ctx.moveTo(-S * 0.10, my);
-        ctx.quadraticCurveTo(-S * 0.03, my - S * 0.06, 0, my);
-        ctx.quadraticCurveTo(S * 0.03, my + S * 0.06, S * 0.10, my);
+        ctx.moveTo(-R * 0.10, my);
+        ctx.quadraticCurveTo(-R * 0.03, my - R * 0.06, 0, my);
+        ctx.quadraticCurveTo(R * 0.03, my + R * 0.06, R * 0.10, my);
         ctx.stroke();
         break;
-      case 4:                                               // 혀 내밀기
+      case 4:                                             // 혀 내밀기
         ctx.fillStyle = dark;
-        ctx.beginPath(); ctx.ellipse(0, my, S * 0.09, S * 0.06, 0, 0, 6.283); ctx.fill();
+        ctx.beginPath(); ctx.ellipse(0, my, R * 0.09, R * 0.06, 0, 0, 6.283); ctx.fill();
         ctx.fillStyle = "#ff7d94";
-        ctx.beginPath(); ctx.ellipse(0, my + S * 0.05, S * 0.05, S * 0.045, 0, 0, 6.283); ctx.fill();
+        ctx.beginPath(); ctx.ellipse(0, my + R * 0.05, R * 0.05, R * 0.045, 0, 0, 6.283); ctx.fill();
+        break;
+      case 5:                                             // 작은 o
+        ctx.strokeStyle = dark; ctx.lineWidth = R * 0.03;
+        ctx.beginPath(); ctx.arc(0, my, R * 0.04, 0, 6.283); ctx.stroke();
+        break;
+      case 6:                                             // 헤벌쭉 (아랫니)
+        ctx.fillStyle = dark;
+        ctx.beginPath();
+        ctx.moveTo(-R * 0.13, my - R * 0.04);
+        ctx.quadraticCurveTo(0, my + R * 0.12, R * 0.13, my - R * 0.04);
+        ctx.closePath(); ctx.fill();
+        ctx.fillStyle = "#fff";
+        ctx.fillRect(-R * 0.06, my + R * 0.03, R * 0.12, R * 0.025);
+        break;
+    }
+  }
+
+  function drawPoopExtra(kind, S, k) {
+    const R = S * k;
+    switch (kind) {
+      case 1:                                             // 식은땀
+        ctx.fillStyle = "#8fd4ff";
+        ctx.beginPath();
+        ctx.moveTo(R * 0.26, -R * 0.30);
+        ctx.quadraticCurveTo(R * 0.34, -R * 0.16, R * 0.26, -R * 0.12);
+        ctx.quadraticCurveTo(R * 0.18, -R * 0.16, R * 0.26, -R * 0.30);
+        ctx.fill();
+        break;
+      case 2:                                             // 분노 표시
+        ctx.strokeStyle = "#ff3b3b"; ctx.lineWidth = R * 0.032;
+        for (const off of [[0, 0], [R * 0.08, R * 0.05]]) {
+          ctx.beginPath();
+          ctx.moveTo(R * 0.19 + off[0], -R * 0.28 + off[1]);
+          ctx.lineTo(R * 0.26 + off[0], -R * 0.22 + off[1]);
+          ctx.lineTo(R * 0.19 + off[0], -R * 0.16 + off[1]);
+          ctx.stroke();
+        }
+        break;
+      case 3:                                             // 발그레한 볼
+        ctx.fillStyle = "rgba(255,120,140,.5)";
+        for (const sx of [-1, 1]) {
+          ctx.beginPath();
+          ctx.ellipse(sx * R * 0.24, R * 0.07, R * 0.075, R * 0.045, 0, 0, 6.283);
+          ctx.fill();
+        }
         break;
     }
   }
 
   function drawPoop(it) {
-    const S = it.size;
-    drawPoopBody(S);
-    drawPoopEyes(it.eye, S);
-    drawPoopMouth(it.mouth, S);
+    const S = it.size, st = it.pstyle;
+    drawPoopBody(S, st);
+    ctx.save();
+    ctx.translate(st.fx * S, st.fy * S);      // 얼굴은 위쪽 단 위에 얹는다
+    drawPoopEyes(it.eye, S, st.fs);
+    drawPoopMouth(it.mouth, S, st.fs);
+    if (it.extra) drawPoopExtra(it.extra, S, st.fs);
+    ctx.restore();
   }
 
   function drawItems() {
