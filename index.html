@@ -690,8 +690,8 @@
       pick = BONUS.find(b => b.type === "star");    // 목숨 꽉 차면 별로 대체
     }
     const r = 20;
-    // 아이템도 낙하 속도를 넓게 흩뿌린다 — 툭 떨어지는 것부터 천천히 흘러내리는 것까지
-    const vy = (110 + level * 6) * (H / BASE_H) * (0.55 + Math.random() * 1.15);
+    // 낙하 속도에 변화를 주되, 너무 빠르면 못 먹고 지나가버려서 위쪽을 눌러 잡았다
+    const vy = (110 + level * 6) * (H / BASE_H) * (0.6 + Math.random() * 0.65);
     items.push({
       type: pick.type, emoji: pick.emoji,
       x: r + Math.random() * (W - r * 2), y: -r - 10,
