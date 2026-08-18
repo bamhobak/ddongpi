@@ -439,6 +439,8 @@
         augCount[a.id] = (augCount[a.id] || 0) + 1;
         augScreen.classList.add("hidden");
         state = STATE.PLAY;
+        // 멈춰 있던 똥이 코앞에 있을 수 있으니 0.5초 무적으로 빠져나갈 틈을 준다
+        invUntil = Math.max(invUntil, performance.now() + 500);
         popText(player.x, player.y - 70, a.ic + " " + a.nm, "#ffd23f", 24);
         beep(900, .09, "square", .05);
         beep(1350, .13, "square", .05);
