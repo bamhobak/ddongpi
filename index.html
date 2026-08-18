@@ -391,6 +391,7 @@
     itemRateMul: 1,     // 아이템 등장 간격 배율(작을수록 자주)
     feverRateMul: 1,    // 뚜니핑 낙하 간격 배율(작을수록 많이 쏟아짐)
     giant: 0,           // 대왕 뚜니핑 등장 스택
+    magnet: 0,          // 아이템 자석 반경 (1회 한정 증강)
     maxLives: 5
   };
   let augCount = {};    // 증강별 획득 횟수
@@ -414,6 +415,8 @@
       go: () => { aug.poopMul *= 0.88; } },
     { id: "umbrella3",  ic: "☂️", nm: "우산 3개",   ds: "방패 3개를 한 번에 얻는다",
       go: () => { shields += 3; } },
+    { id: "magnet",     ic: "🧲", nm: "자석",       ds: "넓은 범위의 아이템이 끌려온다 (1회 한정)",
+      once: true, go: () => { aug.magnet = 240; } },
     { id: "lucky",      ic: "🍀", nm: "행운",       ds: "아이템이 25% 더 자주 등장",
       go: () => { aug.itemRateMul *= 0.8; } },
     { id: "giant",      ic: "🌝", nm: "대왕 뚜니핑", ds: "뚜니핑 타임에 2배 크기 대왕 등장 (225점)",
@@ -442,7 +445,8 @@
     augTitle.textContent = augTotal > 1
       ? "🌕 보름달! 증강 " + augTotal + "연속 (" + (augTotal - augRemain + 1) + "/" + augTotal + ")"
       : "🌙 증강 선택";
-    const pool = AUGMENTS.slice();
+    // once 증강은 이미 가진 것이면 후보에서 제외한다
+    const pool = AUGMENTS.filter(a => !(a.once && augCount[a.id]));
     const picks = [];
     while (picks.length < 3 && pool.length) {
       picks.push(pool.splice(Math.floor(Math.random() * pool.length), 1)[0]);
@@ -534,7 +538,7 @@
     augCount = {};
     aug.feverBonus = 0; aug.dodgeMul = 1; aug.starMul = 1; aug.timeMul = 1;
     aug.feverScoreMul = 1; aug.fallMul = 1; aug.hitboxMul = 1; aug.poopMul = 1;
-    aug.itemRateMul = 1; aug.feverRateMul = 1; aug.giant = 0; aug.maxLives = 5;
+    aug.itemRateMul = 1; aug.feverRateMul = 1; aug.giant = 0; aug.magnet = 0; aug.maxLives = 5;
     augScreen.classList.add("hidden");
     facing = "right";
     player.x = player.tx = W / 2;
@@ -739,6 +743,14 @@
       if (it.bob !== undefined) it.bob += dt * 4;
 
       const dx = it.x - player.x, dy = it.y - (player.y + player.hy);
+      if (aug.magnet > 0 && it.type !== "poop") {
+        const d = Math.hypot(dx, dy);
+        if (d < aug.magnet && d > 1) {
+          const pull = 520 * dt * (1 - d / aug.magnet) + 60 * dt;
+          it.x -= dx / d * pull;
+          it.y -= dy / d * pull * 0.55;
+        }
+      }
       const hit = Math.hypot(dx, dy) < it.r + player.r * .78 * aug.hitboxMul;
 
       if (hit) {
