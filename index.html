@@ -296,7 +296,7 @@
 
   /* 전체 난이도 배율. 낙하 속도와 낙하 빈도에 각각 제곱근을 적용해서
      둘을 합친 체감 난이도가 정확히 이 배율이 되게 한다. 값 하나만 고치면 된다. */
-  const DIFF = 1.1;
+  const DIFF = 1.0;
   const DIFF_F = Math.sqrt(DIFF);    // 1.0488
 
   function layout() {
@@ -434,7 +434,7 @@
       once: true, go: () => { aug.magnet = 240; } },
     { id: "lucky",      ic: "🍀", nm: "행운",       ds: "아이템이 25% 더 자주 등장",
       go: () => { aug.itemRateMul *= 0.8; } },
-    { id: "giant",      ic: "🌝", nm: "대왕 뚜니핑", ds: "뚜니핑 타임에 2배 크기 대왕 등장 (225점)",
+    { id: "giant",      ic: "🌝", nm: "대왕 뚜니핑", ds: "뚜니핑 타임에 2배 크기 대왕 등장 (110점)",
       go: () => { aug.giant++; } },
     { id: "downpour",   ic: "🌧️", nm: "뚜니핑 폭우", ds: "뚜니핑 타임 낙하량 +40%",
       go: () => { aug.feverRateMul /= 1.4; } }
@@ -572,17 +572,17 @@
   /* ---------- 스폰 ---------- */
   /* 뚜니핑 타임 낙하물 크기 등급 — 클수록 드물고 점수가 크다 */
   const FEVER_SIZES = [
-    { min: 14, max: 18, score: 3,  w: 22 },
-    { min: 18, max: 22, score: 5,  w: 22 },
-    { min: 22, max: 26, score: 10, w: 18 },
-    { min: 26, max: 31, score: 15, w: 14 },
-    { min: 31, max: 37, score: 20, w: 11 },
-    { min: 37, max: 44, score: 30, w: 8  },
-    { min: 44, max: 52, score: 50, w: 5  },
-    { min: 52, max: 62, score: 75, w: 3  }   // 초대형 — 가장 드물다
+    { min: 14, max: 18, score: 2,  w: 22 },
+    { min: 18, max: 22, score: 3,  w: 22 },
+    { min: 22, max: 26, score: 5,  w: 18 },
+    { min: 26, max: 31, score: 8,  w: 14 },
+    { min: 31, max: 37, score: 10, w: 11 },
+    { min: 37, max: 44, score: 15, w: 8  },
+    { min: 44, max: 52, score: 25, w: 5  },
+    { min: 52, max: 62, score: 40, w: 3  }   // 초대형 — 가장 드물다
   ];
   // 대왕 뚜니핑 — 기존 최대(52~62)의 2배 크기, 점수는 최대 등급(75)의 3배
-  const GIANT = { min: 104, max: 124, score: 225, w: 3, giant: true };
+  const GIANT = { min: 104, max: 124, score: 110, w: 3, giant: true };
   function pickFeverSize() {
     const list = aug.giant > 0
       ? FEVER_SIZES.concat([{ min: GIANT.min, max: GIANT.max, score: GIANT.score,
@@ -810,28 +810,28 @@
             // 크기가 곧 점수. 뚜니핑 타임 중 생성된 건 자기 점수를 갖고 있고,
             // 뚜니핑 타임 전에 떨어지던 일반 똥은 크기로 환산한다.
             let gain = it.gain;
-            if (!gain) gain = it.sz < 18 ? 3 : (it.sz < 23 ? 10 : 20);
+            if (!gain) gain = it.sz < 18 ? 2 : (it.sz < 23 ? 5 : 10);
             let tone, burstN, note, textSize;
-            if (gain >= 225)     { tone = "#c86bff"; burstN = 80; note = 2200; textSize = 48; }
-            else if (gain >= 75) { tone = "#ff2170"; burstN = 54; note = 2000; textSize = 40; }
-            else if (gain >= 50) { tone = "#ff3b3b"; burstN = 42; note = 1800; textSize = 34; }
-            else if (gain >= 30) { tone = "#ff6a2a"; burstN = 34; note = 1650; textSize = 30; }
-            else if (gain >= 20) { tone = "#ff8f3a"; burstN = 26; note = 1500; textSize = 27; }
-            else if (gain >= 15) { tone = "#ffcc33"; burstN = 18; note = 1350; textSize = 24; }
-            else if (gain >= 10) { tone = "#ffd23f"; burstN = 12; note = 1150; textSize = 22; }
+            if (gain >= 110)     { tone = "#c86bff"; burstN = 80; note = 2200; textSize = 48; }
+            else if (gain >= 40) { tone = "#ff2170"; burstN = 54; note = 2000; textSize = 40; }
+            else if (gain >= 25) { tone = "#ff3b3b"; burstN = 42; note = 1800; textSize = 34; }
+            else if (gain >= 15) { tone = "#ff6a2a"; burstN = 34; note = 1650; textSize = 30; }
+            else if (gain >= 10) { tone = "#ff8f3a"; burstN = 26; note = 1500; textSize = 27; }
+            else if (gain >= 8)  { tone = "#ffcc33"; burstN = 18; note = 1350; textSize = 24; }
+            else if (gain >= 5)  { tone = "#ffd23f"; burstN = 12; note = 1150; textSize = 22; }
             else                 { tone = "#ffe3a8"; burstN = 8;  note = 900;  textSize = 22; }
             gain = Math.round(gain * aug.feverScoreMul);
             score += gain;
             burst(it.x, it.y, tone, burstN);
             // 큰 건 항상, 중간은 절반만 표시 — 작은 건 화면이 지저분해지니 생략
-            if (gain >= 15 || (gain >= 10 && Math.random() < .5)) {
+            if (gain >= 8 || (gain >= 5 && Math.random() < .5)) {
               popText(it.x, it.y, "+" + gain, tone, textSize);
             }
-            if (gain >= 30) {
-              shake = Math.max(shake, gain >= 225 ? 32 : (gain >= 75 ? 22 : (gain >= 50 ? 16 : 10)));
+            if (gain >= 15) {
+              shake = Math.max(shake, gain >= 110 ? 32 : (gain >= 40 ? 22 : (gain >= 25 ? 16 : 10)));
             }
             items.splice(i, 1);
-            if (gain >= 20 || Math.random() < .5) beep(note + Math.random() * 200, .06, "square", .04);
+            if (gain >= 25 || Math.random() < .5) beep(note + Math.random() * 200, .06, "square", .04);
             continue;
           }
           if (!invincible) {
