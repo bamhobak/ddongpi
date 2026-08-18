@@ -420,8 +420,8 @@
       go: () => { aug.itemRateMul *= 0.8; } },
     { id: "giant",      ic: "🌝", nm: "대왕 뚜니핑", ds: "뚜니핑 타임에 2배 크기 대왕 등장 (225점)",
       go: () => { aug.giant++; } },
-    { id: "downpour",   ic: "🌧️", nm: "뚜니핑 폭우", ds: "뚜니핑 타임 낙하량 +25%",
-      go: () => { aug.feverRateMul *= 0.8; } }
+    { id: "downpour",   ic: "🌧️", nm: "뚜니핑 폭우", ds: "뚜니핑 타임 낙하량 +40%",
+      go: () => { aug.feverRateMul /= 1.4; } }
   ];
 
   const augScreen = document.getElementById("augScreen");
