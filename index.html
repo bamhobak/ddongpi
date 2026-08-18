@@ -371,7 +371,7 @@
   const HELPER_ASPECT = 0.793;   // 이미지 가로/세로
   const HELPER_H = 110;          // 화면에 그릴 높이 (기존 96에서 15% 확대)
   const HELPER_R = 53;           // 똥을 부수는 반경 (크기에 맞춰 함께 확대)
-  function helperScale() { return aug.helperRush ? 3 : 1; }   // 히든 '대폭주' 시 3배
+  function helperScale() { return aug.helperRush ? 2 : 1; }   // 히든 '대폭주' 시 2배
   let helpers = [];
   let helperTimer = 0;
   let helperQueue = 0;      // 이번 차례에 아직 안 나온 인원
@@ -1444,7 +1444,11 @@
     g.addColorStop(0.5, "#8d5c31");
     g.addColorStop(1, "#5c3a1d");
     ctx.beginPath();
-    for (const t of POOP_TIERS) ctx.ellipse(0, t.cy * S, t.rx * S, t.ry * S, 0, 0, 6.283);
+    for (const t of POOP_TIERS) {
+      // moveTo 없이 ellipse 를 연달아 부르면 앞 타원 끝점에서 직선이 이어져 버린다
+      ctx.moveTo(t.rx * S, t.cy * S);
+      ctx.ellipse(0, t.cy * S, t.rx * S, t.ry * S, 0, 0, 6.283);
+    }
     ctx.moveTo(-S * 0.10, -S * 0.25);                       // 꼭지
     ctx.quadraticCurveTo(0, -S * 0.46, S * 0.10, -S * 0.25);
     ctx.fillStyle = g;
