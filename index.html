@@ -479,9 +479,18 @@
     // once 증강은 이미 가진 것이면 제외하고, 히든 증강은 조건을 만족할 때만 후보에 넣는다
     const pool = AUGMENTS.filter(a =>
       !(a.once && augCount[a.id]) && (!a.hidden || a.cond()));
+    // 히든 증강은 일반 증강의 절반 확률로만 후보에 오른다
     const picks = [];
     while (picks.length < 3 && pool.length) {
-      picks.push(pool.splice(Math.floor(Math.random() * pool.length), 1)[0]);
+      let total = 0;
+      for (const a of pool) total += a.hidden ? 0.5 : 1;
+      let n = Math.random() * total, idx = pool.length - 1;
+      for (let i = 0; i < pool.length; i++) {
+        const w = pool[i].hidden ? 0.5 : 1;
+        if (n < w) { idx = i; break; }
+        n -= w;
+      }
+      picks.push(pool.splice(idx, 1)[0]);
     }
     augList.innerHTML = "";
     for (const a of picks) {
