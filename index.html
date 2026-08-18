@@ -349,6 +349,19 @@
     img.src = "player_" + key + ".png";
   }
 
+  // 도와줘 정연핑 — 아래에서 위로 날아가며 지나간 자리의 똥을 부순다
+  let helperImg = null;
+  {
+    const img = new Image();
+    img.onload = () => { helperImg = img; };
+    img.src = "helper.png";
+  }
+  const HELPER_ASPECT = 0.793;   // 이미지 가로/세로
+  const HELPER_H = 96;           // 화면에 그릴 높이
+  const HELPER_R = 46;           // 똥을 부수는 반경
+  let helpers = [];
+  let helperTimer = 0;
+
   // 뚜니핑 타임에는 똥 이모지 대신 이 이미지가 떨어진다
   let feverPoop = null;
   {
@@ -391,6 +404,7 @@
     feverRateMul: 1,    // 뚜니핑 낙하 간격 배율(작을수록 많이 쏟아짐)
     giant: 0,           // 대왕 뚜니핑 등장 스택
     magnet: 0,          // 아이템 자석 반경 (1회 한정 증강)
+    helper: false,      // 도와줘 정연핑 (1회 한정 증강)
     maxLives: 5
   };
   let augCount = {};    // 증강별 획득 횟수
@@ -414,6 +428,8 @@
       go: () => { aug.poopMul *= 0.88; } },
     { id: "umbrella3",  ic: "☂️", nm: "우산 3개",   ds: "방패 3개를 한 번에 얻는다",
       go: () => { shields += 3; } },
+    { id: "helper",     ic: "🦸", nm: "도와줘 정연핑", ds: "3초마다 날아와 지나가는 자리의 똥을 부순다 (1회 한정)",
+      once: true, go: () => { aug.helper = true; helperTimer = 0.6; } },
     { id: "magnet",     ic: "🧲", nm: "자석",       ds: "넓은 범위의 아이템이 끌려온다 (1회 한정)",
       once: true, go: () => { aug.magnet = 240; } },
     { id: "lucky",      ic: "🍀", nm: "행운",       ds: "아이템이 25% 더 자주 등장",
@@ -537,7 +553,8 @@
     augCount = {};
     aug.feverBonus = 0; aug.dodgeMul = 1; aug.starMul = 1; aug.timeMul = 1;
     aug.feverScoreMul = 1; aug.fallMul = 1; aug.hitboxMul = 1; aug.poopMul = 1;
-    aug.itemRateMul = 1; aug.feverRateMul = 1; aug.giant = 0; aug.magnet = 0; aug.maxLives = 5;
+    aug.itemRateMul = 1; aug.feverRateMul = 1; aug.giant = 0; aug.magnet = 0;
+    aug.helper = false; helpers = []; helperTimer = 0; aug.maxLives = 5;
     augScreen.classList.add("hidden");
     facing = "right";
     player.x = player.tx = W / 2;
@@ -704,6 +721,41 @@
 
     player.hy = headOffset(currentSprite(now));
 
+    // ---- 도와줘 정연핑 ----
+    if (aug.helper) {
+      helperTimer -= dt;
+      if (helperTimer <= 0) {
+        helperTimer = 3;                       // 3초에 한 번
+        const fromLeft = Math.random() < 0.5;  // 아래 좌/우 구석에서 비스듬히 솟아오른다
+        const vy = -(560 + Math.random() * 160);
+        const vx = (fromLeft ? 1 : -1) * (190 + Math.random() * 170);
+        helpers.push({
+          x: fromLeft ? -40 + Math.random() * (W * 0.35)
+                      : W + 40 - Math.random() * (W * 0.35),
+          y: H + 60,
+          vx: vx, vy: vy
+        });
+        beep(760, .12, "triangle", .05);
+        beep(1140, .14, "triangle", .04);
+      }
+    }
+    for (let k = helpers.length - 1; k >= 0; k--) {
+      const hp = helpers[k];
+      hp.x += hp.vx * dt;
+      hp.y += hp.vy * dt;
+      // 지나가는 자리의 똥을 부순다
+      for (let i = items.length - 1; i >= 0; i--) {
+        const it = items[i];
+        if (it.type !== "poop") continue;
+        if (Math.hypot(it.x - hp.x, it.y - hp.y) < HELPER_R + it.r) {
+          burst(it.x, it.y, "#ffd23f", 14);
+          score += 3 * aug.dodgeMul;
+          items.splice(i, 1);
+        }
+      }
+      if (hp.y < -HELPER_H - 40 || hp.x < -160 || hp.x > W + 160) helpers.splice(k, 1);
+    }
+
     const powered = now < powerUntil;      // 🔥 뚜니핑 타임
     const invincible = now < invUntil;
 
@@ -812,7 +864,7 @@
             if (navigator.vibrate) navigator.vibrate([40, 40, 80]);
           }
           if (it.type === "umbrella") {
-            shields = Math.max(shields, 1);      // 아이템으로는 1개까지만 (이미 여러 개면 유지)
+            shields = Math.max(shields, Math.min(shields + 1, 3));   // 아이템으로는 3개까지 누적
             popText(player.x, player.y - 60, "☂️ 방패!", "#7ec8ff");
             beep(900, .12, "triangle", .05);
           }
@@ -1261,6 +1313,20 @@
     ctx.restore();
   }
 
+  // 원본 그림이 '오른쪽 → 왼쪽' 방향이라, 왼쪽 → 오른쪽으로 날 때만 좌우를 뒤집는다
+  function drawHelpers() {
+    if (!helperImg) return;
+    const hh = HELPER_H, hw = hh * HELPER_ASPECT;
+    for (const hp of helpers) {
+      ctx.save();
+      ctx.translate(hp.x, hp.y);
+      ctx.rotate(Math.atan2(hp.vx, -hp.vy) * 0.8);   // 진행 방향으로 기울이기
+      if (hp.vx > 0) ctx.scale(-1, 1);               // 오른쪽으로 갈 때 반전
+      ctx.drawImage(helperImg, -hw / 2, -hh / 2, hw, hh);
+      ctx.restore();
+    }
+  }
+
   function drawItems() {
     ctx.textAlign = "center";
     ctx.textBaseline = "middle";
@@ -1384,6 +1450,7 @@
     if (shake > 0) ctx.translate((Math.random() - .5) * shake, (Math.random() - .5) * shake);
     drawBackground(now);
     drawItems();
+    drawHelpers();
     if (state !== STATE.OVER) drawPlayer(now);
     drawEffects();
     ctx.restore();
