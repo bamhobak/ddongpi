@@ -8,7 +8,7 @@ create table if not exists public.ddongpi_scores (
   level      integer,
   created_at timestamptz not null default now(),
   constraint ddongpi_name_len    check (char_length(btrim(name)) between 1 and 12),
-  constraint ddongpi_score_range check (score >= 0 and score <= 1000000)
+  constraint ddongpi_score_range check (score >= 0 and score <= 100000000)
 );
 
 create index if not exists ddongpi_scores_rank_idx
@@ -24,9 +24,14 @@ create policy ddongpi_read on public.ddongpi_scores
 drop policy if exists ddongpi_insert on public.ddongpi_scores;
 create policy ddongpi_insert on public.ddongpi_scores
   for insert to anon, authenticated
-  with check (char_length(btrim(name)) between 1 and 12 and score >= 0 and score <= 1000000);
+  with check (char_length(btrim(name)) between 1 and 12 and score >= 0 and score <= 100000000);
 
 grant select, insert on public.ddongpi_scores to anon, authenticated;
 grant usage, select on sequence public.ddongpi_scores_id_seq to anon, authenticated;
 
 notify pgrst, 'reload schema';
+
+-- 이미 만들어진 테이블의 점수 상한을 100만 → 1억으로 올릴 때는 아래만 실행하면 됩니다.
+-- alter table public.ddongpi_scores drop constraint if exists ddongpi_score_range;
+-- alter table public.ddongpi_scores add constraint ddongpi_score_range
+--   check (score >= 0 and score <= 100000000);
