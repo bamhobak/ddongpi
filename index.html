@@ -855,9 +855,12 @@
           if (!invincible) {
             if (shields > 0) {
               shields--;
+              invUntil = now + 1500;        // 목숨을 잃었을 때와 같은 무적 시간
+              shake = Math.max(shake, 14);
               burst(it.x, it.y, "#7ec8ff", 20);
               popText(player.x, player.y - 60, "☂️ 방어!", "#7ec8ff");
               beep(400, .12, "triangle", .06);
+              if (navigator.vibrate) navigator.vibrate(60);
             } else {
               lives--;
               invUntil = now + 1500;
