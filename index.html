@@ -632,7 +632,7 @@
   /* 낙하 각도. 좌우 속도를 낙하 속도에 비례시켜서 레벨이 올라도 기울기 느낌이 일정하다.
      (Math.random() - Math.random()) 은 0 근처가 흔하고 양 끝이 드문 삼각분포 →
      대부분은 적당히 기울고 일부만 크게 비스듬히 떨어진다. */
-  const SPREAD_POOP  = 0.34;   // 최대 약 19도
+  const SPREAD_POOP  = 0.22;   // 최대 약 12도
   const SPREAD_BONUS = 0.28;   // 아이템은 조금 얌전하게 (약 16도)
 
   function spawnPoop(mul) {
