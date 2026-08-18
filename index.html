@@ -281,8 +281,17 @@
   /* ---------- 화면 크기 맞추기 ---------- */
   const DRAW_R = 40;                 // 캐릭터 도안 기준 반지름
   const GROUND_H = 85;               // 잔디 높이 — 이만큼 캐릭터가 위로 올라간다
+  const FOOT = 62;                   // player.y 에서 '발이 닿는 선'까지의 거리 (화면 고정)
   const PLAYER_UP = GROUND_H + 54;   // 화면 바닥에서 캐릭터 머리 중심까지
-  const player = { x: 240, y: H - 139, r: 32, tx: 240, tilt: 0 };  // 실제 크기 = 도안의 80%
+  const player = { x: 240, y: H - 139, r: 32, tx: 240, tilt: 0, hy: 0 };
+  // hy = 발을 바닥에 고정했을 때 머리(판정 중심)가 player.y 에서 얼마나 떨어지는지.
+  // 그림마다 머리·다리 비율이 달라서 이 값으로 보정해야 그림자 높이와 판정이 어긋나지 않는다.
+  function currentSprite(now) {
+    if (now < hurtUntil && SPR.hurt.img) return SPR.hurt;
+    return SPR[facing].img ? SPR[facing] : null;
+  }
+  function spriteHeight(spr) { return (player.r * 2 * aug.hitboxMul) / spr.head; }
+  function headOffset(spr) { return spr ? FOOT - spriteHeight(spr) * (1 - spr.cy) : 0; }  // 실제 크기 = 도안의 80%
 
   const MIN_W = 340, MAX_W = 620;    // 논리 가로 허용 범위
 
@@ -650,6 +659,8 @@
     player.tilt += (((player.x - prev) / Math.max(dt, .001) / 900) - player.tilt) * Math.min(1, dt * 10);
     player.tilt = Math.max(-.35, Math.min(.35, player.tilt));
 
+    player.hy = headOffset(currentSprite(now));
+
     const powered = now < powerUntil;      // 🔥 뚜니핑 타임
     const invincible = now < invUntil;
 
@@ -687,7 +698,7 @@
       if (it.x > W - it.r) { it.x = W - it.r; it.vx = -Math.abs(it.vx); }
       if (it.bob !== undefined) it.bob += dt * 4;
 
-      const dx = it.x - player.x, dy = it.y - player.y;
+      const dx = it.x - player.x, dy = it.y - (player.y + player.hy);
       const hit = Math.hypot(dx, dy) < it.r + player.r * .78 * aug.hitboxMul;
 
       if (hit) {
@@ -1080,20 +1091,21 @@
       // 아픈 그림은 잘 보이도록 깜빡임을 약하게
       ctx.globalAlpha = blink ? (hurting ? .62 : .35) : 1;
 
-      // 발밑 그림자
+      // 발밑 그림자 — 그림 종류·크기와 무관하게 항상 같은 높이
       ctx.save();
       ctx.globalAlpha *= .22;
       ctx.fillStyle = "#000";
       ctx.beginPath();
-      ctx.ellipse(0, sh * (1 - spr.cy) - 4, sw * .3, 7, 0, 0, 6.283);
+      ctx.ellipse(0, FOOT - 4, sw * .3, 7, 0, 0, 6.283);
       ctx.fill();
       ctx.restore();
 
-      ctx.drawImage(spr.img, -sw * spr.cx, -sh * spr.cy, sw, sh);
+      // 발이 항상 FOOT 선에 닿도록 아래를 기준으로 그린다 (작아져도 뜨지 않는다)
+      ctx.drawImage(spr.img, -sw * spr.cx, FOOT - sh, sw, sh);
 
       if (now < powerUntil) {
         ctx.beginPath();
-        ctx.arc(0, 0, player.r * aug.hitboxMul + 14 + Math.sin(now / 90) * 3, 0, 6.283);
+        ctx.arc(0, player.hy, player.r * aug.hitboxMul + 14 + Math.sin(now / 90) * 3, 0, 6.283);
         ctx.strokeStyle = "rgba(255,255,255,.85)";
         ctx.lineWidth = 4; ctx.setLineDash([10, 8]);
         ctx.lineDashOffset = -now / 20;
@@ -1101,14 +1113,14 @@
         ctx.setLineDash([]);
         ctx.globalAlpha = .22 + feverT * .18;
         ctx.fillStyle = "#fff";
-        ctx.beginPath(); ctx.arc(0, 0, player.r * aug.hitboxMul + 14, 0, 6.283); ctx.fill();
+        ctx.beginPath(); ctx.arc(0, player.hy, player.r * aug.hitboxMul + 14, 0, 6.283); ctx.fill();
         ctx.globalAlpha = 1;
       }
       ctx.restore();
 
       if (shield) {
         ctx.save();
-        ctx.translate(player.x, player.y - player.r * aug.hitboxMul - 21);
+        ctx.translate(player.x, player.y + player.hy - player.r * aug.hitboxMul - 21);
         ctx.font = (32 * aug.hitboxMul) + "px serif";
         ctx.textAlign = "center"; ctx.textBaseline = "middle";
         ctx.fillText("☂️", 0, 0);
