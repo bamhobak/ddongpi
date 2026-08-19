@@ -501,10 +501,10 @@
     { id: "helper",     ic: "🦸", nm: "도와줘 정연핑", ds: "정연핑이 지나가는 자리의 똥을 부순다",
       go: () => { aug.helper++; helperTimer = Math.min(helperTimer, 0.6); } },
     { id: "helperRush", ic: "💥", nm: "정연핑 대폭주", ds: "정연핑!!!?? 무엇!!?!",
-      hidden: true, once: true, cond: () => aug.helper > 0,
+      hidden: true, once: true, cond: () => aug.helper >= 2,   // 정연핑 2개 이상
       go: () => { aug.helperRush = true; } },
     { id: "hungry",     ic: "😋", nm: "배고픈 정연핑", ds: "정연핑이 아이템을 대신 먹어준다",
-      hidden: true, once: true, cond: () => aug.magnet > 0,
+      hidden: true, once: true, cond: () => aug.helper > 0 && aug.magnet > 0,   // 정연핑 + 자석
       go: () => { aug.hungry = true; } },
     { id: "magnet",     ic: "🧲", nm: "자석",       ds: "넓은 범위의 아이템이 끌려온다",
       once: true, go: () => { aug.magnet = 240; } },
