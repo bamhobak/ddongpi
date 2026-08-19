@@ -216,6 +216,14 @@
   #devBody tr + tr td { border-top: 1px solid rgba(255,255,255,.06); }
   #devBody .num { color: #fff; font-variant-numeric: tabular-nums; }
   #devMsg { font-size: 12px; color: #ff8f8f; min-height: 14px; }
+  #devBody .del {
+    appearance: none; border: 0; cursor: pointer;
+    font: inherit; font-size: 11px; font-weight: 700;
+    color: #fff; background: rgba(255,80,80,.5);
+    border-radius: 7px; padding: 3px 8px;
+  }
+  #devBody .del:hover { background: rgba(255,80,80,.85); }
+  #devBody .del:disabled { opacity: .4; cursor: default; }
 
   #ver {
     position: absolute;
@@ -257,7 +265,7 @@
     </div>
 
     <div id="devScreen" class="screen hidden">
-      <h2>개발자 통계</h2>
+      <h2>개발자 페이지</h2>
       <div id="devPwRow">
         <input id="devPw" type="password" inputmode="numeric" maxlength="16" autocomplete="off">
         <button id="devGo">확인</button>
@@ -333,7 +341,7 @@
   const elRank  = document.getElementById("rankLine");
   const elTitle = document.getElementById("overTitle");
 
-  const GAME_VERSION = "v1.0.08";   // 코드를 고칠 때마다 뒤 두 자리를 올린다
+  const GAME_VERSION = "v1.0.09";   // 코드를 고칠 때마다 뒤 두 자리를 올린다
   document.getElementById("ver").textContent = GAME_VERSION;
 
   const LS_BEST = "epjpddongpi_best";
@@ -1479,6 +1487,67 @@
            p2(k.getUTCHours()) + ":" + p2(k.getUTCMinutes());
   }
 
+  let devPwOK = "";          // 인증에 성공한 비밀번호 (삭제할 때 다시 쓴다)
+
+  // 이번 주 기록을 원본 그대로(중복 포함) 불러온다 — 지울 대상을 고르기 위해
+  async function devFetchRaw() {
+    const url = SB_URL + "/rest/v1/" + SB_TABLE +
+      "?select=id,name,score,level,created_at" +
+      "&created_at=gte." + encodeURIComponent(new Date(weekStartMs(0)).toISOString()) +
+      "&order=score.desc&limit=40";
+    const res = await fetch(url, { headers: sbHeaders() });
+    if (!res.ok) throw new Error("HTTP " + res.status);
+    return res.json();
+  }
+
+  async function devDelete(id, btn) {
+    if (!confirm("이 기록을 지울까요?")) return;
+    btn.disabled = true;
+    btn.textContent = "…";
+    try {
+      const res = await fetch(SB_URL + "/rest/v1/rpc/ddongpi_delete", {
+        method: "POST",
+        headers: sbHeaders({ "Content-Type": "application/json" }),
+        body: JSON.stringify({ pw: devPwOK, ids: [id] })
+      });
+      if (!res.ok) throw new Error("HTTP " + res.status);
+      await devRenderRaw();        // 목록 새로고침
+      refreshBoards();             // 시작·게임오버 화면 순위표도 갱신
+    } catch (e) {
+      btn.disabled = false;
+      btn.textContent = "삭제";
+      devMsg.textContent = "삭제하지 못했습니다 (함수 설치 필요)";
+    }
+  }
+
+  async function devRenderRaw() {
+    const old = document.getElementById("devRawSec");
+    if (old) old.remove();
+    let rows = [];
+    try { rows = await devFetchRaw(); } catch (e) { /* 아래에서 안내 */ }
+    const box = devSection("이번 주 기록 (지우기)",
+      ["이름", "점수", "Lv", ""],
+      rows.length ? rows.map(r => [
+        r.name,
+        { t: Number(r.score || 0).toLocaleString(), c: "num" },
+        { t: r.level == null ? "-" : r.level, c: "num" },
+        { t: "", c: "" }
+      ]) : [["기록 없음", "", "", ""]]);
+    box.id = "devRawSec";
+    // 마지막 칸에 삭제 버튼을 심는다
+    const trs = box.querySelectorAll("tr");
+    rows.forEach((r, i) => {
+      const tr = trs[i + 1];               // 0번은 머리글
+      if (!tr) return;
+      const btn = document.createElement("button");
+      btn.className = "del";
+      btn.textContent = "삭제";
+      btn.addEventListener("click", () => devDelete(r.id, btn));
+      tr.lastChild.appendChild(btn);
+    });
+    devBody.appendChild(box);
+  }
+
   async function devLoad(pw) {
     devMsg.textContent = "불러오는 중…";
     try {
@@ -1490,7 +1559,9 @@
       if (!res.ok) { devMsg.textContent = "비밀번호가 틀렸습니다"; return; }
       devMsg.textContent = "";
       devPw.value = "";
+      devPwOK = pw;
       renderDevStats(await res.json());
+      await devRenderRaw();
       // 이번 주 랭킹은 별도 테이블이라 따로 불러와 아래에 덧붙인다 (레벨·등록시각까지)
       try {
         const rows = await fetchRange(weekStartMs(0), null, TOP_N);
