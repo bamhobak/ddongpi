@@ -509,9 +509,12 @@
   let augRemain = 0;      // 남은 연속 선택 횟수
   let augTotal = 1;
 
+  let augPauseAt = 0;      // 증강 고르는 동안 흘러간 시간을 나중에 되돌려주기 위한 기준
+
   function openAugment(times) {
     augTotal = times || 1;
     augRemain = augTotal;
+    augPauseAt = performance.now();
     state = STATE.AUG;
     showAugmentPick();
     beep(1100, .1, "triangle", .05);
@@ -573,6 +576,13 @@
         }
         augScreen.classList.add("hidden");
         state = STATE.PLAY;
+        /* 증강을 고르는 동안 게임은 멈춰 있었지만 뚜니핑 타임·무적 시간은
+           실제 시계로 재고 있어서 그대로 두면 고민한 만큼 깎여 나간다.
+           멈춰 있던 시간만큼 마감 시각을 뒤로 밀어 원래 남은 시간을 돌려준다. */
+        const paused = performance.now() - augPauseAt;
+        if (powerUntil > 0) powerUntil += paused;
+        if (invUntil  > 0) invUntil  += paused;
+        if (hurtUntil > 0) hurtUntil += paused;
         // 멈춰 있던 똥이 코앞에 있을 수 있으니 0.5초 무적으로 빠져나갈 틈을 준다
         invUntil = Math.max(invUntil, performance.now() + 500);
         popText(player.x, player.y - 70, a.ic + " " + a.nm, "#ffd23f", 24);
