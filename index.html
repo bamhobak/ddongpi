@@ -341,7 +341,7 @@
   const elRank  = document.getElementById("rankLine");
   const elTitle = document.getElementById("overTitle");
 
-  const GAME_VERSION = "v1.0.09";   // 코드를 고칠 때마다 뒤 두 자리를 올린다
+  const GAME_VERSION = "v1.0.10";   // 코드를 고칠 때마다 뒤 두 자리를 올린다
   document.getElementById("ver").textContent = GAME_VERSION;
 
   const LS_BEST = "epjpddongpi_best";
@@ -1494,30 +1494,34 @@
     const url = SB_URL + "/rest/v1/" + SB_TABLE +
       "?select=id,name,score,level,created_at" +
       "&created_at=gte." + encodeURIComponent(new Date(weekStartMs(0)).toISOString()) +
-      "&order=score.desc&limit=40";
+      "&order=score.desc&limit=200";
     const res = await fetch(url, { headers: sbHeaders() });
     if (!res.ok) throw new Error("HTTP " + res.status);
     return res.json();
   }
 
-  async function devDelete(id, btn) {
-    if (!confirm("이 기록을 지울까요?")) return;
+  async function devDeleteIds(ids, btn, label) {
     btn.disabled = true;
     btn.textContent = "…";
     try {
       const res = await fetch(SB_URL + "/rest/v1/rpc/ddongpi_delete", {
         method: "POST",
         headers: sbHeaders({ "Content-Type": "application/json" }),
-        body: JSON.stringify({ pw: devPwOK, ids: [id] })
+        body: JSON.stringify({ pw: devPwOK, ids: ids })
       });
       if (!res.ok) throw new Error("HTTP " + res.status);
       await devRenderRaw();        // 목록 새로고침
       refreshBoards();             // 시작·게임오버 화면 순위표도 갱신
     } catch (e) {
       btn.disabled = false;
-      btn.textContent = "삭제";
+      btn.textContent = label;
       devMsg.textContent = "삭제하지 못했습니다 (함수 설치 필요)";
     }
+  }
+
+  function devDelete(id, btn) {
+    if (!confirm("이 기록을 지울까요?")) return;
+    devDeleteIds([id], btn, "삭제");
   }
 
   async function devRenderRaw() {
@@ -1534,6 +1538,18 @@
         { t: "", c: "" }
       ]) : [["기록 없음", "", "", ""]]);
     box.id = "devRawSec";
+    if (rows.length) {                      // 제목 옆에 일괄 삭제 버튼
+      const all = document.createElement("button");
+      all.className = "del";
+      all.style.marginLeft = "8px";
+      all.textContent = "전체 " + rows.length + "건 삭제";
+      all.addEventListener("click", () => {
+        if (!confirm("이번 주 기록 " + rows.length + "건을 모두 지울까요?
+되돌릴 수 없습니다.")) return;
+        devDeleteIds(rows.map(r => r.id), all, "전체 삭제");
+      });
+      box.querySelector("h4").appendChild(all);
+    }
     // 마지막 칸에 삭제 버튼을 심는다
     const trs = box.querySelectorAll("tr");
     rows.forEach((r, i) => {
