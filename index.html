@@ -341,7 +341,7 @@
   const elRank  = document.getElementById("rankLine");
   const elTitle = document.getElementById("overTitle");
 
-  const GAME_VERSION = "v1.0.10";   // 코드를 고칠 때마다 뒤 두 자리를 올린다
+  const GAME_VERSION = "v1.0.11";   // 코드를 고칠 때마다 뒤 두 자리를 올린다
   document.getElementById("ver").textContent = GAME_VERSION;
 
   const LS_BEST = "epjpddongpi_best";
@@ -1683,12 +1683,13 @@
   refreshLastWeek();
 
   function rankOf(s) {
-    // 실제 플레이 기록 분포로 잡은 기준 (중간값 약 17,000 / 상위10% 약 63,000 / 최고 약 112,000).
-    if (s < 3000)   return "🚽 똥밭에 굴렀다";
-    if (s < 8000)   return "🧻 그래도 휴지는 챙겼다";
-    if (s < 18000)  return "🏃 제법 잘 피하는데?";
-    if (s < 40000)  return "😎 똥 회피 고수";
-    if (s < 70000)  return "⚡ 똥을 초월한 자";
+    // 생존 점수를 1.7배로 낮춘 뒤의 분포 기준
+    // (중간값 약 6,700 / 상위25% 약 24,000 / 상위10% 약 52,000).
+    if (s < 2500)   return "🚽 똥밭에 굴렀다";
+    if (s < 4500)   return "🧻 그래도 휴지는 챙겼다";
+    if (s < 9000)   return "🏃 제법 잘 피하는데?";
+    if (s < 20000)  return "😎 똥 회피 고수";
+    if (s < 45000)  return "⚡ 똥을 초월한 자";
     if (s < 120000) return "👑 똥피하기 마스터";
     return "💩 똥신(糞神) 강림";
   }
