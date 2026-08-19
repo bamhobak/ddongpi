@@ -729,18 +729,25 @@
      각자의 평균 간격 = 기본 10초 ÷ 그 아이템의 비중 → 전체 등장 빈도는 예전과 같지만
      서로 독립이라 운이 맞으면 두세 개가 한꺼번에 쏟아진다. */
   const BONUS_W_TOTAL = BONUS.reduce((a, b) => a + b.w, 0);
-  const BONUS_BASE = 8.5;                // 아이템 전체의 평균 등장 간격(초)
+  const BONUS_BASE = 7.5;                // 아이템 전체의 평균 등장 간격(초)
 
   function bonusInterval(b) {
     const lvFactor = Math.max(0.5, 1 / (1 + (level - 1) * 0.06));   // 레벨이 오르면 더 자주
     const mean = BONUS_BASE / (b.w / BONUS_W_TOTAL) * aug.itemRateMul * lvFactor;
-    /* 지수분포로 뽑는다. 평균 간격은 그대로지만 "직전에 나왔는지"가 다음 등장에
-       전혀 영향을 주지 않아서, 연달아 두 번 나오기도 하고 한참 안 나오기도 한다.
+    /* 얼랑분포(지수 3개의 합). 평균 간격은 그대로 두고 편차만 줄인다.
+       지수분포 하나만 쓰면 "한참 안 나오다가 갑자기 몰리는" 편차가 너무 컸다.
+       종류별로 따로 도는 건 그대로라 여러 개가 한꺼번에 나오는 일은 여전히 생긴다.
        (0.4초 하한은 완전히 겹쳐 떨어지는 것만 막는 장치) */
-    return Math.max(0.4, -mean * Math.log(1 - Math.random()));
+    const u = Math.random() * Math.random() * Math.random();
+    return Math.max(0.4, -(mean / 3) * Math.log(u));
   }
   function resetBonusTimers() {
-    for (const b of BONUS) b.t = bonusInterval(b);
+    // 판이 시작될 때 첫 등장까지는 편차가 큰 지수분포로 — 매판 시작이 다르게 느껴지도록
+    const lvFactor = 1;
+    for (const b of BONUS) {
+      const mean = BONUS_BASE / (b.w / BONUS_W_TOTAL) * aug.itemRateMul * lvFactor;
+      b.t = Math.max(0.4, -mean * Math.log(1 - Math.random()));
+    }
   }
 
   function spawnBonus(picked) {
@@ -1832,11 +1839,16 @@
     }
   }
 
+  // 위쪽 두 봉우리가 둥글고 아래가 뾰족한 통통한 하트
   function heartPath(cx, cy, r) {
     ctx.beginPath();
-    ctx.moveTo(cx, cy + r * 0.85);
-    ctx.bezierCurveTo(cx - r * 1.45, cy - r * 0.35, cx - r * 0.5, cy - r * 1.35, cx, cy - r * 0.3);
-    ctx.bezierCurveTo(cx + r * 0.5, cy - r * 1.35, cx + r * 1.45, cy - r * 0.35, cx, cy + r * 0.85);
+    ctx.moveTo(cx, cy + r * 1.00);
+    ctx.bezierCurveTo(cx - r * 0.62, cy + r * 0.45, cx - r * 1.32, cy - r * 0.05, cx - r * 1.32, cy - r * 0.52);
+    ctx.bezierCurveTo(cx - r * 1.32, cy - r * 1.06, cx - r * 0.72, cy - r * 1.28, cx - r * 0.34, cy - r * 0.92);
+    ctx.bezierCurveTo(cx - r * 0.16, cy - r * 0.75, cx - r * 0.05, cy - r * 0.60, cx, cy - r * 0.50);
+    ctx.bezierCurveTo(cx + r * 0.05, cy - r * 0.60, cx + r * 0.16, cy - r * 0.75, cx + r * 0.34, cy - r * 0.92);
+    ctx.bezierCurveTo(cx + r * 0.72, cy - r * 1.28, cx + r * 1.32, cy - r * 1.06, cx + r * 1.32, cy - r * 0.52);
+    ctx.bezierCurveTo(cx + r * 1.32, cy - r * 0.05, cx + r * 0.62, cy + r * 0.45, cx, cy + r * 1.00);
     ctx.closePath();
   }
 
@@ -1878,18 +1890,18 @@
 
     // 목숨은 이모지 대신 직접 그린다.
     // iOS 이모지는 지정한 상단선보다 위로 튀어나와서 화면 밖으로 잘리는 문제가 있었다.
-    const hr = 8, hgap = 23, hy = top + 13;
+    const hr = 10.5, hgap = 30, hy = top + 16;
     for (let i = 0; i < lives; i++) {
-      const cx = W - 16 - hr - i * hgap;
-      ctx.fillStyle = "rgba(0,0,0,.25)";
-      heartPath(cx, hy + 1.5, hr * 1.08);
+      const cx = W - 18 - hr * 1.32 - i * hgap;
+      ctx.fillStyle = "rgba(70,8,20,.32)";                // 그림자
+      heartPath(cx, hy + 2.5, hr * 1.06);
       ctx.fill();
-      ctx.fillStyle = "#ff4d6d";
+      ctx.fillStyle = "#ff3d6a";
       heartPath(cx, hy, hr);
       ctx.fill();
-      ctx.fillStyle = "rgba(255,255,255,.55)";           // 광택
+      ctx.fillStyle = "rgba(255,255,255,.7)";             // 광택
       ctx.beginPath();
-      ctx.ellipse(cx - hr * 0.38, hy - hr * 0.42, hr * 0.22, hr * 0.15, -0.6, 0, 6.283);
+      ctx.ellipse(cx - hr * 0.55, hy - hr * 0.62, hr * 0.30, hr * 0.20, -0.56, 0, 6.283);
       ctx.fill();
     }
 
