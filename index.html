@@ -212,6 +212,7 @@
   #devBody th, #devBody td { padding: 3px 2px; text-align: right; white-space: nowrap; }
   #devBody th { color: #8b90a0; font-weight: 600; font-size: 11px; }
   #devBody td:first-child, #devBody th:first-child { text-align: left; }
+  #devBody .lft { text-align: left; white-space: normal; word-break: keep-all; }
   #devBody tr + tr td { border-top: 1px solid rgba(255,255,255,.06); }
   #devBody .num { color: #fff; font-variant-numeric: tabular-nums; }
   #devMsg { font-size: 12px; color: #ff8f8f; min-height: 14px; }
@@ -1277,7 +1278,8 @@
         name: name,
         score: Math.min(100000000, Math.max(0, sc)),
         level: lv,
-        device: deviceId
+        device: deviceId,
+        augs: augCount            // 그 판에서 고른 증강 (통계 화면에서 확인)
       })
     });
     if (!res.ok) throw new Error("HTTP " + res.status + " " + (await res.text()).slice(0, 120));
@@ -1393,6 +1395,13 @@
     return box;
   }
 
+  // {star50:2, lucky:1} → "별빛 증폭 x2, 행운"
+  function augLabel(augs) {
+    const keys = Object.keys(augs || {});
+    if (!keys.length) return "-";
+    return keys.map(k => (AUG_NAMES[k] || k) + (augs[k] > 1 ? " x" + augs[k] : "")).join(", ");
+  }
+
   function renderDevStats(data) {
     devBody.innerHTML = "";
     const su = data.summary || {};
@@ -1420,7 +1429,7 @@
       rec.length ? rec.map(r => [
         { t: Number(r.score || 0).toLocaleString(), c: "num" },
         { t: (r.secs || 0) + "초", c: "num" },
-        Object.keys(r.augs || {}).map(k => (AUG_NAMES[k] || k)).join(", ") || "-"
+        { t: augLabel(r.augs), c: "lft" }
       ]) : [["기록 없음", "", ""]]));
   }
 
@@ -1447,13 +1456,13 @@
       try {
         const rows = await fetchRange(weekStartMs(0), null, TOP_N);
         devBody.appendChild(devSection("이번 주 TOP " + TOP_N,
-          ["#", "이름", "점수", "Lv", "등록"],
+          ["#", "이름", "점수", "Lv", "증강"],
           rows.length ? rows.map((r, i) => [
             (i + 1) + "",
             r.name,
             { t: Number(r.score || 0).toLocaleString(), c: "num" },
             { t: r.level == null ? "-" : r.level, c: "num" },
-            { t: kstStamp(r.created_at), c: "num" }
+            { t: augLabel(r.augs), c: "lft" }
           ]) : [["", "기록 없음", "", "", ""]]));
       } catch (e) {
         devBody.appendChild(devSection("이번 주 TOP " + TOP_N, null,
