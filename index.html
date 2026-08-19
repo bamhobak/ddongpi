@@ -189,6 +189,31 @@
     color: #12131a; background: #c86bff; border-radius: 999px; padding: 3px 8px;
   }
 
+  /* ---- 개발자 통계 패널 (제목 오른쪽 💩 → 비밀번호) ---- */
+  #devDot { cursor: pointer; }
+  #devScreen { justify-content: flex-start; padding-top: 28px; gap: 12px; }
+  #devScreen h2 { font-size: 20px; color: #ffd23f; }
+  #devPw {
+    font: inherit; font-size: 16px; text-align: center; letter-spacing: 4px;
+    padding: 11px 14px; border-radius: 12px; width: 180px;
+    border: 2px solid rgba(255,255,255,.18);
+    background: rgba(255,255,255,.08); color: #fff;
+  }
+  #devPw:focus { outline: none; border-color: #ffd23f; }
+  #devBody { width: 100%; max-width: 340px; font-size: 12px; color: #d5d8e2; }
+  #devBody .sec {
+    background: rgba(255,255,255,.06); border-radius: 12px;
+    padding: 10px 12px; margin-bottom: 10px;
+  }
+  #devBody h4 { font-size: 12px; color: #ffd23f; margin-bottom: 6px; }
+  #devBody table { width: 100%; border-collapse: collapse; }
+  #devBody th, #devBody td { padding: 3px 2px; text-align: right; white-space: nowrap; }
+  #devBody th { color: #8b90a0; font-weight: 600; font-size: 11px; }
+  #devBody td:first-child, #devBody th:first-child { text-align: left; }
+  #devBody tr + tr td { border-top: 1px solid rgba(255,255,255,.06); }
+  #devBody .num { color: #fff; font-variant-numeric: tabular-nums; }
+  #devMsg { font-size: 12px; color: #ff8f8f; min-height: 14px; }
+
   .big { font-size: clamp(38px, 11vw, 48px); font-weight: 800; color: #ffd23f; }
   .sub { font-size: 14px; color: #9aa0ae; }
   .hint {
@@ -204,7 +229,7 @@
     <canvas id="cv"></canvas>
 
     <div id="startScreen" class="screen">
-      <h1>💩 이피재피똥피 💩</h1>
+      <h1>💩 이피재피똥피 <span id="devDot">💩</span></h1>
       <div class="board">
         <h3>🏆 이번 주 TOP 10</h3>
         <ol id="boardStart"><li class="empty">불러오는 중…</li></ol>
@@ -216,6 +241,15 @@
       </div>
       <button id="btnStart">시작하기</button>
       <div class="hint">내 최고기록 <span id="bestStart">0</span>점</div>
+    </div>
+
+    <div id="devScreen" class="screen hidden">
+      <h2>개발자 통계</h2>
+      <input id="devPw" type="password" inputmode="numeric" maxlength="8" placeholder="••••"
+             autocomplete="off">
+      <div id="devMsg"></div>
+      <div id="devBody"></div>
+      <button id="devClose">닫기</button>
     </div>
 
     <div id="augScreen" class="screen hidden">
@@ -1185,6 +1219,103 @@
       }).catch(function () {});
     } catch (e) {}
   }
+
+  /* ---------- 개발자 통계 패널 ----------
+     제목 오른쪽 💩 을 누르고 비밀번호를 넣으면 집계를 보여준다.
+     원본 기록은 익명 키로 못 읽고, 비밀번호가 맞을 때만 서버 함수가 집계를 돌려준다. */
+  const AUG_NAMES = {};
+  for (const a of AUGMENTS) AUG_NAMES[a.id] = a.nm;   // 통계 화면에서 id 대신 이름으로 보여준다
+  const devScreen = document.getElementById("devScreen");
+  const devPw     = document.getElementById("devPw");
+  const devBody   = document.getElementById("devBody");
+  const devMsg    = document.getElementById("devMsg");
+
+  function devRow(cells, tag) {
+    const tr = document.createElement("tr");
+    for (const c of cells) {
+      const td = document.createElement(tag || "td");
+      if (typeof c === "object") { td.textContent = c.t; td.className = c.c || ""; }
+      else td.textContent = c;
+      tr.appendChild(td);
+    }
+    return tr;
+  }
+  function devSection(title, head, rows) {
+    const box = document.createElement("div");
+    box.className = "sec";
+    const h = document.createElement("h4");
+    h.textContent = title;
+    box.appendChild(h);
+    const tb = document.createElement("table");
+    if (head) tb.appendChild(devRow(head, "th"));
+    for (const r of rows) tb.appendChild(devRow(r));
+    box.appendChild(tb);
+    return box;
+  }
+
+  function renderDevStats(data) {
+    devBody.innerHTML = "";
+    const su = data.summary || {};
+    devBody.appendChild(devSection("전체 요약", null, [
+      ["총 플레이", { t: (su.runs || 0) + "판", c: "num" }],
+      ["평균 점수", { t: Number(su.avg_score || 0).toLocaleString(), c: "num" }],
+      ["최고 점수", { t: Number(su.max_score || 0).toLocaleString(), c: "num" }],
+      ["평균 생존", { t: (su.avg_secs || 0) + "초", c: "num" }],
+      ["평균 별 개수", { t: su.avg_stars || 0, c: "num" }]
+    ]));
+
+    const augs = data.augs || [];
+    devBody.appendChild(devSection("증강별 채택 (판수 순)",
+      ["증강", "판수", "중첩", "평균점수"],
+      augs.length ? augs.map(a => [
+        AUG_NAMES[a.id] || a.id,
+        { t: a.picks, c: "num" },
+        { t: a.stack, c: "num" },
+        { t: Number(a.score || 0).toLocaleString(), c: "num" }
+      ]) : [["기록 없음", "", "", ""]]));
+
+    const rec = data.recent || [];
+    devBody.appendChild(devSection("최근 20판",
+      ["점수", "생존", "증강"],
+      rec.length ? rec.map(r => [
+        { t: Number(r.score || 0).toLocaleString(), c: "num" },
+        { t: (r.secs || 0) + "초", c: "num" },
+        Object.keys(r.augs || {}).map(k => (AUG_NAMES[k] || k)).join(", ") || "-"
+      ]) : [["기록 없음", "", ""]]));
+  }
+
+  async function devLoad(pw) {
+    devMsg.textContent = "불러오는 중…";
+    try {
+      const res = await fetch(SB_URL + "/rest/v1/rpc/ddongpi_stats", {
+        method: "POST",
+        headers: sbHeaders({ "Content-Type": "application/json" }),
+        body: JSON.stringify({ pw: pw })
+      });
+      if (!res.ok) { devMsg.textContent = "비밀번호가 틀렸습니다"; return; }
+      devMsg.textContent = "";
+      devPw.value = "";
+      renderDevStats(await res.json());
+    } catch (e) {
+      devMsg.textContent = "불러오지 못했습니다";
+    }
+  }
+
+  document.getElementById("devDot").addEventListener("click", () => {
+    devBody.innerHTML = ""; devMsg.textContent = ""; devPw.value = "";
+    devScreen.classList.remove("hidden");
+    devPw.focus();
+  });
+  document.getElementById("devClose").addEventListener("click", () => {
+    devScreen.classList.add("hidden");
+  });
+  devPw.addEventListener("keydown", e => {
+    e.stopPropagation();                       // 스페이스로 게임이 시작되지 않도록
+    if (e.key === "Enter") { e.preventDefault(); devLoad(devPw.value.trim()); }
+  });
+  devPw.addEventListener("input", () => {
+    if (devPw.value.trim().length >= 4) devLoad(devPw.value.trim());
+  });
 
   function qualifies(sc) {
     if (!SB_ON || sc <= 0) return false;
