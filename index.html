@@ -341,7 +341,7 @@
   const elRank  = document.getElementById("rankLine");
   const elTitle = document.getElementById("overTitle");
 
-  const GAME_VERSION = "v1.0.11";   // 코드를 고칠 때마다 뒤 두 자리를 올린다
+  const GAME_VERSION = "v1.0.12";   // 코드를 고칠 때마다 뒤 두 자리를 올린다
   document.getElementById("ver").textContent = GAME_VERSION;
 
   const LS_BEST = "epjpddongpi_best";
@@ -1182,10 +1182,8 @@
     btnSave.disabled = false;
     btnSave.textContent = "등록";
     nameTag.textContent = "🎉 TOP 10 진입! 이름을 남기세요";
-    refreshBoards(boardOver).then(async () => {
-      const mine = Math.max(myWeekBest(), await fetchDeviceBest());
-      if (mine > myWeekBest()) setMyWeekBest(mine);
-      if (state === STATE.OVER && qualifies(s, mine)) {
+    refreshBoards(boardOver).then(() => {
+      if (state === STATE.OVER && qualifies(s)) {
         nameRow.classList.add("on");
         nameInput.value = localStorage.getItem(LS_NAME) || "";
         const r = topList.findIndex(v => s > v.score);
@@ -1644,10 +1642,10 @@
     } catch (e) { return 0; }
   }
 
-  function qualifies(sc, mine) {
+  /* 화면에 보이는 이번 주 TOP 10 을 기준으로만 판단한다.
+     내 지난 기록이 더 높든 낮든 상관없이, 지금 점수가 순위표에 들어갈 점수면 등록할 수 있다. */
+  function qualifies(sc) {
     if (!SB_ON || sc <= 0) return false;
-    // 이 기기의 이번 주 최고 기록을 넘지 못하면 올려도 순위표가 바뀌지 않는다
-    if (sc <= (mine || 0)) return false;
     if (topList.length < TOP_N) return true;
     return sc > topList[topList.length - 1].score;
   }
