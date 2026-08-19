@@ -1001,6 +1001,8 @@
     beep(220, .4, "sawtooth", .06);
     if (navigator.vibrate) navigator.vibrate(120);
 
+    logRun(s);                 // 증강 통계 수집 (화면에는 아무것도 보이지 않는다)
+
     // 전체 랭킹: 최신 TOP 10을 다시 받아보고 진입했으면 이름 입력을 띄운다
     pendingScore = s; pendingLevel = level;
     myRowKey = null;
@@ -1023,6 +1025,7 @@
   const SB_URL   = "https://osfbhhdpqdydbkgbgmat.supabase.co";
   const SB_KEY   = "sb_publishable_IOCUMux3jedTRKdTSGvDdg_1YCPmMw0";
   const SB_TABLE = "ddongpi_scores";
+  const SB_RUNS  = "ddongpi_runs";     // 플레이 기록(증강 통계). 익명 키로는 쓰기만 되고 조회 불가
   const TOP_N    = 10;
   const SB_ON    = !!(SB_URL && SB_KEY);   // 설정 전에는 랭킹만 꺼지고 게임은 정상 동작
 
@@ -1161,6 +1164,26 @@
     } catch (e) {
       els.forEach(el => renderBoard(el, null, "랭킹을 불러오지 못했습니다 (오프라인?)"));
     }
+  }
+
+  /* 판이 끝날 때 어떤 증강을 골랐는지 익명으로 남긴다.
+     이름·기기 정보는 보내지 않고, 실패해도 게임에는 아무 영향이 없다. */
+  function logRun(sc) {
+    if (!SB_ON) return;
+    try {
+      fetch(SB_URL + "/rest/v1/" + SB_RUNS, {
+        method: "POST",
+        headers: sbHeaders({ "Content-Type": "application/json", Prefer: "return=minimal" }),
+        body: JSON.stringify({
+          score: Math.min(100000000, Math.max(0, sc)),
+          level: level,
+          secs: Math.round(elapsed),
+          stars: starCount,
+          augs: augCount
+        }),
+        keepalive: true          // 창을 바로 닫아도 전송되도록
+      }).catch(function () {});
+    } catch (e) {}
   }
 
   function qualifies(sc) {
