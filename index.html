@@ -193,12 +193,14 @@
   #devDot { cursor: pointer; }
   #devScreen { justify-content: flex-start; padding-top: 28px; gap: 12px; }
   #devScreen h2 { font-size: 20px; color: #ffd23f; }
+  #devPwRow { display: flex; gap: 8px; align-items: center; }
   #devPw {
     font: inherit; font-size: 16px; text-align: center; letter-spacing: 4px;
-    padding: 11px 14px; border-radius: 12px; width: 180px;
+    padding: 11px 14px; border-radius: 12px; width: 160px;
     border: 2px solid rgba(255,255,255,.18);
     background: rgba(255,255,255,.08); color: #fff;
   }
+  #devGo { padding: 11px 18px; font-size: 14px; }
   #devPw:focus { outline: none; border-color: #ffd23f; }
   #devBody { width: 100%; max-width: 340px; font-size: 12px; color: #d5d8e2; }
   #devBody .sec {
@@ -245,8 +247,10 @@
 
     <div id="devScreen" class="screen hidden">
       <h2>개발자 통계</h2>
-      <input id="devPw" type="password" inputmode="numeric" maxlength="8" placeholder="••••"
-             autocomplete="off">
+      <div id="devPwRow">
+        <input id="devPw" type="password" inputmode="numeric" maxlength="16" autocomplete="off">
+        <button id="devGo">확인</button>
+      </div>
       <div id="devMsg"></div>
       <div id="devBody"></div>
       <button id="devClose">닫기</button>
@@ -1103,7 +1107,7 @@
 
   async function fetchRange(fromMs, toMs, limit) {
     let url = SB_URL + "/rest/v1/" + SB_TABLE +
-      "?select=name,score,created_at" +
+      "?select=name,score,level,created_at" +
       "&created_at=gte." + encodeURIComponent(new Date(fromMs).toISOString());
     if (toMs) url += "&created_at=lt." + encodeURIComponent(new Date(toMs).toISOString());
     url += "&order=score.desc,created_at.asc&limit=" + limit;
@@ -1284,6 +1288,13 @@
       ]) : [["기록 없음", "", ""]]));
   }
 
+  function kstStamp(iso) {                      // "8.19 14:03" 형태 (한국시간)
+    const k = new Date(new Date(iso).getTime() + KST);
+    const p2 = n => (n < 10 ? "0" + n : "" + n);
+    return (k.getUTCMonth() + 1) + "." + k.getUTCDate() + " " +
+           p2(k.getUTCHours()) + ":" + p2(k.getUTCMinutes());
+  }
+
   async function devLoad(pw) {
     devMsg.textContent = "불러오는 중…";
     try {
@@ -1296,6 +1307,22 @@
       devMsg.textContent = "";
       devPw.value = "";
       renderDevStats(await res.json());
+      // 이번 주 랭킹은 별도 테이블이라 따로 불러와 아래에 덧붙인다 (레벨·등록시각까지)
+      try {
+        const rows = await fetchRange(weekStartMs(0), null, TOP_N);
+        devBody.appendChild(devSection("이번 주 TOP " + TOP_N,
+          ["#", "이름", "점수", "Lv", "등록"],
+          rows.length ? rows.map((r, i) => [
+            (i + 1) + "",
+            r.name,
+            { t: Number(r.score || 0).toLocaleString(), c: "num" },
+            { t: r.level == null ? "-" : r.level, c: "num" },
+            { t: kstStamp(r.created_at), c: "num" }
+          ]) : [["", "기록 없음", "", "", ""]]));
+      } catch (e) {
+        devBody.appendChild(devSection("이번 주 TOP " + TOP_N, null,
+          [["랭킹을 불러오지 못했습니다", ""]]));
+      }
     } catch (e) {
       devMsg.textContent = "불러오지 못했습니다";
     }
@@ -1313,8 +1340,8 @@
     e.stopPropagation();                       // 스페이스로 게임이 시작되지 않도록
     if (e.key === "Enter") { e.preventDefault(); devLoad(devPw.value.trim()); }
   });
-  devPw.addEventListener("input", () => {
-    if (devPw.value.trim().length >= 4) devLoad(devPw.value.trim());
+  document.getElementById("devGo").addEventListener("click", () => {
+    devLoad(devPw.value.trim());
   });
 
   function qualifies(sc) {
