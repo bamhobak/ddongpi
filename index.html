@@ -326,6 +326,17 @@
   const LS_NAME = "epjpddongpi_name";
   const LS_DEV  = "epjpddongpi_device";   // 기기 식별자 (한 기기당 랭킹 한 줄)
   const LS_MINE = "epjpddongpi_mybest";   // 이번 주 내가 올린 최고 점수
+  /* 아래 값을 새로 바꾸면 접속하는 모든 기기에서 개인 최고기록이 한 번 초기화된다.
+     점수 체계를 크게 손봤을 때 예전 기록이 남아 비교가 안 되는 걸 막기 위한 장치. */
+  const BEST_EPOCH = "2026-08-19";
+  try {
+    if (localStorage.getItem("epjpddongpi_epoch") !== BEST_EPOCH) {
+      localStorage.removeItem(LS_BEST);
+      localStorage.removeItem(LS_MINE);
+      localStorage.setItem("epjpddongpi_epoch", BEST_EPOCH);
+    }
+  } catch (e) {}
+
   let best = parseInt(localStorage.getItem(LS_BEST) || "0", 10) || 0;
   elBestStart.textContent = best;
 
@@ -803,7 +814,8 @@
 
     const wasFever = fever;
     fever = state === STATE.PLAY && now < powerUntil;
-    feverT = fever ? (powerUntil - now) / feverDur : 0;
+    // 겹쳐 먹어 남은 시간이 한 번 분량을 넘으면 게이지가 넘치므로 1로 묶는다
+    feverT = fever ? Math.min(1, (powerUntil - now) / feverDur) : 0;
     // 뚜니핑 타임 끝나는 순간엔 화면이 똥으로 가득 차 있으니 1초 무적으로 숨 돌릴 틈을 준다
     if (wasFever && !fever && state === STATE.PLAY) {
       invUntil = Math.max(invUntil, now + 1000);
@@ -1044,7 +1056,9 @@
   function collectItem(it, now) {
     if (it.type === "paper") {
       feverDur = 10000 + aug.feverBonus;
-      powerUntil = now + feverDur; feverFlash = 1;
+      // 이미 뚜니핑 중이면 남은 시간에 이어붙인다 (초기화하면 남은 시간이 버려진다)
+      powerUntil = Math.max(powerUntil, now) + feverDur;
+      feverFlash = 1;
       popText(player.x, player.y - 70, "🔥 뚜니핑 타임!", "#ffd23f", 26);
       beep(700, .1, "square", .05);
       beep(1100, .12, "square", .05);
