@@ -739,7 +739,7 @@
     { type: "fullmoon", emoji: "🌕", w: 6  },   // 보름달 — 증강 3연속. 초승달의 10%
     { type: "paper",    emoji: "🧻", w: 26 },
     { type: "umbrella", emoji: "☂️", w: 22 },
-    { type: "star",     emoji: "⭐", w: 36 },
+    { type: "star",     emoji: "⭐", w: 43 },
     { type: "heart",    emoji: "❤️", w: 14 }
   ];
   /* 아이템은 종류마다 자기 타이머로 따로 굴러간다.
@@ -824,7 +824,7 @@
     feverT = fever ? Math.min(1, (powerUntil - now) / feverDur) : 0;
     // 뚜니핑 타임 끝나는 순간엔 화면이 똥으로 가득 차 있으니 1초 무적으로 숨 돌릴 틈을 준다
     if (wasFever && !fever && state === STATE.PLAY) {
-      invUntil = Math.max(invUntil, now + 1000);
+      invUntil = Math.max(invUntil, now + 1500);
       for (let i = items.length - 1; i >= 0; i--) {
         if (items[i].giant) {                     // 대왕은 피할 수 없는 크기라 같이 사라진다
           burst(items[i].x, items[i].y, "#c86bff", 26);
@@ -1151,8 +1151,10 @@
     btnSave.disabled = false;
     btnSave.textContent = "등록";
     nameTag.textContent = "🎉 TOP 10 진입! 이름을 남기세요";
-    refreshBoards(boardOver).then(() => {
-      if (state === STATE.OVER && qualifies(s)) {
+    refreshBoards(boardOver).then(async () => {
+      const mine = Math.max(myWeekBest(), await fetchDeviceBest());
+      if (mine > myWeekBest()) setMyWeekBest(mine);
+      if (state === STATE.OVER && qualifies(s, mine)) {
         nameRow.classList.add("on");
         nameInput.value = localStorage.getItem(LS_NAME) || "";
         const r = topList.findIndex(v => s > v.score);
@@ -1502,10 +1504,27 @@
     } catch (e) {}
   }
 
-  function qualifies(sc) {
+  /* 이 기기가 이번 주에 올린 최고 점수를 서버에서 직접 확인한다.
+     브라우저 저장값만 믿으면, 저장값이 비었을 때(다른 기기·기록 초기화 뒤)
+     이미 더 높은 기록이 있는데도 이름 입력이 뜨고 등록해도 순위가 그대로인 일이 생긴다. */
+  async function fetchDeviceBest() {
+    if (!SB_ON) return 0;
+    try {
+      const url = SB_URL + "/rest/v1/" + SB_TABLE +
+        "?select=score&device=eq." + encodeURIComponent(deviceId) +
+        "&created_at=gte." + encodeURIComponent(new Date(weekStartMs(0)).toISOString()) +
+        "&order=score.desc&limit=1";
+      const res = await fetch(url, { headers: sbHeaders() });
+      if (!res.ok) return 0;
+      const rows = await res.json();
+      return rows.length ? (rows[0].score || 0) : 0;
+    } catch (e) { return 0; }
+  }
+
+  function qualifies(sc, mine) {
     if (!SB_ON || sc <= 0) return false;
     // 이 기기의 이번 주 최고 기록을 넘지 못하면 올려도 순위표가 바뀌지 않는다
-    if (sc <= myWeekBest()) return false;
+    if (sc <= (mine || 0)) return false;
     if (topList.length < TOP_N) return true;
     return sc > topList[topList.length - 1].score;
   }
