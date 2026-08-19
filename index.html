@@ -429,7 +429,7 @@
   let helperTimer = 0;
   let fetchers = [];        // 배고픈 정연핑 — 아이템을 대신 먹으러 가는 정연핑
   const FETCH_DELAY = 1;    // 아이템이 보이고 몇 초 뒤에 출발하는지
-  const FETCH_SPEED = 700;
+  const FETCH_SPEED = 840;   // 배고픈 정연핑도 같은 비율로 20% 빠르게
   let helperQueue = 0;      // 이번 차례에 아직 안 나온 인원
   let helperGap = 0;        // 다음 한 명까지 남은 시간
 
@@ -882,7 +882,7 @@
           helperQueue--;
           const fromLeft = Math.random() < 0.5;   // 아래 좌/우에서 비스듬히 솟아오른다
           // 수직에서 8~34도 사이. 너무 눕히면 옆으로 금방 빠져나가서 범위를 좁혔다
-          const speed = 620 + Math.random() * 180;
+          const speed = 744 + Math.random() * 216;   // 기존 620~800 에서 20% 빠르게
           const ang = (8 + Math.random() * 26) * Math.PI / 180;
           helpers.push({
             x: fromLeft ? -30 + Math.random() * (W * 0.45)
