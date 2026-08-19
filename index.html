@@ -331,6 +331,7 @@
   const DRAW_R = 40;                 // 캐릭터 도안 기준 반지름
   const GROUND_H = 85;               // 잔디 높이 — 이만큼 캐릭터가 위로 올라간다
   const FOOT = 62;                   // player.y 에서 '발이 닿는 선'까지의 거리 (화면 고정)
+  const PLAYER_MAX_SPEED = 780;      // 좌우 이동 최고 속도 (논리 px/초)
   const PLAYER_UP = GROUND_H + 54;   // 화면 바닥에서 캐릭터 머리 중심까지
   const player = { x: 240, y: H - 139, r: 32, tx: 240, tilt: 0, hy: 0 };
   // hy = 발을 바닥에 고정했을 때 머리(판정 중심)가 player.y 에서 얼마나 떨어지는지.
@@ -804,7 +805,10 @@
     player.tx = Math.max(player.r, Math.min(W - player.r, player.tx));
 
     const prev = player.x;
-    player.x += (player.tx - player.x) * Math.min(1, dt * 20);
+    // 손가락을 반대편에 찍어도 순간이동하지 않도록 최고 속도를 제한한다
+    const want = (player.tx - player.x) * Math.min(1, dt * 20);
+    const maxStep = PLAYER_MAX_SPEED * dt;
+    player.x += Math.max(-maxStep, Math.min(maxStep, want));
     if (player.x - prev < -0.25) facing = "left";
     else if (player.x - prev > 0.25) facing = "right";   // 멈춰 있으면 마지막 방향 유지
     player.tilt += (((player.x - prev) / Math.max(dt, .001) / 900) - player.tilt) * Math.min(1, dt * 10);
