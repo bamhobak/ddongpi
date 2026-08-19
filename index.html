@@ -814,7 +814,8 @@
 
     // ---- 도와줘 정연핑 ----
     if (aug.helper > 0) {
-      const cycle = 3;                            // 3초에 한 차례 (대폭주는 크기만 키운다)
+      // 1명이면 3초, 2명이면 4초, 3명이면 5초… 인원이 늘수록 주기도 함께 길어진다
+      const cycle = 2 + aug.helper;
       helperTimer -= dt;
       if (helperTimer <= 0 && helperQueue <= 0) {
         helperTimer = cycle;
@@ -824,8 +825,8 @@
       if (helperQueue > 0) {
         helperGap -= dt;
         if (helperGap <= 0) {
-          // 한 명씩 시차를 두고 내보낸다 (한 차례가 다음 주기를 넘지 않도록 간격을 조절)
-          helperGap = Math.min(0.7, cycle * 0.75 / Math.max(1, aug.helper));
+          // 한 차례 안에서 인원을 고르게 나눠 내보낸다 (2명 = 4초에 2명, 3명 = 5초에 3명)
+          helperGap = cycle / aug.helper;
           helperQueue--;
           const fromLeft = Math.random() < 0.5;   // 아래 좌/우에서 비스듬히 솟아오른다
           // 수직에서 8~34도 사이. 너무 눕히면 옆으로 금방 빠져나가서 범위를 좁혔다
