@@ -333,7 +333,7 @@
   const elRank  = document.getElementById("rankLine");
   const elTitle = document.getElementById("overTitle");
 
-  const GAME_VERSION = "v1.0.04";   // 코드를 고칠 때마다 뒤 두 자리를 올린다
+  const GAME_VERSION = "v1.0.05";   // 코드를 고칠 때마다 뒤 두 자리를 올린다
   document.getElementById("ver").textContent = GAME_VERSION;
 
   const LS_BEST = "epjpddongpi_best";
@@ -1007,7 +1007,9 @@
 
       if (hit) {
         if (it.type === "poop") {
-          if (powered) {
+          // 뚜니핑 타임 낙하물은 타임이 끝난 뒤에도 먹을 수 있다.
+          // (끝나는 순간 화면에 떠 있던 것들이 그냥 스쳐 지나가면 아까우니까)
+          if (powered || it.skin === "fever") {
             // 크기가 곧 점수. 뚜니핑 타임 중 생성된 건 자기 점수를 갖고 있고,
             // 뚜니핑 타임 전에 떨어지던 일반 똥은 크기로 환산한다.
             const gain = feverGain(it);
