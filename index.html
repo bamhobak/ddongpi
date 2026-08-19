@@ -499,7 +499,6 @@
     { id: "umbrella3",  ic: "☂️", nm: "우산 다발", ds: "우산을 3개 얻는다",
       go: () => { shields = Math.min(shields + 3, 5); } },   // 방패는 최대 5개까지
     { id: "helper",     ic: "🦸", nm: "도와줘 정연핑", ds: "정연핑이 지나가는 자리의 똥을 부순다",
-      w: 0.5,   // 일반 증강의 절반 확률
       go: () => { aug.helper++; helperTimer = Math.min(helperTimer, 0.6); } },
     { id: "helperRush", ic: "💥", nm: "정연핑 대폭주", ds: "정연핑!!!?? 무엇!!?!",
       hidden: true, once: true, cond: () => aug.helper > 0,
