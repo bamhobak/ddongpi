@@ -1544,8 +1544,7 @@
       all.style.marginLeft = "8px";
       all.textContent = "전체 " + rows.length + "건 삭제";
       all.addEventListener("click", () => {
-        if (!confirm("이번 주 기록 " + rows.length + "건을 모두 지울까요?
-되돌릴 수 없습니다.")) return;
+        if (!confirm("이번 주 기록 " + rows.length + "건을 모두 지울까요? 되돌릴 수 없습니다.")) return;
         devDeleteIds(rows.map(r => r.id), all, "전체 삭제");
       });
       box.querySelector("h4").appendChild(all);
