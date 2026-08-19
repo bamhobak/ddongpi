@@ -333,7 +333,7 @@
   const elRank  = document.getElementById("rankLine");
   const elTitle = document.getElementById("overTitle");
 
-  const GAME_VERSION = "v1.0.07";   // 코드를 고칠 때마다 뒤 두 자리를 올린다
+  const GAME_VERSION = "v1.0.08";   // 코드를 고칠 때마다 뒤 두 자리를 올린다
   document.getElementById("ver").textContent = GAME_VERSION;
 
   const LS_BEST = "epjpddongpi_best";
@@ -860,7 +860,7 @@
 
     elapsed += dt;
     level = 1 + Math.floor(elapsed / 10);
-    score += dt * Math.pow(2, level - 1) * aug.timeMul;   // 생존 점수: 레벨마다 2배 (1, 2, 4, 8, 16 …)
+    score += dt * Math.pow(1.7, level - 1) * aug.timeMul;  // 생존 점수: 레벨마다 1.7배
 
     // 레벨이 오를수록 하늘이 진해진다. 단계마다 값이 바뀌지만 색은 부드럽게 따라간다.
     const skyTarget = Math.min(1, (level - 1) / 14);   // 레벨 15에서 완전한 밤
