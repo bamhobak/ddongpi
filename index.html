@@ -542,8 +542,8 @@
     // once 증강은 이미 가진 것이면 제외하고, 히든 증강은 조건을 만족할 때만 후보에 넣는다
     const pool = AUGMENTS.filter(a =>
       !(a.once && augCount[a.id]) && (!a.hidden || a.cond()));
-    // 뽑히는 가중치: 따로 지정한 값이 우선, 히든은 일반의 1/4, 나머지는 1
-    const wOf = a => (a.w !== undefined ? a.w : (a.hidden ? 0.25 : 1));
+    // 뽑히는 가중치: 따로 지정한 값이 우선, 히든은 일반의 1/3, 나머지는 1
+    const wOf = a => (a.w !== undefined ? a.w : (a.hidden ? (1 / 3) : 1));
     const picks = [];
     while (picks.length < 3 && pool.length) {
       let total = 0;
@@ -865,8 +865,8 @@
 
     // ---- 도와줘 정연핑 ----
     if (aug.helper > 0) {
-      // 1명이면 4초, 2명이면 5초, 3명이면 6초… 인원이 늘수록 주기도 함께 길어진다
-      const cycle = 3 + aug.helper;
+      // 1명이면 4초, 2명이면 5.5초, 3명이면 7초… 인원이 늘수록 주기도 함께 길어진다
+      const cycle = 2.5 + 1.5 * aug.helper;
       helperTimer -= dt;
       if (helperTimer <= 0 && helperQueue <= 0) {
         helperTimer = cycle;
@@ -1076,9 +1076,9 @@
       beep(900, .12, "triangle", .05);
     }
     if (it.type === "star") {
-      // 먹을 때마다 2배: 1번째 1,000 → 2번째 2,000 → 3번째 4,000 → 4번째 8,000 …
+      // 먹을 때마다 2배: 1번째 1,500 → 2번째 3,000 → 3번째 6,000 → 4번째 12,000 …
       starCount++;
-      const gain = Math.round(1000 * Math.pow(2, starCount - 1) * aug.starMul);
+      const gain = Math.round(1500 * Math.pow(2, starCount - 1) * aug.starMul);
       score += gain;
       popText(it.x, it.y, "⭐×" + starCount + "  +" + gain.toLocaleString(), "#ffd23f");
       beep(1400, .1, "square", .05);
