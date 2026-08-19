@@ -499,6 +499,7 @@
     { id: "umbrella3",  ic: "☂️", nm: "우산 다발", ds: "우산을 3개 얻는다",
       go: () => { shields = Math.min(shields + 3, 5); } },   // 방패는 최대 5개까지
     { id: "helper",     ic: "🦸", nm: "도와줘 정연핑", ds: "정연핑이 지나가는 자리의 똥을 부순다",
+      w: 0.5,   // 일반 증강의 절반 확률
       go: () => { aug.helper++; helperTimer = Math.min(helperTimer, 0.6); } },
     { id: "helperRush", ic: "💥", nm: "정연핑 대폭주", ds: "정연핑!!!?? 무엇!!?!",
       hidden: true, once: true, cond: () => aug.helper > 0,
@@ -542,14 +543,15 @@
     // once 증강은 이미 가진 것이면 제외하고, 히든 증강은 조건을 만족할 때만 후보에 넣는다
     const pool = AUGMENTS.filter(a =>
       !(a.once && augCount[a.id]) && (!a.hidden || a.cond()));
-    // 히든 증강은 일반 증강의 절반 확률로만 후보에 오른다
+    // 뽑히는 가중치: 따로 지정한 값이 우선, 히든은 일반의 1/4, 나머지는 1
+    const wOf = a => (a.w !== undefined ? a.w : (a.hidden ? 0.25 : 1));
     const picks = [];
     while (picks.length < 3 && pool.length) {
       let total = 0;
-      for (const a of pool) total += a.hidden ? 0.5 : 1;
+      for (const a of pool) total += wOf(a);
       let n = Math.random() * total, idx = pool.length - 1;
       for (let i = 0; i < pool.length; i++) {
-        const w = pool[i].hidden ? 0.5 : 1;
+        const w = wOf(pool[i]);
         if (n < w) { idx = i; break; }
         n -= w;
       }
