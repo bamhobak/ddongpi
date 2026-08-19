@@ -413,6 +413,9 @@
   function helperScale() { return aug.helperRush ? 1.4 : 1; } // 히든 '대폭주' 시 1.4배 (면적 1.96배)
   let helpers = [];
   let helperTimer = 0;
+  let fetchers = [];        // 배고픈 정연핑 — 아이템을 대신 먹으러 가는 정연핑
+  const FETCH_DELAY = 3;    // 아이템이 보이고 몇 초 뒤에 출발하는지
+  const FETCH_SPEED = 700;
   let helperQueue = 0;      // 이번 차례에 아직 안 나온 인원
   let helperGap = 0;        // 다음 한 명까지 남은 시간
 
@@ -458,7 +461,8 @@
     giant: 0,           // 대왕 뚜니핑 등장 스택
     magnet: 0,          // 아이템 자석 반경 (1회 한정 증강)
     helper: 0,          // 도와줘 정연핑 인원 (증강을 겹칠수록 1명씩 증가)
-    helperRush: false,  // 히든: 정연핑 대폭주 (크기 3배, 주기 2초)
+    helperRush: false,  // 히든: 정연핑 대폭주 (크기 확대)
+    hungry: false,      // 히든: 배고픈 정연핑 (아이템을 대신 먹어준다)
     maxLives: 5
   };
   let augCount = {};    // 증강별 획득 횟수
@@ -485,6 +489,9 @@
     { id: "helperRush", ic: "💥", nm: "정연핑 대폭주", ds: "정연핑!!!?? 무엇!!?!",
       hidden: true, once: true, cond: () => aug.helper > 0,
       go: () => { aug.helperRush = true; } },
+    { id: "hungry",     ic: "😋", nm: "배고픈 정연핑", ds: "정연핑이 아이템을 대신 먹어준다",
+      hidden: true, once: true, cond: () => aug.magnet > 0,
+      go: () => { aug.hungry = true; } },
     { id: "magnet",     ic: "🧲", nm: "자석",       ds: "넓은 범위의 아이템이 끌려온다",
       once: true, go: () => { aug.magnet = 240; } },
     { id: "lucky",      ic: "🍀", nm: "행운",       ds: "아이템이 더 자주 등장",
@@ -627,8 +634,9 @@
     aug.feverBonus = 0; aug.starMul = 1; aug.timeMul = 1;
     aug.feverScoreMul = 1; aug.fallMul = 1; aug.hitboxMul = 1; aug.poopMul = 1;
     aug.itemRateMul = 1; aug.feverRateMul = 1; aug.giant = 0; aug.magnet = 0;
-    aug.helper = 0; aug.helperRush = false;
-    helpers = []; helperTimer = 0; helperQueue = 0; helperGap = 0; aug.maxLives = 5;
+    aug.helper = 0; aug.helperRush = false; aug.hungry = false;
+    helpers = []; fetchers = [];
+    helperTimer = 0; helperQueue = 0; helperGap = 0; aug.maxLives = 5;
     augScreen.classList.add("hidden");
     facing = "right";
     player.x = player.tx = W / 2;
@@ -737,7 +745,8 @@
       r: r,
       vx: (Math.random() - Math.random()) * vy * SPREAD_BONUS,
       vy: vy,
-      rot: 0, vr: 0, size: r * 2, bob: Math.random() * 6.28
+      rot: 0, vr: 0, size: r * 2, bob: Math.random() * 6.28,
+      born: elapsed          // 배고픈 정연핑이 몇 초 뒤에 출발할지 재는 기준
     });
   }
 
@@ -852,26 +861,42 @@
       const hp = helpers[k];
       hp.x += hp.vx * dt;
       hp.y += hp.vy * dt;
-      // 지나가는 자리의 똥을 부순다
-      for (let i = items.length - 1; i >= 0; i--) {
-        const it = items[i];
-        if (it.type !== "poop") continue;
-        if (Math.hypot(it.x - hp.x, it.y - hp.y) < HELPER_R * helperScale() + it.r) {
-          if (it.skin === "fever") {
-            // 뚜니핑 타임 낙하물은 직접 받았을 때와 같은 점수를 준다
-            let g = it.gain || (it.sz < 18 ? 2 : (it.sz < 23 ? 5 : 10));
-            g = Math.round(g * aug.feverScoreMul);
-            score += g;
-            burst(it.x, it.y, g >= 25 ? "#ff3b3b" : "#ffd23f", g >= 25 ? 30 : 16);
-            if (g >= 15) popText(it.x, it.y, "+" + g, "#ffd23f", g >= 40 ? 30 : 24);
-          } else {
-            score += 3;
-            burst(it.x, it.y, "#ffd23f", 14);
-          }
-          items.splice(i, 1);
+      smashPoopsAround(hp.x, hp.y, HELPER_R * helperScale());   // 지나가는 자리의 똥
+      if (hp.y < -HELPER_H - 40 || hp.x < -160 || hp.x > W + 160) helpers.splice(k, 1);
+    }
+
+    // ---- 배고픈 정연핑: 아이템이 뜨고 3초 뒤에 화면 아래 중앙에서 출발 ----
+    if (aug.hungry) {
+      for (const it of items) {
+        if (it.type === "poop" || it.claimed) continue;
+        if (elapsed - it.born >= FETCH_DELAY) {
+          it.claimed = true;
+          fetchers.push({ x: W / 2, y: H + 50, vx: 0, vy: -FETCH_SPEED, t: it });
+          beep(660, .1, "sine", .05);
+          beep(990, .12, "sine", .04);
         }
       }
-      if (hp.y < -HELPER_H - 40 || hp.x < -160 || hp.x > W + 160) helpers.splice(k, 1);
+    }
+    for (let k = fetchers.length - 1; k >= 0; k--) {
+      const f = fetchers[k];
+      const alive = items.indexOf(f.t) >= 0;
+      let dx = 0, dy = -1;
+      if (alive) { dx = f.t.x - f.x; dy = f.t.y - f.y; }   // 목표가 사라지면 그대로 위로 빠진다
+      const d = Math.hypot(dx, dy) || 1;
+      f.vx = dx / d * FETCH_SPEED;
+      f.vy = dy / d * FETCH_SPEED;
+      f.x += f.vx * dt;
+      f.y += f.vy * dt;
+      smashPoopsAround(f.x, f.y, HELPER_R * helperScale());   // 가는 길의 똥도 부순다
+      if (alive && Math.hypot(f.t.x - f.x, f.t.y - f.y) < HELPER_R * 0.9) {
+        const idx = items.indexOf(f.t);
+        if (idx >= 0) items.splice(idx, 1);
+        fetchers.splice(k, 1);
+        burst(f.x, f.y, "#ffd23f", 24);
+        if (collectItem(f.t, now)) return;    // 달이면 화면이 멈춘다
+        continue;
+      }
+      if (f.y < -HELPER_H * 2 || f.x < -260 || f.x > W + 260) fetchers.splice(k, 1);
     }
 
     const powered = now < powerUntil;      // 🔥 뚜니핑 타임
@@ -980,40 +1005,8 @@
             continue;
           }
         } else {
-          if (it.type === "paper")    {
-            feverDur = 10000 + aug.feverBonus;
-            powerUntil = now + feverDur; feverFlash = 1;
-            popText(player.x, player.y - 70, "🔥 뚜니핑 타임!", "#ffd23f", 26);
-            beep(700, .1, "square", .05);
-            beep(1100, .12, "square", .05);
-            beep(1500, .18, "square", .05);
-            if (navigator.vibrate) navigator.vibrate([40, 40, 80]);
-          }
-          if (it.type === "umbrella") {
-            shields = Math.max(shields, Math.min(shields + 1, 3));   // 아이템으로는 3개까지 누적
-            popText(player.x, player.y - 60, "☂️ 방패!", "#7ec8ff");
-            beep(900, .12, "triangle", .05);
-          }
-          if (it.type === "star")     {
-            // 먹을 때마다 2배: 1번째 500 → 2번째 1,000 → 3번째 2,000 → 4번째 4,000 …
-            starCount++;
-            const gain = Math.round(500 * Math.pow(2, starCount - 1) * aug.starMul);
-            score += gain;
-            popText(it.x, it.y, "⭐×" + starCount + "  +" + gain.toLocaleString(), "#ffd23f");
-            beep(1400, .1, "square", .05);
-            beep(1750, .12, "square", .04);
-          }
-          if (it.type === "moon" || it.type === "fullmoon") {
-            const full = it.type === "fullmoon";
-            burst(it.x, it.y, full ? "#ffe9a8" : "#cfe4ff", full ? 40 : 20);
-            if (full) { flash = 0; feverFlash = 1; shake = Math.max(shake, 14); }
-            items.splice(i, 1);
-            openAugment(full ? 3 : 1);     // 보름달은 3연속 선택
-            return;                        // 멈춘 프레임에서 나머지 처리는 건너뛴다
-          }
-          if (it.type === "heart")    { lives = Math.min(aug.maxLives, lives + 1); popText(it.x, it.y, "❤️ +1", "#ff8fb0"); beep(1000, .15, "sine", .06); }
-          burst(it.x, it.y, "#ffd23f", 16);
           items.splice(i, 1);
+          if (collectItem(it, now)) return;   // 달이면 화면이 멈추므로 여기서 끝
           continue;
         }
       }
@@ -1024,6 +1017,68 @@
         if (it.type === "poop" && it.skin !== "fever") score += 3;
         items.splice(i, 1);
       }
+    }
+  }
+
+  /* 아이템 효과 적용. 플레이어가 직접 먹을 때와 '배고픈 정연핑'이 대신 먹을 때 모두 쓴다.
+     달을 먹으면 게임이 멈추므로 true 를 돌려주고, 부른 쪽은 그 프레임 처리를 중단한다. */
+  function collectItem(it, now) {
+    if (it.type === "paper") {
+      feverDur = 10000 + aug.feverBonus;
+      powerUntil = now + feverDur; feverFlash = 1;
+      popText(player.x, player.y - 70, "🔥 뚜니핑 타임!", "#ffd23f", 26);
+      beep(700, .1, "square", .05);
+      beep(1100, .12, "square", .05);
+      beep(1500, .18, "square", .05);
+      if (navigator.vibrate) navigator.vibrate([40, 40, 80]);
+    }
+    if (it.type === "umbrella") {
+      shields = Math.max(shields, Math.min(shields + 1, 3));   // 아이템으로는 3개까지 누적
+      popText(player.x, player.y - 60, "☂️ 방패!", "#7ec8ff");
+      beep(900, .12, "triangle", .05);
+    }
+    if (it.type === "star") {
+      // 먹을 때마다 2배: 1번째 500 → 2번째 1,000 → 3번째 2,000 → 4번째 4,000 …
+      starCount++;
+      const gain = Math.round(500 * Math.pow(2, starCount - 1) * aug.starMul);
+      score += gain;
+      popText(it.x, it.y, "⭐×" + starCount + "  +" + gain.toLocaleString(), "#ffd23f");
+      beep(1400, .1, "square", .05);
+      beep(1750, .12, "square", .04);
+    }
+    if (it.type === "moon" || it.type === "fullmoon") {
+      const full = it.type === "fullmoon";
+      burst(it.x, it.y, full ? "#ffe9a8" : "#cfe4ff", full ? 40 : 20);
+      if (full) { flash = 0; feverFlash = 1; shake = Math.max(shake, 14); }
+      openAugment(full ? 3 : 1);     // 보름달은 3연속 선택
+      return true;
+    }
+    if (it.type === "heart") {
+      lives = Math.min(aug.maxLives, lives + 1);
+      popText(it.x, it.y, "❤️ +1", "#ff8fb0");
+      beep(1000, .15, "sine", .06);
+    }
+    burst(it.x, it.y, "#ffd23f", 16);
+    return false;
+  }
+
+  // 정연핑이 지나간 자리의 똥을 부순다 (뚜니핑 낙하물은 제 점수를 그대로 준다)
+  function smashPoopsAround(x, y, radius) {
+    for (let i = items.length - 1; i >= 0; i--) {
+      const it = items[i];
+      if (it.type !== "poop") continue;
+      if (Math.hypot(it.x - x, it.y - y) >= radius + it.r) continue;
+      if (it.skin === "fever") {
+        let g = it.gain || (it.sz < 16.2 ? 2 : (it.sz < 20.7 ? 5 : 10));
+        g = Math.round(g * aug.feverScoreMul);
+        score += g;
+        burst(it.x, it.y, g >= 25 ? "#ff3b3b" : "#ffd23f", g >= 25 ? 30 : 16);
+        if (g >= 15) popText(it.x, it.y, "+" + g, "#ffd23f", g >= 40 ? 30 : 24);
+      } else {
+        score += 3;
+        burst(it.x, it.y, "#ffd23f", 14);
+      }
+      items.splice(i, 1);
     }
   }
 
@@ -1612,17 +1667,20 @@
   }
 
   // 원본 그림이 '오른쪽 → 왼쪽' 방향이라, 왼쪽 → 오른쪽으로 날 때만 좌우를 뒤집는다
+  function drawHelperAt(x, y, vx, vy) {
+    const hh = HELPER_H * helperScale(), hw = hh * HELPER_ASPECT;
+    ctx.save();
+    ctx.translate(x, y);
+    ctx.rotate(Math.atan2(vx, -vy) * 0.8);   // 진행 방향으로 기울이기
+    if (vx > 0) ctx.scale(-1, 1);            // 오른쪽으로 갈 때 반전
+    ctx.drawImage(helperImg, -hw / 2, -hh / 2, hw, hh);
+    ctx.restore();
+  }
+
   function drawHelpers() {
     if (!helperImg) return;
-    const hh = HELPER_H * helperScale(), hw = hh * HELPER_ASPECT;
-    for (const hp of helpers) {
-      ctx.save();
-      ctx.translate(hp.x, hp.y);
-      ctx.rotate(Math.atan2(hp.vx, -hp.vy) * 0.8);   // 진행 방향으로 기울이기
-      if (hp.vx > 0) ctx.scale(-1, 1);               // 오른쪽으로 갈 때 반전
-      ctx.drawImage(helperImg, -hw / 2, -hh / 2, hw, hh);
-      ctx.restore();
-    }
+    for (const hp of helpers) drawHelperAt(hp.x, hp.y, hp.vx, hp.vy);
+    for (const f of fetchers) drawHelperAt(f.x, f.y, f.vx, f.vy);
   }
 
   /* 똥 위에 덧그리는 표정. 이모지 폰트가 기기마다 달라서 눈·입을 새로 그리는 대신
