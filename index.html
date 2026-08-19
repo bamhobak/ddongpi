@@ -217,6 +217,15 @@
   #devBody .num { color: #fff; font-variant-numeric: tabular-nums; }
   #devMsg { font-size: 12px; color: #ff8f8f; min-height: 14px; }
 
+  #ver {
+    position: absolute;
+    top: max(8px, env(safe-area-inset-top));
+    left: 0; right: 0;
+    text-align: center;
+    font-size: 10px; letter-spacing: 1px;
+    color: rgba(255,255,255,.26);
+  }
+
   .big { font-size: clamp(38px, 11vw, 48px); font-weight: 800; color: #ffd23f; }
   .sub { font-size: 14px; color: #9aa0ae; }
   .hint {
@@ -232,6 +241,7 @@
     <canvas id="cv"></canvas>
 
     <div id="startScreen" class="screen">
+      <div id="ver"></div>
       <h1>💩 이피재피똥피 <span id="devDot">💩</span></h1>
       <div class="board">
         <h3>🏆 이번 주 TOP 10</h3>
@@ -322,6 +332,9 @@
   const elBestStart = document.getElementById("bestStart");
   const elRank  = document.getElementById("rankLine");
   const elTitle = document.getElementById("overTitle");
+
+  const GAME_VERSION = "v1.0.01";   // 코드를 고칠 때마다 뒤 두 자리를 올린다
+  document.getElementById("ver").textContent = GAME_VERSION;
 
   const LS_BEST = "epjpddongpi_best";
   const LS_NAME = "epjpddongpi_name";
