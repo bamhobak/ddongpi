@@ -738,7 +738,7 @@
     { type: "fullmoon", emoji: "🌕", w: 6  },   // 보름달 — 증강 3연속. 초승달의 10%
     { type: "paper",    emoji: "🧻", w: 26 },
     { type: "umbrella", emoji: "☂️", w: 22 },
-    { type: "star",     emoji: "⭐", w: 30 },
+    { type: "star",     emoji: "⭐", w: 36 },
     { type: "heart",    emoji: "❤️", w: 14 }
   ];
   /* 아이템은 종류마다 자기 타이머로 따로 굴러간다.
@@ -993,8 +993,7 @@
           if (powered) {
             // 크기가 곧 점수. 뚜니핑 타임 중 생성된 건 자기 점수를 갖고 있고,
             // 뚜니핑 타임 전에 떨어지던 일반 똥은 크기로 환산한다.
-            let gain = it.gain;
-            if (!gain) gain = it.sz < 16.2 ? 2 : (it.sz < 20.7 ? 5 : 10);
+            const gain = feverGain(it);
             let tone, burstN, note, textSize;
             if (gain >= 110)     { tone = "#c86bff"; burstN = 80; note = 2200; textSize = 48; }
             else if (gain >= 40) { tone = "#ff2170"; burstN = 54; note = 2000; textSize = 40; }
@@ -1004,7 +1003,6 @@
             else if (gain >= 8)  { tone = "#ffcc33"; burstN = 18; note = 1350; textSize = 24; }
             else if (gain >= 5)  { tone = "#ffd23f"; burstN = 12; note = 1150; textSize = 22; }
             else                 { tone = "#ffe3a8"; burstN = 8;  note = 900;  textSize = 22; }
-            gain = Math.round(gain * aug.feverScoreMul);
             score += gain;
             burst(it.x, it.y, tone, burstN);
             // 큰 건 항상, 중간은 절반만 표시 — 작은 건 화면이 지저분해지니 생략
@@ -1076,9 +1074,9 @@
       beep(900, .12, "triangle", .05);
     }
     if (it.type === "star") {
-      // 먹을 때마다 2배: 1번째 500 → 2번째 1,000 → 3번째 2,000 → 4번째 4,000 …
+      // 먹을 때마다 2배: 1번째 1,000 → 2번째 2,000 → 3번째 4,000 → 4번째 8,000 …
       starCount++;
-      const gain = Math.round(500 * Math.pow(2, starCount - 1) * aug.starMul);
+      const gain = Math.round(1000 * Math.pow(2, starCount - 1) * aug.starMul);
       score += gain;
       popText(it.x, it.y, "⭐×" + starCount + "  +" + gain.toLocaleString(), "#ffd23f");
       beep(1400, .1, "square", .05);
@@ -1100,6 +1098,13 @@
     return false;
   }
 
+  /* 뚜니핑 낙하물 점수. 크기 등급 점수에 레벨 보정을 곱한다.
+     레벨이 하나 오를 때마다 10%씩 (레벨1 기준, 레벨10이면 약 2.4배). */
+  function feverGain(it) {
+    const base = it.gain || (it.sz < 16.2 ? 2 : (it.sz < 20.7 ? 5 : 10));
+    return Math.max(1, Math.round(base * aug.feverScoreMul * Math.pow(1.1, level - 1)));
+  }
+
   // 정연핑이 지나간 자리의 똥을 부순다 (뚜니핑 낙하물은 제 점수를 그대로 준다)
   function smashPoopsAround(x, y, radius) {
     for (let i = items.length - 1; i >= 0; i--) {
@@ -1107,8 +1112,7 @@
       if (it.type !== "poop") continue;
       if (Math.hypot(it.x - x, it.y - y) >= radius + it.r) continue;
       if (it.skin === "fever") {
-        let g = it.gain || (it.sz < 16.2 ? 2 : (it.sz < 20.7 ? 5 : 10));
-        g = Math.round(g * aug.feverScoreMul);
+        const g = feverGain(it);
         score += g;
         burst(it.x, it.y, g >= 25 ? "#ff3b3b" : "#ffd23f", g >= 25 ? 30 : 16);
         if (g >= 15) popText(it.x, it.y, "+" + g, "#ffd23f", g >= 40 ? 30 : 24);
