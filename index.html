@@ -1708,6 +1708,14 @@
     }
   }
 
+  function heartPath(cx, cy, r) {
+    ctx.beginPath();
+    ctx.moveTo(cx, cy + r * 0.85);
+    ctx.bezierCurveTo(cx - r * 1.45, cy - r * 0.35, cx - r * 0.5, cy - r * 1.35, cx, cy - r * 0.3);
+    ctx.bezierCurveTo(cx + r * 0.5, cy - r * 1.35, cx + r * 1.45, cy - r * 0.35, cx, cy + r * 0.85);
+    ctx.closePath();
+  }
+
   function drawHud() {
     ctx.save();
     const top = 14;
@@ -1744,11 +1752,22 @@
       }
     }
 
-    ctx.textAlign = "right";
-    ctx.font = "24px serif";
-    let s = "";
-    for (let i = 0; i < lives; i++) s += "❤️";
-    ctx.fillText(s, W - 14, top + 2);
+    // 목숨은 이모지 대신 직접 그린다.
+    // iOS 이모지는 지정한 상단선보다 위로 튀어나와서 화면 밖으로 잘리는 문제가 있었다.
+    const hr = 8, hgap = 23, hy = top + 13;
+    for (let i = 0; i < lives; i++) {
+      const cx = W - 16 - hr - i * hgap;
+      ctx.fillStyle = "rgba(0,0,0,.25)";
+      heartPath(cx, hy + 1.5, hr * 1.08);
+      ctx.fill();
+      ctx.fillStyle = "#ff4d6d";
+      heartPath(cx, hy, hr);
+      ctx.fill();
+      ctx.fillStyle = "rgba(255,255,255,.55)";           // 광택
+      ctx.beginPath();
+      ctx.ellipse(cx - hr * 0.38, hy - hr * 0.42, hr * 0.22, hr * 0.15, -0.6, 0, 6.283);
+      ctx.fill();
+    }
 
     // 🔥 뚜니핑 타임 게이지
     if (fever) {
