@@ -427,7 +427,7 @@
   let helpers = [];
   let helperTimer = 0;
   let fetchers = [];        // 배고픈 정연핑 — 아이템을 대신 먹으러 가는 정연핑
-  const FETCH_DELAY = 3;    // 아이템이 보이고 몇 초 뒤에 출발하는지
+  const FETCH_DELAY = 1;    // 아이템이 보이고 몇 초 뒤에 출발하는지
   const FETCH_SPEED = 700;
   let helperQueue = 0;      // 이번 차례에 아직 안 나온 인원
   let helperGap = 0;        // 다음 한 명까지 남은 시간
@@ -705,6 +705,8 @@
   const SPREAD_POOP  = 0.22;   // 최대 약 12도
   const SPREAD_BONUS = 0.28;   // 아이템은 조금 얌전하게 (약 16도)
 
+  const FEVER_VY = 245;      // 뚜니핑 낙하물 기준 속도 — 레벨이 올라도 그대로 유지한다
+
   function spawnPoop(mul) {
     const m = (mul || 1) * (H / BASE_H);   // 화면이 길면 그만큼 빨리 떨어져야 체감이 같다
     // 뚜니핑 타임에 나온 것은 외형·점수를 스스로 기억한다 → 뚜니핑 타임이 끝나도 모습이 바뀌지 않는다
@@ -713,7 +715,10 @@
     let r = (cls ? cls.min + Math.random() * (cls.max - cls.min)
                  : 12.6 + Math.random() * 11.7) * aug.poopMul;   // 기본 크기 10% 축소
     r = Math.min(r, (W - 24) / 2);        // 화면보다 커지지 않게
-    const vy = (215 + level * 30 + Math.random() * 110) * m * DIFF_F * aug.fallMul;
+    // 일반 똥은 레벨이 오를수록 빨라지지만, 뚜니핑 낙하물은 처음이나 나중이나 같은 속도로 떨어진다
+    const baseVy = inFever ? FEVER_VY + Math.random() * 110
+                           : 215 + level * 30 + Math.random() * 110;
+    const vy = baseVy * m * DIFF_F * aug.fallMul;
     items.push({
       type: "poop", emoji: "💩",
       x: r + Math.random() * (W - r * 2), y: -r - 10,
@@ -858,8 +863,8 @@
 
     // ---- 도와줘 정연핑 ----
     if (aug.helper > 0) {
-      // 1명이면 3초, 2명이면 4초, 3명이면 5초… 인원이 늘수록 주기도 함께 길어진다
-      const cycle = 2 + aug.helper;
+      // 1명이면 4초, 2명이면 5초, 3명이면 6초… 인원이 늘수록 주기도 함께 길어진다
+      const cycle = 3 + aug.helper;
       helperTimer -= dt;
       if (helperTimer <= 0 && helperQueue <= 0) {
         helperTimer = cycle;
