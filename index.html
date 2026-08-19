@@ -333,7 +333,7 @@
   const elRank  = document.getElementById("rankLine");
   const elTitle = document.getElementById("overTitle");
 
-  const GAME_VERSION = "v1.0.03";   // 코드를 고칠 때마다 뒤 두 자리를 올린다
+  const GAME_VERSION = "v1.0.04";   // 코드를 고칠 때마다 뒤 두 자리를 올린다
   document.getElementById("ver").textContent = GAME_VERSION;
 
   const LS_BEST = "epjpddongpi_best";
@@ -1373,7 +1373,8 @@
           level: level,
           secs: Math.round(elapsed),
           stars: starCount,
-          augs: augCount
+          augs: augCount,
+          ver: GAME_VERSION        // 어느 버전에서 나온 기록인지
         }),
         keepalive: true          // 창을 바로 닫아도 전송되도록
       }).catch(function () {});
@@ -1441,14 +1442,27 @@
         { t: Number(a.score || 0).toLocaleString(), c: "num" }
       ]) : [["기록 없음", "", "", ""]]));
 
+    const vers = data.vers || [];
+    if (vers.length) {
+      devBody.appendChild(devSection("버전별",
+        ["버전", "판수", "평균점수", "평균생존"],
+        vers.map(v => [
+          v.ver,
+          { t: v.runs, c: "num" },
+          { t: Number(v.score || 0).toLocaleString(), c: "num" },
+          { t: (v.secs || 0) + "초", c: "num" }
+        ])));
+    }
+
     const rec = data.recent || [];
     devBody.appendChild(devSection("최근 20판",
-      ["점수", "생존", "증강"],
+      ["점수", "생존", "버전", "증강"],
       rec.length ? rec.map(r => [
         { t: Number(r.score || 0).toLocaleString(), c: "num" },
         { t: (r.secs || 0) + "초", c: "num" },
+        { t: r.ver || "-", c: "num" },
         { t: augLabel(r.augs), c: "lft" }
-      ]) : [["기록 없음", "", ""]]));
+      ]) : [["기록 없음", "", "", ""]]));
   }
 
   function kstStamp(iso) {                      // "8.19 14:03" 형태 (한국시간)
