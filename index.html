@@ -396,7 +396,7 @@
   const elRank  = document.getElementById("rankLine");
   const elTitle = document.getElementById("overTitle");
 
-  const GAME_VERSION = "v1.0.51";   // 코드를 고칠 때마다 뒤 두 자리를 올린다
+  const GAME_VERSION = "v1.0.52";   // 코드를 고칠 때마다 뒤 두 자리를 올린다
   document.getElementById("ver").textContent = GAME_VERSION;
 
   const LS_NAME = "epjpddongpi_name";
@@ -412,8 +412,9 @@
   // hy = 발을 바닥에 고정했을 때 머리(판정 중심)가 player.y 에서 얼마나 떨어지는지.
   // 그림마다 머리·다리 비율이 달라서 이 값으로 보정해야 그림자 높이와 판정이 어긋나지 않는다.
   function currentSprite(now) {
-    if (now < hurtUntil && SPR.hurt.img) return SPR.hurt;
-    return SPR[facing].img ? SPR[facing] : null;
+    const S = sprSet();
+    if (now < hurtUntil && S.hurt.img) return S.hurt;
+    return S[facing].img ? S[facing] : (SPR[facing].img ? SPR[facing] : null);
   }
   function spriteHeight(spr) { return (player.r * 2 * aug.hitboxMul) / spr.head * spr.adj; }
   function headOffset(spr) { return spr ? FOOT - spriteHeight(spr) * (1 - spr.cy) : 0; }  // 실제 크기 = 도안의 80%
@@ -467,22 +468,42 @@
     right: { img: null, aspect: 0.692, head: 0.678, cx: 0.549, cy: 0.397, adj: 1 },
     hurt:  { img: null, aspect: 0.544, head: 0.536, cx: 0.502, cy: 0.378, adj: 0.86 }
   };
+  /* 공기가 없는 높이부터는 우주복 차림으로 바뀐다.
+     헬멧이 곧 머리라서 값을 따로 재어 넣었다 (판정원 = 헬멧 지름). */
+  const SPR_SPACE = {
+    left:  { img: null, aspect: 0.636, head: 0.517, cx: 0.450, cy: 0.272, adj: 0.985 },
+    right: { img: null, aspect: 0.669, head: 0.525, cx: 0.614, cy: 0.286, adj: 1 },
+    hurt:  { img: null, aspect: 0.511, head: 0.422, cx: 0.511, cy: 0.267, adj: 0.804 }
+  };
+  const SPACE_Z = 8;                 // 카르만 선 — 여기부터 공기가 없다
+  function inSpace() { return zoneIdx() >= SPACE_Z; }
+  function sprSet() { return (inSpace() && SPR_SPACE.right.img) ? SPR_SPACE : SPR; }
+
   let facing = "right";
 
   for (const key of ["left", "right", "hurt"]) {
     const img = new Image();
     img.onload = () => { SPR[key].img = img; };
     img.src = "player_" + key + ".png";
+    const si = new Image();
+    si.onload = () => { SPR_SPACE[key].img = si; };
+    si.src = "space_" + key + ".png";
   }
 
   // 도와줘 정연핑 — 아래에서 위로 날아가며 지나간 자리의 똥을 부순다
-  let helperImg = null;
+  let helperImg = null, helperSpaceImg = null;
   {
     const img = new Image();
     img.onload = () => { helperImg = img; };
     img.src = "helper.png";
+    const si = new Image();
+    si.onload = () => { helperSpaceImg = si; };
+    si.src = "space_helper.png";
   }
   const HELPER_ASPECT = 0.793;   // 이미지 가로/세로
+  const HELPER_ASPECT_SPACE = 0.771;
+  function helperPic()    { return (inSpace() && helperSpaceImg) ? helperSpaceImg : helperImg; }
+  function helperAspect() { return (inSpace() && helperSpaceImg) ? HELPER_ASPECT_SPACE : HELPER_ASPECT; }
   const HELPER_H = 110;          // 화면에 그릴 높이 (기존 96에서 15% 확대)
   const HELPER_R = 53;           // 똥을 부수는 반경 (크기에 맞춰 함께 확대)
   function helperScale() { return aug.helperRush ? 1.3 : 1; } // 히든 '대폭주' 시 1.3배 (면적 1.69배)
@@ -495,11 +516,14 @@
   let helperGap = 0;        // 다음 한 명까지 남은 시간
 
   // 뚜니핑 타임에는 똥 이모지 대신 이 이미지가 떨어진다
-  let feverPoop = null;
+  let feverPoop = null, feverPoopSpace = null;
   {
     const img = new Image();
     img.onload = () => { feverPoop = img; };
     img.src = "poop_fever.png";
+    const si = new Image();
+    si.onload = () => { feverPoopSpace = si; };
+    si.src = "space_poop.png";
   }
 
   /* ---------- 사운드 ---------- */
@@ -907,6 +931,7 @@
       vr: special === "laser" ? 0 : (Math.random() - .5) * 5,
       size: r * 2, sz: r, fast: m > 1,
       skin: inFever ? "fever" : "poop",
+      space: inSpace(),
       special: special || null,
       bumpCd: 0,                             // 정연핑과 부딪힌 직후의 무반응 시간
       phase: Math.random() * 6.28,
@@ -1043,6 +1068,10 @@
         popText(W / 2, H * 0.40, ZONES[zi].ic + " " + ZONES[zi].nm, "#cfe4ff", 30);
         beep(760, .1, "sine", .05);
         beep(1140, .14, "sine", .04);
+        if (zi === SPACE_Z) {          // 공기가 없는 높이 — 우주복으로 갈아입는다
+          popText(W / 2, H * 0.48, "🧑‍🚀 우주복 착용!", "#ffd23f", 26);
+          beep(520, .16, "triangle", .05);
+        }
       }
       zoneShown = zi;
     }
@@ -1239,14 +1268,18 @@
         if (it.y > it.splitAt) {
           const r2 = it.sz * 0.62;
           for (const dir of [-1, 1]) {
+            /* 좌우로 벌어지는 각도와 속도를 조각마다 따로 뽑는다.
+               늘 같은 폭으로 갈라지면 한 번 외우면 끝이라 재미가 없다. */
+            const ang = dir * (0.22 + Math.random() * Math.random() * 1.15);   // 세로 기준 12~78도
+            const sp = it.vy * (0.82 + Math.random() * 0.45);
             items.push({
               type: "poop", emoji: "💩",
               x: it.x, y: it.y, r: r2 * 0.82,
-              vx: dir * (150 + Math.random() * 100) * aug.fallMul, vy: it.vy * 0.9,
+              vx: Math.sin(ang) * sp, vy: Math.cos(ang) * sp,
               rot: Math.random() * 6.28, vr: (Math.random() - .5) * 5,
               size: r2 * 2, sz: r2, fast: false,
-              skin: "poop", special: null, phase: 0, splitAt: 0,
-              face: Math.floor(Math.random() * 8), gain: 0, giant: false
+              skin: "poop", space: it.space, special: null, bumpCd: 0, phase: 0, splitAt: 0,
+              sz0: 0, face: Math.floor(Math.random() * 8), gain: 0, giant: false
             });
           }
           burst(it.x, it.y, "#c86bff", 20);
@@ -1459,7 +1492,7 @@
               vx: dir * (170 + Math.random() * 90) * aug.fallMul, vy: it.vy * 1.4,
               rot: Math.random() * 6.28, vr: (Math.random() - .5) * 5,
               size: r2 * 2, sz: r2, fast: false,
-              skin: "poop", special: null, bumpCd: 0, phase: 0, splitAt: 0,
+              skin: "poop", space: it.space, special: null, bumpCd: 0, phase: 0, splitAt: 0,
               sz0: 0, face: Math.floor(Math.random() * 8), gain: 0, giant: false
             });
           }
@@ -2149,7 +2182,13 @@
   }
   function drawBackground(now) {
     const g = ctx.createLinearGradient(0, 0, 0, H);
-    if (fever) {
+    const spaceFever = fever && inSpace();
+    if (spaceFever) {                      // 우주에서는 불꽃 대신 워프하는 하늘
+      const p = 0.5 + Math.sin(now / 70) * 0.5;
+      g.addColorStop(0, "#12002e");
+      g.addColorStop(.5, p > .5 ? "#5a1490" : "#7a1aa8");
+      g.addColorStop(1, "#d22bb0");
+    } else if (fever) {
       const p = 0.5 + Math.sin(now / 70) * 0.5;
       g.addColorStop(0, "#ff5a2e");
       g.addColorStop(.5, p > .5 ? "#ff9d2e" : "#ffb92e");
@@ -2162,14 +2201,17 @@
     ctx.fillStyle = g;
     ctx.fillRect(0, 0, W, H);
 
-    // 뚜니핑 타임 속도선
+    // 뚜니핑 타임 속도선 — 우주에서는 길게 늘어진 별빛으로
     if (fever) {
-      ctx.strokeStyle = "rgba(255,255,255,.35)";
-      ctx.lineWidth = 3;
-      for (let i = 0; i < 14; i++) {
+      const n = spaceFever ? 26 : 14, len = spaceFever ? 170 : 70;
+      ctx.lineWidth = spaceFever ? 2 : 3;
+      for (let i = 0; i < n; i++) {
         const x = ((i * 137 + now * 0.05) % (W + 40)) - 20;
-        const y = ((i * 311 + now * 1.6) % (H + 160)) - 80;
-        ctx.beginPath(); ctx.moveTo(x, y); ctx.lineTo(x, y + 70); ctx.stroke();
+        const y = ((i * 311 + now * (spaceFever ? 2.6 : 1.6)) % (H + 260)) - 130;
+        ctx.strokeStyle = spaceFever
+          ? (i % 5 === 0 ? "rgba(255,190,255,.55)" : "rgba(255,255,255,.55)")
+          : "rgba(255,255,255,.35)";
+        ctx.beginPath(); ctx.moveTo(x, y); ctx.lineTo(x, y + len); ctx.stroke();
       }
     }
 
@@ -2186,7 +2228,7 @@
     }
 
     // 구름 — 올라갈수록 옅어지다 사라진다
-    const cl = fever ? 0.75 : Math.min(0.80, zv("cl") * 0.62);
+    const cl = fever ? (spaceFever ? 0 : 0.75) : Math.min(0.80, zv("cl") * 0.62);
     if (cl > 0.02) {
       ctx.fillStyle = "rgba(255,255,255," + cl.toFixed(2) + ")";
       for (const c of clouds) {
@@ -2383,9 +2425,9 @@
   }
 
   function drawPlayer(now) {
-    const hurting = now < hurtUntil && SPR.hurt.img;
+    const hurting = now < hurtUntil && sprSet().hurt.img;
     const blink = now < invUntil && Math.floor(now / 90) % 2 === 0;
-    const spr = hurting ? SPR.hurt : (SPR[facing].img ? SPR[facing] : null);
+    const spr = currentSprite(now);
 
     if (spr) {
       // 머리 지름을 판정원 지름과 일치시킨다 — 그림마다 머리 비율이 달라 각자의 값을 쓴다
@@ -2511,17 +2553,17 @@
 
   // 원본 그림이 '오른쪽 → 왼쪽' 방향이라, 왼쪽 → 오른쪽으로 날 때만 좌우를 뒤집는다
   function drawHelperAt(x, y, vx, vy) {
-    const hh = HELPER_H * helperScale(), hw = hh * HELPER_ASPECT;
+    const hh = HELPER_H * helperScale(), hw = hh * helperAspect();
     ctx.save();
     ctx.translate(x, y);
     ctx.rotate(Math.atan2(vx, -vy) * 0.8);   // 진행 방향으로 기울이기
     if (vx > 0) ctx.scale(-1, 1);            // 오른쪽으로 갈 때 반전
-    ctx.drawImage(helperImg, -hw / 2, -hh / 2, hw, hh);
+    ctx.drawImage(helperPic(), -hw / 2, -hh / 2, hw, hh);
     ctx.restore();
   }
 
   function drawHelpers() {
-    if (!helperImg) return;
+    if (!helperPic()) return;
     for (const hp of helpers) drawHelperAt(hp.x, hp.y, hp.vx, hp.vy);
     for (const f of fetchers) drawHelperAt(f.x, f.y, f.vx, f.vy);
   }
@@ -2652,8 +2694,9 @@
         ctx.arc(0, 0, it.size * 0.60, 0, 6.283);
         ctx.fill();
       }
-      if (it.skin === "fever" && feverPoop) {
-        ctx.drawImage(feverPoop, -it.size / 2, -it.size / 2, it.size, it.size);
+      const fp = (it.space && feverPoopSpace) ? feverPoopSpace : feverPoop;
+      if (it.skin === "fever" && fp) {
+        ctx.drawImage(fp, -it.size / 2, -it.size / 2, it.size, it.size);
       } else {
         /* 색 이모지도 fillStyle 의 투명도를 그대로 따라간다.
            바로 앞에 그린 구름의 반투명 흰색이 남아 있으면 똥까지 비쳐 보인다. */
