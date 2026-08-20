@@ -396,7 +396,7 @@
   const elRank  = document.getElementById("rankLine");
   const elTitle = document.getElementById("overTitle");
 
-  const GAME_VERSION = "v1.0.50";   // 코드를 고칠 때마다 뒤 두 자리를 올린다
+  const GAME_VERSION = "v1.0.51";   // 코드를 고칠 때마다 뒤 두 자리를 올린다
   document.getElementById("ver").textContent = GAME_VERSION;
 
   const LS_NAME = "epjpddongpi_name";
@@ -1260,7 +1260,6 @@
         it.vx = Math.sin(it.phase) * 230 * aug.fallMul;
       }
       const prevX = it.x, prevY = it.y;      // 한 프레임에 크게 움직이면 스쳐 지나갈 수 있다
-      it.px = prevX; it.py = prevY;
       it.x += it.vx * dt;
       it.y += it.vy * dt;
       it.rot += it.vr * dt;
@@ -2130,11 +2129,23 @@
   }
   function skyColor(i) { return zv(null, i); }
 
-  // 밤이 될수록 드러나는 별. 위치는 매판 고정이라 반짝임만 움직인다.
+  /* 올라갈수록 드러나는 별. 위치는 매판 고정이고 반짝임만 움직인다.
+     크기·밝기·색·반짝이는 속도를 제각각으로 흩어 놓아야 하늘처럼 보인다. */
   const STARS = [];
-  for (let i = 0; i < 46; i++) {
-    STARS.push({ fx: (i * 0.6180339887) % 1, fy: ((i * 0.7548776662) % 1) * 0.62,
-                 r: 0.7 + (i % 5) * 0.32, ph: i * 1.7 });
+  for (let i = 0; i < 120; i++) {
+    const t = (i % 9) / 8;
+    STARS.push({
+      fx: (i * 0.6180339887) % 1,
+      fy: ((i * 0.7548776662) % 1) * 0.94,
+      r: 0.45 + t * t * 2.1,                       // 대부분 작고 가끔 크다
+      ph: i * 1.7,
+      sp: 620 + (i % 7) * 320,                     // 반짝이는 주기도 제각각
+      dim: 0.35 + ((i * 37) % 100) / 155,          // 별마다 기본 밝기가 다르다
+      col: (i % 19 === 0) ? "255,226,180"          // 드물게 노란 별
+         : (i % 11 === 0) ? "200,220,255"          // 드물게 푸른 별
+         : "255,255,255",
+      flare: (i % 24) === 0                        // 아주 드물게 빛살이 뻗는 큰 별
+    });
   }
   function drawBackground(now) {
     const g = ctx.createLinearGradient(0, 0, 0, H);
@@ -2199,14 +2210,25 @@
 
   /* ---- 배경 조각들 ---- */
   function drawStars(a, now) {
-    ctx.fillStyle = "#fff";
     for (const st of STARS) {
-      ctx.globalAlpha = a * (0.45 + 0.55 * Math.abs(Math.sin(now / 900 + st.ph)));
+      const tw = st.dim + (1 - st.dim) * Math.abs(Math.sin(now / st.sp + st.ph));
+      const al = a * tw;
+      if (al < 0.02) continue;
+      const x = st.fx * W, y = st.fy * H;
+      ctx.fillStyle = "rgba(" + st.col + "," + al.toFixed(3) + ")";
       ctx.beginPath();
-      ctx.arc(st.fx * W, st.fy * H, st.r, 0, 6.283);
+      ctx.arc(x, y, st.r, 0, 6.283);
       ctx.fill();
+      if (st.flare) {                              // 큰 별은 빛살이 십자로 뻗는다
+        ctx.strokeStyle = "rgba(" + st.col + "," + (al * 0.45).toFixed(3) + ")";
+        ctx.lineWidth = 1;
+        const L = st.r * 3.6;
+        ctx.beginPath();
+        ctx.moveTo(x - L, y); ctx.lineTo(x + L, y);
+        ctx.moveTo(x, y - L); ctx.lineTo(x, y + L);
+        ctx.stroke();
+      }
     }
-    ctx.globalAlpha = 1;
   }
 
   function drawNebula(a, now) {           // 은하수 — 커다란 색 얼룩 몇 개
@@ -2325,12 +2347,19 @@
       ctx.fillStyle = "rgba(190,210,235,.55)";
       ctx.fillRect(0, y + 40, W, GROUND_H - 40);
     } else if (kind === "metal") {
-      ctx.fillStyle = "#39405a"; ctx.fillRect(0, y, W, GROUND_H);
-      ctx.fillStyle = "#5d6b8f"; ctx.fillRect(0, y, W, 7);
-      ctx.fillStyle = "rgba(0,0,0,.30)";
-      for (let x = 0; x < W; x += 46) ctx.fillRect(x, y + 7, 2, GROUND_H - 7);
-      ctx.fillStyle = "rgba(180,200,255,.45)";
-      for (let x = 22; x < W; x += 46) { ctx.beginPath(); ctx.arc(x, y + 18, 2.4, 0, 6.283); ctx.fill(); }
+      // 위가 밝고 아래로 어두워지는 금속판. 촘촘한 세로줄은 실로폰처럼 보여서 뺐다.
+      const mg = ctx.createLinearGradient(0, y, 0, H);
+      mg.addColorStop(0, "#525d7d");
+      mg.addColorStop(0.35, "#3a4260");
+      mg.addColorStop(1, "#232838");
+      ctx.fillStyle = mg; ctx.fillRect(0, y, W, GROUND_H);
+      ctx.fillStyle = "#9fb4e0"; ctx.fillRect(0, y, W, 4);            // 밝은 난간
+      ctx.fillStyle = "rgba(0,0,0,.35)"; ctx.fillRect(0, y + 4, W, 2);
+      ctx.fillStyle = "rgba(255,255,255,.05)"; ctx.fillRect(0, y + 30, W, 1);
+      ctx.fillStyle = "rgba(140,190,255,.55)";                        // 활주로 유도등
+      for (let x = 34; x < W; x += 132) {
+        ctx.beginPath(); ctx.arc(x, y + 17, 2.6, 0, 6.283); ctx.fill();
+      }
     } else if (kind === "moon") {
       ctx.fillStyle = "#b3ada0"; ctx.fillRect(0, y, W, GROUND_H);
       ctx.fillStyle = "#cdc7b8"; ctx.fillRect(0, y, W, 7);
@@ -2610,28 +2639,7 @@
       const bob = it.bob !== undefined ? Math.sin(it.bob) * 4 : 0;
       ctx.translate(it.x, it.y + bob);
       if (it.special === "laser") {
-        /* 레이저는 한 프레임에 화면의 1/9씩 건너뛴다. 그냥 그리면 뚝뚝 끊긴 도장처럼
-           찍혀서 깜빡이는 것처럼 보인다. 직전 위치까지의 구간을 잔상으로 메우고
-           그 사이에 흐린 잔영을 몇 개 찍어 하나의 광선으로 이어 보이게 한다. */
-        const sw = (it.px === undefined) ? 0
-                 : Math.hypot(it.x - it.px, it.y - it.py);   // 이번 프레임 이동 거리
-        ctx.rotate(Math.atan2(it.vx, it.vy));
-        const tail = sw + it.size * 8;
-        const g = ctx.createLinearGradient(0, 0, 0, -tail);
-        g.addColorStop(0, "rgba(255,70,70,.60)");
-        g.addColorStop(0.45, "rgba(255,70,70,.28)");
-        g.addColorStop(1, "rgba(255,70,70,0)");
-        ctx.fillStyle = g;
-        ctx.fillRect(-it.size * 0.32, -tail, it.size * 0.64, tail);
-        if (sw > it.size * 0.8) {
-          ctx.font = it.size + "px serif";
-          ctx.fillStyle = "#fff";              // 잔상 그라디언트가 남아 있으면 이중으로 흐려진다
-          for (const gh of [[0.30, .55], [0.60, .34], [0.85, .18]]) {
-            ctx.globalAlpha = gh[1];
-            ctx.fillText(it.emoji, 0, -sw * gh[0]);
-          }
-          ctx.globalAlpha = 1;
-        }
+        ctx.rotate(Math.atan2(it.vx, it.vy));   // 굴러떨어지지 않고 진행 방향으로 눕는다
       } else {
         ctx.rotate(it.rot);
       }
