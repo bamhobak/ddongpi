@@ -396,7 +396,7 @@
   const elRank  = document.getElementById("rankLine");
   const elTitle = document.getElementById("overTitle");
 
-  const GAME_VERSION = "v1.0.56";   // 코드를 고칠 때마다 뒤 두 자리를 올린다
+  const GAME_VERSION = "v1.0.57";   // 코드를 고칠 때마다 뒤 두 자리를 올린다
   document.getElementById("ver").textContent = GAME_VERSION;
 
   const LS_NAME = "epjpddongpi_name";
@@ -1415,9 +1415,9 @@
       beep(900, .12, "triangle", .05);
     }
     if (it.type === "star") {
-      // 먹을 때마다 2배: 1번째 1,000 → 2번째 2,000 → 3번째 4,000 → 4번째 8,000 …
+      // 먹을 때마다 1.5배: 1번째 1,000 → 2번째 1,500 → 3번째 2,250 → 4번째 3,375 …
       starCount++;
-      const gain = Math.round(1000 * Math.pow(2, starCount - 1) * aug.starMul * aug.scoreMul);
+      const gain = Math.round(1000 * Math.pow(1.5, starCount - 1) * aug.starMul * aug.scoreMul);
       score += gain;
       popText(it.x, it.y, "⭐×" + starCount + "  +" + gain.toLocaleString(), "#ffd23f");
       beep(1400, .1, "square", .05);
