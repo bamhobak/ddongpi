@@ -396,7 +396,7 @@
   const elRank  = document.getElementById("rankLine");
   const elTitle = document.getElementById("overTitle");
 
-  const GAME_VERSION = "v1.0.60";   // 코드를 고칠 때마다 뒤 두 자리를 올린다
+  const GAME_VERSION = "v1.0.61";   // 코드를 고칠 때마다 뒤 두 자리를 올린다
   document.getElementById("ver").textContent = GAME_VERSION;
 
   const LS_NAME = "epjpddongpi_name";
@@ -816,10 +816,10 @@
     if (!savedName()) { startEditName(); return; }   // 이름부터 정하고 시작
     reset();
   });
-  document.getElementById("btnRetry").addEventListener("click", reset);
+  document.getElementById("btnRetry").addEventListener("click", () => reset());
 
   function reset(test) {
-    testMode = !!test;             // 인자 없이 부르면 항상 평범한 게임
+    testMode = (test === true);    // 정확히 true 일 때만 테스트 모드 (이벤트 객체가 새어들지 않게)
     btnTestEnd.classList.toggle("on", testMode);
     layout();
     items = []; particles = []; floats = []; warns = [];
