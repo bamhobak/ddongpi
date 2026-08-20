@@ -365,7 +365,7 @@
   const elRank  = document.getElementById("rankLine");
   const elTitle = document.getElementById("overTitle");
 
-  const GAME_VERSION = "v1.0.41";   // 코드를 고칠 때마다 뒤 두 자리를 올린다
+  const GAME_VERSION = "v1.0.42";   // 코드를 고칠 때마다 뒤 두 자리를 올린다
   document.getElementById("ver").textContent = GAME_VERSION;
 
   const LS_NAME = "epjpddongpi_name";
@@ -2324,11 +2324,10 @@
         ctx.restore();
       }
       ctx.rotate(it.rot);
-      if (it.special) {
-        // 종류마다 다른 색 기운 — 미리 알아보고 피하라고
+      if (it.special && it.special !== "huge") {
+        // 종류마다 다른 색 기운 — 미리 알아보고 피하라고 (초거대는 덩치로 이미 눈에 띈다)
         ctx.fillStyle = it.special === "split" ? "rgba(200,107,255,.34)"
                       : it.special === "zigzag" ? "rgba(70,215,255,.32)"
-                      : it.special === "huge" ? "rgba(255,150,60,.22)"
                       : "rgba(255,60,60,.40)";
         ctx.beginPath();
         ctx.arc(0, 0, it.size * 0.60, 0, 6.283);
