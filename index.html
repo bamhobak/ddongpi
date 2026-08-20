@@ -365,7 +365,7 @@
   const elRank  = document.getElementById("rankLine");
   const elTitle = document.getElementById("overTitle");
 
-  const GAME_VERSION = "v1.0.24";   // 코드를 고칠 때마다 뒤 두 자리를 올린다
+  const GAME_VERSION = "v1.0.25";   // 코드를 고칠 때마다 뒤 두 자리를 올린다
   document.getElementById("ver").textContent = GAME_VERSION;
 
   const LS_NAME = "epjpddongpi_name";
@@ -831,7 +831,7 @@
       skin: inFever ? "fever" : "poop",
       special: special || null,
       phase: Math.random() * 6.28,
-      splitAt: H * (0.32 + Math.random() * 0.26),   // 분열똥이 쪼개지는 높이
+      splitAt: H * (0.14 + Math.random() * 0.20),   // 분열똥이 쪼개지는 높이 (화면 위쪽)
       sz0: 0,
       face: Math.floor(Math.random() * 8),   // 표정 장식 (0~1은 기본 얼굴)
       gain: cls ? cls.score : 0,
@@ -1332,11 +1332,11 @@
         // 이름을 미리 정해뒀으면 곧바로 등록한다
         nameRow.classList.add("on");
         nameForm.style.display = "none";
-        nameTag.textContent = "🎉 " + rank + "위 등록 중…";
+        nameTag.textContent = "🎉 이번 주 " + rank + "위 등록 중…";
         try {
           await submitScore(nm, pendingScore, pendingLevel);
           myRowKey = nm + "|" + pendingScore;
-          nameTag.textContent = "🎉 " + rank + "위 등록 완료! (" + nm + ")";
+          nameTag.textContent = "🎉 이번 주 " + rank + "위 달성! (" + nm + ")";
           await refreshBoards(boardOver);
           refreshBoards(boardStart);
         } catch (e) {
