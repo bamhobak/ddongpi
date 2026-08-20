@@ -396,7 +396,7 @@
   const elRank  = document.getElementById("rankLine");
   const elTitle = document.getElementById("overTitle");
 
-  const GAME_VERSION = "v1.0.57";   // 코드를 고칠 때마다 뒤 두 자리를 올린다
+  const GAME_VERSION = "v1.0.58";   // 코드를 고칠 때마다 뒤 두 자리를 올린다
   document.getElementById("ver").textContent = GAME_VERSION;
 
   const LS_NAME = "epjpddongpi_name";
@@ -611,7 +611,7 @@
     { id: "helperRush", ic: "💥", nm: "정연핑 대폭주", ds: "정연핑!!!?? 무엇!!?!",
       hidden: true, once: true, cond: () => aug.helper >= 2,   // 정연핑 2개 이상
       go: () => { aug.helperRush = true; } },
-    { id: "hungry",     ic: "😋", nm: "배고픈 정연핑", ds: "정연핑이 아이템을 대신 먹어준다",
+    { id: "hungry",     ic: "😋", nm: "마운자로를 극복한 정연핑", ds: "정연핑이 아이템을 대신 먹어준다",
       hidden: true, once: true, cond: () => aug.helper > 0 && aug.magnet > 0,   // 정연핑 + 자석
       go: () => { aug.hungry = true; } },
     { id: "steelUmb",   ic: "☔", nm: "우산 로켓배송", ds: "우산이 없으면 저절로 배송된다",
