@@ -365,7 +365,7 @@
   const elRank  = document.getElementById("rankLine");
   const elTitle = document.getElementById("overTitle");
 
-  const GAME_VERSION = "v1.0.38";   // 코드를 고칠 때마다 뒤 두 자리를 올린다
+  const GAME_VERSION = "v1.0.39";   // 코드를 고칠 때마다 뒤 두 자리를 올린다
   document.getElementById("ver").textContent = GAME_VERSION;
 
   const LS_NAME = "epjpddongpi_name";
@@ -832,9 +832,9 @@
      split  = 내려오다 둘로 쪼개진다 (쪼개진 조각은 평범한 똥)
      zigzag = 좌우로 크게 흔들리며 내려온다
      laser  = 2초간 떨어질 자리를 깜빡여 알려준 뒤 번개처럼 내리꽂힌다
-     huge   = 초대형 뚜니핑의 두 배쯤 되는 거대한 똥, 느리게 굴러떨어진다 */
+     huge   = 초대형 뚜니핑의 1.4배쯤 되는 거대한 똥, 느리게 굴러떨어진다 */
   const SPECIAL_KINDS = ["split", "zigzag", "laser", "huge"];
-  const HUGE_R = 104;          // 반지름 — 초대형(52~62)의 약 2배
+  const HUGE_R = 73;           // 반지름 — 초대형(52~62)의 1.4배
   const LASER_WARN = 2;        // 예고 시간(초)
   const LASER_VY = 2400;       // 낙하 속도
   let warns = [];              // 예고 중인 레이저 자리
@@ -846,7 +846,7 @@
     const cls = inFever ? pickFeverSize() : null;
     let r = (cls ? cls.min + Math.random() * (cls.max - cls.min)
                  : 12.6 + Math.random() * 11.7) * aug.poopMul;   // 기본 크기 10% 축소
-    if (special === "huge") r = (HUGE_R + Math.random() * 16) * aug.poopMul;   // 초거대 똥
+    if (special === "huge") r = (HUGE_R + Math.random() * 14) * aug.poopMul;   // 초거대 똥
     r = Math.min(r, (W - 24) / 2);        // 화면보다 커지지 않게
     // 일반 똥은 레벨이 오를수록 빨라지지만, 뚜니핑 낙하물은 처음이나 나중이나 같은 속도로 떨어진다
     const baseVy = inFever ? FEVER_VY + Math.random() * 110
