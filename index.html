@@ -124,6 +124,24 @@
     font-size: 11px; color: #7f8494;
   }
 
+  /* ---- 시작 화면 이름 ---- */
+  #nameBox { display: flex; align-items: center; gap: 8px; }
+  #nameBox .who { font-size: 14px; color: #d5d8e2; }
+  #nameBox .who b { color: #ffd23f; font-weight: 700; }
+  #nameBox button, #nameEdit button {
+    padding: 8px 14px; font-size: 13px; background: rgba(255,255,255,.14); color: #fff;
+  }
+  #nameEdit { display: none; align-items: center; gap: 8px; }
+  #nameEdit.on { display: flex; }
+  #nameBox.off { display: none; }
+  #startName {
+    font: inherit; font-size: 16px; width: 150px;
+    padding: 9px 12px; border-radius: 11px;
+    border: 2px solid rgba(255,255,255,.18);
+    background: rgba(255,255,255,.08); color: #fff;
+  }
+  #startName:focus { outline: none; border-color: #ffd23f; }
+
   /* ---- 이름 등록 ---- */
   #nameRow { display: none; flex-direction: column; align-items: center; gap: 10px; width: 100%; }
   #nameRow.on { display: flex; }
@@ -260,6 +278,16 @@
         <h3 id="lastTitle">👑 지난주 명예의 전당</h3>
         <ol id="boardLast"></ol>
       </div>
+      <div id="nameBox">
+        <span class="who">플레이어 <b id="myName">-</b></span>
+        <button id="btnEditName">수정</button>
+      </div>
+      <div id="nameEdit">
+        <input id="startName" type="text" maxlength="12" placeholder="이름 (최대 12자)"
+               autocomplete="off" autocorrect="off" spellcheck="false">
+        <button id="btnSaveName">저장</button>
+      </div>
+
       <button id="btnStart">시작하기</button>
     </div>
 
@@ -337,7 +365,7 @@
   const elRank  = document.getElementById("rankLine");
   const elTitle = document.getElementById("overTitle");
 
-  const GAME_VERSION = "v1.0.22";   // 코드를 고칠 때마다 뒤 두 자리를 올린다
+  const GAME_VERSION = "v1.0.23";   // 코드를 고칠 때마다 뒤 두 자리를 올린다
   document.getElementById("ver").textContent = GAME_VERSION;
 
   const LS_NAME = "epjpddongpi_name";
@@ -666,7 +694,46 @@
   cv.addEventListener("touchstart", movePointer, { passive: false });
   cv.addEventListener("touchmove", movePointer, { passive: false });
 
-  document.getElementById("btnStart").addEventListener("click", reset);
+  /* ---------- 플레이어 이름 ----------
+     시작 화면에서 미리 정해두고, 게임이 끝나면 조건을 만족할 때 자동으로 등록된다. */
+  const nameBox   = document.getElementById("nameBox");
+  const nameEdit  = document.getElementById("nameEdit");
+  const myNameEl  = document.getElementById("myName");
+  const startName = document.getElementById("startName");
+
+  function savedName() {
+    try { return (localStorage.getItem(LS_NAME) || "").trim(); } catch (e) { return ""; }
+  }
+  function showNameView() {
+    const n = savedName();
+    myNameEl.textContent = n || "-";
+    if (n) { nameBox.classList.remove("off"); nameEdit.classList.remove("on"); }
+    else   { nameBox.classList.add("off");    nameEdit.classList.add("on"); }
+  }
+  function startEditName() {
+    startName.value = savedName();
+    nameBox.classList.add("off");
+    nameEdit.classList.add("on");
+    startName.focus();
+  }
+  function saveName() {
+    const n = startName.value.trim().slice(0, 12);
+    if (!n) { startName.focus(); return; }
+    try { localStorage.setItem(LS_NAME, n); } catch (e) {}
+    showNameView();
+  }
+  document.getElementById("btnEditName").addEventListener("click", startEditName);
+  document.getElementById("btnSaveName").addEventListener("click", saveName);
+  startName.addEventListener("keydown", e => {
+    e.stopPropagation();                       // 스페이스로 게임이 시작되지 않도록
+    if (e.key === "Enter") { e.preventDefault(); saveName(); }
+  });
+  showNameView();
+
+  document.getElementById("btnStart").addEventListener("click", () => {
+    if (!savedName()) { startEditName(); return; }   // 이름부터 정하고 시작
+    reset();
+  });
   document.getElementById("btnRetry").addEventListener("click", reset);
 
   function reset() {
@@ -1253,12 +1320,33 @@
     btnSave.disabled = false;
     btnSave.textContent = "등록";
     nameTag.textContent = "🎉 TOP 10 진입! 이름을 남기세요";
-    refreshBoards(boardOver).then(() => {
-      if (state === STATE.OVER && qualifies(s)) {
+    refreshBoards(boardOver).then(async () => {
+      if (state !== STATE.OVER || !qualifies(s)) return;
+      const r = topList.findIndex(v => s > v.score);
+      const rank = (r < 0 ? topList.length + 1 : r + 1);
+      const nm = savedName();
+      if (nm) {
+        // 이름을 미리 정해뒀으면 곧바로 등록한다
         nameRow.classList.add("on");
-        nameInput.value = localStorage.getItem(LS_NAME) || "";
-        const r = topList.findIndex(v => s > v.score);
-        nameTag.textContent = "🎉 " + (r < 0 ? topList.length + 1 : r + 1) + "위 진입! 이름을 남기세요";
+        nameForm.style.display = "none";
+        nameTag.textContent = "🎉 " + rank + "위 등록 중…";
+        try {
+          await submitScore(nm, pendingScore, pendingLevel);
+          myRowKey = nm + "|" + pendingScore;
+          nameTag.textContent = "🎉 " + rank + "위 등록 완료! (" + nm + ")";
+          await refreshBoards(boardOver);
+          refreshBoards(boardStart);
+        } catch (e) {
+          nameTag.textContent = "등록 실패 — 아래에서 다시 시도해주세요";
+          nameForm.style.display = "";
+          nameInput.value = nm;
+        }
+      } else {
+        // 이름이 없으면 예전처럼 여기서 입력받는다
+        nameRow.classList.add("on");
+        nameForm.style.display = "";
+        nameInput.value = "";
+        nameTag.textContent = "🎉 " + rank + "위 진입! 이름을 남기세요";
       }
     });
   }
@@ -1292,6 +1380,7 @@
   const nameRow    = document.getElementById("nameRow");
   const nameTag    = document.getElementById("nameTag");
   const nameInput  = document.getElementById("nameInput");
+  const nameForm   = document.getElementById("nameForm");
   const btnSave    = document.getElementById("btnSave");
 
   let topList = [];
@@ -1711,6 +1800,7 @@
     try {
       await submitScore(name, pendingScore, pendingLevel);
       try { localStorage.setItem(LS_NAME, name); } catch (e) {}
+      showNameView();
       myRowKey = name + "|" + pendingScore;
       nameRow.classList.remove("on");
       await refreshBoards(boardOver);
