@@ -396,7 +396,7 @@
   const elRank  = document.getElementById("rankLine");
   const elTitle = document.getElementById("overTitle");
 
-  const GAME_VERSION = "v1.0.49";   // 코드를 고칠 때마다 뒤 두 자리를 올린다
+  const GAME_VERSION = "v1.0.50";   // 코드를 고칠 때마다 뒤 두 자리를 올린다
   document.getElementById("ver").textContent = GAME_VERSION;
 
   const LS_NAME = "epjpddongpi_name";
@@ -2175,7 +2175,7 @@
     }
 
     // 구름 — 올라갈수록 옅어지다 사라진다
-    const cl = fever ? 0.55 : Math.min(0.42, zv("cl") * 0.40);
+    const cl = fever ? 0.75 : Math.min(0.80, zv("cl") * 0.62);
     if (cl > 0.02) {
       ctx.fillStyle = "rgba(255,255,255," + cl.toFixed(2) + ")";
       for (const c of clouds) {
@@ -2473,6 +2473,7 @@
     ctx.save();
     ctx.translate(player.x, y);
     ctx.font = size + "px serif";
+    ctx.fillStyle = "#fff";                    // 이모지가 앞의 투명도를 물려받지 않게
     ctx.textAlign = "center"; ctx.textBaseline = "middle";
     const start = -(shields - 1) * gap / 2;
     for (let k = 0; k < shields; k++) ctx.fillText("☂️", start + k * gap, 0);
@@ -2624,6 +2625,7 @@
         ctx.fillRect(-it.size * 0.32, -tail, it.size * 0.64, tail);
         if (sw > it.size * 0.8) {
           ctx.font = it.size + "px serif";
+          ctx.fillStyle = "#fff";              // 잔상 그라디언트가 남아 있으면 이중으로 흐려진다
           for (const gh of [[0.30, .55], [0.60, .34], [0.85, .18]]) {
             ctx.globalAlpha = gh[1];
             ctx.fillText(it.emoji, 0, -sw * gh[0]);
@@ -2645,6 +2647,9 @@
       if (it.skin === "fever" && feverPoop) {
         ctx.drawImage(feverPoop, -it.size / 2, -it.size / 2, it.size, it.size);
       } else {
+        /* 색 이모지도 fillStyle 의 투명도를 그대로 따라간다.
+           바로 앞에 그린 구름의 반투명 흰색이 남아 있으면 똥까지 비쳐 보인다. */
+        ctx.fillStyle = "#fff";
         ctx.font = it.size + "px serif";
         ctx.fillText(it.emoji, 0, 0);
         if (it.type === "poop" && it.face > 1 && it.size >= 34) {
