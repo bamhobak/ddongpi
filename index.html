@@ -396,7 +396,7 @@
   const elRank  = document.getElementById("rankLine");
   const elTitle = document.getElementById("overTitle");
 
-  const GAME_VERSION = "v1.0.71";   // 코드를 고칠 때마다 뒤 두 자리를 올린다
+  const GAME_VERSION = "v1.0.72";   // 코드를 고칠 때마다 뒤 두 자리를 올린다
   document.getElementById("ver").textContent = GAME_VERSION;
 
   const LS_NAME = "epjpddongpi_name";
@@ -1254,7 +1254,6 @@
     }
 
     const powered = now < powerUntil;      // 🔥 뚜니핑 타임
-    const invincible = now < invUntil;
 
     // 화면이 좁으면 그만큼 똥도 덜 떨어지게(체감 난이도 유지)
     const widthFactor = 480 / W;
@@ -1406,7 +1405,10 @@
             if (gain >= 25 || Math.random() < .5) beep(note + Math.random() * 200, .06, "square", .04);
             continue;
           }
-          if (!invincible) {
+          /* 무적 여부는 이 자리에서 그때그때 확인해야 한다.
+             프레임 앞에서 한 번만 재어 두면, 같은 프레임에 똥 두 개가 겹쳐 닿았을 때
+             첫 번째로 무적이 걸렸는데도 두 번째가 그대로 들어와 방패가 두 개 깨진다. */
+          if (now >= invUntil) {
             if (shields > 0) {
               shields--;
               invUntil = now + 1500;        // 목숨을 잃었을 때와 같은 무적 시간
