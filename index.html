@@ -396,7 +396,7 @@
   const elRank  = document.getElementById("rankLine");
   const elTitle = document.getElementById("overTitle");
 
-  const GAME_VERSION = "v1.0.68";   // 코드를 고칠 때마다 뒤 두 자리를 올린다
+  const GAME_VERSION = "v1.0.69";   // 코드를 고칠 때마다 뒤 두 자리를 올린다
   document.getElementById("ver").textContent = GAME_VERSION;
 
   const LS_NAME = "epjpddongpi_name";
@@ -1602,9 +1602,13 @@
         try {
           await submitScore(nm, pendingScore, pendingLevel);
           myRowKey = nm + "|" + pendingScore;
-          nameTag.textContent = "🎉 이번 주 " + rank + "위 달성! (" + nm + ")";
           await refreshBoards(boardOver);
           refreshBoards(boardStart);
+          /* 한 기기당 한 줄만 남기 때문에, 예전 기록이 더 높으면 이번 판은 순위표에
+             올라가지 않는다. 실제로 올라갔을 때만 달성 문구를 띄운다. */
+          const at = topList.findIndex(v => v.name + "|" + Number(v.score) === myRowKey);
+          if (at < 0) nameRow.classList.remove("on");
+          else nameTag.textContent = "🎉 이번 주 " + (at + 1) + "위 달성! (" + nm + ")";
         } catch (e) {
           nameTag.textContent = "등록 실패 — 아래에서 다시 시도해주세요";
           nameForm.style.display = "";
