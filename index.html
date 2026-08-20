@@ -365,7 +365,7 @@
   const elRank  = document.getElementById("rankLine");
   const elTitle = document.getElementById("overTitle");
 
-  const GAME_VERSION = "v1.0.31";   // 코드를 고칠 때마다 뒤 두 자리를 올린다
+  const GAME_VERSION = "v1.0.32";   // 코드를 고칠 때마다 뒤 두 자리를 올린다
   document.getElementById("ver").textContent = GAME_VERSION;
 
   const LS_NAME = "epjpddongpi_name";
@@ -1141,9 +1141,8 @@
         if (level >= 7 && Math.random() < Math.min(0.30, (level - 6) * 0.0266)) {
           const kind = SPECIAL_KINDS[Math.floor(Math.random() * SPECIAL_KINDS.length)];
           if (kind === "laser") {
-            // 바로 떨어뜨리지 않고 자리를 먼저 알려준다.
-            // 예고가 겹치면 붉은 띠가 여러 줄 깜빡여 피할 자리를 알 수 없으니 한 번에 하나만.
-            if (warns.length === 0) {
+            // 바로 떨어뜨리지 않고 자리를 먼저 알려준다 (예고는 동시에 여러 개도 가능)
+            if (warns.length < 3) {
               warns.push({ x: 40 + Math.random() * Math.max(1, W - 80), t: LASER_WARN });
               beep(1500, .06, "sine", .03);
             }
