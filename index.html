@@ -396,7 +396,7 @@
   const elRank  = document.getElementById("rankLine");
   const elTitle = document.getElementById("overTitle");
 
-  const GAME_VERSION = "v1.0.52";   // 코드를 고칠 때마다 뒤 두 자리를 올린다
+  const GAME_VERSION = "v1.0.53";   // 코드를 고칠 때마다 뒤 두 자리를 올린다
   document.getElementById("ver").textContent = GAME_VERSION;
 
   const LS_NAME = "epjpddongpi_name";
@@ -2322,20 +2322,37 @@
     }
   }
 
-  function drawMeteors(a, now) {          // 비스듬히 스쳐 가는 유성
-    ctx.lineWidth = 2;
+  function drawMeteors(a, now) {          // 스쳐 가는 별똥별 — 밝은 머리에 꼬리가 옅어진다
+    ctx.lineCap = "round";
     for (let i = 0; i < 4; i++) {
       const T = ((now / 1000) + i * 0.83) % 3.4;
-      if (T > 1.1) continue;
-      const q = T / 1.1;
-      const sx = ((i * 151) % Math.max(1, W)) + q * W * 0.55;
-      const sy = -50 + q * H * 0.75;
-      ctx.strokeStyle = "rgba(255,255,255," + (a * (1 - q) * 0.85).toFixed(3) + ")";
+      if (T > 1.15) continue;
+      const q = T / 1.15;
+      const fade = Math.sin(Math.PI * q);          // 스르르 나타났다 스르르 사라진다
+      if (fade < 0.03) continue;
+      const vx = W * (0.34 + (i % 3) * 0.16), vy = H * (0.62 + (i % 2) * 0.22);
+      const d = Math.hypot(vx, vy);
+      const hx = ((i * 151) % Math.max(1, W)) + q * vx;   // 머리 위치
+      const hy = -60 + q * vy;
+      const len = 86 + (i % 3) * 52;                      // 꼬리는 날아온 쪽으로 눕는다
+      const tx = hx - vx / d * len, ty = hy - vy / d * len;
+      const g = ctx.createLinearGradient(hx, hy, tx, ty);
+      g.addColorStop(0, "rgba(255,255,255," + (a * fade * 0.92).toFixed(3) + ")");
+      g.addColorStop(0.30, "rgba(206,228,255," + (a * fade * 0.34).toFixed(3) + ")");
+      g.addColorStop(1, "rgba(170,200,255,0)");
+      ctx.strokeStyle = g;
+      ctx.lineWidth = 2.4;
       ctx.beginPath();
-      ctx.moveTo(sx, sy);
-      ctx.lineTo(sx - 44, sy - 60);
+      ctx.moveTo(hx, hy); ctx.lineTo(tx, ty);
       ctx.stroke();
+      const gh = ctx.createRadialGradient(hx, hy, 0, hx, hy, 8);
+      gh.addColorStop(0, "rgba(255,255,255," + (a * fade).toFixed(3) + ")");
+      gh.addColorStop(0.4, "rgba(220,235,255," + (a * fade * 0.35).toFixed(3) + ")");
+      gh.addColorStop(1, "rgba(200,225,255,0)");
+      ctx.fillStyle = gh;
+      ctx.beginPath(); ctx.arc(hx, hy, 8, 0, 6.283); ctx.fill();
     }
+    ctx.lineCap = "butt";
   }
 
   function drawRocks(a, now) {            // 소행성대 — 천천히 흘러가는 바위
