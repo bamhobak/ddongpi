@@ -337,7 +337,7 @@
   const elRank  = document.getElementById("rankLine");
   const elTitle = document.getElementById("overTitle");
 
-  const GAME_VERSION = "v1.0.18";   // 코드를 고칠 때마다 뒤 두 자리를 올린다
+  const GAME_VERSION = "v1.0.19";   // 코드를 고칠 때마다 뒤 두 자리를 올린다
   document.getElementById("ver").textContent = GAME_VERSION;
 
   const LS_NAME = "epjpddongpi_name";
@@ -479,6 +479,10 @@
     helper: 0,          // 도와줘 정연핑 인원 (증강을 겹칠수록 1명씩 증가)
     helperRush: false,  // 히든: 정연핑 대폭주 (크기 확대)
     hungry: false,      // 히든: 배고픈 정연핑 (아이템을 대신 먹어준다)
+    steelUmb: false,    // 히든: 강철 우산 (방패가 없으면 7초마다 하나 생긴다)
+    starburst: false,   // 히든: 별똥별 (별을 먹으면 화면의 똥이 전부 사라진다)
+    gamble: false,      // 히든: 도박꾼 (점수 2배, 목숨 1 고정)
+    scoreMul: 1,        // 모든 점수에 곱해지는 배율
     maxLives: 5
   };
   let augCount = {};    // 증강별 획득 횟수
@@ -499,7 +503,7 @@
       go: () => { aug.feverScoreMul += 0.3 * dim("fever50"); } },
     { id: "slow",       ic: "🐢", nm: "느린 하늘",   ds: "똥이 느리게 떨어진다",
       go: () => { aug.fallMul *= 1 - 0.15 * dim("slow"); } },
-    { id: "small",      ic: "🎯", nm: "날렵한 몸",   ds: "몸집이 작아진다",
+    { id: "small",      ic: "🎯", nm: "마운자로 이재", ds: "몸집이 작아진다",
       go: () => { aug.hitboxMul *= 1 - 0.15 * dim("small"); } },
     { id: "tinypoop",   ic: "🫧", nm: "작아진 똥",   ds: "똥이 작아진다",
       go: () => { aug.poopMul *= 1 - 0.15 * dim("tinypoop"); } },
@@ -515,6 +519,15 @@
     { id: "hungry",     ic: "😋", nm: "배고픈 정연핑", ds: "정연핑이 아이템을 대신 먹어준다",
       hidden: true, once: true, cond: () => aug.helper > 0 && aug.magnet > 0,   // 정연핑 + 자석
       go: () => { aug.hungry = true; } },
+    { id: "steelUmb",   ic: "☔", nm: "강철 우산", ds: "우산이 없으면 저절로 생겨난다",
+      hidden: true, once: true, cond: () => augCount["umbrella3"] > 0,
+      go: () => { aug.steelUmb = true; shieldTimer = 7; } },
+    { id: "starburst",  ic: "🌠", nm: "별똥별",     ds: "별이 하늘의 똥을 쓸어버린다",
+      hidden: true, once: true, cond: () => augCount["star50"] > 0,
+      go: () => { aug.starburst = true; } },
+    { id: "gamble",     ic: "🎰", nm: "도박꾼",     ds: "모든 점수 2배, 목숨은 하나뿐",
+      hidden: true, once: true, cond: () => level >= 5,
+      go: () => { aug.gamble = true; aug.scoreMul *= 2; aug.maxLives = 1; lives = 1; } },
     { id: "magnet",     ic: "🧲", nm: "자석",       ds: "넓은 범위의 아이템이 끌려온다",
       once: true, go: () => { aug.magnet = 240; } },
     { id: "lucky",      ic: "🍀", nm: "행운",       ds: "아이템이 더 자주 등장",
@@ -621,6 +634,7 @@
   let spawnTimer = 0;
   let invUntil = 0, powerUntil = 0;
   let shields = 0;                 // 남은 방패 수 — 우산 아이템은 최대 1, 증강으로만 여러 개
+  let shieldTimer = 7;             // 강철 우산: 방패가 없을 때 다음 하나까지 남은 시간
   let hurtUntil = 0;               // 똥에 맞은 직후 (아픈 그림 표시)
   let skyT = 0;                    // 0 = 맑은 하늘, 1 = 가장 어두운 하늘 (레벨에 따라)
   let shake = 0, flash = 0, feverFlash = 0;
@@ -667,6 +681,8 @@
     augCount = {};
     aug.feverBonus = 0; aug.starMul = 1; aug.timeMul = 1;
     aug.feverScoreMul = 1; aug.fallMul = 1; aug.hitboxMul = 1; aug.poopMul = 1;
+    aug.steelUmb = false; aug.starburst = false; aug.gamble = false; aug.scoreMul = 1;
+    shieldTimer = 7;
     aug.itemRateMul = 1; aug.feverRateMul = 1; aug.giant = 0; aug.magnet = 0;
     aug.helper = 0; aug.helperRush = false; aug.hungry = false;
     helpers = []; fetchers = [];
@@ -860,7 +876,7 @@
 
     elapsed += dt;
     level = 1 + Math.floor(elapsed / 10);
-    score += dt * Math.pow(1.7, level - 1) * aug.timeMul;  // 생존 점수: 레벨마다 1.7배
+    score += dt * Math.pow(1.7, level - 1) * aug.timeMul * aug.scoreMul;  // 생존 점수: 레벨마다 1.7배
 
     // 레벨이 오를수록 하늘이 진해진다. 단계마다 값이 바뀌지만 색은 부드럽게 따라간다.
     const skyTarget = Math.min(1, (level - 1) / 14);   // 레벨 15에서 완전한 밤
@@ -882,6 +898,21 @@
     player.tilt = Math.max(-.35, Math.min(.35, player.tilt));
 
     player.hy = headOffset(currentSprite(now));
+
+    // ---- 강철 우산: 방패가 하나도 없을 때만 시간을 재서 하나 만들어준다 ----
+    if (aug.steelUmb) {
+      if (shields <= 0) {
+        shieldTimer -= dt;
+        if (shieldTimer <= 0) {
+          shields = 1;
+          shieldTimer = 7;
+          popText(player.x, player.y - 60, "☔ 우산 생성!", "#7ec8ff");
+          beep(880, .12, "triangle", .05);
+        }
+      } else {
+        shieldTimer = 7;
+      }
+    }
 
     // ---- 도와줘 정연핑 ----
     if (aug.helper > 0) {
@@ -1102,7 +1133,7 @@
       if (it.y - it.r > H + 20) {
         // 뚜니핑 타임 낙하물은 워낙 많이 쏟아져서, 안 먹고 흘려보낸 것에 점수를 주면
         // 가만히 있어도 점수가 폭등한다. 뚜니핑 타임 것은 0점 — 직접 받아야만 점수가 오른다.
-        if (it.type === "poop" && it.skin !== "fever") score += 3;
+        if (it.type === "poop" && it.skin !== "fever") score += 3 * aug.scoreMul;
         items.splice(i, 1);
       }
     }
@@ -1130,11 +1161,30 @@
     if (it.type === "star") {
       // 먹을 때마다 2배: 1번째 1,500 → 2번째 3,000 → 3번째 6,000 → 4번째 12,000 …
       starCount++;
-      const gain = Math.round(1500 * Math.pow(2, starCount - 1) * aug.starMul);
+      const gain = Math.round(1500 * Math.pow(2, starCount - 1) * aug.starMul * aug.scoreMul);
       score += gain;
       popText(it.x, it.y, "⭐×" + starCount + "  +" + gain.toLocaleString(), "#ffd23f");
       beep(1400, .1, "square", .05);
       beep(1750, .12, "square", .04);
+      if (aug.starburst) {
+        // 화면의 똥을 전부 없애고 개당 점수를 준다 (까다로운 똥도 함께 쓸린다)
+        let cnt = 0, bonus = 0;
+        for (let k = items.length - 1; k >= 0; k--) {
+          const q = items[k];
+          if (q.type !== "poop") continue;
+          bonus += (q.skin === "fever") ? feverGain(q) : 3;
+          burst(q.x, q.y, "#ffe9a8", 10);
+          items.splice(k, 1);
+          cnt++;
+        }
+        if (cnt) {
+          score += bonus * aug.scoreMul;
+          shake = Math.max(shake, 18);
+          feverFlash = Math.max(feverFlash, 0.7);
+          popText(player.x, player.y - 110, "🌠 " + cnt + "개 쓸어버림 +" + bonus.toLocaleString(), "#ffe9a8", 26);
+          beep(2000, .18, "square", .05);
+        }
+      }
     }
     if (it.type === "moon" || it.type === "fullmoon") {
       const full = it.type === "fullmoon";
@@ -1156,7 +1206,7 @@
      레벨이 하나 오를 때마다 10%씩 (레벨1 기준, 레벨10이면 약 2.4배). */
   function feverGain(it) {
     const base = it.gain || (it.sz < 16.2 ? 2 : (it.sz < 20.7 ? 5 : 10));
-    return Math.max(1, Math.round(base * aug.feverScoreMul * Math.pow(1.1, level - 1)));
+    return Math.max(1, Math.round(base * aug.feverScoreMul * aug.scoreMul * Math.pow(1.1, level - 1)));
   }
 
   // 정연핑이 지나간 자리의 똥을 부순다 (뚜니핑 낙하물은 제 점수를 그대로 준다)
@@ -1172,7 +1222,7 @@
         burst(it.x, it.y, g >= 25 ? "#ff3b3b" : "#ffd23f", g >= 25 ? 30 : 16);
         if (g >= 15) popText(it.x, it.y, "+" + g, "#ffd23f", g >= 40 ? 30 : 24);
       } else {
-        score += 3;
+        score += 3 * aug.scoreMul;
         burst(it.x, it.y, "#ffd23f", 14);
       }
       items.splice(i, 1);
