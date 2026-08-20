@@ -396,7 +396,7 @@
   const elRank  = document.getElementById("rankLine");
   const elTitle = document.getElementById("overTitle");
 
-  const GAME_VERSION = "v1.0.45";   // 코드를 고칠 때마다 뒤 두 자리를 올린다
+  const GAME_VERSION = "v1.0.46";   // 코드를 고칠 때마다 뒤 두 자리를 올린다
   document.getElementById("ver").textContent = GAME_VERSION;
 
   const LS_NAME = "epjpddongpi_name";
@@ -720,7 +720,7 @@
   let shieldTimer = 5;             // 우산 로켓배송: 방패가 없을 때 다음 하나까지 남은 시간
   let ghostTimer = 6;              // 유령화: 다음 무적까지 남은 시간
   let hurtUntil = 0;               // 똥에 맞은 직후 (아픈 그림 표시)
-  let skyT = 0;                    // 0 = 맑은 하늘, 1 = 가장 어두운 하늘 (레벨에 따라)
+  let zoneShown = -1;              // 도착 안내를 이미 띄운 단계
   let shake = 0, flash = 0, feverFlash = 0;
   let fever = false, feverT = 0, feverDur = 10000;
   let last = 0;
@@ -802,7 +802,7 @@
     resetBonusTimers();
     invUntil = 0; powerUntil = 0; hurtUntil = 0; shields = 0;
     shake = 0; flash = 0; feverFlash = 0; fever = false; feverT = 0;
-    skyT = 0;
+    zoneShown = -1;
     augCount = {};
     aug.feverBonus = 0; aug.starMul = 1; aug.timeMul = 1;
     aug.feverScoreMul = 1; aug.fallMul = 1; aug.hitboxMul = 1; aug.poopMul = 1;
@@ -1036,9 +1036,16 @@
     level = 1 + Math.floor(elapsed / 12);   // 레벨 하나당 12초
     score += dt * Math.pow(1.7, level - 1) * aug.timeMul * aug.scoreMul;  // 생존 점수: 레벨마다 1.7배
 
-    // 레벨이 오를수록 하늘이 진해진다. 단계마다 값이 바뀌지만 색은 부드럽게 따라간다.
-    const skyTarget = Math.min(1, (level - 1) / 14);   // 레벨 15에서 완전한 밤
-    skyT += (skyTarget - skyT) * Math.min(1, dt * 2);
+    // 한 단계 올라설 때마다 어디에 도착했는지 알려준다
+    const zi = zoneIdx();
+    if (zi !== zoneShown) {
+      if (zoneShown >= 0) {
+        popText(W / 2, H * 0.40, ZONES[zi].ic + " " + ZONES[zi].nm, "#cfe4ff", 30);
+        beep(760, .1, "sine", .05);
+        beep(1140, .14, "sine", .04);
+      }
+      zoneShown = zi;
+    }
 
     const kSpeed = 560 * dt;
     if (keys.ArrowLeft  || keys.a || keys.A) player.tx -= kSpeed;
@@ -2070,24 +2077,58 @@
   }
 
   /* ---------- 그리기 ---------- */
-  /* 레벨이 오를수록 낮 → 노을 → 땅거미 → 밤으로 넘어간다 (레벨 15에서 완전한 밤).
-     각 구간의 [하늘 위, 중간, 지평선] 색을 정해두고 사이를 이어서 계산한다. */
-  const SKY_KEYS = [
-    { t: 0.00, c: [[137, 198, 255], [191, 224, 255], [233, 244, 255]] },  // 한낮
-    { t: 0.38, c: [[ 92, 146, 214], [206, 150, 150], [252, 194, 126]] },  // 노을
-    { t: 0.68, c: [[ 34,  40,  92], [ 82,  56, 112], [146,  84, 112]] },  // 땅거미
-    { t: 1.00, c: [[  5,   7,  22], [ 11,  15,  40], [ 26,  30,  62]] }   // 한밤
+  /* 한 단계 오를 때마다 지면에서 우주로 한 층씩 올라간다.
+     sky = [하늘 위, 중간, 아래] 색, gr = 발밑 지형,
+     cl 구름 / st 별 / au 오로라 / mt 유성 / ea 지구 / mo 달 / nb 성운 / rk 떠도는 바위 (0~1). */
+  const ZONES = [
+    { nm: "잔디밭",     ic: "🌱", gr: "grass", cl: 1.00, st: 0,
+      sky: [[137, 198, 255], [191, 224, 255], [233, 244, 255]] },
+    { nm: "언덕 위",    ic: "⛰️", gr: "rock",  cl: 0.90, st: 0,
+      sky: [[112, 182, 252], [172, 216, 255], [216, 238, 255]] },
+    { nm: "구름 바다",  ic: "☁️", gr: "cloud", cl: 1.20, st: 0,
+      sky: [[ 86, 162, 244], [148, 202, 255], [232, 243, 255]] },
+    { nm: "대류권 끝",  ic: "🌤️", gr: "cloud", cl: 0.55, st: 0.05,
+      sky: [[ 54, 118, 208], [102, 166, 236], [178, 214, 247]] },
+    { nm: "성층권",     ic: "🎈", gr: "cloud", cl: 0.22, st: 0.30,
+      sky: [[ 24,  62, 142], [ 54, 106, 184], [122, 170, 220]] },
+    { nm: "오존층",     ic: "🧊", gr: "cloud", cl: 0.10, st: 0.55,
+      sky: [[ 13,  34,  98], [ 30,  68, 142], [ 76, 122, 182]] },
+    { nm: "오로라 지대", ic: "🌈", gr: "metal", cl: 0.03, st: 0.78, au: 1,
+      sky: [[  8,  18,  58], [ 16,  42,  94], [ 30,  72, 122]] },
+    { nm: "중간권",     ic: "❄️", gr: "metal", cl: 0, st: 0.92, au: 0.35, mt: 1,
+      sky: [[  6,  12,  40], [ 10,  24,  64], [ 18,  38,  86]] },
+    { nm: "카르만 선",  ic: "🛰️", gr: "metal", cl: 0, st: 1, mt: 0.5, ea: 0.6,
+      sky: [[  3,   6,  22], [  6,  12,  38], [ 12,  24,  58]] },
+    { nm: "저궤도",     ic: "🌍", gr: "metal", cl: 0, st: 1, ea: 1,
+      sky: [[  2,   4,  14], [  4,   8,  24], [  8,  16,  40]] },
+    { nm: "달 궤도",    ic: "🌕", gr: "moon",  cl: 0, st: 1, mo: 1, ea: 0.25,
+      sky: [[  1,   2,   8], [  2,   5,  15], [  5,   9,  24]] },
+    { nm: "소행성대",   ic: "☄️", gr: "dark",  cl: 0, st: 1, rk: 1, mt: 0.6,
+      sky: [[  2,   2,  10], [  5,   4,  17], [  9,   8,  26]] },
+    { nm: "은하수",     ic: "🌌", gr: "dark",  cl: 0, st: 1, nb: 1, rk: 0.3,
+      sky: [[ 10,   4,  30], [ 26,   9,  54], [ 44,  15,  74]] },
+    { nm: "심우주",     ic: "🕳️", gr: "void",  cl: 0, st: 1, nb: 0.6, mt: 0.8,
+      sky: [[  0,   0,   0], [  2,   2,   9], [  5,   4,  16]] }
   ];
-  function skyColor(i) {
-    let k = 0;
-    while (k < SKY_KEYS.length - 2 && skyT > SKY_KEYS[k + 1].t) k++;
-    const a = SKY_KEYS[k], b = SKY_KEYS[k + 1];
-    const f = Math.max(0, Math.min(1, (skyT - a.t) / (b.t - a.t)));
-    const ca = a.c[i], cb = b.c[i];
+  const LAST_Z = ZONES.length - 1;
+
+  function zoneIdx() { return Math.min(LAST_Z, level - 1); }
+  // 지금 단계와 다음 단계 사이의 진행도 — 색이 뚝 끊기지 않고 이어지도록
+  function zoneFrac() {
+    const i = level - 1;
+    if (i >= LAST_Z) return 0;
+    return Math.max(0, Math.min(1, elapsed / 12 - i));
+  }
+  // 두 단계 사이를 이어 구한 값 (색이면 rgb 문자열, 숫자면 숫자)
+  function zv(key, i) {
+    const a = ZONES[zoneIdx()], b = ZONES[Math.min(LAST_Z, zoneIdx() + 1)], f = zoneFrac();
+    if (i === undefined) return (a[key] || 0) + ((b[key] || 0) - (a[key] || 0)) * f;
+    const ca = a.sky[i], cb = b.sky[i];
     return "rgb(" + Math.round(ca[0] + (cb[0] - ca[0]) * f) + ","
                   + Math.round(ca[1] + (cb[1] - ca[1]) * f) + ","
                   + Math.round(ca[2] + (cb[2] - ca[2]) * f) + ")";
   }
+  function skyColor(i) { return zv(null, i); }
 
   // 밤이 될수록 드러나는 별. 위치는 매판 고정이라 반짝임만 움직인다.
   const STARS = [];
@@ -2095,13 +2136,6 @@
     STARS.push({ fx: (i * 0.6180339887) % 1, fy: ((i * 0.7548776662) % 1) * 0.62,
                  r: 0.7 + (i % 5) * 0.32, ph: i * 1.7 });
   }
-  function lerpHex(t, from, to) {                 // 땅·구름을 하늘에 맞춰 같이 어둡게
-    const f = from, o = to;
-    return "rgb(" + Math.round(f[0] + (o[0] - f[0]) * t) + ","
-                  + Math.round(f[1] + (o[1] - f[1]) * t) + ","
-                  + Math.round(f[2] + (o[2] - f[2]) * t) + ")";
-  }
-
   function drawBackground(now) {
     const g = ctx.createLinearGradient(0, 0, 0, H);
     if (fever) {
@@ -2128,34 +2162,195 @@
       }
     }
 
-    // 밤이 깊어질수록 별이 드러난다
-    if (!fever && skyT > 0.45) {
-      const sa = Math.min(1, (skyT - 0.45) / 0.4);
-      for (const st of STARS) {
-        ctx.globalAlpha = sa * (0.45 + 0.55 * Math.abs(Math.sin(now / 900 + st.ph)));
-        ctx.fillStyle = "#fff";
-        ctx.beginPath();
-        ctx.arc(st.fx * W, st.fy * H, st.r, 0, 6.283);
-        ctx.fill();
-      }
-      ctx.globalAlpha = 1;
+    if (!fever) {
+      const nb = zv("nb"), st = zv("st"), mo = zv("mo"), au = zv("au"),
+            ea = zv("ea"), rk = zv("rk"), mt = zv("mt");
+      if (nb > 0.01) drawNebula(nb, now);
+      if (st > 0.01) drawStars(st, now);
+      if (mo > 0.01) drawMoon(mo);
+      if (au > 0.01) drawAurora(au, now);
+      if (rk > 0.01) drawRocks(rk, now);
+      if (mt > 0.01) drawMeteors(mt, now);
+      if (ea > 0.01) drawEarth(ea);
     }
 
-    // 하늘이 어두워지면 구름도 같이 가라앉는다
-    ctx.fillStyle = fever ? "rgba(255,255,255,.75)"
-                          : "rgba(255,255,255," + Math.max(0.06, 0.75 - skyT * 0.72).toFixed(2) + ")";
-    for (const c of clouds) {
+    // 구름 — 올라갈수록 옅어지다 사라진다
+    const cl = fever ? 0.75 : Math.min(0.85, zv("cl") * 0.72);
+    if (cl > 0.02) {
+      ctx.fillStyle = "rgba(255,255,255," + cl.toFixed(2) + ")";
+      for (const c of clouds) {
+        ctx.beginPath();
+        ctx.arc(c.x, c.y, c.s * .5, 0, 6.283);
+        ctx.fill();
+        ctx.beginPath();
+        ctx.arc(c.x + c.s * .45, c.y + 6, c.s * .38, 0, 6.283);
+        ctx.fill();
+        ctx.beginPath();
+        ctx.arc(c.x - c.s * .45, c.y + 8, c.s * .32, 0, 6.283);
+        ctx.fill();
+      }
+    }
+
+    // 발밑 — 단계가 바뀌는 동안 다음 지형이 겹쳐 올라온다
+    const za = ZONES[zoneIdx()], zb = ZONES[Math.min(LAST_Z, zoneIdx() + 1)], zf = zoneFrac();
+    drawGround(za.gr, 1);
+    if (zb.gr !== za.gr && zf > 0.45) drawGround(zb.gr, Math.min(1, (zf - 0.45) / 0.35));
+  }
+
+  /* ---- 배경 조각들 ---- */
+  function drawStars(a, now) {
+    ctx.fillStyle = "#fff";
+    for (const st of STARS) {
+      ctx.globalAlpha = a * (0.45 + 0.55 * Math.abs(Math.sin(now / 900 + st.ph)));
       ctx.beginPath();
-      ctx.arc(c.x, c.y, c.s * .5, 0, 6.283);
-      ctx.arc(c.x + c.s * .45, c.y + 6, c.s * .38, 0, 6.283);
-      ctx.arc(c.x - c.s * .45, c.y + 8, c.s * .32, 0, 6.283);
+      ctx.arc(st.fx * W, st.fy * H, st.r, 0, 6.283);
       ctx.fill();
     }
-    const gt = fever ? 0 : skyT;
-    ctx.fillStyle = lerpHex(gt, [123, 191, 106], [16, 30, 24]);
-    ctx.fillRect(0, H - GROUND_H, W, GROUND_H);
-    ctx.fillStyle = lerpHex(gt, [106, 173, 91], [26, 46, 32]);
-    ctx.fillRect(0, H - GROUND_H, W, 6);
+    ctx.globalAlpha = 1;
+  }
+
+  function drawNebula(a, now) {           // 은하수 — 커다란 색 얼룩 몇 개
+    const blobs = [[0.28, 0.24, "255,120,220"], [0.74, 0.40, "120,150,255"], [0.48, 0.66, "180,110,255"]];
+    for (let i = 0; i < blobs.length; i++) {
+      const b = blobs[i];
+      const cx = b[0] * W + Math.sin(now / 9000 + i) * 18;
+      const cy = b[1] * H + Math.cos(now / 11000 + i) * 14;
+      const r = W * (0.42 + i * 0.06);
+      const g = ctx.createRadialGradient(cx, cy, 0, cx, cy, r);
+      g.addColorStop(0, "rgba(" + b[2] + "," + (a * 0.22).toFixed(3) + ")");
+      g.addColorStop(1, "rgba(" + b[2] + ",0)");
+      ctx.fillStyle = g;
+      ctx.fillRect(0, 0, W, H);
+    }
+  }
+
+  function drawMoon(a) {                  // 달 궤도 — 크게 떠 있는 달
+    ctx.globalAlpha = a;
+    const cx = W * 0.74, cy = H * 0.20, r = Math.min(W, H) * 0.15;
+    ctx.fillStyle = "rgba(255,245,220,.10)";
+    ctx.beginPath(); ctx.arc(cx, cy, r * 1.5, 0, 6.283); ctx.fill();
+    ctx.fillStyle = "#ded8c8";
+    ctx.beginPath(); ctx.arc(cx, cy, r, 0, 6.283); ctx.fill();
+    ctx.fillStyle = "rgba(160,152,136,.55)";
+    const cr = [[-.34, -.22, .20], [.26, -.06, .15], [-.10, .34, .17], [.34, .38, .11]];
+    for (const c of cr) {
+      ctx.beginPath();
+      ctx.arc(cx + c[0] * r, cy + c[1] * r, c[2] * r, 0, 6.283);
+      ctx.fill();
+    }
+    ctx.globalAlpha = 1;
+  }
+
+  function drawAurora(a, now) {           // 흐르는 오로라 커튼
+    for (let b = 0; b < 3; b++) {
+      const base = H * 0.13 + b * 30;
+      const g = ctx.createLinearGradient(0, base, 0, base + 96);
+      const col = b === 1 ? "120,255,190" : "160,130,255";
+      g.addColorStop(0, "rgba(" + col + "," + (a * 0.30).toFixed(3) + ")");
+      g.addColorStop(1, "rgba(" + col + ",0)");
+      ctx.fillStyle = g;
+      ctx.beginPath();
+      ctx.moveTo(-20, base);
+      for (let x = -20; x <= W + 20; x += 20) ctx.lineTo(x, base + Math.sin(x / 90 + now / 1500 + b * 2) * 24);
+      for (let x = W + 20; x >= -20; x -= 20) ctx.lineTo(x, base + 96 + Math.sin(x / 90 + now / 1500 + b * 2) * 24);
+      ctx.closePath();
+      ctx.fill();
+    }
+  }
+
+  function drawMeteors(a, now) {          // 비스듬히 스쳐 가는 유성
+    ctx.lineWidth = 2;
+    for (let i = 0; i < 4; i++) {
+      const T = ((now / 1000) + i * 0.83) % 3.4;
+      if (T > 1.1) continue;
+      const q = T / 1.1;
+      const sx = ((i * 151) % Math.max(1, W)) + q * W * 0.55;
+      const sy = -50 + q * H * 0.75;
+      ctx.strokeStyle = "rgba(255,255,255," + (a * (1 - q) * 0.85).toFixed(3) + ")";
+      ctx.beginPath();
+      ctx.moveTo(sx, sy);
+      ctx.lineTo(sx - 44, sy - 60);
+      ctx.stroke();
+    }
+  }
+
+  function drawRocks(a, now) {            // 소행성대 — 천천히 흘러가는 바위
+    for (let i = 0; i < 7; i++) {
+      const y = (((now * 0.014 * (1 + (i % 3))) + i * 137) % (H + 140)) - 70;
+      const x = (i * 97 + 40) % Math.max(1, W);
+      const r = 7 + (i % 4) * 5;
+      ctx.fillStyle = "rgba(120,124,142," + (a * 0.75).toFixed(3) + ")";
+      ctx.beginPath(); ctx.arc(x, y, r, 0, 6.283); ctx.fill();
+      ctx.fillStyle = "rgba(80,84,100," + (a * 0.7).toFixed(3) + ")";
+      ctx.beginPath(); ctx.arc(x + r * .3, y + r * .25, r * .4, 0, 6.283); ctx.fill();
+    }
+  }
+
+  function drawEarth(a) {                 // 저궤도 — 발밑에 걸린 지구의 곡선
+    ctx.globalAlpha = a;
+    const R = W * 1.55, cy = H - GROUND_H + R - 30;
+    ctx.fillStyle = "rgba(150,210,255,.28)";
+    ctx.beginPath(); ctx.arc(W / 2, cy, R + 12, 0, 6.283); ctx.fill();
+    ctx.fillStyle = "#2f6bb5";
+    ctx.beginPath(); ctx.arc(W / 2, cy, R, 0, 6.283); ctx.fill();
+    ctx.fillStyle = "rgba(255,255,255,.30)";
+    const cl = [[-.30, .06], [.12, .02], [.40, .10]];
+    for (const c of cl) {
+      ctx.beginPath();
+      ctx.ellipse(W / 2 + c[0] * W, cy - R + 14 + c[1] * 40, W * .18, 9, 0, 0, 6.283);
+      ctx.fill();
+    }
+    ctx.globalAlpha = 1;
+  }
+
+  /* ---- 발밑 지형 ---- */
+  function drawGround(kind, a) {
+    const y = H - GROUND_H;
+    ctx.save();
+    ctx.globalAlpha = a;
+    if (kind === "grass") {
+      ctx.fillStyle = "#7bbf6a"; ctx.fillRect(0, y, W, GROUND_H);
+      ctx.fillStyle = "#6aad5b"; ctx.fillRect(0, y, W, 6);
+    } else if (kind === "rock") {
+      ctx.fillStyle = "#8b6b4c"; ctx.fillRect(0, y, W, GROUND_H);
+      ctx.fillStyle = "#a9855f"; ctx.fillRect(0, y, W, 7);
+      ctx.fillStyle = "rgba(0,0,0,.13)";
+      for (let i = 0; i < 7; i++) ctx.fillRect((i * 89) % Math.max(1, W), y + 20 + ((i * 37) % 44), 28, 7);
+    } else if (kind === "cloud") {
+      ctx.fillStyle = "rgba(255,255,255,.92)";
+      ctx.fillRect(0, y + 14, W, GROUND_H - 14);
+      for (let x = -10; x < W + 50; x += 44) {
+        ctx.beginPath(); ctx.arc(x, y + 16, 24, 0, 6.283); ctx.fill();
+      }
+      ctx.fillStyle = "rgba(190,210,235,.55)";
+      ctx.fillRect(0, y + 40, W, GROUND_H - 40);
+    } else if (kind === "metal") {
+      ctx.fillStyle = "#39405a"; ctx.fillRect(0, y, W, GROUND_H);
+      ctx.fillStyle = "#5d6b8f"; ctx.fillRect(0, y, W, 7);
+      ctx.fillStyle = "rgba(0,0,0,.30)";
+      for (let x = 0; x < W; x += 46) ctx.fillRect(x, y + 7, 2, GROUND_H - 7);
+      ctx.fillStyle = "rgba(180,200,255,.45)";
+      for (let x = 22; x < W; x += 46) { ctx.beginPath(); ctx.arc(x, y + 18, 2.4, 0, 6.283); ctx.fill(); }
+    } else if (kind === "moon") {
+      ctx.fillStyle = "#b3ada0"; ctx.fillRect(0, y, W, GROUND_H);
+      ctx.fillStyle = "#cdc7b8"; ctx.fillRect(0, y, W, 7);
+      ctx.fillStyle = "rgba(120,114,102,.55)";
+      for (let i = 0; i < 6; i++) {
+        ctx.beginPath();
+        ctx.arc((i * 103 + 30) % Math.max(1, W), y + 26 + ((i * 29) % 34), 9 + (i % 3) * 5, 0, 6.283);
+        ctx.fill();
+      }
+    } else if (kind === "dark") {
+      ctx.fillStyle = "#2b2f40"; ctx.fillRect(0, y, W, GROUND_H);
+      ctx.fillStyle = "#434964"; ctx.fillRect(0, y, W, 6);
+      ctx.fillStyle = "rgba(0,0,0,.28)";
+      for (let i = 0; i < 6; i++) ctx.fillRect((i * 79) % Math.max(1, W), y + 24 + ((i * 41) % 40), 34, 6);
+    } else {                                  // void — 빛나는 발판만 남는다
+      ctx.fillStyle = "rgba(16,18,30,.92)"; ctx.fillRect(0, y, W, GROUND_H);
+      ctx.fillStyle = "rgba(150,190,255,.85)"; ctx.fillRect(0, y, W, 3);
+      ctx.fillStyle = "rgba(120,170,255,.16)"; ctx.fillRect(0, y + 3, W, 16);
+    }
+    ctx.restore();
   }
 
   function drawPlayer(now) {
@@ -2479,7 +2674,7 @@
 
     ctx.font = "600 13px system-ui, sans-serif";
     ctx.fillStyle = "rgba(255,255,255,.9)";
-    ctx.fillText("LEVEL " + level, 17, top + 32);
+    ctx.fillText(ZONES[zoneIdx()].ic + " " + ZONES[zoneIdx()].nm, 17, top + 32);
 
     // 보유 증강 — 아이콘과 중첩 횟수 (우산은 캐릭터 머리 위에 이미 보이므로 제외)
     const owned = AUGMENTS.filter(a => augCount[a.id] && !a.noCount);
