@@ -396,7 +396,7 @@
   const elRank  = document.getElementById("rankLine");
   const elTitle = document.getElementById("overTitle");
 
-  const GAME_VERSION = "v1.0.54";   // 코드를 고칠 때마다 뒤 두 자리를 올린다
+  const GAME_VERSION = "v1.0.55";   // 코드를 고칠 때마다 뒤 두 자리를 올린다
   document.getElementById("ver").textContent = GAME_VERSION;
 
   const LS_NAME = "epjpddongpi_name";
@@ -477,7 +477,7 @@
     right: { img: null, aspect: 0.669, head: 0.525, cx: 0.614, cy: 0.286, adj: 0.7743 },
     hurt:  { img: null, aspect: 0.511, head: 0.422, cx: 0.511, cy: 0.267, adj: 0.6771 }
   };
-  const SPACE_Z = 4;                 // 성층권 — 여기부터는 기압이 낮아 우주복이 필요하다
+  const SPACE_Z = 6;                 // 오로라 지대 — 여기부터 우주복 차림
   function inSpace() { return zoneIdx() >= SPACE_Z; }
   function sprSet() { return (inSpace() && SPR_SPACE.right.img) ? SPR_SPACE : SPR; }
 
