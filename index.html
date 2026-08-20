@@ -222,7 +222,7 @@
   #testGo { padding: 11px 18px; font-size: 14px; }
   #testMsg { font-size: 12px; color: #ff8f8f; min-height: 14px; }
   #btnTestEnd {
-    position: absolute; right: 12px; top: 58px; z-index: 5; display: none;
+    position: absolute; right: 12px; top: 96px; z-index: 5; display: none;
     appearance: none; border: 0; cursor: pointer; font: inherit;
     font-size: 11px; font-weight: 700; color: #fff;
     background: rgba(255,80,80,.8); border-radius: 999px; padding: 5px 11px;
@@ -396,7 +396,7 @@
   const elRank  = document.getElementById("rankLine");
   const elTitle = document.getElementById("overTitle");
 
-  const GAME_VERSION = "v1.0.67";   // 코드를 고칠 때마다 뒤 두 자리를 올린다
+  const GAME_VERSION = "v1.0.68";   // 코드를 고칠 때마다 뒤 두 자리를 올린다
   document.getElementById("ver").textContent = GAME_VERSION;
 
   const LS_NAME = "epjpddongpi_name";
@@ -2147,15 +2147,16 @@
   refreshBoards();
   refreshLastWeek();
 
+  /* 칭호. 지면에서 블랙홀까지의 여정에 맞춰 다시 잡았다.
+     주석의 초는 그 점수에 닿는 대략의 생존 시간(점수 모형 계산값). */
   function rankOf(s) {
-    // 생존 점수를 1.7배로 낮춘 뒤의 분포 기준
-    // (중간값 약 6,700 / 상위25% 약 24,000 / 상위10% 약 52,000).
-    if (s < 2500)   return "🚽 똥밭에 굴렀다";
-    if (s < 4500)   return "🧻 그래도 휴지는 챙겼다";
-    if (s < 9000)   return "🏃 제법 잘 피하는데?";
-    if (s < 20000)  return "😎 똥 회피 고수";
-    if (s < 45000)  return "⚡ 똥을 초월한 자";
-    if (s < 120000) return "👑 똥피하기 마스터";
+    if (s < 1000)    return "🚽 똥밭에 굴렀다";           // ~28초
+    if (s < 3500)    return "🧻 그래도 휴지는 챙겼다";     // ~57초
+    if (s < 9000)    return "🏃 제법 잘 피하는데?";        // ~87초
+    if (s < 25000)   return "🛰️ 궤도 진입 성공";           // ~122초
+    if (s < 65000)   return "🌌 심우주 유영자";            // ~154초
+    if (s < 180000)  return "👑 똥피하기 마스터";          // ~181초
+    if (s < 600000)  return "⚫ 사건의 지평선을 넘은 자";   // ~210초
     return "💩 똥신(糞神) 강림";
   }
 
@@ -2897,36 +2898,34 @@
     ctx.fillStyle = "rgba(255,255,255,.9)";
     ctx.fillText(ZONES[zoneIdx()].ic + " " + ZONES[zoneIdx()].nm, 17, top + 32);
 
-    // 보유 증강 — 아이콘과 중첩 횟수 (우산은 캐릭터 머리 위에 이미 보이므로 제외)
-    const owned = AUGMENTS.filter(a => augCount[a.id] && !a.noCount);
-    if (owned.length) {
-      ctx.font = "15px serif";
-      let x = 17;
-      for (const a of owned) {
-        ctx.fillStyle = "#fff";
-        ctx.fillText(a.ic, x, top + 52);
-        const n = augCount[a.id];
-        if (n > 1) {
-          ctx.font = "700 10px system-ui, sans-serif";
-          ctx.fillStyle = "#ffd23f";
-          ctx.fillText("x" + n, x + 16, top + 56);
-          ctx.font = "15px serif";
-          x += 30;
-        } else {
-          x += 21;
-        }
-      }
-    }
 
     // 목숨은 이모지 대신 직접 그린다.
     // iOS 이모지는 지정한 상단선보다 위로 튀어나와서 화면 밖으로 잘리는 문제가 있었다.
     if (testMode) {
-      ctx.textAlign = "right";
       ctx.font = "700 12px system-ui, sans-serif";
       ctx.fillStyle = "#ff7b7b";
-      ctx.fillText("TEST  목숨 ∞", W - 16, top + 36);
-      ctx.textAlign = "left";
+      ctx.fillText("TEST  목숨 ∞", 17, top + 54);
     }
+    // 보유 증강 — 오른쪽 위 하트 아래에 붙인다 (우산은 머리 위에 이미 보이므로 제외)
+    const owned = AUGMENTS.filter(a => augCount[a.id] && !a.noCount);
+    if (owned.length) {
+      let x = W - 16, ay = top + 44;
+      for (let i = owned.length - 1; i >= 0; i--) {
+        const a = owned[i], n = augCount[a.id];
+        const wItem = n > 1 ? 30 : 21;
+        if (x - wItem < 52) { x = W - 16; ay += 21; }   // 한 줄에 안 들어가면 아랫줄로
+        x -= wItem;
+        ctx.font = "15px serif";
+        ctx.fillStyle = "#fff";
+        ctx.fillText(a.ic, x, ay);
+        if (n > 1) {
+          ctx.font = "700 10px system-ui, sans-serif";
+          ctx.fillStyle = "#ffd23f";
+          ctx.fillText("x" + n, x + 16, ay + 4);
+        }
+      }
+    }
+
     const hr = 10.5, hgap = 30, hy = top + 16;
     for (let i = 0; i < lives; i++) {
       const cx = W - 18 - hr * 1.32 - i * hgap;
