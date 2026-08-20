@@ -396,7 +396,7 @@
   const elRank  = document.getElementById("rankLine");
   const elTitle = document.getElementById("overTitle");
 
-  const GAME_VERSION = "v1.0.55";   // 코드를 고칠 때마다 뒤 두 자리를 올린다
+  const GAME_VERSION = "v1.0.56";   // 코드를 고칠 때마다 뒤 두 자리를 올린다
   document.getElementById("ver").textContent = GAME_VERSION;
 
   const LS_NAME = "epjpddongpi_name";
@@ -893,11 +893,11 @@
   /* 레벨 7부터 섞여 나오는 까다로운 똥들
      split  = 내려오다 둘로 쪼개진다 (쪼개진 조각은 평범한 똥)
      zigzag = 좌우로 크게 흔들리며 내려온다
-     laser  = 2초간 떨어질 자리를 깜빡여 알려준 뒤 번개처럼 내리꽂힌다
+     laser  = 1초간 떨어질 자리를 깜빡여 알려준 뒤 번개처럼 내리꽂힌다
      huge   = 초대형 뚜니핑의 1.4배쯤 되는 거대한 똥, 느리게 굴러떨어진다 */
   const SPECIAL_KINDS = ["split", "zigzag", "laser", "huge"];
   const HUGE_R = 66;           // 반지름 — 초대형(52~62)의 약 1.26배
-  const LASER_WARN = 2;        // 예고 시간(초)
+  const LASER_WARN = 1;        // 예고 시간(초)
   const LASER_VY = 4500;       // 낙하 속도 — 똥이 아니라 레이저처럼 내리꽂힌다
   let warns = [];              // 예고 중인 레이저 자리
 
@@ -2676,12 +2676,24 @@
       ctx.moveTo(0, 0);
       ctx.lineTo(0, L / Math.cos(wn.ang || 0));
       ctx.stroke();
-      ctx.restore();
-      ctx.fillStyle = on ? "#ff5d5d" : "rgba(255,93,93,.4)";
-      ctx.font = "700 18px system-ui, sans-serif";
+      /* 경고 표시는 화면 맨 위가 아니라 예고선 중간쯤에 크게 띄운다.
+         선을 따라 기울어진 자리로 옮긴 뒤, 글자만 다시 세운다. */
+      const mid = (L / Math.cos(wn.ang || 0)) * 0.45;
+      ctx.translate(0, mid);
+      ctx.rotate(wn.ang || 0);
+      ctx.globalAlpha = on ? 1 : 0.35;
+      ctx.fillStyle = "#ff5d5d";
+      ctx.font = "700 46px system-ui, sans-serif";
       ctx.textAlign = "center";
-      ctx.textBaseline = "top";
-      ctx.fillText("⚠", Math.max(12, Math.min(W - 12, wn.x)), 6);
+      ctx.textBaseline = "middle";
+      ctx.beginPath();                       // 어두운 배경에서도 눈에 띄게 뒤에 원을 깐다
+      ctx.arc(0, 2, 32, 0, 6.283);
+      ctx.fillStyle = "rgba(60,0,0,.45)";
+      ctx.fill();
+      ctx.fillStyle = "#ff5d5d";
+      ctx.fillText("⚠", 0, 0);
+      ctx.globalAlpha = 1;
+      ctx.restore();
     }
   }
 
