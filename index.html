@@ -396,7 +396,7 @@
   const elRank  = document.getElementById("rankLine");
   const elTitle = document.getElementById("overTitle");
 
-  const GAME_VERSION = "v1.0.63";   // 코드를 고칠 때마다 뒤 두 자리를 올린다
+  const GAME_VERSION = "v1.0.64";   // 코드를 고칠 때마다 뒤 두 자리를 올린다
   document.getElementById("ver").textContent = GAME_VERSION;
 
   const LS_NAME = "epjpddongpi_name";
@@ -907,6 +907,13 @@
     return list[0];
   }
 
+  /* 레벨이 오를수록 좁아지는 똥 사이 간격. 바닥(상한) 없이 계속 좁아지되,
+     0.13초부터는 곱셈으로 줄여서 0 아래로 내려가지 않는다. */
+  function spawnGap() {
+    const lin = 0.52 - level * 0.042;
+    return lin > 0.13 ? lin : 0.13 * Math.pow(0.90, level - 9.29);
+  }
+
   /* 낙하 각도. 좌우 속도를 낙하 속도에 비례시켜서 레벨이 올라도 기울기 느낌이 일정하다.
      (Math.random() - Math.random()) 은 0 근처가 흔하고 양 끝이 드문 삼각분포 →
      대부분은 적당히 기울고 일부만 크게 비스듬히 떨어진다. */
@@ -938,7 +945,7 @@
     // 일반 똥은 레벨이 오를수록 빨라지지만, 뚜니핑 낙하물은 처음이나 나중이나 같은 속도로 떨어진다
     const baseVy = inFever ? FEVER_VY + Math.random() * 110
                            : 215 + level * 30 + Math.random() * 110;
-    let vy = baseVy * m * DIFF_F * spaceF() * aug.fallMul;
+    let vy = baseVy * m * DIFF_F * spaceF() * bhMul() * aug.fallMul;
     if (special === "huge") vy *= 0.55;   // 덩치값 — 느릿느릿 굴러떨어진다
     let px = r + Math.random() * (W - r * 2);
     let pvx = (Math.random() - Math.random()) * vy * SPREAD_POOP;
@@ -988,13 +995,14 @@
 
   function bonusInterval(b) {
     const lvFactor = Math.max(0.5, 1 / (1 + (level - 1) * 0.06));   // 레벨이 오르면 더 자주
-    const mean = BONUS_BASE / (b.w / BONUS_W_TOTAL) * aug.itemRateMul * lvFactor;
+    // 블랙홀 안에서는 아이템도 두 배로 자주 나온다
+    const mean = BONUS_BASE / (b.w / BONUS_W_TOTAL) * aug.itemRateMul * lvFactor / bhMul();
     /* 얼랑분포(지수 3개의 합). 평균 간격은 그대로 두고 편차만 줄인다.
        지수분포 하나만 쓰면 "한참 안 나오다가 갑자기 몰리는" 편차가 너무 컸다.
        종류별로 따로 도는 건 그대로라 여러 개가 한꺼번에 나오는 일은 여전히 생긴다.
        (0.4초 하한은 완전히 겹쳐 떨어지는 것만 막는 장치) */
     const u = Math.random() * Math.random() * Math.random();
-    return Math.max(0.4, -(mean / 3) * Math.log(u));
+    return Math.max(0.4 / bhMul(), -(mean / 3) * Math.log(u));
   }
   function resetBonusTimers() {
     // 판이 시작될 때 첫 등장까지는 편차가 큰 지수분포로 — 매판 시작이 다르게 느껴지도록
@@ -1092,7 +1100,7 @@
 
     elapsed += dt;
     level = 1 + Math.floor(elapsed / 12);   // 레벨 하나당 12초
-    score += dt * Math.pow(1.7, level - 1) * aug.timeMul * aug.scoreMul;  // 생존 점수: 레벨마다 1.7배
+    score += dt * Math.pow(1.7, level - 1) * aug.timeMul * scoreMul();  // 생존 점수: 레벨마다 1.7배
 
     // 한 단계 올라설 때마다 어디에 도착했는지 알려준다
     const zi = zoneIdx();
@@ -1104,6 +1112,13 @@
         if (zi === SPACE_Z) {          // 공기가 없는 높이 — 우주복으로 갈아입는다
           popText(W / 2, H * 0.48, "🧑‍🚀 우주복 착용!", "#ffd23f", 26);
           beep(520, .16, "triangle", .05);
+        }
+        if (zi === BH_Z) {             // 빨려 들어갔다 — 모든 것이 두 배
+          popText(W / 2, H * 0.48, "모든 것이 2배!", "#ff8a5c", 28);
+          shake = Math.max(shake, 26);
+          feverFlash = Math.max(feverFlash, 0.5);
+          beep(90, .5, "sawtooth", .07);
+          beep(140, .4, "square", .05);
         }
       }
       zoneShown = zi;
@@ -1259,7 +1274,7 @@
         if (level >= 3 && Math.random() < .35) spawnPoop();
         if (level >= 6 && Math.random() < .30) spawnPoop(1.6);   // 초고속 똥
         // 까다로운 똥 — 레벨 7에 아주 드물게 시작해서 레벨마다 조금씩 늘어난다
-        if (level >= 7 && Math.random() < Math.min(0.33, (level - 6) * 0.0293)) {
+        if (level >= 7 && Math.random() < Math.min(1, (level - 6) * 0.0293)) {
           const kind = SPECIAL_KINDS[Math.floor(Math.random() * SPECIAL_KINDS.length)];
           if (kind === "huge" && items.some(q => q.special === "huge")) {
             spawnPoop();                  // 이미 하늘에 하나 있으면 평범한 똥으로
@@ -1280,7 +1295,7 @@
             spawnPoop(1, kind);
           }
         }
-        spawnTimer = Math.max(0.13, 0.52 - level * 0.042) / DIFF_F / spaceF() * widthFactor * (0.7 + Math.random() * 0.6);
+        spawnTimer = spawnGap() / DIFF_F / spaceF() / bhMul() * widthFactor * (0.7 + Math.random() * 0.6);
       }
     }
     if (!powered) {
@@ -1423,7 +1438,7 @@
       if (it.y - it.r > H + 20) {
         // 뚜니핑 타임 낙하물은 워낙 많이 쏟아져서, 안 먹고 흘려보낸 것에 점수를 주면
         // 가만히 있어도 점수가 폭등한다. 뚜니핑 타임 것은 0점 — 직접 받아야만 점수가 오른다.
-        if (it.type === "poop" && it.skin !== "fever") score += 3 * aug.scoreMul;
+        if (it.type === "poop" && it.skin !== "fever") score += 3 * scoreMul();
         items.splice(i, 1);
       }
     }
@@ -1451,7 +1466,7 @@
     if (it.type === "star") {
       // 먹을 때마다 1.5배: 1번째 1,000 → 2번째 1,500 → 3번째 2,250 → 4번째 3,375 …
       starCount++;
-      const gain = Math.round(1000 * Math.pow(1.5, starCount - 1) * aug.starMul * aug.scoreMul);
+      const gain = Math.round(1000 * Math.pow(1.5, starCount - 1) * aug.starMul * scoreMul());
       score += gain;
       popText(it.x, it.y, "⭐×" + starCount + "  +" + gain.toLocaleString(), "#ffd23f");
       beep(1400, .1, "square", .05);
@@ -1462,7 +1477,7 @@
         for (let k = items.length - 1; k >= 0; k--) {
           const q = items[k];
           if (q.type !== "poop") continue;
-          bonus += ((q.skin === "fever") ? feverGain(q) : 3 * aug.scoreMul) * 10;
+          bonus += ((q.skin === "fever") ? feverGain(q) : 3 * scoreMul()) * 10;
           burst(q.x, q.y, "#ffe9a8", 10);
           items.splice(k, 1);
           cnt++;
@@ -1498,7 +1513,7 @@
      레벨이 하나 오를 때마다 10%씩 (레벨1 기준, 레벨10이면 약 2.4배). */
   function feverGain(it) {
     const base = it.gain || (it.sz < 16.2 ? 2 : (it.sz < 20.7 ? 5 : 10));
-    return Math.max(1, Math.round(base * aug.feverScoreMul * aug.scoreMul * Math.pow(1.1, level - 1)));
+    return Math.max(1, Math.round(base * aug.feverScoreMul * scoreMul() * Math.pow(1.1, level - 1)));
   }
 
   // 정연핑이 지나간 자리의 똥을 부순다 (뚜니핑 낙하물은 제 점수를 그대로 준다)
@@ -1545,7 +1560,7 @@
         burst(it.x, it.y, g >= 25 ? "#ff3b3b" : "#ffd23f", g >= 25 ? 30 : 16);
         if (g >= 15) popText(it.x, it.y, "+" + g, "#ffd23f", g >= 40 ? 30 : 24);
       } else {
-        score += 3 * aug.scoreMul;
+        score += 3 * scoreMul();
         burst(it.x, it.y, "#ffd23f", 14);
       }
       items.splice(i, 1);
@@ -2175,10 +2190,22 @@
       sky: [[  2,   2,  10], [  5,   4,  17], [  9,   8,  26]] },
     { nm: "은하수",     ic: "🌌", gr: "dark",  cl: 0, st: 1, nb: 1, rk: 0.3,
       sky: [[ 10,   4,  30], [ 26,   9,  54], [ 44,  15,  74]] },
-    { nm: "심우주",     ic: "🕳️", gr: "void",  cl: 0, st: 1, nb: 0.6, mt: 0.8,
-      sky: [[  0,   0,   0], [  2,   2,   9], [  5,   4,  16]] }
+    { nm: "심우주",       ic: "🌑", gr: "void", cl: 0, st: 1, nb: 0.6, mt: 0.8, bh: 0.10,
+      sky: [[  0,   0,   0], [  2,   2,   9], [  5,   4,  16]] },
+    { nm: "어둠의 문턱",   ic: "🌒", gr: "void", cl: 0, st: 1, nb: 0.35, mt: 0.5, bh: 0.30,
+      sky: [[  2,   0,   6], [  6,   2,  14], [ 12,   4,  20]] },
+    { nm: "강착원반",     ic: "🌀", gr: "void", cl: 0, st: 0.8, nb: 0.15, mt: 0.3, bh: 0.55,
+      sky: [[  6,   0,   6], [ 14,   3,  14], [ 26,   6,  18]] },
+    { nm: "사건의 지평선", ic: "⚫", gr: "void", cl: 0, st: 0.5, mt: 0.15, bh: 0.80,
+      sky: [[ 10,   0,   4], [ 22,   4,  10], [ 40,   8,  14]] },
+    { nm: "블랙홀 안",    ic: "🕳️", gr: "void", cl: 0, st: 0.2, bh: 1, sw: 1,
+      sky: [[ 16,   0,   2], [ 36,   4,   6], [ 70,  10,  10]] }
   ];
   const LAST_Z = ZONES.length - 1;
+  const BH_Z = LAST_Z;                 // 블랙홀 안 — 여기부터 모든 조건이 두 배
+  function inBlackhole() { return zoneIdx() >= BH_Z; }
+  function bhMul() { return inBlackhole() ? 2 : 1; }
+  function scoreMul() { return aug.scoreMul * bhMul(); }
 
   function zoneIdx() { return Math.min(LAST_Z, level - 1); }
   // 지금 단계와 다음 단계 사이의 진행도 — 색이 뚝 끊기지 않고 이어지도록
@@ -2257,6 +2284,9 @@
             ea = zv("ea"), rk = zv("rk"), mt = zv("mt");
       if (nb > 0.01) drawNebula(nb, now);
       if (st > 0.01) drawStars(st, now);
+      const bh = zv("bh"), sw = zv("sw");
+      if (sw > 0.01) drawSwirl(sw, now);
+      if (bh > 0.01) drawBlackhole(bh, now);
       if (mo > 0.01) drawMoon(mo);
       if (au > 0.01) drawAurora(au, now);
       if (rk > 0.01) drawRocks(rk, now);
@@ -2333,6 +2363,52 @@
       ctx.fillStyle = g;
       ctx.fillRect(0, 0, W, H);
     }
+  }
+
+  function drawBlackhole(a, now) {        // 다가갈수록 커지는 블랙홀
+    const cx = W * 0.5, cy = H * 0.30;
+    const R = Math.min(W, H) * (0.05 + a * a * 0.52);
+    ctx.save();
+    ctx.translate(cx, cy);
+    ctx.rotate(-0.26);
+    for (let i = 0; i < 3; i++) {         // 강착원반 — 납작하게 누운 불의 고리
+      const rr = R * (1.30 + i * 0.34);
+      const g = ctx.createRadialGradient(0, 0, R * 0.98, 0, 0, rr);
+      g.addColorStop(0, "rgba(255,186,90," + (0.42 * a).toFixed(3) + ")");
+      g.addColorStop(0.5, "rgba(255,96,40," + (0.20 * a).toFixed(3) + ")");
+      g.addColorStop(1, "rgba(120,16,60,0)");
+      ctx.fillStyle = g;
+      ctx.beginPath();
+      ctx.ellipse(0, 0, rr, rr * (0.30 + i * 0.05), 0, 0, 6.283);
+      ctx.fill();
+    }
+    ctx.restore();
+    ctx.strokeStyle = "rgba(255,222,158," + (0.8 * a).toFixed(3) + ")";   // 빛이 휘는 고리
+    ctx.lineWidth = Math.max(1.5, R * 0.05);
+    ctx.beginPath(); ctx.arc(cx, cy, R * 1.07, 0, 6.283); ctx.stroke();
+    ctx.fillStyle = "#000";                                              // 사건의 지평선
+    ctx.beginPath(); ctx.arc(cx, cy, R, 0, 6.283); ctx.fill();
+  }
+
+  function drawSwirl(a, now) {            // 블랙홀 안 — 빨려 들어가는 빛줄기
+    const cx = W * 0.5, cy = H * 0.30, far = Math.max(W, H);
+    ctx.save();
+    ctx.lineWidth = 2;
+    ctx.lineCap = "round";
+    for (let i = 0; i < 30; i++) {
+      const r0 = 60 + ((i * 137 + now * 0.16) % (far * 1.05));
+      const r1 = r0 * 0.74;
+      const ang = i * 0.71 + now / 1400 + r0 * 0.004;
+      const fade = a * Math.max(0, 1 - r0 / far) * 0.65;
+      if (fade < 0.02) continue;
+      ctx.strokeStyle = "rgba(255," + (130 + (i % 5) * 24) + ",90," + fade.toFixed(3) + ")";
+      ctx.beginPath();
+      ctx.moveTo(cx + Math.cos(ang) * r0, cy + Math.sin(ang) * r0 * 0.72);
+      ctx.lineTo(cx + Math.cos(ang + 0.40) * r1, cy + Math.sin(ang + 0.40) * r1 * 0.72);
+      ctx.stroke();
+    }
+    ctx.lineCap = "butt";
+    ctx.restore();
   }
 
   function drawMoon(a) {                  // 달 궤도 — 크게 떠 있는 달
