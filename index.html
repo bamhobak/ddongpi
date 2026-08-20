@@ -396,7 +396,7 @@
   const elRank  = document.getElementById("rankLine");
   const elTitle = document.getElementById("overTitle");
 
-  const GAME_VERSION = "v1.0.59";   // 코드를 고칠 때마다 뒤 두 자리를 올린다
+  const GAME_VERSION = "v1.0.60";   // 코드를 고칠 때마다 뒤 두 자리를 올린다
   document.getElementById("ver").textContent = GAME_VERSION;
 
   const LS_NAME = "epjpddongpi_name";
@@ -849,8 +849,29 @@
     beep(660, .1, "square", .04);
   }
 
-  for (let i = 0; i < 6; i++) {
-    clouds.push({ x: Math.random() * W, y: Math.random() * H * .7, s: 30 + Math.random() * 50, v: 4 + Math.random() * 10 });
+  /* 구름 하나하나의 생김새를 따로 만든다. 같은 덩이 세 개를 겹쳐 놓으면
+     어느 구름이나 똑같아 보여서, 덩이 수와 크기·위치를 구름마다 뽑는다. */
+  function reshapeCloud(c) {
+    const n = 3 + Math.floor(Math.random() * 3);      // 덩이 3~5개
+    c.lobes = [];
+    let px = -c.s * (0.42 + Math.random() * 0.22);
+    for (let i = 0; i < n; i++) {
+      const mid = 1 - Math.abs(i - (n - 1) / 2) / (n / 1.6);   // 가운데가 더 봉긋하다
+      c.lobes.push({
+        dx: px,
+        dy: (Math.random() - 0.65) * c.s * 0.16,
+        r: c.s * (0.20 + 0.24 * Math.max(0.35, mid) + Math.random() * 0.10)
+      });
+      px += c.s * (0.24 + Math.random() * 0.20);
+    }
+    c.bw = c.s * (0.52 + Math.random() * 0.20);       // 바닥은 평평하게 깔린다
+    c.bh = c.s * (0.14 + Math.random() * 0.09);
+  }
+  for (let i = 0; i < 7; i++) {
+    const c = { x: Math.random() * W, y: Math.random() * H * .7,
+                s: 26 + Math.random() * 64, v: 4 + Math.random() * 10 };
+    reshapeCloud(c);
+    clouds.push(c);
   }
 
   /* ---------- 스폰 ---------- */
@@ -1023,7 +1044,13 @@
   function update(dt, now) {
     for (const c of clouds) {
       c.x += c.v * dt;
-      if (c.x - c.s > W) { c.x = -c.s; c.y = Math.random() * H * .7; }
+      if (c.x - c.s > W) {
+        c.x = -c.s * 1.6;
+        c.y = Math.random() * H * .7;
+        c.s = 26 + Math.random() * 64;
+        c.v = 4 + Math.random() * 10;
+        reshapeCloud(c);                              // 다시 나올 땐 다른 모양으로
+      }
     }
     for (let i = particles.length - 1; i >= 0; i--) {
       const p = particles[i];
@@ -2179,7 +2206,8 @@
       col: (i % 19 === 0) ? "255,226,180"          // 드물게 노란 별
          : (i % 11 === 0) ? "200,220,255"          // 드물게 푸른 별
          : "255,255,255",
-      flare: (i % 24) === 0                        // 아주 드물게 빛살이 뻗는 큰 별
+      // 대부분은 점, 가끔 네 갈래 반짝이, 아주 드물게 빛살이 뻗는 큰 별
+      kind: (i % 24 === 0) ? 2 : (i % 5 === 0) ? 1 : 0
     });
   }
   function drawBackground(now) {
@@ -2234,14 +2262,15 @@
     if (cl > 0.02) {
       ctx.fillStyle = "rgba(255,255,255," + cl.toFixed(2) + ")";
       for (const c of clouds) {
+        /* 덩이를 한 덩어리로 묶어 한 번에 칠한다.
+           따로따로 칠하면 겹친 자리가 진해져서 동그라미 여러 개로 보인다. */
         ctx.beginPath();
-        ctx.arc(c.x, c.y, c.s * .5, 0, 6.283);
-        ctx.fill();
-        ctx.beginPath();
-        ctx.arc(c.x + c.s * .45, c.y + 6, c.s * .38, 0, 6.283);
-        ctx.fill();
-        ctx.beginPath();
-        ctx.arc(c.x - c.s * .45, c.y + 8, c.s * .32, 0, 6.283);
+        for (const L of c.lobes) {
+          ctx.moveTo(c.x + L.dx + L.r, c.y + L.dy);
+          ctx.arc(c.x + L.dx, c.y + L.dy, L.r, 0, 6.283);
+        }
+        ctx.moveTo(c.x + c.bw, c.y + c.bh * 0.4);
+        ctx.ellipse(c.x, c.y + c.bh * 0.4, c.bw, c.bh, 0, 0, 6.283);
         ctx.fill();
       }
     }
@@ -2260,17 +2289,26 @@
       if (al < 0.02) continue;
       const x = st.fx * W, y = st.fy * H;
       ctx.fillStyle = "rgba(" + st.col + "," + al.toFixed(3) + ")";
-      ctx.beginPath();
-      ctx.arc(x, y, st.r, 0, 6.283);
-      ctx.fill();
-      if (st.flare) {                              // 큰 별은 빛살이 십자로 뻗는다
-        ctx.strokeStyle = "rgba(" + st.col + "," + (al * 0.45).toFixed(3) + ")";
-        ctx.lineWidth = 1;
-        const L = st.r * 3.6;
+      if (st.kind === 0) {                         // 평범한 점
         ctx.beginPath();
-        ctx.moveTo(x - L, y); ctx.lineTo(x + L, y);
-        ctx.moveTo(x, y - L); ctx.lineTo(x, y + L);
-        ctx.stroke();
+        ctx.arc(x, y, st.r, 0, 6.283);
+        ctx.fill();
+      } else {                                     // 네 갈래로 뾰족한 반짝이
+        const R = st.r * (st.kind === 2 ? 3.4 : 2.3), k = R * 0.16;
+        ctx.beginPath();
+        ctx.moveTo(x, y - R);
+        ctx.quadraticCurveTo(x + k, y - k, x + R, y);
+        ctx.quadraticCurveTo(x + k, y + k, x, y + R);
+        ctx.quadraticCurveTo(x - k, y + k, x - R, y);
+        ctx.quadraticCurveTo(x - k, y - k, x, y - R);
+        ctx.fill();
+        if (st.kind === 2) {                       // 큰 것은 빛무리까지
+          const gg = ctx.createRadialGradient(x, y, 0, x, y, R * 1.5);
+          gg.addColorStop(0, "rgba(" + st.col + "," + (al * 0.30).toFixed(3) + ")");
+          gg.addColorStop(1, "rgba(" + st.col + ",0)");
+          ctx.fillStyle = gg;
+          ctx.beginPath(); ctx.arc(x, y, R * 1.5, 0, 6.283); ctx.fill();
+        }
       }
     }
   }
