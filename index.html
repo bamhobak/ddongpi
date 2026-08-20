@@ -396,7 +396,7 @@
   const elRank  = document.getElementById("rankLine");
   const elTitle = document.getElementById("overTitle");
 
-  const GAME_VERSION = "v1.0.53";   // 코드를 고칠 때마다 뒤 두 자리를 올린다
+  const GAME_VERSION = "v1.0.54";   // 코드를 고칠 때마다 뒤 두 자리를 올린다
   document.getElementById("ver").textContent = GAME_VERSION;
 
   const LS_NAME = "epjpddongpi_name";
@@ -471,11 +471,13 @@
   /* 공기가 없는 높이부터는 우주복 차림으로 바뀐다.
      헬멧이 곧 머리라서 값을 따로 재어 넣었다 (판정원 = 헬멧 지름). */
   const SPR_SPACE = {
-    left:  { img: null, aspect: 0.636, head: 0.517, cx: 0.450, cy: 0.272, adj: 0.985 },
-    right: { img: null, aspect: 0.669, head: 0.525, cx: 0.614, cy: 0.286, adj: 1 },
-    hurt:  { img: null, aspect: 0.511, head: 0.422, cx: 0.511, cy: 0.267, adj: 0.804 }
+    // adj = 평상복 차림과 몸 크기를 똑같이 맞추는 보정값.
+    // 우주복 그림은 헬멧이 몸에 비해 작아서, 그대로 두면 29% 커 보인다.
+    left:  { img: null, aspect: 0.636, head: 0.517, cx: 0.450, cy: 0.272, adj: 0.7626 },
+    right: { img: null, aspect: 0.669, head: 0.525, cx: 0.614, cy: 0.286, adj: 0.7743 },
+    hurt:  { img: null, aspect: 0.511, head: 0.422, cx: 0.511, cy: 0.267, adj: 0.6771 }
   };
-  const SPACE_Z = 8;                 // 카르만 선 — 여기부터 공기가 없다
+  const SPACE_Z = 4;                 // 성층권 — 여기부터는 기압이 낮아 우주복이 필요하다
   function inSpace() { return zoneIdx() >= SPACE_Z; }
   function sprSet() { return (inSpace() && SPR_SPACE.right.img) ? SPR_SPACE : SPR; }
 
