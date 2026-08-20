@@ -365,7 +365,7 @@
   const elRank  = document.getElementById("rankLine");
   const elTitle = document.getElementById("overTitle");
 
-  const GAME_VERSION = "v1.0.27";   // 코드를 고칠 때마다 뒤 두 자리를 올린다
+  const GAME_VERSION = "v1.0.28";   // 코드를 고칠 때마다 뒤 두 자리를 올린다
   document.getElementById("ver").textContent = GAME_VERSION;
 
   const LS_NAME = "epjpddongpi_name";
@@ -822,9 +822,8 @@
   /* 레벨 7부터 섞여 나오는 까다로운 똥들
      split  = 내려오다 둘로 쪼개진다 (쪼개진 조각은 평범한 똥)
      zigzag = 좌우로 크게 흔들리며 내려온다
-     accel  = 처음엔 느리다가 점점 빨라진다
      laser  = 2초간 떨어질 자리를 깜빡여 알려준 뒤 번개처럼 내리꽂힌다 */
-  const SPECIAL_KINDS = ["split", "zigzag", "accel", "laser"];
+  const SPECIAL_KINDS = ["split", "zigzag", "laser"];
   const LASER_WARN = 2;        // 예고 시간(초)
   const LASER_VY = 2400;       // 낙하 속도
   let warns = [];              // 예고 중인 레이저 자리
@@ -841,7 +840,6 @@
     const baseVy = inFever ? FEVER_VY + Math.random() * 110
                            : 215 + level * 30 + Math.random() * 110;
     let vy = baseVy * m * DIFF_F * aug.fallMul;
-    if (special === "accel") vy *= 0.55;      // 느리게 시작해서 점점 빨라진다
     let px = r + Math.random() * (W - r * 2);
     let pvx = (Math.random() - Math.random()) * vy * SPREAD_POOP;
     if (special === "laser") {                // 예고한 자리로 수직 낙하
@@ -1190,8 +1188,6 @@
       } else if (it.special === "zigzag") {
         it.phase += dt * 3.0;
         it.vx = Math.sin(it.phase) * 230;
-      } else if (it.special === "accel") {
-        it.vy = Math.min(it.vy * (1 + 0.75 * dt), 1500);
       }
       const prevX = it.x, prevY = it.y;      // 한 프레임에 크게 움직이면 스쳐 지나갈 수 있다
       it.x += it.vx * dt;
@@ -2265,8 +2261,7 @@
         // 종류마다 다른 색 기운 — 미리 알아보고 피하라고
         ctx.fillStyle = it.special === "split" ? "rgba(200,107,255,.34)"
                       : it.special === "zigzag" ? "rgba(70,215,255,.32)"
-                      : it.special === "laser" ? "rgba(255,60,60,.40)"
-                      : "rgba(255,196,60,.34)";
+                      : "rgba(255,60,60,.40)";
         ctx.beginPath();
         ctx.arc(0, 0, it.size * 0.60, 0, 6.283);
         ctx.fill();
