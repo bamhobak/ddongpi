@@ -337,7 +337,7 @@
   const elRank  = document.getElementById("rankLine");
   const elTitle = document.getElementById("overTitle");
 
-  const GAME_VERSION = "v1.0.21";   // 코드를 고칠 때마다 뒤 두 자리를 올린다
+  const GAME_VERSION = "v1.0.22";   // 코드를 고칠 때마다 뒤 두 자리를 올린다
   document.getElementById("ver").textContent = GAME_VERSION;
 
   const LS_NAME = "epjpddongpi_name";
@@ -522,7 +522,7 @@
     { id: "steelUmb",   ic: "☔", nm: "우산 로켓배송", ds: "우산이 없으면 저절로 배송된다",
       hidden: true, once: true, cond: () => augCount["umbrella3"] > 0,
       go: () => { aug.steelUmb = true; shieldTimer = 5; } },
-    { id: "starburst",  ic: "🌠", nm: "별똥별",     ds: "별이 하늘의 똥을 쓸어버린다",
+    { id: "starburst",  ic: "🌠", nm: "별핑별",     ds: "별이 하늘의 똥을 쓸어버린다",
       hidden: true, once: true, cond: () => augCount["star50"] > 0,
       go: () => { aug.starburst = true; } },
     { id: "gamble",     ic: "🎰", nm: "도박꾼",     ds: "모든 점수 2배, 목숨은 하나뿐",
@@ -776,7 +776,7 @@
     { type: "fullmoon", emoji: "🌕", w: 6  },   // 보름달 — 증강 3연속. 초승달의 10%
     { type: "paper",    emoji: "🧻", w: 26 },
     { type: "umbrella", emoji: "☂️", w: 22 },
-    { type: "star",     emoji: "⭐", w: 43 },
+    { type: "star",     emoji: "⭐", w: 56 },
     { type: "heart",    emoji: "❤️", w: 14 }
   ];
   /* 아이템은 종류마다 자기 타이머로 따로 굴러간다.
@@ -1167,24 +1167,23 @@
       beep(1400, .1, "square", .05);
       beep(1750, .12, "square", .04);
       if (aug.starburst) {
-        /* 화면의 똥을 전부 없앤다 (까다로운 똥도 함께).
-           개당 점수를 방금 먹은 별 점수의 8%로 잡아서, 별을 모을수록 위력이 같이 커진다. */
-        const per = Math.max(40, Math.round(gain * 0.08));
-        let cnt = 0;
+        // 화면의 똥을 전부 없애고, 각각 제 점수의 10배를 받는다 (까다로운 똥도 함께)
+        let cnt = 0, bonus = 0;
         for (let k = items.length - 1; k >= 0; k--) {
           const q = items[k];
           if (q.type !== "poop") continue;
+          bonus += ((q.skin === "fever") ? feverGain(q) : 3 * aug.scoreMul) * 10;
           burst(q.x, q.y, "#ffe9a8", 10);
           items.splice(k, 1);
           cnt++;
         }
         if (cnt) {
-          score += per * cnt;
+          score += bonus;
           invUntil = Math.max(invUntil, now + 1500);   // 쓸어낸 직후 다시 쏟아지므로 숨 돌릴 틈
           shake = Math.max(shake, 18);
           feverFlash = Math.max(feverFlash, 0.7);
           popText(player.x, player.y - 110,
-                  "🌠 " + cnt + "개 쓸어버림 +" + (per * cnt).toLocaleString(), "#ffe9a8", 26);
+                  "🌠 " + cnt + "개 쓸어버림 +" + Math.round(bonus).toLocaleString(), "#ffe9a8", 26);
           beep(2000, .18, "square", .05);
         }
       }
