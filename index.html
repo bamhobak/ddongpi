@@ -208,7 +208,26 @@
   }
 
   /* ---- 개발자 통계 패널 (제목 오른쪽 💩 → 비밀번호) ---- */
-  #devDot { cursor: pointer; }
+  #devDot, #testDot { cursor: pointer; }
+  #testScreen { gap: 14px; }
+  #testScreen h2 { font-size: 20px; color: #ffd23f; }
+  #testRow { display: flex; gap: 8px; align-items: center; }
+  #testPw {
+    font: inherit; font-size: 16px; text-align: center; letter-spacing: 4px;
+    padding: 11px 14px; border-radius: 12px; width: 160px;
+    border: 2px solid rgba(255,255,255,.18);
+    background: rgba(255,255,255,.08); color: #fff;
+  }
+  #testPw:focus { outline: none; border-color: #ffd23f; }
+  #testGo { padding: 11px 18px; font-size: 14px; }
+  #testMsg { font-size: 12px; color: #ff8f8f; min-height: 14px; }
+  #btnTestEnd {
+    position: absolute; right: 12px; top: 58px; z-index: 5; display: none;
+    appearance: none; border: 0; cursor: pointer; font: inherit;
+    font-size: 11px; font-weight: 700; color: #fff;
+    background: rgba(255,80,80,.8); border-radius: 999px; padding: 5px 11px;
+  }
+  #btnTestEnd.on { display: block; }
   #devScreen { justify-content: flex-start; padding-top: 28px; gap: 12px; }
   #devScreen h2 { font-size: 20px; color: #ffd23f; }
   #devPwRow { display: flex; gap: 8px; align-items: center; }
@@ -265,10 +284,11 @@
 <div id="app">
   <div id="stage">
     <canvas id="cv"></canvas>
+    <button id="btnTestEnd">테스트 종료</button>
 
     <div id="startScreen" class="screen">
       <div id="ver"></div>
-      <h1>💩 이피재피똥피 <span id="devDot">💩</span></h1>
+      <h1><span id="testDot">💩</span> 이피재피똥피 <span id="devDot">💩</span></h1>
       <div class="board">
         <h3>🏆 이번 주 TOP 10</h3>
         <ol id="boardStart"><li class="empty">불러오는 중…</li></ol>
@@ -300,6 +320,17 @@
       <div id="devMsg"></div>
       <div id="devBody"></div>
       <button id="devClose">닫기</button>
+    </div>
+
+    <div id="testScreen" class="screen hidden">
+      <h2>테스트 모드</h2>
+      <div class="sub">목숨 무한 · 기록은 남지 않습니다</div>
+      <div id="testRow">
+        <input id="testPw" type="password" inputmode="numeric" maxlength="16" autocomplete="off">
+        <button id="testGo">확인</button>
+      </div>
+      <div id="testMsg"></div>
+      <button id="testClose">닫기</button>
     </div>
 
     <div id="augScreen" class="screen hidden">
@@ -365,7 +396,7 @@
   const elRank  = document.getElementById("rankLine");
   const elTitle = document.getElementById("overTitle");
 
-  const GAME_VERSION = "v1.0.42";   // 코드를 고칠 때마다 뒤 두 자리를 올린다
+  const GAME_VERSION = "v1.0.43";   // 코드를 고칠 때마다 뒤 두 자리를 올린다
   document.getElementById("ver").textContent = GAME_VERSION;
 
   const LS_NAME = "epjpddongpi_name";
@@ -678,6 +709,8 @@
     augScreen.classList.remove("hidden");
   }
   let state = STATE.READY;
+  let testMode = false;            // 개발자 테스트 모드 — 목숨 무한, 기록 안 남김
+  const btnTestEnd = document.getElementById("btnTestEnd");
 
   let score = 0, lives = 3, level = 1, elapsed = 0, starCount = 0;
   let spawnTimer = 0;
@@ -758,7 +791,9 @@
   });
   document.getElementById("btnRetry").addEventListener("click", reset);
 
-  function reset() {
+  function reset(test) {
+    testMode = !!test;             // 인자 없이 부르면 항상 평범한 게임
+    btnTestEnd.classList.toggle("on", testMode);
     layout();
     items = []; particles = []; floats = []; warns = [];
     score = 0; lives = 3; level = 1; elapsed = 0; starCount = 0;
@@ -836,7 +871,7 @@
   const SPECIAL_KINDS = ["split", "zigzag", "laser", "huge"];
   const HUGE_R = 73;           // 반지름 — 초대형(52~62)의 1.4배
   const LASER_WARN = 2;        // 예고 시간(초)
-  const LASER_VY = 2400;       // 낙하 속도
+  const LASER_VY = 4500;       // 낙하 속도 — 똥이 아니라 레이저처럼 내리꽂힌다
   let warns = [];              // 예고 중인 레이저 자리
 
   function spawnPoop(mul, special, forceX, forceAng) {
@@ -1289,7 +1324,7 @@
               beep(400, .12, "triangle", .06);
               if (navigator.vibrate) navigator.vibrate(60);
             } else {
-              lives--;
+              if (!testMode) lives--;      // 테스트 모드는 맞아도 목숨이 줄지 않는다
               invUntil = now + 1500;
               hurtUntil = now + 1500;   // 무적 시간 동안 아픈 그림으로
               shake = 22; flash = 1;
@@ -1690,7 +1725,7 @@
   /* 판이 끝날 때 어떤 증강을 골랐는지 익명으로 남긴다.
      이름·기기 정보는 보내지 않고, 실패해도 게임에는 아무 영향이 없다. */
   function logRun(sc) {
-    if (!SB_ON) return;
+    if (!SB_ON || testMode) return;    // 테스트 기록은 통계에 섞지 않는다
     try {
       fetch(SB_URL + "/rest/v1/" + SB_RUNS, {
         method: "POST",
@@ -1926,10 +1961,66 @@
     devLoad(devPw.value.trim());
   });
 
+  /* ---------- 개발자 테스트 모드 ----------
+     제목 왼쪽 💩 → 비밀번호 → 목숨 무한으로 시작한다.
+     비밀번호는 개발자 통계와 같은 것을 쓰고, 확인은 서버에서 한다 (코드에 적어두지 않는다). */
+  const testScreen = document.getElementById("testScreen");
+  const testPw     = document.getElementById("testPw");
+  const testMsg    = document.getElementById("testMsg");
+  const testGo     = document.getElementById("testGo");
+
+  document.getElementById("testDot").addEventListener("click", () => {
+    testPw.value = ""; testMsg.textContent = "";
+    testScreen.classList.remove("hidden");
+    testPw.focus();
+  });
+  document.getElementById("testClose").addEventListener("click", () => {
+    testScreen.classList.add("hidden");
+  });
+  testPw.addEventListener("keydown", e => {
+    e.stopPropagation();                       // 스페이스로 게임이 시작되지 않도록
+    if (e.key === "Enter") { e.preventDefault(); testStart(); }
+  });
+  testGo.addEventListener("click", testStart);
+
+  async function testStart() {
+    const pw = testPw.value.trim();
+    if (!pw) { testPw.focus(); return; }
+    testMsg.textContent = "확인 중…";
+    testGo.disabled = true;
+    let ok = false;
+    try {
+      const res = await fetch(SB_URL + "/rest/v1/rpc/ddongpi_stats", {
+        method: "POST",
+        headers: sbHeaders({ "Content-Type": "application/json" }),
+        body: JSON.stringify({ pw: pw })
+      });
+      ok = res.ok;
+      if (!ok) testMsg.textContent = "비밀번호가 틀렸습니다";
+    } catch (e) {
+      testMsg.textContent = "확인하지 못했습니다";
+    }
+    testGo.disabled = false;
+    if (!ok) { testPw.value = ""; testPw.focus(); return; }
+    testMsg.textContent = "";
+    testPw.value = "";
+    testScreen.classList.add("hidden");
+    reset(true);
+  }
+
+  btnTestEnd.addEventListener("click", () => {
+    testMode = false;
+    btnTestEnd.classList.remove("on");
+    state = STATE.READY;
+    augScreen.classList.add("hidden");
+    overScreen.classList.add("hidden");
+    startScreen.classList.remove("hidden");
+  });
+
   /* 화면에 보이는 이번 주 TOP 10 을 기준으로만 판단한다.
      내 지난 기록이 더 높든 낮든 상관없이, 지금 점수가 순위표에 들어갈 점수면 등록할 수 있다. */
   function qualifies(sc) {
-    if (!SB_ON || sc <= 0) return false;
+    if (!SB_ON || testMode || sc <= 0) return false;   // 테스트 점수는 랭킹에 올리지 않는다
     if (topList.length < TOP_N) return true;
     return sc > topList[topList.length - 1].score;
   }
@@ -2315,7 +2406,7 @@
         // 잔상은 똥의 회전과 무관하게, 날아온 방향 뒤로 길게 남는다
         ctx.save();
         ctx.rotate(Math.atan2(it.vx, it.vy));
-        const tail = it.size * 7;
+        const tail = it.size * 12;   // 빠른 만큼 잔상도 길게
         const g = ctx.createLinearGradient(0, 0, 0, -tail);
         g.addColorStop(0, "rgba(255,70,70,.55)");
         g.addColorStop(1, "rgba(255,70,70,0)");
@@ -2397,6 +2488,13 @@
 
     // 목숨은 이모지 대신 직접 그린다.
     // iOS 이모지는 지정한 상단선보다 위로 튀어나와서 화면 밖으로 잘리는 문제가 있었다.
+    if (testMode) {
+      ctx.textAlign = "right";
+      ctx.font = "700 12px system-ui, sans-serif";
+      ctx.fillStyle = "#ff7b7b";
+      ctx.fillText("TEST  목숨 ∞", W - 16, top + 36);
+      ctx.textAlign = "left";
+    }
     const hr = 10.5, hgap = 30, hy = top + 16;
     for (let i = 0; i < lives; i++) {
       const cx = W - 18 - hr * 1.32 - i * hgap;
