@@ -337,7 +337,7 @@
   const elRank  = document.getElementById("rankLine");
   const elTitle = document.getElementById("overTitle");
 
-  const GAME_VERSION = "v1.0.19";   // 코드를 고칠 때마다 뒤 두 자리를 올린다
+  const GAME_VERSION = "v1.0.20";   // 코드를 고칠 때마다 뒤 두 자리를 올린다
   document.getElementById("ver").textContent = GAME_VERSION;
 
   const LS_NAME = "epjpddongpi_name";
@@ -1167,21 +1167,24 @@
       beep(1400, .1, "square", .05);
       beep(1750, .12, "square", .04);
       if (aug.starburst) {
-        // 화면의 똥을 전부 없애고 개당 점수를 준다 (까다로운 똥도 함께 쓸린다)
-        let cnt = 0, bonus = 0;
+        /* 화면의 똥을 전부 없앤다 (까다로운 똥도 함께).
+           개당 점수를 방금 먹은 별 점수의 8%로 잡아서, 별을 모을수록 위력이 같이 커진다. */
+        const per = Math.max(40, Math.round(gain * 0.08));
+        let cnt = 0;
         for (let k = items.length - 1; k >= 0; k--) {
           const q = items[k];
           if (q.type !== "poop") continue;
-          bonus += (q.skin === "fever") ? feverGain(q) : 3;
           burst(q.x, q.y, "#ffe9a8", 10);
           items.splice(k, 1);
           cnt++;
         }
         if (cnt) {
-          score += bonus * aug.scoreMul;
+          score += per * cnt;
+          invUntil = Math.max(invUntil, now + 1500);   // 쓸어낸 직후 다시 쏟아지므로 숨 돌릴 틈
           shake = Math.max(shake, 18);
           feverFlash = Math.max(feverFlash, 0.7);
-          popText(player.x, player.y - 110, "🌠 " + cnt + "개 쓸어버림 +" + bonus.toLocaleString(), "#ffe9a8", 26);
+          popText(player.x, player.y - 110,
+                  "🌠 " + cnt + "개 쓸어버림 +" + (per * cnt).toLocaleString(), "#ffe9a8", 26);
           beep(2000, .18, "square", .05);
         }
       }
