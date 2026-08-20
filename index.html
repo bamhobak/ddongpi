@@ -396,7 +396,7 @@
   const elRank  = document.getElementById("rankLine");
   const elTitle = document.getElementById("overTitle");
 
-  const GAME_VERSION = "v1.0.43";   // 코드를 고칠 때마다 뒤 두 자리를 올린다
+  const GAME_VERSION = "v1.0.44";   // 코드를 고칠 때마다 뒤 두 자리를 올린다
   document.getElementById("ver").textContent = GAME_VERSION;
 
   const LS_NAME = "epjpddongpi_name";
@@ -682,6 +682,7 @@
         card.appendChild(cnt);
       }
       card.addEventListener("click", () => {
+        const picked = nameOf(a);      // 보유 수가 오르기 전 = 카드에 적혀 있던 이름
         a.go();
         augCount[a.id] = (augCount[a.id] || 0) + 1;
         beep(900, .09, "square", .05);
@@ -702,7 +703,7 @@
         if (hurtUntil > 0) hurtUntil += paused;
         // 멈춰 있던 똥이 코앞에 있을 수 있으니 0.5초 무적으로 빠져나갈 틈을 준다
         invUntil = Math.max(invUntil, performance.now() + 500);
-        popText(player.x, player.y - 70, a.ic + " " + nameOf(a), "#ffd23f", 24);
+        popText(player.x, player.y - 70, a.ic + " " + picked, "#ffd23f", 24);
       });
       augList.appendChild(card);
     }
@@ -2375,9 +2376,11 @@
       ctx.save();
       ctx.translate(wn.x, 0);
       ctx.rotate(-(wn.ang || 0));                     // 실제 낙하 궤적과 같은 기울기
+      /* 넓은 띠는 항상 같은 밝기로 깔아둔다. 띠까지 깜빡이면 그 뒤를 지나는
+         다른 똥들이 함께 깜빡이는 것처럼 보인다. 깜빡이는 건 가운데 선과 ⚠ 뿐. */
       const g = ctx.createLinearGradient(0, 0, 0, L);
-      g.addColorStop(0, "rgba(255,60,60," + (on ? 0.36 : 0.12) + ")");
-      g.addColorStop(1, "rgba(255,60,60," + (on ? 0.10 : 0.03) + ")");
+      g.addColorStop(0, "rgba(255,60,60,.20)");
+      g.addColorStop(1, "rgba(255,60,60,.05)");
       ctx.fillStyle = g;
       ctx.fillRect(-17, 0, 34, L / Math.cos(wn.ang || 0));
       ctx.strokeStyle = "rgba(255,80,80," + (on ? 0.9 : 0.3) + ")";
@@ -2403,8 +2406,8 @@
       const bob = it.bob !== undefined ? Math.sin(it.bob) * 4 : 0;
       ctx.translate(it.x, it.y + bob);
       if (it.special === "laser") {
-        // 잔상은 똥의 회전과 무관하게, 날아온 방향 뒤로 길게 남는다
-        ctx.save();
+        /* 레이저는 굴러떨어지지 않는다. 잔상과 몸통을 진행 방향으로 함께 눕혀서
+           통째로 하나의 화살처럼 보이게 한다 — 따로 놀면 도는 것처럼 보인다. */
         ctx.rotate(Math.atan2(it.vx, it.vy));
         const tail = it.size * 12;   // 빠른 만큼 잔상도 길게
         const g = ctx.createLinearGradient(0, 0, 0, -tail);
@@ -2412,9 +2415,9 @@
         g.addColorStop(1, "rgba(255,70,70,0)");
         ctx.fillStyle = g;
         ctx.fillRect(-it.size * 0.30, -tail, it.size * 0.60, tail);
-        ctx.restore();
+      } else {
+        ctx.rotate(it.rot);
       }
-      ctx.rotate(it.rot);
       if (it.special && it.special !== "huge") {
         // 종류마다 다른 색 기운 — 미리 알아보고 피하라고 (초거대는 덩치로 이미 눈에 띈다)
         ctx.fillStyle = it.special === "split" ? "rgba(200,107,255,.34)"
