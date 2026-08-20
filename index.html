@@ -396,7 +396,7 @@
   const elRank  = document.getElementById("rankLine");
   const elTitle = document.getElementById("overTitle");
 
-  const GAME_VERSION = "v1.0.74";   // 코드를 고칠 때마다 뒤 두 자리를 올린다
+  const GAME_VERSION = "v1.0.75";   // 코드를 고칠 때마다 뒤 두 자리를 올린다
   document.getElementById("ver").textContent = GAME_VERSION;
 
   const LS_NAME = "epjpddongpi_name";
@@ -486,9 +486,6 @@
   function sprSet() { return (inSpace() && SPR_SPACE.right.img) ? SPR_SPACE : SPR; }
 
   let facing = "right";
-  /* 달리는 시늉 — 실제로 움직인 거리에 맞춰 위상을 돌린다.
-     runPhase 는 발놀림 위상, runPow 는 지금 얼마나 힘껏 달리는지(0~1). */
-  let runPhase = 0, runPow = 0;
 
   for (const key of ["left", "right", "hurt"]) {
     const img = new Image();
@@ -848,7 +845,6 @@
     helperTimer = 0; helperQueue = 0; helperGap = 0; aug.maxLives = 5;
     augScreen.classList.add("hidden");
     facing = "right";
-    runPhase = 0; runPow = 0;
     player.x = player.tx = W / 2;
     state = STATE.PLAY;
     startScreen.classList.add("hidden");
@@ -1142,10 +1138,6 @@
     else if (player.x - prev > 0.25) facing = "right";   // 멈춰 있으면 마지막 방향 유지
     player.tilt += (((player.x - prev) / Math.max(dt, .001) / 900) - player.tilt) * Math.min(1, dt * 10);
     player.tilt = Math.max(-.35, Math.min(.35, player.tilt));
-    const moved = Math.abs(player.x - prev);
-    runPhase += moved * 0.052;                 // 움직인 만큼만 발이 구른다 (멈추면 멈춘다)
-    const spd = moved / Math.max(dt, .001);
-    runPow += (Math.min(1, spd / 380) - runPow) * Math.min(1, dt * 9);
 
     player.hy = headOffset(currentSprite(now));
 
@@ -2596,39 +2588,24 @@
       // 머리 지름을 판정원 지름과 일치시킨다 — 그림마다 머리 비율이 달라 각자의 값을 쓴다
       const sh = spriteHeight(spr);   // 판정이 작아지면 그림도 같이 작아진다
       const sw = sh * spr.aspect;
-
-      /* 달릴 때 몸이 통통 튀고 착지에서 살짝 눌린다.
-         다리 그림은 한 장뿐이라 실제로 걷지는 못하지만, 이것만으로도 뛰는 느낌이 산다.
-         맞은 직후엔 제자리에서 아파하는 그림이라 전부 끈다. */
-      const pw = hurting ? 0 : runPow;
-      const air = Math.abs(Math.sin(runPhase));   // 1 = 발이 뜬 순간, 0 = 착지
-      const bob = -air * 5.5 * pw;
-      const land = (1 - air) * pw;                // 착지 강도
-      const sqy = 1 - 0.06 * land, sqx = 1 + 0.05 * land;
-
       ctx.save();
       ctx.translate(player.x, player.y);
+      // 맞은 직후엔 제자리에서 아파하는 그림이라 기울이지 않는다
+      ctx.rotate(hurting ? 0 : player.tilt * 0.35);
+      // 아픈 그림은 잘 보이도록 깜빡임을 약하게
       ctx.globalAlpha = blink ? (hurting ? .62 : .35) : 1;
 
-      // 발밑 그림자 — 땅에 그대로 붙어 있고, 몸이 뜨면 작고 옅어진다
+      // 발밑 그림자 — 그림 종류·크기와 무관하게 항상 같은 높이
       ctx.save();
-      ctx.globalAlpha *= .22 * (1 - air * .38 * pw);
+      ctx.globalAlpha *= .22;
       ctx.fillStyle = "#000";
       ctx.beginPath();
-      ctx.ellipse(0, FOOT - 4, sw * .3 * (1 - air * .16 * pw), 7 * (1 - air * .22 * pw), 0, 0, 6.283);
+      ctx.ellipse(0, FOOT - 4, sw * .3, 7, 0, 0, 6.283);
       ctx.fill();
       ctx.restore();
 
-      ctx.translate(0, bob);
-      ctx.rotate(hurting ? 0 : player.tilt * 0.35);
-
       // 발이 항상 FOOT 선에 닿도록 아래를 기준으로 그린다 (작아져도 뜨지 않는다)
-      ctx.save();
-      ctx.translate(0, FOOT);           // 눌리고 늘어나는 기준은 발바닥
-      ctx.scale(sqx, sqy);
-      ctx.translate(0, -FOOT);
       ctx.drawImage(spr.img, -sw * spr.cx, FOOT - sh, sw, sh);
-      ctx.restore();
 
       if (now < powerUntil) {
         ctx.beginPath();
@@ -2645,7 +2622,7 @@
       }
       ctx.restore();
 
-      drawShields(player.y + bob + player.hy - player.r * aug.hitboxMul - 21);
+      drawShields(player.y + player.hy - player.r * aug.hitboxMul - 21);
       return;
     }
 
