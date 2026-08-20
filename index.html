@@ -365,7 +365,7 @@
   const elRank  = document.getElementById("rankLine");
   const elTitle = document.getElementById("overTitle");
 
-  const GAME_VERSION = "v1.0.29";   // 코드를 고칠 때마다 뒤 두 자리를 올린다
+  const GAME_VERSION = "v1.0.30";   // 코드를 고칠 때마다 뒤 두 자리를 올린다
   document.getElementById("ver").textContent = GAME_VERSION;
 
   const LS_NAME = "epjpddongpi_name";
@@ -1138,7 +1138,7 @@
         if (level >= 3 && Math.random() < .35) spawnPoop();
         if (level >= 6 && Math.random() < .30) spawnPoop(1.6);   // 초고속 똥
         // 까다로운 똥 — 레벨 7에 아주 드물게 시작해서 레벨마다 조금씩 늘어난다
-        if (level >= 7 && Math.random() < Math.min(0.45, (level - 6) * 0.04)) {
+        if (level >= 7 && Math.random() < Math.min(0.15, (level - 6) * 0.0133)) {
           const kind = SPECIAL_KINDS[Math.floor(Math.random() * SPECIAL_KINDS.length)];
           if (kind === "laser") {
             // 바로 떨어뜨리지 않고 자리를 먼저 알려준다
