@@ -396,7 +396,7 @@
   const elRank  = document.getElementById("rankLine");
   const elTitle = document.getElementById("overTitle");
 
-  const GAME_VERSION = "v1.0.44";   // 코드를 고칠 때마다 뒤 두 자리를 올린다
+  const GAME_VERSION = "v1.0.45";   // 코드를 고칠 때마다 뒤 두 자리를 올린다
   document.getElementById("ver").textContent = GAME_VERSION;
 
   const LS_NAME = "epjpddongpi_name";
@@ -870,7 +870,7 @@
      laser  = 2초간 떨어질 자리를 깜빡여 알려준 뒤 번개처럼 내리꽂힌다
      huge   = 초대형 뚜니핑의 1.4배쯤 되는 거대한 똥, 느리게 굴러떨어진다 */
   const SPECIAL_KINDS = ["split", "zigzag", "laser", "huge"];
-  const HUGE_R = 73;           // 반지름 — 초대형(52~62)의 1.4배
+  const HUGE_R = 66;           // 반지름 — 초대형(52~62)의 약 1.26배
   const LASER_WARN = 2;        // 예고 시간(초)
   const LASER_VY = 4500;       // 낙하 속도 — 똥이 아니라 레이저처럼 내리꽂힌다
   let warns = [];              // 예고 중인 레이저 자리
@@ -882,7 +882,7 @@
     const cls = inFever ? pickFeverSize() : null;
     let r = (cls ? cls.min + Math.random() * (cls.max - cls.min)
                  : 12.6 + Math.random() * 11.7) * aug.poopMul;   // 기본 크기 10% 축소
-    if (special === "huge") r = (HUGE_R + Math.random() * 14) * aug.poopMul;   // 초거대 똥
+    if (special === "huge") r = (HUGE_R + Math.random() * 13) * aug.poopMul;   // 초거대 똥
     r = Math.min(r, (W - 24) / 2);        // 화면보다 커지지 않게
     // 일반 똥은 레벨이 오를수록 빨라지지만, 뚜니핑 낙하물은 처음이나 나중이나 같은 속도로 떨어진다
     const baseVy = inFever ? FEVER_VY + Math.random() * 110
@@ -1033,7 +1033,7 @@
     if (state !== STATE.PLAY) return;
 
     elapsed += dt;
-    level = 1 + Math.floor(elapsed / 10);
+    level = 1 + Math.floor(elapsed / 12);   // 레벨 하나당 12초
     score += dt * Math.pow(1.7, level - 1) * aug.timeMul * aug.scoreMul;  // 생존 점수: 레벨마다 1.7배
 
     // 레벨이 오를수록 하늘이 진해진다. 단계마다 값이 바뀌지만 색은 부드럽게 따라간다.
@@ -1253,6 +1253,7 @@
         it.vx = Math.sin(it.phase) * 230 * aug.fallMul;
       }
       const prevX = it.x, prevY = it.y;      // 한 프레임에 크게 움직이면 스쳐 지나갈 수 있다
+      it.px = prevX; it.py = prevY;
       it.x += it.vx * dt;
       it.y += it.vy * dt;
       it.rot += it.vr * dt;
@@ -2406,15 +2407,27 @@
       const bob = it.bob !== undefined ? Math.sin(it.bob) * 4 : 0;
       ctx.translate(it.x, it.y + bob);
       if (it.special === "laser") {
-        /* 레이저는 굴러떨어지지 않는다. 잔상과 몸통을 진행 방향으로 함께 눕혀서
-           통째로 하나의 화살처럼 보이게 한다 — 따로 놀면 도는 것처럼 보인다. */
+        /* 레이저는 한 프레임에 화면의 1/9씩 건너뛴다. 그냥 그리면 뚝뚝 끊긴 도장처럼
+           찍혀서 깜빡이는 것처럼 보인다. 직전 위치까지의 구간을 잔상으로 메우고
+           그 사이에 흐린 잔영을 몇 개 찍어 하나의 광선으로 이어 보이게 한다. */
+        const sw = (it.px === undefined) ? 0
+                 : Math.hypot(it.x - it.px, it.y - it.py);   // 이번 프레임 이동 거리
         ctx.rotate(Math.atan2(it.vx, it.vy));
-        const tail = it.size * 12;   // 빠른 만큼 잔상도 길게
+        const tail = sw + it.size * 8;
         const g = ctx.createLinearGradient(0, 0, 0, -tail);
-        g.addColorStop(0, "rgba(255,70,70,.55)");
+        g.addColorStop(0, "rgba(255,70,70,.60)");
+        g.addColorStop(0.45, "rgba(255,70,70,.28)");
         g.addColorStop(1, "rgba(255,70,70,0)");
         ctx.fillStyle = g;
-        ctx.fillRect(-it.size * 0.30, -tail, it.size * 0.60, tail);
+        ctx.fillRect(-it.size * 0.32, -tail, it.size * 0.64, tail);
+        if (sw > it.size * 0.8) {
+          ctx.font = it.size + "px serif";
+          for (const gh of [[0.30, .55], [0.60, .34], [0.85, .18]]) {
+            ctx.globalAlpha = gh[1];
+            ctx.fillText(it.emoji, 0, -sw * gh[0]);
+          }
+          ctx.globalAlpha = 1;
+        }
       } else {
         ctx.rotate(it.rot);
       }
