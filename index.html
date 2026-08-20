@@ -365,7 +365,7 @@
   const elRank  = document.getElementById("rankLine");
   const elTitle = document.getElementById("overTitle");
 
-  const GAME_VERSION = "v1.0.34";   // 코드를 고칠 때마다 뒤 두 자리를 올린다
+  const GAME_VERSION = "v1.0.35";   // 코드를 고칠 때마다 뒤 두 자리를 올린다
   document.getElementById("ver").textContent = GAME_VERSION;
 
   const LS_NAME = "epjpddongpi_name";
@@ -523,8 +523,10 @@
      첫 획득은 1배, 두 번째 0.85배, 세 번째 0.72배… (정연핑 계열은 적용하지 않는다) */
   function dim(id) { return Math.pow(0.85, augCount[id] || 0); }
 
-  // 증강별 보유 상한 (지정이 없으면 4개, once 는 1개)
-  function maxOf(a) { return a.once ? 1 : (a.max || 4); }
+  // 증강별 보유 상한 (지정이 없으면 5개, once 는 1개)
+  function maxOf(a) { return a.once ? 1 : (a.max || 5); }
+  // 카드에 보여줄 이름 — 보유 수에 따라 달라지는 증강이 있다
+  function nameOf(a) { return a.nmFn ? a.nmFn() : a.nm; }
 
   const AUGMENTS = [
     { id: "fever_time", ic: "🔥", nm: "뚜니핑 연장", ds: "뚜니핑 타임 증가",
@@ -538,6 +540,7 @@
     { id: "slow",       ic: "🐢", nm: "느린 하늘",   ds: "똥이 느리게 떨어진다",
       go: () => { aug.fallMul *= 1 - 0.15 * dim("slow"); } },
     { id: "small",      ic: "🎯", nm: "마운자로 이재", ds: "몸집이 작아진다",
+      nmFn: () => "마운자로 " + ((augCount["small"] || 0) + 1) + "단계 이재",
       go: () => { aug.hitboxMul *= 1 - 0.15 * dim("small"); } },
     { id: "tinypoop",   ic: "🫧", nm: "작아진 똥",   ds: "똥이 작아진다",
       go: () => { aug.poopMul *= 1 - 0.15 * dim("tinypoop"); } },
@@ -630,7 +633,7 @@
       card.className = "augCard";
       const ic = document.createElement("span"); ic.className = "ic"; ic.textContent = a.ic;
       const tx = document.createElement("span"); tx.className = "tx";
-      const nm = document.createElement("div");  nm.className = "nm2"; nm.textContent = a.nm;
+      const nm = document.createElement("div");  nm.className = "nm2"; nm.textContent = nameOf(a);
       const ds = document.createElement("div");  ds.className = "ds";  ds.textContent = a.ds;
       tx.append(nm, ds);
       card.append(ic, tx);
@@ -668,7 +671,7 @@
         if (hurtUntil > 0) hurtUntil += paused;
         // 멈춰 있던 똥이 코앞에 있을 수 있으니 0.5초 무적으로 빠져나갈 틈을 준다
         invUntil = Math.max(invUntil, performance.now() + 500);
-        popText(player.x, player.y - 70, a.ic + " " + a.nm, "#ffd23f", 24);
+        popText(player.x, player.y - 70, a.ic + " " + nameOf(a), "#ffd23f", 24);
       });
       augList.appendChild(card);
     }
