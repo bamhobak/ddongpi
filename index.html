@@ -396,7 +396,7 @@
   const elRank  = document.getElementById("rankLine");
   const elTitle = document.getElementById("overTitle");
 
-  const GAME_VERSION = "v1.0.61";   // 코드를 고칠 때마다 뒤 두 자리를 올린다
+  const GAME_VERSION = "v1.0.62";   // 코드를 고칠 때마다 뒤 두 자리를 올린다
   document.getElementById("ver").textContent = GAME_VERSION;
 
   const LS_NAME = "epjpddongpi_name";
@@ -478,6 +478,10 @@
     hurt:  { img: null, aspect: 0.511, head: 0.422, cx: 0.511, cy: 0.267, adj: 0.6771 }
   };
   const SPACE_Z = 6;                 // 오로라 지대 — 여기부터 우주복 차림
+  /* 우주에 올라서면 체감 난이도를 이 배율만큼 올린다.
+     낙하 속도와 낙하 빈도에 각각 제곱근을 나눠 걸어 둘을 합친 체감이 정확히 이 값이 된다. */
+  const SPACE_DIFF = 1.18;
+  function spaceF() { return inSpace() ? Math.sqrt(SPACE_DIFF) : 1; }
   function inSpace() { return zoneIdx() >= SPACE_Z; }
   function sprSet() { return (inSpace() && SPR_SPACE.right.img) ? SPR_SPACE : SPR; }
 
@@ -934,7 +938,7 @@
     // 일반 똥은 레벨이 오를수록 빨라지지만, 뚜니핑 낙하물은 처음이나 나중이나 같은 속도로 떨어진다
     const baseVy = inFever ? FEVER_VY + Math.random() * 110
                            : 215 + level * 30 + Math.random() * 110;
-    let vy = baseVy * m * DIFF_F * aug.fallMul;
+    let vy = baseVy * m * DIFF_F * spaceF() * aug.fallMul;
     if (special === "huge") vy *= 0.55;   // 덩치값 — 느릿느릿 굴러떨어진다
     let px = r + Math.random() * (W - r * 2);
     let pvx = (Math.random() - Math.random()) * vy * SPREAD_POOP;
@@ -1255,7 +1259,7 @@
         if (level >= 3 && Math.random() < .35) spawnPoop();
         if (level >= 6 && Math.random() < .30) spawnPoop(1.6);   // 초고속 똥
         // 까다로운 똥 — 레벨 7에 아주 드물게 시작해서 레벨마다 조금씩 늘어난다
-        if (level >= 7 && Math.random() < Math.min(0.30, (level - 6) * 0.0266)) {
+        if (level >= 7 && Math.random() < Math.min(0.33, (level - 6) * 0.0293)) {
           const kind = SPECIAL_KINDS[Math.floor(Math.random() * SPECIAL_KINDS.length)];
           if (kind === "huge" && items.some(q => q.special === "huge")) {
             spawnPoop();                  // 이미 하늘에 하나 있으면 평범한 똥으로
@@ -1276,7 +1280,7 @@
             spawnPoop(1, kind);
           }
         }
-        spawnTimer = Math.max(0.13, 0.52 - level * 0.042) / DIFF_F * widthFactor * (0.7 + Math.random() * 0.6);
+        spawnTimer = Math.max(0.13, 0.52 - level * 0.042) / DIFF_F / spaceF() * widthFactor * (0.7 + Math.random() * 0.6);
       }
     }
     if (!powered) {
