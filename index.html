@@ -365,7 +365,7 @@
   const elRank  = document.getElementById("rankLine");
   const elTitle = document.getElementById("overTitle");
 
-  const GAME_VERSION = "v1.0.36";   // 코드를 고칠 때마다 뒤 두 자리를 올린다
+  const GAME_VERSION = "v1.0.37";   // 코드를 고칠 때마다 뒤 두 자리를 올린다
   document.getElementById("ver").textContent = GAME_VERSION;
 
   const LS_NAME = "epjpddongpi_name";
@@ -391,8 +391,8 @@
 
   /* 전체 난이도 배율. 낙하 속도와 낙하 빈도에 각각 제곱근을 적용해서
      둘을 합친 체감 난이도가 정확히 이 배율이 되게 한다. 값 하나만 고치면 된다. */
-  const DIFF = 1.0;
-  const DIFF_F = Math.sqrt(DIFF);    // 1.0488
+  const DIFF = 0.81;
+  const DIFF_F = Math.sqrt(DIFF);    // 0.9 → 속도 -10%, 개수 -10%
 
   function layout() {
     const rect = stage.getBoundingClientRect();
@@ -837,7 +837,7 @@
   const LASER_VY = 2400;       // 낙하 속도
   let warns = [];              // 예고 중인 레이저 자리
 
-  function spawnPoop(mul, special, forceX) {
+  function spawnPoop(mul, special, forceX, forceAng) {
     const m = (mul || 1) * (H / BASE_H);   // 화면이 길면 그만큼 빨리 떨어져야 체감이 같다
     // 뚜니핑 타임에 나온 것은 외형·점수를 스스로 기억한다 → 뚜니핑 타임이 끝나도 모습이 바뀌지 않는다
     const inFever = fever;
@@ -851,10 +851,11 @@
     let vy = baseVy * m * DIFF_F * aug.fallMul;
     let px = r + Math.random() * (W - r * 2);
     let pvx = (Math.random() - Math.random()) * vy * SPREAD_POOP;
-    if (special === "laser") {                // 예고한 자리로 수직 낙하
-      px = Math.max(r, Math.min(W - r, forceX));
-      pvx = 0;
-      vy = LASER_VY * (H / BASE_H) * aug.fallMul;
+    if (special === "laser") {                // 예고한 선을 그대로 따라 내려온다
+      px = forceX;
+      const sp = LASER_VY * (H / BASE_H) * aug.fallMul;
+      vy = sp * Math.cos(forceAng || 0);
+      pvx = sp * Math.sin(forceAng || 0);
     }
     items.push({
       type: "poop", emoji: "💩",
@@ -862,7 +863,8 @@
       r: r * 0.82,
       vx: pvx,
       vy: vy,
-      rot: Math.random() * 6.28, vr: (Math.random() - .5) * 5,
+      rot: special === "laser" ? 0 : Math.random() * 6.28,
+      vr: special === "laser" ? 0 : (Math.random() - .5) * 5,
       size: r * 2, sz: r, fast: m > 1,
       skin: inFever ? "fever" : "poop",
       special: special || null,
@@ -1019,7 +1021,7 @@
       const wn = warns[k];
       wn.t -= dt;
       if (wn.t <= 0) {
-        spawnPoop(1, "laser", wn.x);
+        spawnPoop(1, "laser", wn.x, wn.ang);
         beep(180, .16, "sawtooth", .06);
         warns.splice(k, 1);
       }
@@ -1152,7 +1154,14 @@
           if (kind === "laser") {
             // 바로 떨어뜨리지 않고 자리를 먼저 알려준다 (예고는 동시에 여러 개도 가능)
             if (warns.length < 3) {
-              warns.push({ x: 40 + Math.random() * Math.max(1, W - 80), t: LASER_WARN });
+              /* 떨어질 지점을 먼저 정하고, 기울기를 골라 위쪽 진입점을 역산한다.
+                 진입점이 화면 밖으로 너무 나가면 기울기를 그만큼 줄인다. */
+              const L = H - GROUND_H;
+              const tx = 30 + Math.random() * Math.max(1, W - 60);
+              const ang = (Math.random() - Math.random()) * 0.62;   // 최대 약 35도
+              let ex = tx - Math.tan(ang) * L;
+              ex = Math.max(-20, Math.min(W + 20, ex));
+              warns.push({ x: ex, ang: Math.atan((tx - ex) / L), t: LASER_WARN });
               beep(1500, .06, "sine", .03);
             }
           } else {
@@ -1203,8 +1212,10 @@
       it.x += it.vx * dt;
       it.y += it.vy * dt;
       it.rot += it.vr * dt;
-      if (it.x < it.r) { it.x = it.r; it.vx = Math.abs(it.vx); }
-      if (it.x > W - it.r) { it.x = W - it.r; it.vx = -Math.abs(it.vx); }
+      if (it.special !== "laser") {          // 레이저는 예고한 선을 그대로 지나간다
+        if (it.x < it.r) { it.x = it.r; it.vx = Math.abs(it.vx); }
+        if (it.x > W - it.r) { it.x = W - it.r; it.vx = -Math.abs(it.vx); }
+      }
       if (it.bob !== undefined) it.bob += dt * 4;
 
       const cy = player.y + player.hy;
@@ -2226,27 +2237,31 @@
 
   // 레이저가 떨어질 자리를 미리 깜빡여 알려준다 (막판일수록 빠르게)
   function drawWarnings(now) {
+    const L = H - GROUND_H;
     for (const wn of warns) {
       const left = wn.t / LASER_WARN;                 // 1 → 0
       const speed = 90 + (1 - left) * 240;            // 남을수록 느리게, 임박하면 빠르게
       const on = Math.floor(now / speed) % 2 === 0;
-      const w = 34;
-      const g = ctx.createLinearGradient(0, 0, 0, H - GROUND_H);
+      ctx.save();
+      ctx.translate(wn.x, 0);
+      ctx.rotate(-(wn.ang || 0));                     // 실제 낙하 궤적과 같은 기울기
+      const g = ctx.createLinearGradient(0, 0, 0, L);
       g.addColorStop(0, "rgba(255,60,60," + (on ? 0.36 : 0.12) + ")");
       g.addColorStop(1, "rgba(255,60,60," + (on ? 0.10 : 0.03) + ")");
       ctx.fillStyle = g;
-      ctx.fillRect(wn.x - w / 2, 0, w, H - GROUND_H);
+      ctx.fillRect(-17, 0, 34, L / Math.cos(wn.ang || 0));
       ctx.strokeStyle = "rgba(255,80,80," + (on ? 0.9 : 0.3) + ")";
       ctx.lineWidth = 2;
       ctx.beginPath();
-      ctx.moveTo(wn.x, 0);
-      ctx.lineTo(wn.x, H - GROUND_H);
+      ctx.moveTo(0, 0);
+      ctx.lineTo(0, L / Math.cos(wn.ang || 0));
       ctx.stroke();
+      ctx.restore();
       ctx.fillStyle = on ? "#ff5d5d" : "rgba(255,93,93,.4)";
       ctx.font = "700 18px system-ui, sans-serif";
       ctx.textAlign = "center";
       ctx.textBaseline = "top";
-      ctx.fillText("⚠", wn.x, 6);
+      ctx.fillText("⚠", Math.max(12, Math.min(W - 12, wn.x)), 6);
     }
   }
 
@@ -2257,16 +2272,19 @@
       ctx.save();
       const bob = it.bob !== undefined ? Math.sin(it.bob) * 4 : 0;
       ctx.translate(it.x, it.y + bob);
-      ctx.rotate(it.rot);
       if (it.special === "laser") {
-        // 위로 길게 남는 잔상
+        // 잔상은 똥의 회전과 무관하게, 날아온 방향 뒤로 길게 남는다
+        ctx.save();
+        ctx.rotate(Math.atan2(it.vx, it.vy));
         const tail = it.size * 7;
         const g = ctx.createLinearGradient(0, 0, 0, -tail);
         g.addColorStop(0, "rgba(255,70,70,.55)");
         g.addColorStop(1, "rgba(255,70,70,0)");
         ctx.fillStyle = g;
         ctx.fillRect(-it.size * 0.30, -tail, it.size * 0.60, tail);
+        ctx.restore();
       }
+      ctx.rotate(it.rot);
       if (it.special) {
         // 종류마다 다른 색 기운 — 미리 알아보고 피하라고
         ctx.fillStyle = it.special === "split" ? "rgba(200,107,255,.34)"
