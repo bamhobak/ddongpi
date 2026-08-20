@@ -365,7 +365,7 @@
   const elRank  = document.getElementById("rankLine");
   const elTitle = document.getElementById("overTitle");
 
-  const GAME_VERSION = "v1.0.23";   // 코드를 고칠 때마다 뒤 두 자리를 올린다
+  const GAME_VERSION = "v1.0.24";   // 코드를 고칠 때마다 뒤 두 자리를 올린다
   document.getElementById("ver").textContent = GAME_VERSION;
 
   const LS_NAME = "epjpddongpi_name";
@@ -843,13 +843,16 @@
     { type: "fullmoon", emoji: "🌕", w: 6  },   // 보름달 — 증강 3연속. 초승달의 10%
     { type: "paper",    emoji: "🧻", w: 26 },
     { type: "umbrella", emoji: "☂️", w: 22 },
-    { type: "star",     emoji: "⭐", w: 56 },
+    { type: "star",     emoji: "⭐", w: 73 },
     { type: "heart",    emoji: "❤️", w: 14 }
   ];
   /* 아이템은 종류마다 자기 타이머로 따로 굴러간다.
      각자의 평균 간격 = 기본 10초 ÷ 그 아이템의 비중 → 전체 등장 빈도는 예전과 같지만
      서로 독립이라 운이 맞으면 두세 개가 한꺼번에 쏟아진다. */
-  const BONUS_W_TOTAL = BONUS.reduce((a, b) => a + b.w, 0);
+  /* 각 아이템의 평균 간격은 이 고정 기준값으로 계산한다.
+     실제 가중치 합을 쓰면 별 하나를 올릴 때 다른 아이템까지 덩달아 드물어진다.
+     기준을 고정해두면 별은 독립적으로 자주 나오고 나머지는 영향을 받지 않는다. */
+  const BONUS_W_TOTAL = 204;
   const BONUS_BASE = 7.5;                // 아이템 전체의 평균 등장 간격(초)
 
   function bonusInterval(b) {
