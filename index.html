@@ -365,7 +365,7 @@
   const elRank  = document.getElementById("rankLine");
   const elTitle = document.getElementById("overTitle");
 
-  const GAME_VERSION = "v1.0.39";   // 코드를 고칠 때마다 뒤 두 자리를 올린다
+  const GAME_VERSION = "v1.0.40";   // 코드를 고칠 때마다 뒤 두 자리를 올린다
   document.getElementById("ver").textContent = GAME_VERSION;
 
   const LS_NAME = "epjpddongpi_name";
@@ -1309,13 +1309,7 @@
       if (it.y - it.r > H + 20) {
         // 뚜니핑 타임 낙하물은 워낙 많이 쏟아져서, 안 먹고 흘려보낸 것에 점수를 주면
         // 가만히 있어도 점수가 폭등한다. 뚜니핑 타임 것은 0점 — 직접 받아야만 점수가 오른다.
-        if (it.type === "poop" && it.skin !== "fever") {
-          if (it.special === "huge") {    // 자리를 크게 차지하니 피한 값도 크게
-            const g = 80 * aug.scoreMul;
-            score += g;
-            popText(it.x, H - GROUND_H - 40, "피했다! +" + g.toLocaleString(), "#ffb26b", 24);
-          } else score += 3 * aug.scoreMul;
-        }
+        if (it.type === "poop" && it.skin !== "fever") score += 3 * aug.scoreMul;
         items.splice(i, 1);
       }
     }
