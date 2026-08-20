@@ -337,7 +337,7 @@
   const elRank  = document.getElementById("rankLine");
   const elTitle = document.getElementById("overTitle");
 
-  const GAME_VERSION = "v1.0.15";   // 코드를 고칠 때마다 뒤 두 자리를 올린다
+  const GAME_VERSION = "v1.0.16";   // 코드를 고칠 때마다 뒤 두 자리를 올린다
   document.getElementById("ver").textContent = GAME_VERSION;
 
   const LS_NAME = "epjpddongpi_name";
@@ -498,11 +498,11 @@
     { id: "fever50",    ic: "🌙", nm: "뚜니핑 대박", ds: "뚜니핑 낙하물 점수 증가",
       go: () => { aug.feverScoreMul += 0.3 * dim("fever50"); } },
     { id: "slow",       ic: "🐢", nm: "느린 하늘",   ds: "똥이 느리게 떨어진다",
-      go: () => { aug.fallMul *= 1 - 0.20 * dim("slow"); } },
+      go: () => { aug.fallMul *= 1 - 0.15 * dim("slow"); } },
     { id: "small",      ic: "🎯", nm: "날렵한 몸",   ds: "몸집이 작아진다",
-      go: () => { aug.hitboxMul *= 1 - 0.18 * dim("small"); } },
+      go: () => { aug.hitboxMul *= 1 - 0.15 * dim("small"); } },
     { id: "tinypoop",   ic: "🫧", nm: "작아진 똥",   ds: "똥이 작아진다",
-      go: () => { aug.poopMul *= 1 - 0.18 * dim("tinypoop"); } },
+      go: () => { aug.poopMul *= 1 - 0.15 * dim("tinypoop"); } },
     { id: "umbrella3",  ic: "☂️", nm: "우산 다발", ds: "우산을 3개 얻는다",
       cond: () => shields <= 1,   // 방패가 넉넉하면 후보에 오르지 않는다
       noCount: true,              // 방패 수는 화면에 우산으로 보이니 보유 뱃지는 생략
