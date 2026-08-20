@@ -365,7 +365,7 @@
   const elRank  = document.getElementById("rankLine");
   const elTitle = document.getElementById("overTitle");
 
-  const GAME_VERSION = "v1.0.33";   // 코드를 고칠 때마다 뒤 두 자리를 올린다
+  const GAME_VERSION = "v1.0.34";   // 코드를 고칠 때마다 뒤 두 자리를 올린다
   document.getElementById("ver").textContent = GAME_VERSION;
 
   const LS_NAME = "epjpddongpi_name";
@@ -520,15 +520,15 @@
 
   /* 같은 증강을 또 고를 때 효과를 조금씩 덜 준다.
      go() 는 augCount 를 올리기 전에 불리므로, 여기서 읽는 값이 '이전까지 고른 횟수'다.
-     첫 획득은 1배, 두 번째 0.7배, 세 번째 0.49배… (정연핑 계열은 적용하지 않는다) */
-  function dim(id) { return Math.pow(0.7, augCount[id] || 0); }
+     첫 획득은 1배, 두 번째 0.85배, 세 번째 0.72배… (정연핑 계열은 적용하지 않는다) */
+  function dim(id) { return Math.pow(0.85, augCount[id] || 0); }
 
   // 증강별 보유 상한 (지정이 없으면 4개, once 는 1개)
   function maxOf(a) { return a.once ? 1 : (a.max || 4); }
 
   const AUGMENTS = [
     { id: "fever_time", ic: "🔥", nm: "뚜니핑 연장", ds: "뚜니핑 타임 증가",
-      go: () => { aug.feverBonus += 2000 * dim("fever_time"); } },
+      go: () => { aug.feverBonus += 2000; } },   // 먹을 때마다 그대로 +2초
     { id: "star50",     ic: "⭐", nm: "별빛 증폭",   ds: "별 점수 증가",
       go: () => { aug.starMul += 0.5 * dim("star50"); } },
     { id: "time2x",     ic: "⏱️", nm: "시간 가속",   ds: "생존 점수 증가",
@@ -542,8 +542,8 @@
     { id: "tinypoop",   ic: "🫧", nm: "작아진 똥",   ds: "똥이 작아진다",
       go: () => { aug.poopMul *= 1 - 0.15 * dim("tinypoop"); } },
     { id: "umbrella3",  ic: "☂️", nm: "우산 다발", ds: "우산을 3개 얻는다",
-      max: 3,
-      cond: () => shields <= 1,   // 방패가 넉넉하면 후보에 오르지 않는다
+      max: 99,                    // 조건이 막아주므로 보유 상한은 사실상 없음
+      cond: () => shields <= 2,   // 방패가 3개 이상이면 후보에 오르지 않는다
       noCount: true,              // 방패 수는 화면에 우산으로 보이니 보유 뱃지는 생략
       go: () => { shields = Math.min(shields + 3, 5); } },   // 방패는 최대 5개까지
     { id: "helper",     ic: "🦸", nm: "도와줘 정연핑", ds: "정연핑이 지나가는 자리의 똥을 부순다",
