@@ -365,7 +365,7 @@
   const elRank  = document.getElementById("rankLine");
   const elTitle = document.getElementById("overTitle");
 
-  const GAME_VERSION = "v1.0.25";   // 코드를 고칠 때마다 뒤 두 자리를 올린다
+  const GAME_VERSION = "v1.0.26";   // 코드를 고칠 때마다 뒤 두 자리를 올린다
   document.getElementById("ver").textContent = GAME_VERSION;
 
   const LS_NAME = "epjpddongpi_name";
@@ -510,6 +510,9 @@
     steelUmb: false,    // 히든: 강철 우산 (방패가 없으면 7초마다 하나 생긴다)
     starburst: false,   // 히든: 별똥별 (별을 먹으면 화면의 똥이 전부 사라진다)
     gamble: false,      // 히든: 도박꾼 (점수 2배, 목숨 1 고정)
+    ghost: false,       // 히든: 유령화 (주기적으로 잠깐 무적)
+    blackhole: false,   // 히든: 블랙홀 (자석 강화 + 뚜니핑 낙하물도 조금 끌어당김)
+    legion: false,      // 히든: 대왕 뚜니핑 군단 (대왕 등장·점수 강화)
     scoreMul: 1,        // 모든 점수에 곱해지는 배율
     maxLives: 5
   };
@@ -553,6 +556,15 @@
     { id: "starburst",  ic: "🌠", nm: "별핑별",     ds: "별이 하늘의 똥을 쓸어버린다",
       hidden: true, once: true, cond: () => augCount["star50"] > 0,
       go: () => { aug.starburst = true; } },
+    { id: "ghost",      ic: "👻", nm: "유령화",     ds: "이따금 몸이 잠깐 사라진다",
+      hidden: true, once: true, cond: () => augCount["small"] >= 2,
+      go: () => { aug.ghost = true; ghostTimer = 6; } },
+    { id: "blackhole",  ic: "🕳️", nm: "블랙홀",     ds: "끌어당기는 힘이 더 세진다",
+      hidden: true, once: true, cond: () => aug.magnet > 0,
+      go: () => { aug.blackhole = true; aug.magnet = Math.round(aug.magnet * 1.5); } },
+    { id: "legion",     ic: "🌝", nm: "대왕 뚜니핑 군단", ds: "대왕이 떼로 몰려온다",
+      hidden: true, once: true, cond: () => aug.giant > 0,
+      go: () => { aug.legion = true; } },
     { id: "gamble",     ic: "🎰", nm: "도박꾼",     ds: "모든 점수 2배, 목숨은 하나뿐",
       hidden: true, once: true, cond: () => level >= 5,
       go: () => { aug.gamble = true; aug.scoreMul *= 2; aug.maxLives = 1; lives = 1; } },
@@ -663,6 +675,7 @@
   let invUntil = 0, powerUntil = 0;
   let shields = 0;                 // 남은 방패 수 — 우산 아이템은 최대 1, 증강으로만 여러 개
   let shieldTimer = 5;             // 우산 로켓배송: 방패가 없을 때 다음 하나까지 남은 시간
+  let ghostTimer = 6;              // 유령화: 다음 무적까지 남은 시간
   let hurtUntil = 0;               // 똥에 맞은 직후 (아픈 그림 표시)
   let skyT = 0;                    // 0 = 맑은 하늘, 1 = 가장 어두운 하늘 (레벨에 따라)
   let shake = 0, flash = 0, feverFlash = 0;
@@ -749,6 +762,7 @@
     aug.feverBonus = 0; aug.starMul = 1; aug.timeMul = 1;
     aug.feverScoreMul = 1; aug.fallMul = 1; aug.hitboxMul = 1; aug.poopMul = 1;
     aug.steelUmb = false; aug.starburst = false; aug.gamble = false; aug.scoreMul = 1;
+    aug.ghost = false; aug.blackhole = false; aug.legion = false; ghostTimer = 6;
     shieldTimer = 5;
     aug.itemRateMul = 1; aug.feverRateMul = 1; aug.giant = 0; aug.magnet = 0;
     aug.helper = 0; aug.helperRush = false; aug.hungry = false;
@@ -784,8 +798,12 @@
   const GIANT = { min: 104, max: 124, score: 110, w: 3, giant: true };
   function pickFeverSize() {
     const list = aug.giant > 0
-      ? FEVER_SIZES.concat([{ min: GIANT.min, max: GIANT.max, score: GIANT.score,
-                              w: GIANT.w * aug.giant, giant: true }])
+      ? FEVER_SIZES.concat([{
+          min: GIANT.min, max: GIANT.max,
+          score: GIANT.score * (aug.legion ? 2 : 1),
+          w: GIANT.w * aug.giant * (aug.legion ? 3 : 1),
+          giant: true
+        }])
       : FEVER_SIZES;
     const total = list.reduce((a, b) => a + b.w, 0);
     let n = Math.random() * total;
@@ -969,6 +987,18 @@
 
     player.hy = headOffset(currentSprite(now));
 
+    // ---- 유령화: 6초마다 1.5초씩 몸이 사라진다 ----
+    if (aug.ghost) {
+      ghostTimer -= dt;
+      if (ghostTimer <= 0) {
+        ghostTimer = 6;
+        invUntil = Math.max(invUntil, now + 1500);
+        popText(player.x, player.y - 60, "👻 유령화", "#cfe4ff");
+        beep(520, .1, "sine", .04);
+        beep(700, .12, "sine", .03);
+      }
+    }
+
     // ---- 우산 로켓배송: 방패가 하나도 없을 때만 시간을 재서 하나 배송한다 ----
     if (aug.steelUmb) {
       if (shields <= 0) {
@@ -1131,6 +1161,15 @@
       if (it.bob !== undefined) it.bob += dt * 4;
 
       const dx = it.x - player.x, dy = it.y - (player.y + player.hy);
+      if (aug.blackhole && it.type === "poop" && it.skin === "fever") {
+        // 뚜니핑 낙하물은 가까이 왔을 때만 살짝 끌어당긴다 (전부 빨아들이면 너무 세다)
+        const d = Math.hypot(dx, dy), R = 130;
+        if (d < R && d > 1) {
+          const pull = 250 * dt * (1 - d / R);
+          it.x -= dx / d * pull;
+          it.y -= dy / d * pull * 0.5;
+        }
+      }
       if (aug.magnet > 0 && it.type !== "poop") {
         const d = Math.hypot(dx, dy);
         if (d < aug.magnet && d > 1) {
