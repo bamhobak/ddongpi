@@ -337,7 +337,7 @@
   const elRank  = document.getElementById("rankLine");
   const elTitle = document.getElementById("overTitle");
 
-  const GAME_VERSION = "v1.0.14";   // 코드를 고칠 때마다 뒤 두 자리를 올린다
+  const GAME_VERSION = "v1.0.15";   // 코드를 고칠 때마다 뒤 두 자리를 올린다
   document.getElementById("ver").textContent = GAME_VERSION;
 
   const LS_NAME = "epjpddongpi_name";
@@ -718,7 +718,13 @@
 
   const FEVER_VY = 245;      // 뚜니핑 낙하물 기준 속도 — 레벨이 올라도 그대로 유지한다
 
-  function spawnPoop(mul) {
+  /* 레벨 10부터 섞여 나오는 까다로운 똥들
+     homing = 플레이어 쪽으로 천천히 따라온다
+     zigzag = 좌우로 크게 흔들리며 내려온다
+     accel  = 처음엔 느리다가 점점 빨라진다 */
+  const SPECIAL_KINDS = ["homing", "zigzag", "accel"];
+
+  function spawnPoop(mul, special) {
     const m = (mul || 1) * (H / BASE_H);   // 화면이 길면 그만큼 빨리 떨어져야 체감이 같다
     // 뚜니핑 타임에 나온 것은 외형·점수를 스스로 기억한다 → 뚜니핑 타임이 끝나도 모습이 바뀌지 않는다
     const inFever = fever;
@@ -729,7 +735,8 @@
     // 일반 똥은 레벨이 오를수록 빨라지지만, 뚜니핑 낙하물은 처음이나 나중이나 같은 속도로 떨어진다
     const baseVy = inFever ? FEVER_VY + Math.random() * 110
                            : 215 + level * 30 + Math.random() * 110;
-    const vy = baseVy * m * DIFF_F * aug.fallMul;
+    let vy = baseVy * m * DIFF_F * aug.fallMul;
+    if (special === "accel") vy *= 0.55;      // 느리게 시작해서 점점 빨라진다
     items.push({
       type: "poop", emoji: "💩",
       x: r + Math.random() * (W - r * 2), y: -r - 10,
@@ -739,6 +746,8 @@
       rot: Math.random() * 6.28, vr: (Math.random() - .5) * 5,
       size: r * 2, sz: r, fast: m > 1,
       skin: inFever ? "fever" : "poop",
+      special: special || null,
+      phase: Math.random() * 6.28,
       face: Math.floor(Math.random() * 8),   // 표정 장식 (0~1은 기본 얼굴)
       gain: cls ? cls.score : 0,
       giant: !!(cls && cls.giant)
@@ -966,6 +975,9 @@
         spawnPoop();
         if (level >= 3 && Math.random() < .35) spawnPoop();
         if (level >= 6 && Math.random() < .30) spawnPoop(1.6);   // 초고속 똥
+        if (level >= 10 && Math.random() < .30) {                // 까다로운 똥
+          spawnPoop(1, SPECIAL_KINDS[Math.floor(Math.random() * SPECIAL_KINDS.length)]);
+        }
         spawnTimer = Math.max(0.13, 0.52 - level * 0.042) / DIFF_F * widthFactor * (0.7 + Math.random() * 0.6);
       }
     }
@@ -981,6 +993,16 @@
 
     for (let i = items.length - 1; i >= 0; i--) {
       const it = items[i];
+      if (it.special === "homing") {
+        // 플레이어 쪽으로 조금씩 방향을 튼다. 좌우 속도에 상한이 있어 피할 수는 있다.
+        it.vx += (player.x > it.x ? 1 : -1) * 300 * dt;
+        it.vx = Math.max(-180, Math.min(180, it.vx));
+      } else if (it.special === "zigzag") {
+        it.phase += dt * 3.0;
+        it.vx = Math.sin(it.phase) * 230;
+      } else if (it.special === "accel") {
+        it.vy = Math.min(it.vy * (1 + 0.75 * dt), 1500);
+      }
       it.x += it.vx * dt;
       it.y += it.vy * dt;
       it.rot += it.vr * dt;
@@ -1123,6 +1145,7 @@
     for (let i = items.length - 1; i >= 0; i--) {
       const it = items[i];
       if (it.type !== "poop") continue;
+      if (it.special) continue;              // 까다로운 똥은 정연핑도 부수지 못한다
       if (Math.hypot(it.x - x, it.y - y) >= radius + it.r) continue;
       if (it.skin === "fever") {
         const g = feverGain(it);
@@ -1956,6 +1979,15 @@
       const bob = it.bob !== undefined ? Math.sin(it.bob) * 4 : 0;
       ctx.translate(it.x, it.y + bob);
       ctx.rotate(it.rot);
+      if (it.special) {
+        // 종류마다 다른 색 기운 — 미리 알아보고 피하라고
+        ctx.fillStyle = it.special === "homing" ? "rgba(255,60,60,.34)"
+                      : it.special === "zigzag" ? "rgba(70,215,255,.32)"
+                      : "rgba(255,196,60,.34)";
+        ctx.beginPath();
+        ctx.arc(0, 0, it.size * 0.60, 0, 6.283);
+        ctx.fill();
+      }
       if (it.skin === "fever" && feverPoop) {
         ctx.drawImage(feverPoop, -it.size / 2, -it.size / 2, it.size, it.size);
       } else {
