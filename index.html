@@ -365,7 +365,7 @@
   const elRank  = document.getElementById("rankLine");
   const elTitle = document.getElementById("overTitle");
 
-  const GAME_VERSION = "v1.0.28";   // 코드를 고칠 때마다 뒤 두 자리를 올린다
+  const GAME_VERSION = "v1.0.29";   // 코드를 고칠 때마다 뒤 두 자리를 올린다
   document.getElementById("ver").textContent = GAME_VERSION;
 
   const LS_NAME = "epjpddongpi_name";
@@ -1173,7 +1173,7 @@
             items.push({
               type: "poop", emoji: "💩",
               x: it.x, y: it.y, r: r2 * 0.82,
-              vx: dir * (150 + Math.random() * 100), vy: it.vy * 0.9,
+              vx: dir * (150 + Math.random() * 100) * aug.fallMul, vy: it.vy * 0.9,
               rot: Math.random() * 6.28, vr: (Math.random() - .5) * 5,
               size: r2 * 2, sz: r2, fast: false,
               skin: "poop", special: null, phase: 0, splitAt: 0,
@@ -1186,8 +1186,9 @@
           continue;
         }
       } else if (it.special === "zigzag") {
-        it.phase += dt * 3.0;
-        it.vx = Math.sin(it.phase) * 230;
+        // 흔들리는 속도·폭도 '느린 하늘'의 영향을 받는다 (세로만 느려지면 더 촘촘해져서 어색하다)
+        it.phase += dt * 3.0 * aug.fallMul;
+        it.vx = Math.sin(it.phase) * 230 * aug.fallMul;
       }
       const prevX = it.x, prevY = it.y;      // 한 프레임에 크게 움직이면 스쳐 지나갈 수 있다
       it.x += it.vx * dt;
