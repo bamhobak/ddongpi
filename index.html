@@ -70,6 +70,15 @@
     padding: 4px 0; color: #d5d8e2;
   }
   .board li + li { border-top: 1px solid rgba(255,255,255,.06); }
+  /* 순위에 못 들었어도 이번 판 점수는 순위표 아래에 따로 보여준다 */
+  .board li.run {
+    margin-top: 7px; padding-top: 9px;
+    border-top: 1px dashed rgba(255,255,255,.18) !important;
+    background: rgba(255,210,63,.07); border-radius: 0 0 10px 10px;
+  }
+  .board li.run .rk { color: #8b90a0; }
+  .board li.run .nm { color: #e7eaf2; font-weight: 700; }
+  .board li.run .sc { color: #ffd23f; font-weight: 800; }
   .board .rk { width: 22px; text-align: center; flex: none; color: #8b90a0; font-weight: 700; }
   .board .nm {
     flex: 1; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
@@ -396,7 +405,7 @@
   const elRank  = document.getElementById("rankLine");
   const elTitle = document.getElementById("overTitle");
 
-  const GAME_VERSION = "v1.0.64";   // 코드를 고칠 때마다 뒤 두 자리를 올린다
+  const GAME_VERSION = "v1.0.65";   // 코드를 고칠 때마다 뒤 두 자리를 올린다
   document.getElementById("ver").textContent = GAME_VERSION;
 
   const LS_NAME = "epjpddongpi_name";
@@ -1757,6 +1766,29 @@
     throw new Error(lastErr);
   }
 
+  /* 이번 판 점수를 순위표 맨 아래에 덧붙인다.
+     순위에 못 들었거나, 내 예전 기록이 이미 올라가 있어 이번 판이 안 보일 때를 위한 줄이다. */
+  function appendRunRow(el) {
+    if (el !== boardOver || state !== STATE.OVER) return;
+    const already = myRowKey && topList.some(r => r.name + "|" + r.score === myRowKey);
+    if (already) return;                       // 이번 판이 이미 순위표에 올라가 있으면 생략
+    const li = document.createElement("li");
+    li.className = "run";
+    const better = topList.filter(r => Number(r.score) > pendingScore).length;
+    const out = topList.length >= TOP_N && better >= TOP_N;   // 10위 밖
+    const rk = document.createElement("span");
+    rk.className = "rk";
+    rk.textContent = out ? "–" : (better + 1);
+    const nm = document.createElement("span");
+    nm.className = "nm";
+    nm.textContent = out ? "이번 판 (순위 밖)" : "이번 판";
+    const sc = document.createElement("span");
+    sc.className = "sc";
+    sc.textContent = Number(pendingScore).toLocaleString();
+    li.append(rk, nm, sc);
+    el.appendChild(li);
+  }
+
   function renderBoard(el, list, msg) {
     el.innerHTML = "";
     if (msg) {
@@ -1764,6 +1796,7 @@
       li.className = "empty";
       li.textContent = msg;
       el.appendChild(li);
+      appendRunRow(el);
       return;
     }
     if (!list.length) {
@@ -1771,6 +1804,7 @@
       li.className = "empty";
       li.textContent = "이번 주 기록이 아직 없습니다. 첫 주인공이 되어보세요!";
       el.appendChild(li);
+      appendRunRow(el);
       return;
     }
     const medal = ["🥇", "🥈", "🥉"];
@@ -1792,6 +1826,7 @@
       li.append(rk, nm, sc);
       el.appendChild(li);
     });
+    appendRunRow(el);
   }
 
   const noteStart = document.getElementById("noteStart");
