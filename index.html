@@ -396,7 +396,7 @@
   const elRank  = document.getElementById("rankLine");
   const elTitle = document.getElementById("overTitle");
 
-  const GAME_VERSION = "v1.0.46";   // 코드를 고칠 때마다 뒤 두 자리를 올린다
+  const GAME_VERSION = "v1.0.47";   // 코드를 고칠 때마다 뒤 두 자리를 올린다
   document.getElementById("ver").textContent = GAME_VERSION;
 
   const LS_NAME = "epjpddongpi_name";
@@ -2217,7 +2217,7 @@
       const cy = b[1] * H + Math.cos(now / 11000 + i) * 14;
       const r = W * (0.42 + i * 0.06);
       const g = ctx.createRadialGradient(cx, cy, 0, cx, cy, r);
-      g.addColorStop(0, "rgba(" + b[2] + "," + (a * 0.22).toFixed(3) + ")");
+      g.addColorStop(0, "rgba(" + b[2] + "," + (a * 0.14).toFixed(3) + ")");
       g.addColorStop(1, "rgba(" + b[2] + ",0)");
       ctx.fillStyle = g;
       ctx.fillRect(0, 0, W, H);
@@ -2246,7 +2246,7 @@
       const base = H * 0.13 + b * 30;
       const g = ctx.createLinearGradient(0, base, 0, base + 96);
       const col = b === 1 ? "120,255,190" : "160,130,255";
-      g.addColorStop(0, "rgba(" + col + "," + (a * 0.30).toFixed(3) + ")");
+      g.addColorStop(0, "rgba(" + col + "," + (a * 0.24).toFixed(3) + ")");
       g.addColorStop(1, "rgba(" + col + ",0)");
       ctx.fillStyle = g;
       ctx.beginPath();
@@ -2635,11 +2635,17 @@
         ctx.arc(0, 0, it.size * 0.60, 0, 6.283);
         ctx.fill();
       }
+      /* 배경이 밝든 어둡든 똑같이 또렷하게 보이도록 어두운 테두리 빛을 두른다.
+         (save/restore 안이라 다음 아이템에는 남지 않는다) */
+      ctx.shadowColor = "rgba(0,0,0,.55)";
+      ctx.shadowBlur = 6;
+      ctx.shadowOffsetY = 2;
       if (it.skin === "fever" && feverPoop) {
         ctx.drawImage(feverPoop, -it.size / 2, -it.size / 2, it.size, it.size);
       } else {
         ctx.font = it.size + "px serif";
         ctx.fillText(it.emoji, 0, 0);
+        ctx.shadowBlur = 0; ctx.shadowOffsetY = 0;
         if (it.type === "poop" && it.face > 1 && it.size >= 34) {
           drawPoopFace(it.face, it.size);
         }
