@@ -365,7 +365,7 @@
   const elRank  = document.getElementById("rankLine");
   const elTitle = document.getElementById("overTitle");
 
-  const GAME_VERSION = "v1.0.40";   // 코드를 고칠 때마다 뒤 두 자리를 올린다
+  const GAME_VERSION = "v1.0.41";   // 코드를 고칠 때마다 뒤 두 자리를 올린다
   document.getElementById("ver").textContent = GAME_VERSION;
 
   const LS_NAME = "epjpddongpi_name";
@@ -872,6 +872,7 @@
       size: r * 2, sz: r, fast: m > 1,
       skin: inFever ? "fever" : "poop",
       special: special || null,
+      bumpCd: 0,                             // 정연핑과 부딪힌 직후의 무반응 시간
       phase: Math.random() * 6.28,
       splitAt: H * (0.14 + Math.random() * 0.20),   // 분열똥이 쪼개지는 높이 (화면 위쪽)
       sz0: 0,
@@ -1189,6 +1190,7 @@
 
     for (let i = items.length - 1; i >= 0; i--) {
       const it = items[i];
+      if (it.bumpCd > 0) it.bumpCd -= dt;
       if (it.special === "split") {
         // 정해진 높이까지 내려오면 둘로 쪼개진다. 조각은 평범한 똥이라 정연핑이 부술 수 있다.
         if (it.y > it.splitAt) {
@@ -1392,8 +1394,39 @@
     for (let i = items.length - 1; i >= 0; i--) {
       const it = items[i];
       if (it.type !== "poop") continue;
-      if (it.special) continue;              // 까다로운 똥은 정연핑도 부수지 못한다
       if (Math.hypot(it.x - x, it.y - y) >= radius + it.r) continue;
+      if (it.special) {
+        /* 까다로운 똥은 부수지 못한다. 대신 종류마다 다르게 반응하고,
+           정연핑은 부딪힌 자리를 그대로 지나간다. */
+        if (it.bumpCd > 0) continue;
+        it.bumpCd = 0.4;
+        if (it.special === "split") {
+          it.splitAt = -1;                   // 그 자리에서 곧바로 쪼개진다
+        } else if (it.special === "zigzag") {
+          it.phase += Math.PI;               // 흔들리던 방향이 뒤집힌다
+          it.vx = -it.vx;
+          burst(it.x, it.y, "#46d7ff", 14);
+          beep(520, .07, "square", .04);
+        } else if (it.special === "huge") {
+          const r2 = it.sz * 0.42;           // 셋으로 쪼개진다 (조각은 평범한 똥)
+          for (const dir of [-1, 0, 1]) {
+            items.push({
+              type: "poop", emoji: "💩",
+              x: it.x, y: it.y, r: r2 * 0.82,
+              vx: dir * (170 + Math.random() * 90) * aug.fallMul, vy: it.vy * 1.4,
+              rot: Math.random() * 6.28, vr: (Math.random() - .5) * 5,
+              size: r2 * 2, sz: r2, fast: false,
+              skin: "poop", special: null, bumpCd: 0, phase: 0, splitAt: 0,
+              sz0: 0, face: Math.floor(Math.random() * 8), gain: 0, giant: false
+            });
+          }
+          burst(it.x, it.y, "#ff963c", 28);
+          beep(240, .12, "square", .05);
+          shake = Math.max(shake, 10);
+          items.splice(i, 1);
+        }
+        continue;                            // 레이저는 아무 반응 없이 지나간다
+      }
       if (it.skin === "fever") {
         const g = feverGain(it);
         score += g;
