@@ -396,7 +396,7 @@
   const elRank  = document.getElementById("rankLine");
   const elTitle = document.getElementById("overTitle");
 
-  const GAME_VERSION = "v1.0.76";   // 코드를 고칠 때마다 뒤 두 자리를 올린다
+  const GAME_VERSION = "v1.0.77";   // 코드를 고칠 때마다 뒤 두 자리를 올린다
   document.getElementById("ver").textContent = GAME_VERSION;
 
   const LS_NAME = "epjpddongpi_name";
@@ -997,12 +997,12 @@
     const lvFactor = Math.max(0.5, 1 / (1 + (level - 1) * 0.06));   // 레벨이 오르면 더 자주
     // 블랙홀 안에서는 아이템도 두 배로 자주 나온다
     const mean = BONUS_BASE / (b.w / BONUS_W_TOTAL) * aug.itemRateMul * lvFactor / bhMul();
-    /* 얼랑분포(지수 3개의 합). 평균 간격은 그대로 두고 편차만 줄인다.
-       지수분포 하나만 쓰면 "한참 안 나오다가 갑자기 몰리는" 편차가 너무 컸다.
-       종류별로 따로 도는 건 그대로라 여러 개가 한꺼번에 나오는 일은 여전히 생긴다.
+    /* 평균 간격을 중심으로 ±45% 안에서만 흔들린다.
+       예전엔 얼랑분포를 썼는데, 그래도 판마다 개수 차이가 너무 컸다
+       (별 기준 한 판에 2개~14개). 이 방식은 5개~9개로 좁혀진다.
+       종류별로 타이머가 따로 도는 건 그대로라 여러 개가 한꺼번에 나오는 일은 여전히 생긴다.
        (0.4초 하한은 완전히 겹쳐 떨어지는 것만 막는 장치) */
-    const u = Math.random() * Math.random() * Math.random();
-    return Math.max(0.4 / bhMul(), -(mean / 3) * Math.log(u));
+    return Math.max(0.4 / bhMul(), mean * (0.55 + Math.random() * 0.90));
   }
   function resetBonusTimers() {
     // 판이 시작될 때 첫 등장까지는 편차가 큰 지수분포로 — 매판 시작이 다르게 느껴지도록
