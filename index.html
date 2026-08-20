@@ -396,7 +396,7 @@
   const elRank  = document.getElementById("rankLine");
   const elTitle = document.getElementById("overTitle");
 
-  const GAME_VERSION = "v1.0.69";   // 코드를 고칠 때마다 뒤 두 자리를 올린다
+  const GAME_VERSION = "v1.0.70";   // 코드를 고칠 때마다 뒤 두 자리를 올린다
   document.getElementById("ver").textContent = GAME_VERSION;
 
   const LS_NAME = "epjpddongpi_name";
@@ -981,7 +981,7 @@
     { type: "fullmoon", emoji: "🌕", w: 6  },   // 보름달 — 증강 3연속. 초승달의 10%
     { type: "paper",    emoji: "🧻", w: 26 },
     { type: "umbrella", emoji: "☂️", w: 22 },
-    { type: "star",     emoji: "⭐", w: 73 },
+    { type: "star",     emoji: "⭐", w: 66 },   // 등장 빈도 10% 하향
     { type: "heart",    emoji: "❤️", w: 14 }
   ];
   /* 아이템은 종류마다 자기 타이머로 따로 굴러간다.
@@ -1513,7 +1513,9 @@
      레벨이 하나 오를 때마다 10%씩 (레벨1 기준, 레벨10이면 약 2.4배). */
   function feverGain(it) {
     const base = it.gain || (it.sz < 16.2 ? 2 : (it.sz < 20.7 ? 5 : 10));
-    return Math.max(1, Math.round(base * aug.feverScoreMul * scoreMul() * Math.pow(1.1, level - 1)));
+    /* 레벨이 오를수록 낙하물 값이 커진다. 1.1배로는 생존 점수(레벨당 1.7배)에
+       한참 못 미쳐서 후반에 뚜니핑 타임이 있으나 마나였다 — 1.4배로 올렸다. */
+    return Math.max(1, Math.round(base * aug.feverScoreMul * scoreMul() * Math.pow(1.4, level - 1)));
   }
 
   // 정연핑이 지나간 자리의 똥을 부순다 (뚜니핑 낙하물은 제 점수를 그대로 준다)
