@@ -497,7 +497,7 @@
   const elRank  = document.getElementById("rankLine");
   const elTitle = document.getElementById("overTitle");
 
-  const GAME_VERSION = "v1.0.85";   // 코드를 고칠 때마다 뒤 두 자리를 올린다
+  const GAME_VERSION = "v1.0.86";   // 코드를 고칠 때마다 뒤 두 자리를 올린다
   document.getElementById("ver").textContent = GAME_VERSION;
 
   const LS_NAME = "epjpddongpi_name";
@@ -1032,6 +1032,9 @@
      huge   = 초대형 뚜니핑의 1.4배쯤 되는 거대한 똥, 느리게 굴러떨어진다 */
   const SPECIAL_KINDS = ["split", "zigzag", "laser", "huge"];
   const HUGE_R = 66;           // 반지름 — 초대형(52~62)의 약 1.26배
+  /* 까다로운 똥이 나올 확률 — 레벨 7에서 SPEC_BASE 로 시작해 레벨마다 SPEC_STEP 씩 오른다.
+     상한은 없다 (아주 오래 버티면 거의 매번 특수똥). */
+  const SPEC_FROM = 7, SPEC_BASE = 0.023, SPEC_STEP = 0.025;
   const LASER_WARN = 1;        // 예고 시간(초)
   const LASER_VY = 4500;       // 낙하 속도 — 똥이 아니라 레이저처럼 내리꽂힌다
   let warns = [];              // 예고 중인 레이저 자리
@@ -1378,7 +1381,7 @@
         if (level >= 3 && Math.random() < .35) spawnPoop();
         if (level >= 6 && Math.random() < .30) spawnPoop(1.6);   // 초고속 똥
         // 까다로운 똥 — 레벨 7에 아주 드물게 시작해서 레벨마다 조금씩 늘어난다
-        if (level >= 7 && Math.random() < Math.min(1, (level - 6) * 0.0293)) {
+        if (level >= SPEC_FROM && Math.random() < Math.min(1, SPEC_BASE + (level - SPEC_FROM) * SPEC_STEP)) {
           const kind = SPECIAL_KINDS[Math.floor(Math.random() * SPECIAL_KINDS.length)];
           if (kind === "huge" && items.some(q => q.special === "huge")) {
             spawnPoop();                  // 이미 하늘에 하나 있으면 평범한 똥으로
