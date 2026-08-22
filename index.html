@@ -497,7 +497,7 @@
   const elRank  = document.getElementById("rankLine");
   const elTitle = document.getElementById("overTitle");
 
-  const GAME_VERSION = "v1.0.83";   // 코드를 고칠 때마다 뒤 두 자리를 올린다
+  const GAME_VERSION = "v1.0.84";   // 코드를 고칠 때마다 뒤 두 자리를 올린다
   document.getElementById("ver").textContent = GAME_VERSION;
 
   const LS_NAME = "epjpddongpi_name";
@@ -730,7 +730,7 @@
       go: () => { aug.ghost = true; ghostTimer = 6; } },
     { id: "blackhole",  ic: "🕳️", nm: "블랙홀",     ds: "끌어당기는 힘이 더 세진다",
       hidden: true, once: true, cond: () => aug.magnet > 0,
-      go: () => { aug.blackhole = true; aug.magnet = 450; } },   // 자석 170 → 450 으로 확장
+      go: () => { aug.blackhole = true; aug.magnet = 300; } },   // 자석 170 → 300 으로 확장
     { id: "legion",     ic: "🌝", nm: "대왕 뚜니핑 군단", ds: "대왕이 떼로 몰려온다",
       hidden: true, once: true, cond: () => aug.giant > 0,
       go: () => { aug.legion = true; } },
