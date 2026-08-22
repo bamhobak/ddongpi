@@ -497,7 +497,7 @@
   const elRank  = document.getElementById("rankLine");
   const elTitle = document.getElementById("overTitle");
 
-  const GAME_VERSION = "v1.0.82";   // 코드를 고칠 때마다 뒤 두 자리를 올린다
+  const GAME_VERSION = "v1.0.83";   // 코드를 고칠 때마다 뒤 두 자리를 올린다
   document.getElementById("ver").textContent = GAME_VERSION;
 
   const LS_NAME = "epjpddongpi_name";
@@ -845,6 +845,7 @@
   const btnTestEnd = document.getElementById("btnTestEnd");
 
   let score = 0, lives = 3, level = 1, elapsed = 0, starCount = 0;
+  let levelTime = 0;               // 레벨이 오르는 시계 — 뚜니핑 타임에는 멈춰 있다
   let spawnTimer = 0;
   let invUntil = 0, powerUntil = 0;
   let shields = 0;                 // 남은 방패 수 — 우산 아이템은 최대 1, 증강으로만 여러 개
@@ -928,7 +929,7 @@
     btnTestEnd.classList.toggle("on", testMode);
     layout();
     items = []; particles = []; floats = []; warns = [];
-    score = 0; lives = 3; level = 1; elapsed = 0; starCount = 0;
+    score = 0; lives = 3; level = 1; elapsed = 0; levelTime = 0; starCount = 0;
     spawnTimer = 0;
     resetBonusTimers();
     invUntil = 0; powerUntil = 0; hurtUntil = 0; shields = 0;
@@ -1011,9 +1012,9 @@
   /* 레벨이 오를수록 좁아지는 똥 사이 간격. 바닥(상한) 없이 계속 좁아지되,
      0.13초부터는 곱셈으로 줄여서 0 아래로 내려가지 않는다. */
   function spawnGap() {
-    // 레벨당 좁아지는 폭을 10% 완화했다 (레벨 1 간격은 그대로)
-    const lin = 0.516 - level * 0.0378;
-    return lin > 0.13 ? lin : 0.13 * Math.pow(0.91, level - 10.21);
+    // 레벨당 좁아지는 폭을 완화했다 (레벨 1 간격은 그대로)
+    const lin = 0.512 - level * 0.03402;
+    return lin > 0.13 ? lin : 0.13 * Math.pow(0.919, level - 11.23);
   }
 
   /* 낙하 각도. 좌우 속도를 낙하 속도에 비례시켜서 레벨이 올라도 기울기 느낌이 일정하다.
@@ -1046,7 +1047,7 @@
     r = Math.min(r, (W - 24) / 2);        // 화면보다 커지지 않게
     // 일반 똥은 레벨이 오를수록 빨라지지만, 뚜니핑 낙하물은 처음이나 나중이나 같은 속도로 떨어진다
     const baseVy = inFever ? FEVER_VY + Math.random() * 110
-                           : 218 + level * 27 + Math.random() * 110;   // 레벨당 상승폭 10% 완화
+                           : 221 + level * 24.3 + Math.random() * 110;   // 레벨당 상승폭 완화
     let vy = baseVy * m * DIFF_F * spaceF() * bhMul() * aug.fallMul;
     if (special === "huge") vy *= 0.55;   // 덩치값 — 느릿느릿 굴러떨어진다
     let px = r + Math.random() * (W - r * 2);
@@ -1200,7 +1201,10 @@
     if (state !== STATE.PLAY) return;
 
     elapsed += dt;
-    level = 1 + Math.floor(elapsed / 12);   // 레벨 하나당 12초
+    /* 레벨 시계는 뚜니핑 타임 동안 멈춘다. 무적으로 낙하물을 줍는 시간까지
+       레벨에 포함되면, 정작 실력으로 버틴 시간이 아닌데도 난이도가 올라간다. */
+    if (!fever) levelTime += dt;
+    level = 1 + Math.floor(levelTime / 12);   // 레벨 하나당 12초
     score += dt * Math.pow(1.7, level - 1) * aug.timeMul * scoreMul();  // 생존 점수: 레벨마다 1.7배
 
     // 한 단계 올라설 때마다 어디에 도착했는지 알려준다
@@ -2322,7 +2326,7 @@
   function zoneFrac() {
     const i = level - 1;
     if (i >= LAST_Z) return 0;
-    return Math.max(0, Math.min(1, elapsed / 12 - i));
+    return Math.max(0, Math.min(1, levelTime / 12 - i));
   }
   // 두 단계 사이를 이어 구한 값 (색이면 rgb 문자열, 숫자면 숫자)
   function zv(key, i) {
