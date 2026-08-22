@@ -299,10 +299,6 @@
     transition: transform .18s ease;
   }
   #startScreen h1 #testDot:active, #startScreen h1 #devDot:active { transform: scale(.88); }
-  #startScreen .tag {
-    margin-top: -4px;
-    font-size: clamp(11px, 3vw, 13px); color: #8f95a8; letter-spacing: .2px;
-  }
 
   /* 랭킹판 — 유리판 느낌 */
   #startScreen .board, #overScreen .board {
@@ -394,7 +390,6 @@
     <div id="startScreen" class="screen">
       <div id="ver"></div>
       <h1><span id="testDot">💩</span> <span class="ttl">이피재피똥피</span> <span id="devDot">💩</span></h1>
-      <p class="tag">잔디밭에서 블랙홀까지 — 떨어지는 똥을 피해라</p>
       <div class="board">
         <h3>🏆 이번 주 TOP 10</h3>
         <ol id="boardStart"><li class="empty">불러오는 중…</li></ol>
@@ -502,7 +497,7 @@
   const elRank  = document.getElementById("rankLine");
   const elTitle = document.getElementById("overTitle");
 
-  const GAME_VERSION = "v1.0.79";   // 코드를 고칠 때마다 뒤 두 자리를 올린다
+  const GAME_VERSION = "v1.0.80";   // 코드를 고칠 때마다 뒤 두 자리를 올린다
   document.getElementById("ver").textContent = GAME_VERSION;
 
   const LS_NAME = "epjpddongpi_name";
