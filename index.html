@@ -497,7 +497,7 @@
   const elRank  = document.getElementById("rankLine");
   const elTitle = document.getElementById("overTitle");
 
-  const GAME_VERSION = "v1.0.84";   // 코드를 고칠 때마다 뒤 두 자리를 올린다
+  const GAME_VERSION = "v1.0.85";   // 코드를 고칠 때마다 뒤 두 자리를 올린다
   document.getElementById("ver").textContent = GAME_VERSION;
 
   const LS_NAME = "epjpddongpi_name";
@@ -728,7 +728,7 @@
     { id: "ghost",      ic: "👻", nm: "유령화",     ds: "이따금 몸이 잠깐 사라진다",
       hidden: true, once: true, cond: () => augCount["small"] >= 2,
       go: () => { aug.ghost = true; ghostTimer = 6; } },
-    { id: "blackhole",  ic: "🕳️", nm: "블랙홀",     ds: "끌어당기는 힘이 더 세진다",
+    { id: "blackhole",  ic: "🕳️", nm: "블랙홀",     ds: "끌어당기는 힘이 더 세지며, 뚜니핑도 약간의 영향을 받는다",
       hidden: true, once: true, cond: () => aug.magnet > 0,
       go: () => { aug.blackhole = true; aug.magnet = 300; } },   // 자석 170 → 300 으로 확장
     { id: "legion",     ic: "🌝", nm: "대왕 뚜니핑 군단", ds: "대왕이 떼로 몰려온다",
@@ -1013,8 +1013,8 @@
      0.13초부터는 곱셈으로 줄여서 0 아래로 내려가지 않는다. */
   function spawnGap() {
     // 레벨당 좁아지는 폭을 완화했다 (레벨 1 간격은 그대로)
-    const lin = 0.512 - level * 0.03402;
-    return lin > 0.13 ? lin : 0.13 * Math.pow(0.919, level - 11.23);
+    const lin = 0.5086 - level * 0.030618;
+    return lin > 0.13 ? lin : 0.13 * Math.pow(0.9271, level - 12.37);
   }
 
   /* 낙하 각도. 좌우 속도를 낙하 속도에 비례시켜서 레벨이 올라도 기울기 느낌이 일정하다.
@@ -1047,7 +1047,7 @@
     r = Math.min(r, (W - 24) / 2);        // 화면보다 커지지 않게
     // 일반 똥은 레벨이 오를수록 빨라지지만, 뚜니핑 낙하물은 처음이나 나중이나 같은 속도로 떨어진다
     const baseVy = inFever ? FEVER_VY + Math.random() * 110
-                           : 221 + level * 24.3 + Math.random() * 110;   // 레벨당 상승폭 완화
+                           : 223 + level * 21.87 + Math.random() * 110;   // 레벨당 상승폭 완화
     let vy = baseVy * m * DIFF_F * spaceF() * bhMul() * aug.fallMul;
     if (special === "huge") vy *= 0.55;   // 덩치값 — 느릿느릿 굴러떨어진다
     let px = r + Math.random() * (W - r * 2);
