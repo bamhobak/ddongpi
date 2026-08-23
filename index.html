@@ -509,7 +509,7 @@
   const elFinal = document.getElementById("finalScore");
   const elTitle = document.getElementById("overTitle");
 
-  const GAME_VERSION = "v1.1.07";   // 코드를 고칠 때마다 뒤 두 자리를 올린다
+  const GAME_VERSION = "v1.1.08";   // 코드를 고칠 때마다 뒤 두 자리를 올린다
   document.getElementById("ver").textContent = GAME_VERSION;
 
   const LS_NAME = "epjpddongpi_name";
@@ -742,7 +742,7 @@
       go: () => { aug.ghost = true; ghostTimer = 6; } },
     { id: "blackhole",  ic: "🕳️", nm: "블랙홀",     ds: "끌어당기는 힘이 더 세지며, 뚜니핑도 약간의 영향을 받는다",
       hidden: true, once: true, cond: () => aug.magnet > 0,
-      go: () => { aug.blackhole = true; aug.magnet = 300; } },   // 자석 170 → 300 으로 확장
+      go: () => { aug.blackhole = true; aug.magnet = 390; } },   // 자석 220 → 390 으로 확장
     { id: "legion",     ic: "🌝", nm: "대왕 뚜니핑 군단", ds: "대왕이 떼로 몰려온다",
       hidden: true, once: true, cond: () => aug.giant > 0,
       go: () => { aug.legion = true; } },
@@ -750,7 +750,7 @@
       hidden: true, once: true, cond: () => level >= 5,
       go: () => { aug.gamble = true; aug.scoreMul *= 2; aug.maxLives = 1; lives = 1; } },
     { id: "magnet",     ic: "🧲", nm: "자석",       ds: "근처의 아이템이 끌려온다",
-      once: true, go: () => { aug.magnet = 170; } },   // 끌어당기는 반지름(px)
+      once: true, go: () => { aug.magnet = 220; } },   // 끌어당기는 반지름(px)
     { id: "lucky",      ic: "🍀", nm: "행운",       ds: "아이템이 더 자주 등장",
       go: () => { aug.itemRateMul /= 1 + 0.15 * dim("lucky"); } },   // 등장 빈도 +20%
     { id: "giant",      ic: "🌝", nm: "대왕 뚜니핑", ds: "대왕 뚜니핑 두둥등장",
@@ -760,7 +760,7 @@
     { id: "angryUmb",   ic: "💢", nm: "성난 우산",   ds: "방패가 깨질 때 화면의 똥이 전부 사라진다",
       once: true, go: () => { aug.angryUmb = true; } },
     { id: "gold",       ic: "✨", nm: "황금똥 연금술", ds: "똥이 가끔 황금똥으로 변한다. 먹으면 점수!",
-      go: () => { aug.goldChance += 0.05 * dim("gold"); } },
+      go: () => { aug.goldChance += 0.10 * dim("gold"); } },
     { id: "dopa",       ic: "📱", nm: "도파민 중독",  ds: "똥이 빨라지고, 생존 점수가 크게 오른다",
       go: () => { aug.fallMul *= 1 + 0.20 * dim("dopa"); aug.timeMul *= 1 + 0.5 * dim("dopa"); } },
     { id: "carrot",     ic: "🥕", nm: "하트 당근거래", ds: "목숨 1개를 팔고, 앞으로 얻는 모든 점수 +20%",
@@ -1580,9 +1580,9 @@
       const dx = it.x - player.x, dy = it.y - cy;
       if (aug.blackhole && it.type === "poop" && it.skin === "fever") {
         // 뚜니핑 낙하물은 가까이 왔을 때만 끌어당긴다 (전부 빨아들이면 너무 세다)
-        const d = Math.hypot(dx, dy), R = 150;
+        const d = Math.hypot(dx, dy), R = 195;
         if (d < R && d > 1) {
-          const pull = 370 * dt * (1 - d / R);
+          const pull = 481 * dt * (1 - d / R);
           it.x -= dx / d * pull;
           it.y -= dy / d * pull * 0.5;
         }
@@ -1592,7 +1592,7 @@
         // 황금똥은 아이템의 절반 반경에서, 절반 힘으로만 끌려온다
         const R = it.gold ? aug.magnet * 0.5 : aug.magnet;
         if (d < R && d > 1) {
-          const pull = (520 * (1 - d / R) + 60) * dt * (it.gold ? 0.5 : 1);
+          const pull = (676 * (1 - d / R) + 78) * dt * (it.gold ? 0.5 : 1);
           it.x -= dx / d * pull;
           it.y -= dy / d * pull * 0.55;
         }
