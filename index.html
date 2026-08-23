@@ -497,7 +497,7 @@
   const elRank  = document.getElementById("rankLine");
   const elTitle = document.getElementById("overTitle");
 
-  const GAME_VERSION = "v1.0.87";   // 코드를 고칠 때마다 뒤 두 자리를 올린다
+  const GAME_VERSION = "v1.0.88";   // 코드를 고칠 때마다 뒤 두 자리를 올린다
   document.getElementById("ver").textContent = GAME_VERSION;
 
   const LS_NAME = "epjpddongpi_name";
@@ -1463,7 +1463,7 @@
         // 뚜니핑 낙하물은 가까이 왔을 때만 살짝 끌어당긴다 (전부 빨아들이면 너무 세다)
         const d = Math.hypot(dx, dy), R = 130;
         if (d < R && d > 1) {
-          const pull = 250 * dt * (1 - d / R);
+          const pull = 300 * dt * (1 - d / R);   // 20% 상향
           it.x -= dx / d * pull;
           it.y -= dy / d * pull * 0.5;
         }
