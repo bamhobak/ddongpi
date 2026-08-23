@@ -509,7 +509,7 @@
   const elFinal = document.getElementById("finalScore");
   const elTitle = document.getElementById("overTitle");
 
-  const GAME_VERSION = "v1.1.06";   // 코드를 고칠 때마다 뒤 두 자리를 올린다
+  const GAME_VERSION = "v1.1.07";   // 코드를 고칠 때마다 뒤 두 자리를 올린다
   document.getElementById("ver").textContent = GAME_VERSION;
 
   const LS_NAME = "epjpddongpi_name";
@@ -1589,10 +1589,10 @@
       }
       if (aug.magnet > 0 && (it.type !== "poop" || it.gold)) {
         const d = Math.hypot(dx, dy);
-        // 황금똥은 아이템의 절반 반경에서만 끌려온다 (힘은 같다)
+        // 황금똥은 아이템의 절반 반경에서, 절반 힘으로만 끌려온다
         const R = it.gold ? aug.magnet * 0.5 : aug.magnet;
         if (d < R && d > 1) {
-          const pull = (520 * (1 - d / R) + 60) * dt;
+          const pull = (520 * (1 - d / R) + 60) * dt * (it.gold ? 0.5 : 1);
           it.x -= dx / d * pull;
           it.y -= dy / d * pull * 0.55;
         }
