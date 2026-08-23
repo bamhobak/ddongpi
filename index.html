@@ -539,7 +539,7 @@
   const elFinal = document.getElementById("finalScore");
   const elTitle = document.getElementById("overTitle");
 
-  const GAME_VERSION = "v1.1.35";   // 코드를 고칠 때마다 뒤 두 자리를 올린다
+  const GAME_VERSION = "v1.1.36";   // 코드를 고칠 때마다 뒤 두 자리를 올린다
   document.getElementById("ver").textContent = GAME_VERSION;
 
   const LS_NAME = "epjpddongpi_name";
@@ -559,7 +559,7 @@
   /* ---------- 직업 ---------- */
   const LS_JOB = "epjpddongpi_job";
   const JOBS = {
-    none:    { nm: "백수",   ic: "🏃", ds: "아무 효과 없음. 순수한 몸뚱이 하나" },
+    none:    { nm: "백수",   ic: "🏃", ds: "시작할 때 증강 1개를 고른다" },
     gambler: { nm: "도박사", ic: "🎰", ds: "목숨 1개 + 우산 1개 시작 · 하트 안 나옴 · 모든 점수 +50%" },
     levitator: { nm: "부양사", ic: "🎈", ds: "하늘 어디든 날 수 있다 · 높이 있을수록 점수 UP" }
   };
@@ -1313,6 +1313,7 @@
     overScreen.classList.add("hidden");
     nameRow.classList.remove("on");
     beep(660, .1, "square", .04);
+    if (job === "none") openAugment(1);   // 백수의 소소한 복지 — 시작하자마자 증강 1개
   }
 
   /* 구름 하나하나의 생김새를 따로 만든다. 같은 덩이 세 개를 겹쳐 놓으면
