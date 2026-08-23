@@ -541,7 +541,7 @@
   const elFinal = document.getElementById("finalScore");
   const elTitle = document.getElementById("overTitle");
 
-  const GAME_VERSION = "v1.1.42";   // 코드를 고칠 때마다 뒤 두 자리를 올린다
+  const GAME_VERSION = "v1.1.43";   // 코드를 고칠 때마다 뒤 두 자리를 올린다
   document.getElementById("ver").textContent = GAME_VERSION;
 
   const LS_NAME = "epjpddongpi_name";
@@ -653,6 +653,11 @@
     right: { img: null, aspect: 0.606, head: 0.417, cx: 0.541, cy: 0.258, adj: 0.7081 },
     hurt:  { img: null, aspect: 0.542, head: 0.438, cx: 0.544, cy: 0.258, adj: 0.8072 }
   };
+  const SPR_FIT = {
+    left:  { img: null, aspect: 0.739, head: 0.485, cx: 0.462, cy: 0.283, adj: 0.8222 },
+    right: { img: null, aspect: 0.700, head: 0.463, cx: 0.528, cy: 0.289, adj: 0.7862 },
+    hurt:  { img: null, aspect: 0.531, head: 0.445, cx: 0.492, cy: 0.314, adj: 0.8217 }
+  };
   const SPACE_Z = 6;                 // 오로라 지대 — 여기부터 우주복 차림
   /* 우주에 올라서면 체감 난이도를 이 배율만큼 올린다.
      낙하 속도와 낙하 빈도에 각각 제곱근을 나눠 걸어 둘을 합친 체감이 정확히 이 값이 된다. */
@@ -663,6 +668,7 @@
     if (inSpace() && SPR_SPACE.right.img) return SPR_SPACE;   // 우주에선 직업과 무관하게 우주복
     if (job === "gambler" && SPR_GAMBLER.right.img) return SPR_GAMBLER;
     if (job === "levitator" && SPR_LEV.right.img) return SPR_LEV;
+    if (job === "fit" && SPR_FIT.right.img) return SPR_FIT;
     return SPR;
   }
 
@@ -681,6 +687,9 @@
     const li = new Image();
     li.onload = () => { SPR_LEV[key].img = li; };
     li.src = "assets/levitator_" + key + ".png";
+    const fi = new Image();
+    fi.onload = () => { SPR_FIT[key].img = fi; };
+    fi.src = "assets/fit_" + key + ".png";
   }
 
   // 도와줘 정연핑 — 아래에서 위로 날아가며 지나간 자리의 똥을 부순다
