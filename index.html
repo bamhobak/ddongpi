@@ -509,7 +509,7 @@
   const elFinal = document.getElementById("finalScore");
   const elTitle = document.getElementById("overTitle");
 
-  const GAME_VERSION = "v1.1.10";   // 코드를 고칠 때마다 뒤 두 자리를 올린다
+  const GAME_VERSION = "v1.1.11";   // 코드를 고칠 때마다 뒤 두 자리를 올린다
   document.getElementById("ver").textContent = GAME_VERSION;
 
   const LS_NAME = "epjpddongpi_name";
@@ -968,7 +968,9 @@
     btnTestEnd.classList.toggle("on", testMode);
     layout();
     items = []; particles = []; floats = []; warns = [];
-    score = 0; lives = 3; level = 1; elapsed = 0; levelTime = 0; starCount = 0;
+    // 테스트 모드는 어차피 목숨이 안 줄어드니, 목숨 조건 증강(당근거래·분신술)을
+    // 바로 시험해볼 수 있게 1부터 시작한다.
+    score = 0; lives = testMode ? 1 : 3; level = 1; elapsed = 0; levelTime = 0; starCount = 0;
     spawnTimer = 0;
     resetBonusTimers();
     invUntil = 0; powerUntil = 0; hurtUntil = 0; shields = 0;
