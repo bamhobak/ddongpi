@@ -497,7 +497,7 @@
   const elRank  = document.getElementById("rankLine");
   const elTitle = document.getElementById("overTitle");
 
-  const GAME_VERSION = "v1.0.96";   // 코드를 고칠 때마다 뒤 두 자리를 올린다
+  const GAME_VERSION = "v1.0.97";   // 코드를 고칠 때마다 뒤 두 자리를 올린다
   document.getElementById("ver").textContent = GAME_VERSION;
 
   const LS_NAME = "epjpddongpi_name";
@@ -1934,20 +1934,28 @@
      이름·기기 정보는 보내지 않고, 실패해도 게임에는 아무 영향이 없다. */
   function logRun(sc) {
     if (!SB_ON || testMode) return;    // 테스트 기록은 통계에 섞지 않는다
+    const base = {
+      score: Math.min(10000000000, Math.max(0, sc)),   // 상한 100억
+      level: level,
+      secs: Math.round(elapsed),
+      stars: starCount,
+      augs: augCount,
+      ver: GAME_VERSION        // 어느 버전에서 나온 기록인지
+    };
+    const nm = savedName();
+    /* 이름 칸이 아직 없는 서버에서도 기록은 남아야 하므로,
+       400 이 오면 이름을 빼고 한 번 더 보낸다. */
+    const send = body => fetch(SB_URL + "/rest/v1/" + SB_RUNS, {
+      method: "POST",
+      headers: sbHeaders({ "Content-Type": "application/json", Prefer: "return=minimal" }),
+      body: JSON.stringify(body),
+      keepalive: true          // 창을 바로 닫아도 전송되도록
+    });
     try {
-      fetch(SB_URL + "/rest/v1/" + SB_RUNS, {
-        method: "POST",
-        headers: sbHeaders({ "Content-Type": "application/json", Prefer: "return=minimal" }),
-        body: JSON.stringify({
-          score: Math.min(10000000000, Math.max(0, sc)),   // 상한 100억
-          level: level,
-          secs: Math.round(elapsed),
-          stars: starCount,
-          augs: augCount,
-          ver: GAME_VERSION        // 어느 버전에서 나온 기록인지
-        }),
-        keepalive: true          // 창을 바로 닫아도 전송되도록
-      }).catch(function () {});
+      if (!nm) { send(base).catch(function () {}); return; }
+      send(Object.assign({ name: nm }, base))
+        .then(r => { if (r.status === 400) send(base).catch(function () {}); })
+        .catch(function () {});
     } catch (e) {}
   }
 
@@ -2026,13 +2034,27 @@
 
     const rec = data.recent || [];
     devBody.appendChild(devSection("최근 20판",
-      ["점수", "생존", "버전", "증강"],
+      ["이름", "점수", "생존", "버전", "증강"],
       rec.length ? rec.map(r => [
+        r.name || "-",
         { t: Number(r.score || 0).toLocaleString(), c: "num" },
         { t: (r.secs || 0) + "초", c: "num" },
         { t: r.ver || "-", c: "num" },
         { t: augLabel(r.augs), c: "lft" }
-      ]) : [["기록 없음", "", "", ""]]));
+      ]) : [["기록 없음", "", "", "", ""]]));
+
+    // 사람별 집계 — 누가 얼마나 했는지
+    const pl = data.players || [];
+    if (pl.length) {
+      devBody.appendChild(devSection("플레이어별",
+        ["이름", "판수", "평균", "최고"],
+        pl.map(q => [
+          q.name || "-",
+          { t: q.runs, c: "num" },
+          { t: Number(q.avg || 0).toLocaleString(), c: "num" },
+          { t: Number(q.best || 0).toLocaleString(), c: "num" }
+        ])));
+    }
   }
 
   function kstStamp(iso) {                      // "8.19 14:03" 형태 (한국시간)
