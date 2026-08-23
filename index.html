@@ -513,7 +513,7 @@
   const elFinal = document.getElementById("finalScore");
   const elTitle = document.getElementById("overTitle");
 
-  const GAME_VERSION = "v1.1.15";   // 코드를 고칠 때마다 뒤 두 자리를 올린다
+  const GAME_VERSION = "v1.1.16";   // 코드를 고칠 때마다 뒤 두 자리를 올린다
   document.getElementById("ver").textContent = GAME_VERSION;
 
   const LS_NAME = "epjpddongpi_name";
@@ -654,10 +654,14 @@
      잔디밭에서 블랙홀까지 한 바퀴 훑고 처음으로 돌아온다. */
   const INTRO_LOOP = 32;                    // 한 바퀴(초)
   let introT = 0, introPoops = [], introSpawn = 0, introSuit = false, introBoom = 0;
+  let introCameo = [], introCameoT = 5;     // 이따금 지나가는 정연핑·뚜니핑
 
   function introUpdate(dt, now) {
     introT += dt;
-    if (introT >= INTRO_LOOP) { introT = 0; introPoops.length = 0; introSuit = false; }
+    if (introT >= INTRO_LOOP) {
+      introT = 0; introPoops.length = 0; introSuit = false;
+      introCameo.length = 0; introCameoT = 3 + Math.random() * 4;
+    }
     // 배경이 잔디밭 → 우주 → 블랙홀까지 흘러간다
     levelTime = (introT / INTRO_LOOP) * (12 * ZONES.length);
     level = 1 + Math.floor(levelTime / 12);
@@ -685,6 +689,31 @@
       q.y += q.vy * dt;
       q.rot += q.vr * dt;
       if (q.y - q.r > H + 50) introPoops.splice(i, 1);
+    }
+
+    /* 아주 가끔 정연핑이 아래에서 위로 날아가고, 뚜니핑 낙하물이 무리지어 지나간다 */
+    introCameoT -= dt;
+    if (introCameoT <= 0) {
+      introCameoT = 7 + Math.random() * 6;
+      if (Math.random() < 0.5) {
+        introCameo.push({ kind: "helper", x: 40 + Math.random() * Math.max(1, W - 80),
+                          y: H + 90, vx: (Math.random() - .5) * 90, vy: -(430 + Math.random() * 180),
+                          rot: 0 });
+      } else {
+        const n = 4 + Math.floor(Math.random() * 4);      // 뚜니핑 낙하물 한 무리
+        for (let k = 0; k < n; k++) {
+          introCameo.push({ kind: "fever", x: 24 + Math.random() * Math.max(1, W - 48),
+                            y: -60 - k * (60 + Math.random() * 70), vx: (Math.random() - .5) * 60,
+                            vy: 380 + Math.random() * 260, r: 16 + Math.random() * 26,
+                            rot: Math.random() * 6.28, vr: (Math.random() - .5) * 4 });
+        }
+      }
+    }
+    for (let i = introCameo.length - 1; i >= 0; i--) {
+      const c = introCameo[i];
+      c.x += c.vx * dt; c.y += c.vy * dt;
+      if (c.vr) c.rot += c.vr * dt;
+      if (c.y < -220 || c.y > H + 220) introCameo.splice(i, 1);
     }
 
     facing = Math.sin(introT * 0.9) > 0 ? "right" : "left";
@@ -725,12 +754,33 @@
       ctx.restore();
     }
 
+    // 카메오 — 정연핑과 뚜니핑 낙하물
+    for (const c of introCameo) {
+      ctx.save();
+      ctx.translate(c.x, c.y);
+      if (c.kind === "helper") {
+        const pic = helperPic();
+        if (pic) {
+          const hh = HELPER_H, hw = hh * helperAspect();
+          ctx.drawImage(pic, -hw / 2, -hh / 2, hw, hh);
+        }
+      } else {
+        ctx.rotate(c.rot);
+        const fp = (inSpace() && feverPoopSpace) ? feverPoopSpace : feverPoop;
+        if (fp) ctx.drawImage(fp, -c.r, -c.r, c.r * 2, c.r * 2);
+      }
+      ctx.restore();
+    }
+
     // 주인공 — 붕 떠서 위로 나아간다. 블랙홀에 가까워지면 빨려 들어간다.
     const spr = currentSprite(now);
     if (!spr) return;
     const pull = Math.max(0, (bh - 0.55) / 0.95);          // 블랙홀 흡인 진행도
-    const cx = W / 2 + (W * 0.5 - W / 2) * 0 + Math.sin(introT * 0.7) * W * 0.16 * (1 - pull);
-    const cy = H * (0.60 - 0.30 * pull) + Math.sin(introT * 2.1) * 9 * (1 - pull);
+    /* 좌우로 넓게 훑고, 위아래로도 크게 흔들린다 (주기가 서로 안 맞아 8자처럼 움직인다) */
+    const swayX = Math.sin(introT * 0.62) * 0.72 + Math.sin(introT * 1.37 + 1.1) * 0.24;
+    const swayY = Math.sin(introT * 0.83 + 0.6) * 0.62 + Math.sin(introT * 1.9) * 0.22;
+    const cx = W / 2 + swayX * W * 0.34 * (1 - pull);
+    const cy = H * (0.56 - 0.26 * pull) + swayY * H * 0.16 * (1 - pull);
     const scale = 1.15 * (1 - pull * 0.8);
     const sh = spriteHeight(spr) * scale, sw = sh * spr.aspect;
 
