@@ -537,7 +537,7 @@
   const elFinal = document.getElementById("finalScore");
   const elTitle = document.getElementById("overTitle");
 
-  const GAME_VERSION = "v1.1.26";   // 코드를 고칠 때마다 뒤 두 자리를 올린다
+  const GAME_VERSION = "v1.1.27";   // 코드를 고칠 때마다 뒤 두 자리를 올린다
   document.getElementById("ver").textContent = GAME_VERSION;
 
   const LS_NAME = "epjpddongpi_name";
@@ -637,9 +637,9 @@
      head/cx/cy/adj 는 실측값 — 헬멧 대신 얼굴이 판정 기준이다. */
   const SPR_GAMBLER = {
     // 모자·머리숱이 커서 같은 몸높이면 작아 보인다 — 15% 키워 백수와 체감을 맞췄다
-    left:  { img: null, aspect: 0.522, head: 0.394, cx: 0.516, cy: 0.314, adj: 0.6691 },
-    right: { img: null, aspect: 0.519, head: 0.369, cx: 0.588, cy: 0.317, adj: 0.6263 },
-    hurt:  { img: null, aspect: 0.439, head: 0.386, cx: 0.475, cy: 0.311, adj: 0.7128 }
+    left:  { img: null, aspect: 0.586, head: 0.404, cx: 0.464, cy: 0.328, adj: 0.6851 },
+    right: { img: null, aspect: 0.522, head: 0.369, cx: 0.590, cy: 0.319, adj: 0.6263 },
+    hurt:  { img: null, aspect: 0.439, head: 0.415, cx: 0.487, cy: 0.347, adj: 0.7651 }
   };
   const SPACE_Z = 6;                 // 오로라 지대 — 여기부터 우주복 차림
   /* 우주에 올라서면 체감 난이도를 이 배율만큼 올린다.
