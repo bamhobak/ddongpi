@@ -513,7 +513,7 @@
   const elFinal = document.getElementById("finalScore");
   const elTitle = document.getElementById("overTitle");
 
-  const GAME_VERSION = "v1.1.20";   // 코드를 고칠 때마다 뒤 두 자리를 올린다
+  const GAME_VERSION = "v1.1.21";   // 코드를 고칠 때마다 뒤 두 자리를 올린다
   document.getElementById("ver").textContent = GAME_VERSION;
 
   const LS_NAME = "epjpddongpi_name";
@@ -790,13 +790,14 @@
       ctx.translate(q.x, q.y);
       ctx.rotate(q.rot);
       if (q.kind === "gold") {
-        const gg = ctx.createRadialGradient(0, 0, 0, 0, 0, q.r * 1.6);
-        gg.addColorStop(0, "rgba(255,214,80,.5)");
-        gg.addColorStop(1, "rgba(255,214,80,0)");
+        const gg = ctx.createRadialGradient(0, 0, 0, 0, 0, q.r * 1.9);
+        gg.addColorStop(0, "rgba(255,224,90,.85)");
+        gg.addColorStop(0.45, "rgba(255,196,40,.42)");
+        gg.addColorStop(1, "rgba(255,180,20,0)");
         ctx.fillStyle = gg;
-        ctx.beginPath(); ctx.arc(0, 0, q.r * 1.6, 0, 6.283); ctx.fill();
+        ctx.beginPath(); ctx.arc(0, 0, q.r * 1.9, 0, 6.283); ctx.fill();
         if (ctx.filter !== undefined)
-          ctx.filter = "sepia(1) saturate(2.6) hue-rotate(-12deg) brightness(1.2)";
+          ctx.filter = "sepia(1) saturate(7) hue-rotate(-14deg) brightness(1.5) contrast(1.15)";
       }
       ctx.fillStyle = "#fff";
       ctx.font = (q.r * 2) + "px serif";
@@ -3395,7 +3396,7 @@
     }
   }
 
-  function drawItems() {
+  function drawItems(now) {
     ctx.textAlign = "center";
     ctx.textBaseline = "middle";
     for (const it of items) {
@@ -3429,14 +3430,16 @@
       } else {
         /* 색 이모지도 fillStyle 의 투명도를 그대로 따라간다.
            바로 앞에 그린 구름의 반투명 흰색이 남아 있으면 똥까지 비쳐 보인다. */
-        if (it.gold) {                       // 황금똥 — 금빛 광채를 두르고 금색으로 반짝인다
-          const gg = ctx.createRadialGradient(0, 0, 0, 0, 0, it.size * 0.78);
-          gg.addColorStop(0, "rgba(255,214,80,.5)");
-          gg.addColorStop(1, "rgba(255,214,80,0)");
+        if (it.gold) {                       // 황금똥 — 확실히 노랗게, 강한 금빛 광채와 함께
+          const pulse = 0.82 + 0.18 * Math.sin(now / 110 + it.x);
+          const gg = ctx.createRadialGradient(0, 0, 0, 0, 0, it.size * 0.95);
+          gg.addColorStop(0, "rgba(255,224,90," + (0.85 * pulse).toFixed(2) + ")");
+          gg.addColorStop(0.45, "rgba(255,196,40," + (0.42 * pulse).toFixed(2) + ")");
+          gg.addColorStop(1, "rgba(255,180,20,0)");
           ctx.fillStyle = gg;
-          ctx.beginPath(); ctx.arc(0, 0, it.size * 0.78, 0, 6.283); ctx.fill();
+          ctx.beginPath(); ctx.arc(0, 0, it.size * 0.95, 0, 6.283); ctx.fill();
           if (ctx.filter !== undefined)
-            ctx.filter = "sepia(1) saturate(2.6) hue-rotate(-12deg) brightness(1.2)";
+            ctx.filter = "sepia(1) saturate(7) hue-rotate(-14deg) brightness(1.5) contrast(1.15)";
         }
         ctx.fillStyle = "#fff";
         ctx.font = it.size + "px serif";
@@ -3607,7 +3610,7 @@
       drawIntro(now);
     } else {
       drawWarnings(now);
-      drawItems();
+      drawItems(now);
       drawHelpers();
       if (state !== STATE.OVER) drawPlayer(now);
     }
