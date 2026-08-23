@@ -497,7 +497,7 @@
   const elRank  = document.getElementById("rankLine");
   const elTitle = document.getElementById("overTitle");
 
-  const GAME_VERSION = "v1.0.91";   // 코드를 고칠 때마다 뒤 두 자리를 올린다
+  const GAME_VERSION = "v1.0.92";   // 코드를 고칠 때마다 뒤 두 자리를 올린다
   document.getElementById("ver").textContent = GAME_VERSION;
 
   const LS_NAME = "epjpddongpi_name";
@@ -1476,12 +1476,12 @@
           it.y -= dy / d * pull * 0.55;
         }
       }
-      /* 맞는 판정은 줍는 판정보다 좁다. 아이템은 잘 잡히면서 똥은 살짝 스쳐도 넘어가도록,
-         맞는 쪽만 10% 줄여 뒀다 (.78 → .702). */
+      /* 맞는 판정은 줍는 판정보다 좁다. 아이템은 잘 잡히면서 똥은 살짝 스쳐도 넘어가도록
+         맞는 쪽만 줄여 뒀다 (.78 → .702 → .632). */
       const dmg = it.type === "poop" && !powered && it.skin !== "fever";
       // 끝점만 보면 빠른 똥이 캐릭터를 뛰어넘을 수 있어서, 이번 프레임에 지나온 선분과의 거리를 본다
       const hit = segDist(player.x, cy, prevX, prevY, it.x, it.y)
-                  < it.r + player.r * (dmg ? .702 : .78) * aug.hitboxMul;
+                  < it.r + player.r * (dmg ? .632 : .78) * aug.hitboxMul;
 
       if (hit) {
         if (it.type === "poop") {
