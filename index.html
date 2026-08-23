@@ -539,7 +539,7 @@
   const elFinal = document.getElementById("finalScore");
   const elTitle = document.getElementById("overTitle");
 
-  const GAME_VERSION = "v1.1.30";   // 코드를 고칠 때마다 뒤 두 자리를 올린다
+  const GAME_VERSION = "v1.1.31";   // 코드를 고칠 때마다 뒤 두 자리를 올린다
   document.getElementById("ver").textContent = GAME_VERSION;
 
   const LS_NAME = "epjpddongpi_name";
@@ -1195,9 +1195,9 @@
     if (state !== STATE.PLAY) return;
     player.tx = Math.max(player.r, Math.min(W - player.r, pointerX(e)));
     if (flyOn) {
-      /* 손가락은 캐릭터보다 위에 두게 되므로, 손가락 위치를 머리가 아니라
-         발 기준으로 옮겨 잡아야 눈으로 보는 위치와 맞는다. */
-      const want = pointerY(e) + PLAYER_UP * 0.45;
+      /* 캐릭터가 손가락·커서보다 위에 떠 있도록 한다.
+         손에 캐릭터가 가려지지 않아 조작감이 훨씬 낫다. */
+      const want = pointerY(e) - 90;
       player.ty = Math.max(H * FLY_TOP, Math.min(groundY, want));
     }
     if (e.cancelable) e.preventDefault();
