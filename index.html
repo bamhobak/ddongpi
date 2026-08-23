@@ -444,6 +444,7 @@
         <button class="jobBtn" data-job="gambler">🎰 도박사</button>
         <button class="jobBtn" data-job="levitator">🎈 부양사</button>
         <button class="jobBtn" data-job="fit">💪 헬스걸</button>
+        <button class="jobBtn" data-job="powerj">📋 파워J</button>
       </div>
       <div id="jobDesc"></div>
 
@@ -502,6 +503,7 @@
         <button class="jobBtn" data-job="gambler">🎰 도박사</button>
         <button class="jobBtn" data-job="levitator">🎈 부양사</button>
         <button class="jobBtn" data-job="fit">💪 헬스걸</button>
+        <button class="jobBtn" data-job="powerj">📋 파워J</button>
       </div>
 
       <button id="btnRetry">다시 하기</button>
@@ -541,7 +543,7 @@
   const elFinal = document.getElementById("finalScore");
   const elTitle = document.getElementById("overTitle");
 
-  const GAME_VERSION = "v1.1.43";   // 코드를 고칠 때마다 뒤 두 자리를 올린다
+  const GAME_VERSION = "v1.1.44";   // 코드를 고칠 때마다 뒤 두 자리를 올린다
   document.getElementById("ver").textContent = GAME_VERSION;
 
   const LS_NAME = "epjpddongpi_name";
@@ -564,7 +566,8 @@
     none:    { nm: "백수",   ic: "🏃", ds: "시작할 때 증강 1개를 고른다" },
     gambler: { nm: "도박사", ic: "🎰", ds: "목숨 1개 + 우산 1개 시작 · 하트 안 나옴 · 모든 점수 +50%" },
     levitator: { nm: "부양사", ic: "🎈", ds: "하늘 어디든 날 수 있다 · 높이 있을수록 점수 UP" },
-    fit: { nm: "헬스걸", ic: "💪", ds: "목숨 5개로 시작 · 벌크업 좀 된 상태" }
+    fit: { nm: "헬스걸", ic: "💪", ds: "목숨 5개로 시작 · 벌크업 좀 된 상태" },
+    powerj: { nm: "파워J", ic: "📋", ds: "달이 잘 나온다 · 대신 증강은 계획대로 1개만" }
   };
   function spdMul() { return job === "levitator" ? 2 : 1; }   // 이동 속도 배율 (부양사 2배)
   let job = "none";
@@ -1103,7 +1106,8 @@
     // 뽑히는 가중치: 따로 지정한 값이 우선, 히든은 일반의 1/3, 나머지는 1
     const wOf = a => (a.w !== undefined ? a.w : (a.hidden ? (1 / 4) : 1));
     const picks = [];
-    while (picks.length < 3 && pool.length) {
+    const nPick = job === "powerj" ? 1 : 3;   // 파워J — 계획은 하나면 충분하다
+    while (picks.length < nPick && pool.length) {
       let total = 0;
       for (const a of pool) total += wOf(a);
       let n = Math.random() * total, idx = pool.length - 1;
@@ -1496,6 +1500,7 @@
     let mean = BONUS_BASE / (b.w / BONUS_W_TOTAL) * aug.itemRateMul * lvFactor / bhMul();
     if (b.type === "paper" && aug.subs) mean /= 1.7;  // 정기구독 — 휴지만 1.7배 빈도
     if (b.type === "heart" && job === "fit") mean /= 3;  // 헬스걸 — 하트 3배
+    if ((b.type === "moon" || b.type === "fullmoon") && job === "powerj") mean /= 1.5;  // 파워J — 달 +50%
     /* 평균 간격을 중심으로 ±25% 안에서만 흔들린다.
        판마다 개수가 들쭉날쭉하지 않도록 폭을 좁혔다 (별 기준 한 판에 7~9개).
        종류별로 타이머가 따로 도는 건 그대로라 여러 개가 한꺼번에 나오는 일은 여전히 생긴다.
@@ -2510,7 +2515,7 @@
   for (const a of AUGMENTS) { AUG_NAMES[a.id] = a.nm; AUG_HIDDEN[a.id] = !!a.hidden; }
   AUG_NAMES.gamble = "도박꾼(삭제됨)";   // 옛 기록 표시용
   AUG_NAMES.fly = "초전도 이재(삭제됨)";
-  const JOB_NAMES = { none: "백수", gambler: "도박사", levitator: "부양사", fit: "헬스걸", "(none)": "(기록 없음)" };
+  const JOB_NAMES = { none: "백수", gambler: "도박사", levitator: "부양사", fit: "헬스걸", powerj: "파워J", "(none)": "(기록 없음)" };
   const devScreen = document.getElementById("devScreen");
   const devPw     = document.getElementById("devPw");
   const devBody   = document.getElementById("devBody");
