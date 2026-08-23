@@ -541,7 +541,7 @@
   const elFinal = document.getElementById("finalScore");
   const elTitle = document.getElementById("overTitle");
 
-  const GAME_VERSION = "v1.1.41";   // 코드를 고칠 때마다 뒤 두 자리를 올린다
+  const GAME_VERSION = "v1.1.42";   // 코드를 고칠 때마다 뒤 두 자리를 올린다
   document.getElementById("ver").textContent = GAME_VERSION;
 
   const LS_NAME = "epjpddongpi_name";
@@ -1486,7 +1486,7 @@
     // 블랙홀 안에서는 아이템도 두 배로 자주 나온다
     let mean = BONUS_BASE / (b.w / BONUS_W_TOTAL) * aug.itemRateMul * lvFactor / bhMul();
     if (b.type === "paper" && aug.subs) mean /= 1.7;  // 정기구독 — 휴지만 1.7배 빈도
-    if (b.type === "heart" && job === "fit") mean /= 2;  // 헬스걸 — 하트 2배
+    if (b.type === "heart" && job === "fit") mean /= 3;  // 헬스걸 — 하트 3배
     /* 평균 간격을 중심으로 ±25% 안에서만 흔들린다.
        판마다 개수가 들쭉날쭉하지 않도록 폭을 좁혔다 (별 기준 한 판에 7~9개).
        종류별로 타이머가 따로 도는 건 그대로라 여러 개가 한꺼번에 나오는 일은 여전히 생긴다.
