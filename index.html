@@ -513,7 +513,7 @@
   const elFinal = document.getElementById("finalScore");
   const elTitle = document.getElementById("overTitle");
 
-  const GAME_VERSION = "v1.1.18";   // 코드를 고칠 때마다 뒤 두 자리를 올린다
+  const GAME_VERSION = "v1.1.19";   // 코드를 고칠 때마다 뒤 두 자리를 올린다
   document.getElementById("ver").textContent = GAME_VERSION;
 
   const LS_NAME = "epjpddongpi_name";
@@ -728,7 +728,7 @@
       if (c.y < -220 || c.y > H + 220) introCameo.splice(i, 1);
     }
 
-    facing = Math.sin(introT * 0.9) > 0 ? "right" : "left";
+    facing = Math.sin(introT * (6.283185 / INTRO_LOOP) * 5) >= 0 ? "right" : "left";
     player.hy = headOffset(currentSprite(now));
   }
 
@@ -743,14 +743,16 @@
     ctx.beginPath();
     ctx.arc(cx, cy, R, 0, 6.283);
     ctx.clip();
-    const sky = ZONES[0].sky;                       // 잔디밭 하늘
+    /* 인트로 첫 장면과 똑같은 하늘·구름을 그린다 (땅은 인트로에서도 안 그리므로 제외).
+       구멍이 화면을 다 덮은 순간이 곧 루프 시작 장면이라 이음매가 없다. */
+    const sky = ZONES[0].sky;
     const g = ctx.createLinearGradient(0, 0, 0, H);
     g.addColorStop(0, "rgb(" + sky[0].join(",") + ")");
     g.addColorStop(.55, "rgb(" + sky[1].join(",") + ")");
     g.addColorStop(1, "rgb(" + sky[2].join(",") + ")");
     ctx.fillStyle = g;
     ctx.fillRect(0, 0, W, H);
-    ctx.fillStyle = "rgba(255,255,255,.55)";        // 구름 몇 점
+    ctx.fillStyle = "rgba(255,255,255," + Math.min(0.80, ZONES[0].cl * 0.62).toFixed(2) + ")";
     for (const c of clouds) {
       ctx.beginPath();
       for (const L of c.lobes) {
@@ -759,7 +761,6 @@
       }
       ctx.fill();
     }
-    drawGround("grass", 1);
     ctx.restore();
     // 구멍 가장자리의 빛 (작을수록 진하다)
     ctx.strokeStyle = "rgba(255,238,190," + (0.9 * (1 - w * 0.75)).toFixed(2) + ")";
@@ -825,9 +826,11 @@
     // 주인공 — 빨려 들어갔다가, 열린 구멍 안 잔디밭으로 다시 나온다.
     const spr = currentSprite(now);
     if (!spr) return;
-    /* 좌우로 넓게 훑고, 위아래로도 크게 흔들린다 (주기가 서로 안 맞아 8자처럼 움직인다) */
-    const swayX = Math.sin(introT * 0.62) * 0.72 + Math.sin(introT * 1.37 + 1.1) * 0.24;
-    const swayY = Math.sin(introT * 0.83 + 0.6) * 0.62 + Math.sin(introT * 1.9) * 0.22;
+    /* 좌우로 넓게 훑고 위아래로도 크게 흔들린다.
+       주파수를 모두 한 바퀴(32초)의 정수배로 잡아, 루프가 돌아도 위치가 이어진다. */
+    const w0 = 6.283185 / INTRO_LOOP;
+    const swayX = Math.sin(introT * w0 * 3) * 0.72 + Math.sin(introT * w0 * 7 + 1.1) * 0.24;
+    const swayY = Math.sin(introT * w0 * 4 + 0.6) * 0.62 + Math.sin(introT * w0 * 9) * 0.22;
     const bx = W / 2 + swayX * W * 0.34;
     const by = H * 0.56 + swayY * H * 0.16;
     const px = W / 2, py = H * 0.30;                       // 구멍 한가운데
@@ -843,7 +846,7 @@
     ctx.save();
     ctx.translate(cx, cy);
     // 빨려들 땐 빙글빙글, 빠져나오면서 다시 곧게 선다
-    ctx.rotate(Math.sin(introT * 1.5) * 0.10 + suck * 9 * (1 - out));
+    ctx.rotate(Math.sin(introT * w0 * 8) * 0.10 + suck * 9 * (1 - out));
     // 뒤로 번지는 빛
     const g = ctx.createRadialGradient(0, 0, 0, 0, 0, sh * 0.95);
     const glow = introBoom > 0 ? .45 : .20;
