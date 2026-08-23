@@ -261,6 +261,7 @@
   }
   #devBody .del:hover { background: rgba(255,80,80,.85); }
   #devBody .del:disabled { opacity: .4; cursor: default; }
+  #devBody .hid { color: #c98bff; }        /* 히든 증강은 보라색으로 구분 */
 
   #ver {
     position: absolute;
@@ -497,7 +498,7 @@
   const elRank  = document.getElementById("rankLine");
   const elTitle = document.getElementById("overTitle");
 
-  const GAME_VERSION = "v1.0.98";   // 코드를 고칠 때마다 뒤 두 자리를 올린다
+  const GAME_VERSION = "v1.0.99";   // 코드를 고칠 때마다 뒤 두 자리를 올린다
   document.getElementById("ver").textContent = GAME_VERSION;
 
   const LS_NAME = "epjpddongpi_name";
@@ -1963,7 +1964,8 @@
      제목 오른쪽 💩 을 누르고 비밀번호를 넣으면 집계를 보여준다.
      원본 기록은 익명 키로 못 읽고, 비밀번호가 맞을 때만 서버 함수가 집계를 돌려준다. */
   const AUG_NAMES = {};
-  for (const a of AUGMENTS) AUG_NAMES[a.id] = a.nm;   // 통계 화면에서 id 대신 이름으로 보여준다
+  const AUG_HIDDEN = {};
+  for (const a of AUGMENTS) { AUG_NAMES[a.id] = a.nm; AUG_HIDDEN[a.id] = !!a.hidden; }
   const devScreen = document.getElementById("devScreen");
   const devPw     = document.getElementById("devPw");
   const devBody   = document.getElementById("devBody");
@@ -2014,7 +2016,7 @@
     devBody.appendChild(devSection("증강별 채택 (판수 순)",
       ["증강", "판수", "중첩", "평균점수"],
       augs.length ? augs.map(a => [
-        AUG_NAMES[a.id] || a.id,
+        { t: AUG_NAMES[a.id] || a.id, c: AUG_HIDDEN[a.id] ? "hid" : "" },
         { t: a.picks, c: "num" },
         { t: a.stack, c: "num" },
         { t: Number(a.score || 0).toLocaleString(), c: "num" }
@@ -2023,11 +2025,10 @@
     const vers = data.vers || [];
     if (vers.length) {
       devBody.appendChild(devSection("버전별",
-        ["버전", "판수", "평균점수", "평균생존"],
+        ["버전", "판수", "평균생존"],
         vers.map(v => [
           v.ver,
           { t: v.runs, c: "num" },
-          { t: Number(v.score || 0).toLocaleString(), c: "num" },
           { t: (v.secs || 0) + "초", c: "num" }
         ])));
     }
