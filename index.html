@@ -545,7 +545,7 @@
   const elFinal = document.getElementById("finalScore");
   const elTitle = document.getElementById("overTitle");
 
-  const GAME_VERSION = "v1.1.51";   // 코드를 고칠 때마다 뒤 두 자리를 올린다
+  const GAME_VERSION = "v1.1.52";   // 코드를 고칠 때마다 뒤 두 자리를 올린다
   document.getElementById("ver").textContent = GAME_VERSION;
 
   const LS_NAME = "epjpddongpi_name";
@@ -649,31 +649,31 @@
   /* 직업: 도박사 복장 (우주복 이전 구간에서만 입는다).
      head/cx/cy/adj 는 실측값 — 헬멧 대신 얼굴이 판정 기준이다. */
   const SPR_GAMBLER = {
-    // 모자·머리숱이 커서 같은 몸높이면 작아 보인다 — 10% 키워 백수와 체감을 맞췄다
-    left:  { img: null, aspect: 0.586, head: 0.404, cx: 0.464, cy: 0.328, adj: 0.6553 },
-    right: { img: null, aspect: 0.522, head: 0.369, cx: 0.590, cy: 0.319, adj: 0.5991 },
-    hurt:  { img: null, aspect: 0.439, head: 0.415, cx: 0.487, cy: 0.347, adj: 0.7318 }
+    // 모자·머리숱이 커서 같은 몸높이면 작아 보인다 — 백수와 같은 크기(1.0배)로 맞췄다
+    left:  { img: null, aspect: 0.586, head: 0.404, cx: 0.464, cy: 0.328, adj: 0.5957 },
+    right: { img: null, aspect: 0.522, head: 0.369, cx: 0.590, cy: 0.319, adj: 0.5446 },
+    hurt:  { img: null, aspect: 0.439, head: 0.415, cx: 0.487, cy: 0.347, adj: 0.6653 }
   };
   const SPR_LEV = {
-    left:  { img: null, aspect: 0.578, head: 0.440, cx: 0.433, cy: 0.264, adj: 0.7142 },
-    right: { img: null, aspect: 0.606, head: 0.417, cx: 0.541, cy: 0.258, adj: 0.6773 },
-    hurt:  { img: null, aspect: 0.542, head: 0.438, cx: 0.544, cy: 0.258, adj: 0.7721 }
+    left:  { img: null, aspect: 0.578, head: 0.440, cx: 0.433, cy: 0.264, adj: 0.6493 },
+    right: { img: null, aspect: 0.606, head: 0.417, cx: 0.541, cy: 0.258, adj: 0.6157 },
+    hurt:  { img: null, aspect: 0.542, head: 0.438, cx: 0.544, cy: 0.258, adj: 0.7019 }
   };
   const SPR_FIT = {
-    left:  { img: null, aspect: 0.739, head: 0.485, cx: 0.462, cy: 0.283, adj: 0.8192 },
-    right: { img: null, aspect: 0.700, head: 0.463, cx: 0.528, cy: 0.289, adj: 0.7833 },
-    hurt:  { img: null, aspect: 0.531, head: 0.445, cx: 0.492, cy: 0.314, adj: 0.8187 }
+    left:  { img: null, aspect: 0.739, head: 0.485, cx: 0.462, cy: 0.283, adj: 0.7447 },
+    right: { img: null, aspect: 0.700, head: 0.463, cx: 0.528, cy: 0.289, adj: 0.7121 },
+    hurt:  { img: null, aspect: 0.531, head: 0.445, cx: 0.492, cy: 0.314, adj: 0.7443 }
   };
   const SPR_PJ = {
-    left:  { img: null, aspect: 0.714, head: 0.497, cx: 0.482, cy: 0.336, adj: 0.8061 },
-    right: { img: null, aspect: 0.703, head: 0.464, cx: 0.549, cy: 0.292, adj: 0.7523 },
-    hurt:  { img: null, aspect: 0.592, head: 0.494, cx: 0.521, cy: 0.342, adj: 0.8722 }
+    left:  { img: null, aspect: 0.714, head: 0.497, cx: 0.482, cy: 0.336, adj: 0.7328 },
+    right: { img: null, aspect: 0.703, head: 0.464, cx: 0.549, cy: 0.292, adj: 0.6839 },
+    hurt:  { img: null, aspect: 0.592, head: 0.494, cx: 0.521, cy: 0.342, adj: 0.7929 }
   };
   const SPR_MONK = {
-    // 다른 직업과 같은 보정(×1.10) — 전체 키를 도박사·부양사와 맞춘다
-    left:  { img: null, aspect: 0.642, head: 0.308, cx: 0.468, cy: 0.183, adj: 0.4997 },
-    right: { img: null, aspect: 0.619, head: 0.306, cx: 0.552, cy: 0.181, adj: 0.4965 },
-    hurt:  { img: null, aspect: 0.472, head: 0.291, cx: 0.512, cy: 0.231, adj: 0.5134 }
+    // 백수와 같은 크기(1.0배)
+    left:  { img: null, aspect: 0.642, head: 0.308, cx: 0.468, cy: 0.183, adj: 0.4543 },
+    right: { img: null, aspect: 0.619, head: 0.306, cx: 0.552, cy: 0.181, adj: 0.4514 },
+    hurt:  { img: null, aspect: 0.472, head: 0.291, cx: 0.512, cy: 0.231, adj: 0.4667 }
   };
   const SPACE_Z = 6;                 // 오로라 지대 — 여기부터 우주복 차림
   /* 우주에 올라서면 체감 난이도를 이 배율만큼 올린다.
