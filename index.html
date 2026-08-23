@@ -541,7 +541,7 @@
   const elFinal = document.getElementById("finalScore");
   const elTitle = document.getElementById("overTitle");
 
-  const GAME_VERSION = "v1.1.40";   // 코드를 고칠 때마다 뒤 두 자리를 올린다
+  const GAME_VERSION = "v1.1.41";   // 코드를 고칠 때마다 뒤 두 자리를 올린다
   document.getElementById("ver").textContent = GAME_VERSION;
 
   const LS_NAME = "epjpddongpi_name";
@@ -2572,12 +2572,13 @@
     const jb = data.jobs || [];
     if (jb.length) {
       P.sum.appendChild(devSection("직업별",
-        ["직업", "판수", "평균", "최고"],
+        ["직업", "판수", "평균점수", "최고점수", "평균생존"],
         jb.map(q => [
           JOB_NAMES[q.job] || q.job,
           { t: q.runs, c: "num" },
           { t: Number(q.avg || 0).toLocaleString(), c: "num" },
-          { t: Number(q.best || 0).toLocaleString(), c: "num" }
+          { t: Number(q.best || 0).toLocaleString(), c: "num" },
+          { t: (q.secs == null ? "-" : q.secs + "초"), c: "num" }
         ])));
     }
 

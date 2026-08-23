@@ -47,11 +47,12 @@ begin
         ) q
     ), '[]'::jsonb),
     'jobs', coalesce((
-      select jsonb_agg(jsonb_build_object('job', v, 'runs', n, 'avg', av, 'best', bs)
+      select jsonb_agg(jsonb_build_object('job', v, 'runs', n, 'avg', av, 'best', bs, 'secs', se)
                        order by n desc)
         from (
           select coalesce(nullif(btrim(job), ''), '(none)') as v,
-                 count(*) as n, round(avg(score)) as av, max(score) as bs
+                 count(*) as n, round(avg(score)) as av, max(score) as bs,
+                 round(avg(secs)) as se
             from ddongpi_runs
            group by coalesce(nullif(btrim(job), ''), '(none)')
         ) q
