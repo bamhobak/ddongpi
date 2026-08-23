@@ -497,7 +497,7 @@
   const elRank  = document.getElementById("rankLine");
   const elTitle = document.getElementById("overTitle");
 
-  const GAME_VERSION = "v1.0.97";   // 코드를 고칠 때마다 뒤 두 자리를 올린다
+  const GAME_VERSION = "v1.0.98";   // 코드를 고칠 때마다 뒤 두 자리를 올린다
   document.getElementById("ver").textContent = GAME_VERSION;
 
   const LS_NAME = "epjpddongpi_name";
@@ -2043,18 +2043,6 @@
         { t: augLabel(r.augs), c: "lft" }
       ]) : [["기록 없음", "", "", "", ""]]));
 
-    // 사람별 집계 — 누가 얼마나 했는지
-    const pl = data.players || [];
-    if (pl.length) {
-      devBody.appendChild(devSection("플레이어별",
-        ["이름", "판수", "평균", "최고"],
-        pl.map(q => [
-          q.name || "-",
-          { t: q.runs, c: "num" },
-          { t: Number(q.avg || 0).toLocaleString(), c: "num" },
-          { t: Number(q.best || 0).toLocaleString(), c: "num" }
-        ])));
-    }
   }
 
   function kstStamp(iso) {                      // "8.19 14:03" 형태 (한국시간)
