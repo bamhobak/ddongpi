@@ -442,7 +442,7 @@
       <div class="jobRow">
         <button class="jobBtn" data-job="none">🏃 백수</button>
         <button class="jobBtn" data-job="gambler">🎰 도박사</button>
-        <button class="jobBtn" data-job="levitator">🎈 공중부양사</button>
+        <button class="jobBtn" data-job="levitator">🎈 부양사</button>
       </div>
       <div id="jobDesc"></div>
 
@@ -499,7 +499,7 @@
       <div class="jobRow">
         <button class="jobBtn" data-job="none">🏃 백수</button>
         <button class="jobBtn" data-job="gambler">🎰 도박사</button>
-        <button class="jobBtn" data-job="levitator">🎈 공중부양사</button>
+        <button class="jobBtn" data-job="levitator">🎈 부양사</button>
       </div>
 
       <button id="btnRetry">다시 하기</button>
@@ -539,7 +539,7 @@
   const elFinal = document.getElementById("finalScore");
   const elTitle = document.getElementById("overTitle");
 
-  const GAME_VERSION = "v1.1.31";   // 코드를 고칠 때마다 뒤 두 자리를 올린다
+  const GAME_VERSION = "v1.1.32";   // 코드를 고칠 때마다 뒤 두 자리를 올린다
   document.getElementById("ver").textContent = GAME_VERSION;
 
   const LS_NAME = "epjpddongpi_name";
@@ -561,9 +561,9 @@
   const JOBS = {
     none:    { nm: "백수",   ic: "🏃", ds: "아무 효과 없음. 순수한 몸뚱이 하나" },
     gambler: { nm: "도박사", ic: "🎰", ds: "목숨 1개 시작 · 하트 안 나옴 · 모든 점수 +50%" },
-    levitator: { nm: "공중부양사", ic: "🎈", ds: "하늘 어디든 날 수 있다" }
+    levitator: { nm: "부양사", ic: "🎈", ds: "하늘 어디든 날 수 있다" }
   };
-  function spdMul() { return job === "levitator" ? 2 : 1; }   // 이동 속도 배율 (공중부양사 2배)
+  function spdMul() { return job === "levitator" ? 2 : 1; }   // 이동 속도 배율 (부양사 2배)
   let job = "none";
   try { const j = localStorage.getItem(LS_JOB); if (JOBS[j]) job = j; } catch (e) {}
   // hy = 발을 바닥에 고정했을 때 머리(판정 중심)가 player.y 에서 얼마나 떨어지는지.
@@ -1913,7 +1913,7 @@
       const dx = it.x - player.x, dy = it.y - cy;
       if ((aug.blackhole || job === "levitator") && it.type === "poop" && it.skin === "fever") {
         // 뚜니핑 낙하물은 가까이 왔을 때만 끌어당긴다 (전부 빨아들이면 너무 세다)
-        // 공중부양사 기본치는 블랙홀의 절반 반경·45% 힘
+        // 부양사 기본치는 블랙홀의 절반 반경·45% 힘
         const d = Math.hypot(dx, dy), R = aug.blackhole ? 195 : 98;
         if (d < R && d > 1) {
           const pull = (aug.blackhole ? 481 : 216) * dt * (1 - d / R);
@@ -1921,7 +1921,7 @@
           it.y -= dy / d * pull * 0.5;
         }
       }
-      /* 공중부양사는 자석이 없어도 기본 흡인(자석의 약 20%)을 갖고 시작한다.
+      /* 부양사는 자석이 없어도 기본 흡인(자석의 약 20%)을 갖고 시작한다.
          자석 증강을 먹으면 온전한 자석으로 덮어쓴다. */
       const magR = aug.magnet > 0 ? aug.magnet : (job === "levitator" ? 110 : 0);
       const magF = aug.magnet > 0 ? 1 : 0.45;
@@ -2475,7 +2475,7 @@
   for (const a of AUGMENTS) { AUG_NAMES[a.id] = a.nm; AUG_HIDDEN[a.id] = !!a.hidden; }
   AUG_NAMES.gamble = "도박꾼(삭제됨)";   // 옛 기록 표시용
   AUG_NAMES.fly = "초전도 이재(삭제됨)";
-  const JOB_NAMES = { none: "백수", gambler: "도박사", levitator: "공중부양사", "(none)": "(기록 없음)" };
+  const JOB_NAMES = { none: "백수", gambler: "도박사", levitator: "부양사", "(none)": "(기록 없음)" };
   const devScreen = document.getElementById("devScreen");
   const devPw     = document.getElementById("devPw");
   const devBody   = document.getElementById("devBody");
