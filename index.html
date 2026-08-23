@@ -497,7 +497,7 @@
   const elRank  = document.getElementById("rankLine");
   const elTitle = document.getElementById("overTitle");
 
-  const GAME_VERSION = "v1.0.95";   // 코드를 고칠 때마다 뒤 두 자리를 올린다
+  const GAME_VERSION = "v1.0.96";   // 코드를 고칠 때마다 뒤 두 자리를 올린다
   document.getElementById("ver").textContent = GAME_VERSION;
 
   const LS_NAME = "epjpddongpi_name";
@@ -721,7 +721,7 @@
       go: () => { aug.hungry = true; } },
     { id: "steelUmb",   ic: "☔", nm: "우산 로켓배송", ds: "우산이 없으면 저절로 배송된다",
       hidden: true, once: true, cond: () => augCount["umbrella3"] > 0,
-      go: () => { aug.steelUmb = true; shieldTimer = 5; } },
+      go: () => { aug.steelUmb = true; shieldTimer = UMB_SEC; } },
     { id: "starburst",  ic: "🌠", nm: "별핑별",     ds: "별이 하늘의 똥을 쓸어버린다",
       hidden: true, once: true, cond: () => augCount["star50"] > 0,
       go: () => { aug.starburst = true; } },
@@ -849,7 +849,8 @@
   let spawnTimer = 0;
   let invUntil = 0, powerUntil = 0;
   let shields = 0;                 // 남은 방패 수 — 우산 아이템은 최대 1, 증강으로만 여러 개
-  let shieldTimer = 5;             // 우산 로켓배송: 방패가 없을 때 다음 하나까지 남은 시간
+  const UMB_SEC = 4;               // 우산 로켓배송: 방패가 없을 때 몇 초마다 하나씩 오는지
+  let shieldTimer = UMB_SEC;       // 다음 하나까지 남은 시간
   let ghostTimer = 6;              // 유령화: 다음 무적까지 남은 시간
   let hurtUntil = 0;               // 똥에 맞은 직후 (아픈 그림 표시)
   let zoneShown = -1;              // 도착 안내를 이미 띄운 단계
@@ -940,7 +941,7 @@
     aug.feverScoreMul = 1; aug.fallMul = 1; aug.hitboxMul = 1; aug.poopMul = 1;
     aug.steelUmb = false; aug.starburst = false; aug.gamble = false; aug.scoreMul = 1;
     aug.ghost = false; aug.blackhole = false; aug.legion = false; ghostTimer = 6;
-    shieldTimer = 5;
+    shieldTimer = UMB_SEC;
     aug.itemRateMul = 1; aug.feverRateMul = 1; aug.giant = 0; aug.magnet = 0;
     aug.helper = 0; aug.helperRush = false; aug.hungry = false;
     helpers = []; fetchers = [];
@@ -1278,12 +1279,12 @@
         shieldTimer -= dt;
         if (shieldTimer <= 0) {
           shields = 1;
-          shieldTimer = 5;
+          shieldTimer = UMB_SEC;
           popText(player.x, player.y - 60, "☔ 우산 도착!", "#7ec8ff");
           beep(880, .12, "triangle", .05);
         }
       } else {
-        shieldTimer = 5;
+        shieldTimer = UMB_SEC;
       }
     }
 
