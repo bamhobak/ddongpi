@@ -497,7 +497,7 @@
   const elRank  = document.getElementById("rankLine");
   const elTitle = document.getElementById("overTitle");
 
-  const GAME_VERSION = "v1.0.88";   // 코드를 고칠 때마다 뒤 두 자리를 올린다
+  const GAME_VERSION = "v1.0.89";   // 코드를 고칠 때마다 뒤 두 자리를 올린다
   document.getElementById("ver").textContent = GAME_VERSION;
 
   const LS_NAME = "epjpddongpi_name";
@@ -993,7 +993,7 @@
     { min: 52, max: 62, score: 40, w: 3  }   // 초대형 — 가장 드물다
   ];
   // 대왕 뚜니핑 — 기존 최대(52~62)의 2배 크기, 점수는 최대 등급(75)의 3배
-  const GIANT = { min: 104, max: 124, score: 110, w: 3, giant: true };
+  const GIANT = { min: 104, max: 124, score: 165, w: 3, giant: true };
   function pickFeverSize() {
     const list = aug.giant > 0
       ? FEVER_SIZES.concat([{
