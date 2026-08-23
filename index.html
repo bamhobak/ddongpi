@@ -513,7 +513,7 @@
   const elFinal = document.getElementById("finalScore");
   const elTitle = document.getElementById("overTitle");
 
-  const GAME_VERSION = "v1.1.16";   // 코드를 고칠 때마다 뒤 두 자리를 올린다
+  const GAME_VERSION = "v1.1.17";   // 코드를 고칠 때마다 뒤 두 자리를 올린다
   document.getElementById("ver").textContent = GAME_VERSION;
 
   const LS_NAME = "epjpddongpi_name";
@@ -653,6 +653,11 @@
      게임 플레이가 아니라 '여정'을 보여주는 연출.
      잔디밭에서 블랙홀까지 한 바퀴 훑고 처음으로 돌아온다. */
   const INTRO_LOOP = 32;                    // 한 바퀴(초)
+  const INTRO_TRIP = 26;                    // 이 동안 잔디밭 → 블랙홀 안까지 간다
+  // 블랙홀 안에서 잔디밭으로 이어지는 웜홀 진행도 (0 = 아직, 1 = 완전히 통과)
+  function introWarp() {
+    return Math.max(0, Math.min(1, (introT - INTRO_TRIP) / (INTRO_LOOP - INTRO_TRIP)));
+  }
   let introT = 0, introPoops = [], introSpawn = 0, introSuit = false, introBoom = 0;
   let introCameo = [], introCameoT = 5;     // 이따금 지나가는 정연핑·뚜니핑
 
@@ -662,8 +667,9 @@
       introT = 0; introPoops.length = 0; introSuit = false;
       introCameo.length = 0; introCameoT = 3 + Math.random() * 4;
     }
-    // 배경이 잔디밭 → 우주 → 블랙홀까지 흘러간다
-    levelTime = (introT / INTRO_LOOP) * (12 * ZONES.length);
+    /* 26초 동안 잔디밭 → 우주 → 블랙홀 안까지 훑고,
+       남은 6초는 블랙홀 안에서 잔디밭으로 이어지는 웜홀을 통과한다. */
+    levelTime = Math.min(introT / INTRO_TRIP, 1) * (12 * ZONES.length);
     level = 1 + Math.floor(levelTime / 12);
 
     const suit = inSpace();
@@ -720,8 +726,45 @@
     player.hy = headOffset(currentSprite(now));
   }
 
+  /* 블랙홀 한가운데가 열리며 그 안에 잔디밭이 드러난다.
+     구멍이 화면을 다 덮은 순간 루프가 처음으로 돌아가서 이음매가 보이지 않는다. */
+  function drawIntroPortal(w) {
+    const cx = W / 2, cy = H * 0.30;
+    const need = Math.hypot(Math.max(cx, W - cx), Math.max(cy, H - cy)) + 12;
+    const R = Math.pow(w, 1.7) * need;
+    if (R < 1) return;
+    ctx.save();
+    ctx.beginPath();
+    ctx.arc(cx, cy, R, 0, 6.283);
+    ctx.clip();
+    const sky = ZONES[0].sky;                       // 잔디밭 하늘
+    const g = ctx.createLinearGradient(0, 0, 0, H);
+    g.addColorStop(0, "rgb(" + sky[0].join(",") + ")");
+    g.addColorStop(.55, "rgb(" + sky[1].join(",") + ")");
+    g.addColorStop(1, "rgb(" + sky[2].join(",") + ")");
+    ctx.fillStyle = g;
+    ctx.fillRect(0, 0, W, H);
+    ctx.fillStyle = "rgba(255,255,255,.55)";        // 구름 몇 점
+    for (const c of clouds) {
+      ctx.beginPath();
+      for (const L of c.lobes) {
+        ctx.moveTo(c.x + L.dx + L.r, c.y + L.dy);
+        ctx.arc(c.x + L.dx, c.y + L.dy, L.r, 0, 6.283);
+      }
+      ctx.fill();
+    }
+    drawGround("grass", 1);
+    ctx.restore();
+    // 구멍 가장자리의 빛 (작을수록 진하다)
+    ctx.strokeStyle = "rgba(255,238,190," + (0.9 * (1 - w * 0.75)).toFixed(2) + ")";
+    ctx.lineWidth = Math.max(2, R * 0.05 * (1 - w * 0.6));
+    ctx.beginPath(); ctx.arc(cx, cy, R, 0, 6.283); ctx.stroke();
+  }
+
   function drawIntro(now) {
-    const bh = zv("bh");
+    const warp = introWarp();
+    if (warp > 0) drawIntroPortal(warp);
+    ctx.globalAlpha = 1 - warp;                     // 스쳐 가던 것들은 웜홀에서 옅어진다
     // 위로 솟구치는 속도선
     ctx.lineWidth = 2;
     for (let i = 0; i < 14; i++) {
@@ -771,22 +814,30 @@
       }
       ctx.restore();
     }
+    ctx.globalAlpha = 1;
 
-    // 주인공 — 붕 떠서 위로 나아간다. 블랙홀에 가까워지면 빨려 들어간다.
+    // 주인공 — 빨려 들어갔다가, 열린 구멍 안 잔디밭으로 다시 나온다.
     const spr = currentSprite(now);
     if (!spr) return;
-    const pull = Math.max(0, (bh - 0.55) / 0.95);          // 블랙홀 흡인 진행도
     /* 좌우로 넓게 훑고, 위아래로도 크게 흔들린다 (주기가 서로 안 맞아 8자처럼 움직인다) */
     const swayX = Math.sin(introT * 0.62) * 0.72 + Math.sin(introT * 1.37 + 1.1) * 0.24;
     const swayY = Math.sin(introT * 0.83 + 0.6) * 0.62 + Math.sin(introT * 1.9) * 0.22;
-    const cx = W / 2 + swayX * W * 0.34 * (1 - pull);
-    const cy = H * (0.56 - 0.26 * pull) + swayY * H * 0.16 * (1 - pull);
-    const scale = 1.15 * (1 - pull * 0.8);
+    const bx = W / 2 + swayX * W * 0.34;
+    const by = H * 0.56 + swayY * H * 0.16;
+    const px = W / 2, py = H * 0.30;                       // 구멍 한가운데
+    const suck = Math.min(1, warp / 0.45);                 // 빨려 들어가는 정도
+    const out  = Math.max(0, (warp - 0.5) / 0.5);          // 구멍 안에서 다시 나오는 정도
+    let cx, cy;
+    if (out > 0) { cx = px + (bx - px) * out; cy = py + (by - py) * out; }
+    else         { cx = bx + (px - bx) * suck; cy = by + (py - by) * suck; }
+    const scale = 1.15 * Math.max(0, (1 - suck) + out);
+    if (scale < 0.01) return;
     const sh = spriteHeight(spr) * scale, sw = sh * spr.aspect;
 
     ctx.save();
     ctx.translate(cx, cy);
-    ctx.rotate(Math.sin(introT * 1.5) * 0.10 + pull * 7);   // 빨려들 땐 빙글빙글
+    // 빨려들 땐 빙글빙글, 빠져나오면서 다시 곧게 선다
+    ctx.rotate(Math.sin(introT * 1.5) * 0.10 + suck * 9 * (1 - out));
     // 뒤로 번지는 빛
     const g = ctx.createRadialGradient(0, 0, 0, 0, 0, sh * 0.95);
     const glow = introBoom > 0 ? .45 : .20;
