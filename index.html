@@ -497,7 +497,7 @@
   const elRank  = document.getElementById("rankLine");
   const elTitle = document.getElementById("overTitle");
 
-  const GAME_VERSION = "v1.0.94";   // 코드를 고칠 때마다 뒤 두 자리를 올린다
+  const GAME_VERSION = "v1.0.95";   // 코드를 고칠 때마다 뒤 두 자리를 올린다
   document.getElementById("ver").textContent = GAME_VERSION;
 
   const LS_NAME = "epjpddongpi_name";
@@ -1519,7 +1519,7 @@
           if (now >= invUntil) {
             if (shields > 0) {
               shields--;
-              invUntil = now + 1500;        // 목숨을 잃었을 때와 같은 무적 시간
+              invUntil = now + 1000;        // 목숨을 잃었을 때와 같은 무적 시간
               shake = Math.max(shake, 14);
               burst(it.x, it.y, "#7ec8ff", 20);
               popText(player.x, player.y - 60, "☂️ 방어!", "#7ec8ff");
@@ -1527,8 +1527,8 @@
               if (navigator.vibrate) navigator.vibrate(60);
             } else {
               if (!testMode) lives--;      // 테스트 모드는 맞아도 목숨이 줄지 않는다
-              invUntil = now + 1500;
-              hurtUntil = now + 1500;   // 무적 시간 동안 아픈 그림으로
+              invUntil = now + 1000;
+              hurtUntil = now + 1000;   // 무적 시간 동안 아픈 그림으로
               shake = 22; flash = 1;
               burst(it.x, it.y, "#8a5a2b", 22);
               popText(player.x, player.y - 60, "으악!", "#ff5d5d");
@@ -1594,7 +1594,6 @@
         }
         if (cnt) {
           score += bonus;
-          invUntil = Math.max(invUntil, now + 1500);   // 쓸어낸 직후 다시 쏟아지므로 숨 돌릴 틈
           shake = Math.max(shake, 18);
           feverFlash = Math.max(feverFlash, 0.7);
           popText(player.x, player.y - 110,
