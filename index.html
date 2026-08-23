@@ -509,7 +509,7 @@
   const elFinal = document.getElementById("finalScore");
   const elTitle = document.getElementById("overTitle");
 
-  const GAME_VERSION = "v1.1.02";   // 코드를 고칠 때마다 뒤 두 자리를 올린다
+  const GAME_VERSION = "v1.1.03";   // 코드를 고칠 때마다 뒤 두 자리를 올린다
   document.getElementById("ver").textContent = GAME_VERSION;
 
   const LS_NAME = "epjpddongpi_name";
@@ -704,13 +704,13 @@
 
   const AUGMENTS = [
     { id: "fever_time", ic: "🔥", nm: "뚜니핑 연장", ds: "뚜니핑 타임 증가",
-      go: () => { aug.feverBonus += 2000; } },   // 먹을 때마다 그대로 +2초
+      go: () => { aug.feverBonus += 3000; } },   // 먹을 때마다 그대로 +3초
     { id: "star50",     ic: "⭐", nm: "별빛 증폭",   ds: "별 점수 증가",
-      go: () => { aug.starMul += 0.5 * dim("star50"); } },
+      go: () => { aug.starMul += 0.4 * dim("star50"); } },
     { id: "time2x",     ic: "⏱️", nm: "시간 가속",   ds: "생존 점수 증가",
       go: () => { aug.timeMul *= 1 + 0.5 * dim("time2x"); } },
     { id: "fever50",    ic: "🌙", nm: "뚜니핑 대박", ds: "뚜니핑 낙하물 점수 증가",
-      go: () => { aug.feverScoreMul += 0.3 * dim("fever50"); } },
+      go: () => { aug.feverScoreMul += 0.45 * dim("fever50"); } },
     { id: "slow",       ic: "🐢", nm: "느린 하늘",   ds: "똥이 느리게 떨어진다",
       go: () => { aug.fallMul *= 1 - 0.15 * dim("slow"); } },
     { id: "small",      ic: "🎯", nm: "마운자로 이재", ds: "몸집이 작아진다",
@@ -746,17 +746,17 @@
     { id: "legion",     ic: "🌝", nm: "대왕 뚜니핑 군단", ds: "대왕이 떼로 몰려온다",
       hidden: true, once: true, cond: () => aug.giant > 0,
       go: () => { aug.legion = true; } },
-    { id: "gamble",     ic: "🎰", nm: "도박꾼",     ds: "모든 점수 2.5배, 목숨은 하나뿐",
+    { id: "gamble",     ic: "🎰", nm: "도박꾼",     ds: "모든 점수 2배, 목숨은 하나뿐",
       hidden: true, once: true, cond: () => level >= 5,
-      go: () => { aug.gamble = true; aug.scoreMul *= 2.5; aug.maxLives = 1; lives = 1; } },
+      go: () => { aug.gamble = true; aug.scoreMul *= 2; aug.maxLives = 1; lives = 1; } },
     { id: "magnet",     ic: "🧲", nm: "자석",       ds: "근처의 아이템이 끌려온다",
       once: true, go: () => { aug.magnet = 170; } },   // 끌어당기는 반지름(px)
     { id: "lucky",      ic: "🍀", nm: "행운",       ds: "아이템이 더 자주 등장",
-      go: () => { aug.itemRateMul /= 1 + 0.2 * dim("lucky"); } },   // 등장 빈도 +20%
+      go: () => { aug.itemRateMul /= 1 + 0.15 * dim("lucky"); } },   // 등장 빈도 +20%
     { id: "giant",      ic: "🌝", nm: "대왕 뚜니핑", ds: "대왕 뚜니핑 두둥등장",
       once: true, go: () => { aug.giant = 1; } },
     { id: "downpour",   ic: "🌧️", nm: "뚜니핑 폭우", ds: "뚜니핑이 더 많이 쏟아진다",
-      go: () => { aug.feverRateMul /= 1 + 0.3 * dim("downpour"); } },
+      go: () => { aug.feverRateMul /= 1 + 0.45 * dim("downpour"); } },
     { id: "angryUmb",   ic: "💢", nm: "성난 우산",   ds: "방패가 깨질 때 화면의 똥이 전부 사라진다",
       once: true, go: () => { aug.angryUmb = true; } },
     { id: "gold",       ic: "✨", nm: "황금똥 연금술", ds: "똥이 가끔 황금똥으로 변한다. 먹으면 점수!",
@@ -1137,7 +1137,7 @@
     { type: "fullmoon", emoji: "🌕", w: 6  },   // 보름달 — 증강 3연속. 초승달의 10%
     { type: "paper",    emoji: "🧻", w: 26 },
     { type: "umbrella", emoji: "☂️", w: 22 },
-    { type: "star",     emoji: "⭐", w: 73 },
+    { type: "star",     emoji: "⭐", w: 66 },   // 등장 빈도 10% 하향
     { type: "heart",    emoji: "❤️", w: 24 }   // 너무 안 나와서 상향
   ];
   /* 아이템은 종류마다 자기 타이머로 따로 굴러간다.
@@ -1604,8 +1604,8 @@
 
       if (hit) {
         if (it.type === "poop") {
-          if (it.gold) {                    // 황금똥 — 먹으면 점수
-            const g = Math.round(50 * scoreMul() * Math.pow(1.3, level - 1));
+          if (it.gold) {                    // 황금똥 — 먹으면 점수 (레벨이 오를수록 값지다)
+            const g = Math.round(60 * scoreMul() * Math.pow(1.3, level - 1));
             score += g;
             burst(it.x, it.y, "#ffd23f", 20);
             popText(it.x, it.y, "✨ +" + g.toLocaleString(), "#ffe07a");
@@ -1732,17 +1732,18 @@
       beep(1400, .1, "square", .05);
       beep(1750, .12, "square", .04);
       if (aug.starburst) {
-        // 화면의 똥을 전부 없애고, 각각 제 점수의 10배를 받는다 (까다로운 똥도 함께)
+        // 화면의 똥을 전부 없애고, 개당 방금 먹은 별 점수의 1%를 받는다 (까다로운 똥도 함께)
         let cnt = 0, bonus = 0;
         for (let k = items.length - 1; k >= 0; k--) {
           const q = items[k];
           if (q.type !== "poop") continue;
-          bonus += ((q.skin === "fever") ? feverGain(q) : 3 * scoreMul()) * 10;
+          bonus += gain * 0.01;
           burst(q.x, q.y, "#ffe9a8", 10);
           items.splice(k, 1);
           cnt++;
         }
         if (cnt) {
+          bonus = Math.round(bonus);
           score += bonus;
           shake = Math.max(shake, 18);
           feverFlash = Math.max(feverFlash, 0.7);
