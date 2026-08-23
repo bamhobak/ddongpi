@@ -143,7 +143,7 @@
   #startName:focus { outline: none; border-color: #ffd23f; }
 
   /* ---- 직업 선택 ---- */
-  .jobRow { display: flex; gap: 8px; justify-content: center; }
+  .jobRow { display: flex; gap: 8px; justify-content: center; flex-wrap: wrap; }
   .jobBtn {
     padding: 8px 18px; font-size: 13px; border-radius: 999px;
     background: rgba(255,255,255,.08); color: #b8bdcc;
@@ -443,6 +443,7 @@
         <button class="jobBtn" data-job="none">🏃 백수</button>
         <button class="jobBtn" data-job="gambler">🎰 도박사</button>
         <button class="jobBtn" data-job="levitator">🎈 부양사</button>
+        <button class="jobBtn" data-job="fit">💪 헬스걸</button>
       </div>
       <div id="jobDesc"></div>
 
@@ -500,6 +501,7 @@
         <button class="jobBtn" data-job="none">🏃 백수</button>
         <button class="jobBtn" data-job="gambler">🎰 도박사</button>
         <button class="jobBtn" data-job="levitator">🎈 부양사</button>
+        <button class="jobBtn" data-job="fit">💪 헬스걸</button>
       </div>
 
       <button id="btnRetry">다시 하기</button>
@@ -539,7 +541,7 @@
   const elFinal = document.getElementById("finalScore");
   const elTitle = document.getElementById("overTitle");
 
-  const GAME_VERSION = "v1.1.36";   // 코드를 고칠 때마다 뒤 두 자리를 올린다
+  const GAME_VERSION = "v1.1.37";   // 코드를 고칠 때마다 뒤 두 자리를 올린다
   document.getElementById("ver").textContent = GAME_VERSION;
 
   const LS_NAME = "epjpddongpi_name";
@@ -561,7 +563,8 @@
   const JOBS = {
     none:    { nm: "백수",   ic: "🏃", ds: "시작할 때 증강 1개를 고른다" },
     gambler: { nm: "도박사", ic: "🎰", ds: "목숨 1개 + 우산 1개 시작 · 하트 안 나옴 · 모든 점수 +50%" },
-    levitator: { nm: "부양사", ic: "🎈", ds: "하늘 어디든 날 수 있다 · 높이 있을수록 점수 UP" }
+    levitator: { nm: "부양사", ic: "🎈", ds: "하늘 어디든 날 수 있다 · 높이 있을수록 점수 UP" },
+    fit: { nm: "헬스걸", ic: "💪", ds: "목숨 5개(최대 10) · 우산이 하트로 · 몸이 조금 크다" }
   };
   function spdMul() { return job === "levitator" ? 2 : 1; }   // 이동 속도 배율 (부양사 2배)
   let job = "none";
@@ -996,9 +999,13 @@
       go: () => { aug.poopMul *= 1 - 0.15 * dim("tinypoop"); } },
     { id: "umbrella3",  ic: "☂️", nm: "우산 다발", ds: "우산을 3개 얻는다",
       max: 99,                    // 조건이 막아주므로 보유 상한은 사실상 없음
-      cond: () => shields <= 2,   // 방패가 3개 이상이면 후보에 오르지 않는다
+      // 헬스걸은 우산이 하트로 바뀌므로 목숨이 상한이면 후보에서 뺀다
+      cond: () => (job === "fit" ? lives < aug.maxLives : shields <= 2),
       noCount: true,              // 방패 수는 화면에 우산으로 보이니 보유 뱃지는 생략
-      go: () => { shields = Math.min(shields + 3, 5); } },   // 방패는 최대 5개까지
+      go: () => {
+        if (job === "fit") lives = Math.min(aug.maxLives, lives + 3);   // 우산 대신 하트
+        else shields = Math.min(shields + 3, 5);                        // 방패는 최대 5개까지
+      } },
     { id: "helper",     ic: "🦸", nm: "도와줘 정연핑", ds: "정연핑이 지나가는 자리의 똥을 부순다",
       go: () => { aug.helper++; helperTimer = Math.min(helperTimer, 0.6); } },
     { id: "helperRush", ic: "💥", nm: "정연핑 대폭주", ds: "정연핑!!!?? 무엇!!?!",
@@ -1031,7 +1038,8 @@
     { id: "downpour",   ic: "🌧️", nm: "뚜니핑 폭우", ds: "뚜니핑이 더 많이 쏟아진다",
       go: () => { aug.feverRateMul /= 1 + 0.45 * dim("downpour"); } },
     { id: "angryUmb",   ic: "💢", nm: "성난 우산",   ds: "방패가 깨질 때 화면의 똥이 전부 사라진다",
-      once: true, go: () => { aug.angryUmb = true; } },
+      once: true, cond: () => job !== "fit",   // 헬스걸은 방패가 없어 의미가 없다
+      go: () => { aug.angryUmb = true; } },
     { id: "gold",       ic: "✨", nm: "황금똥 연금술", ds: "똥이 가끔 황금똥으로 변한다. 먹으면 점수!",
       go: () => { aug.goldChance += 0.10 * dim("gold"); } },
     { id: "dopa",       ic: "📱", nm: "도파민 중독",  ds: "똥이 빨라지고, 생존 점수가 크게 오른다",
@@ -1304,6 +1312,11 @@
       flyOn = true;                   // 처음부터 하늘을 난다 (몸 크기는 그대로)
       player.ty = groundY;
     }
+    if (job === "fit") {
+      lives = 5;
+      aug.maxLives = 10;              // 하트를 쌓아 올리는 직업
+      aug.hitboxMul *= 1.2;           // 몸이 커서 잘 맞는다
+    }
     augScreen.classList.add("hidden");
     facing = "right";
     player.x = player.tx = W / 2;
@@ -1472,6 +1485,7 @@
     // 블랙홀 안에서는 아이템도 두 배로 자주 나온다
     let mean = BONUS_BASE / (b.w / BONUS_W_TOTAL) * aug.itemRateMul * lvFactor / bhMul();
     if (b.type === "paper" && aug.subs) mean /= 1.7;  // 정기구독 — 휴지만 1.7배 빈도
+    if (b.type === "heart" && job === "fit") mean /= 2;  // 헬스걸 — 하트 2배
     /* 평균 간격을 중심으로 ±25% 안에서만 흔들린다.
        판마다 개수가 들쭉날쭉하지 않도록 폭을 좁혔다 (별 기준 한 판에 7~9개).
        종류별로 타이머가 따로 도는 건 그대로라 여러 개가 한꺼번에 나오는 일은 여전히 생긴다.
@@ -1489,6 +1503,9 @@
 
   function spawnBonus(picked) {
     let pick = picked;
+    if (pick.type === "umbrella" && job === "fit") {
+      pick = BONUS.find(b => b.type === "heart");   // 헬스걸 — 우산 자리에 하트
+    }
     if (pick.type === "heart" && job === "gambler") return;   // 도박사에겐 하트가 아예 안 나온다
     if (pick.type === "heart" && lives >= aug.maxLives) {
       pick = BONUS.find(b => b.type === "star");    // 목숨 꽉 차면 별로 대체
@@ -1728,12 +1745,18 @@
 
     // ---- 우산 로켓배송: 방패가 하나도 없을 때만 시간을 재서 하나 배송한다 ----
     if (aug.steelUmb) {
-      if (shields <= 0) {
+      const canTake = job === "fit" ? lives < aug.maxLives : shields <= 0;
+      if (canTake) {
         shieldTimer -= dt;
         if (shieldTimer <= 0) {
-          shields = 1;
           shieldTimer = UMB_SEC;
-          popText(player.x, player.y - 60, "☔ 우산 도착!", "#7ec8ff");
+          if (job === "fit") {                       // 헬스걸 — 우산 대신 하트 배송
+            lives = Math.min(aug.maxLives, lives + 1);
+            popText(player.x, player.y - 60, "❤️ 하트 도착!", "#ff8fb0");
+          } else {
+            shields = 1;
+            popText(player.x, player.y - 60, "☔ 우산 도착!", "#7ec8ff");
+          }
           beep(880, .12, "triangle", .05);
         }
       } else {
@@ -2477,7 +2500,7 @@
   for (const a of AUGMENTS) { AUG_NAMES[a.id] = a.nm; AUG_HIDDEN[a.id] = !!a.hidden; }
   AUG_NAMES.gamble = "도박꾼(삭제됨)";   // 옛 기록 표시용
   AUG_NAMES.fly = "초전도 이재(삭제됨)";
-  const JOB_NAMES = { none: "백수", gambler: "도박사", levitator: "부양사", "(none)": "(기록 없음)" };
+  const JOB_NAMES = { none: "백수", gambler: "도박사", levitator: "부양사", fit: "헬스걸", "(none)": "(기록 없음)" };
   const devScreen = document.getElementById("devScreen");
   const devPw     = document.getElementById("devPw");
   const devBody   = document.getElementById("devBody");
@@ -3621,7 +3644,7 @@
       }
     }
 
-    const hr = 10.5, hgap = 30, hy = top + 16;
+    const hr = lives > 5 ? 7.5 : 10.5, hgap = lives > 5 ? 20 : 30, hy = top + 16;
     for (let i = 0; i < lives; i++) {
       const cx = W - 18 - hr * 1.32 - i * hgap;
       ctx.fillStyle = "rgba(70,8,20,.32)";                // 그림자
