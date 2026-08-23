@@ -442,6 +442,7 @@
       <div class="jobRow">
         <button class="jobBtn" data-job="none">🏃 백수</button>
         <button class="jobBtn" data-job="gambler">🎰 도박사</button>
+        <button class="jobBtn" data-job="levitator">🎈 공중부양사</button>
       </div>
       <div id="jobDesc"></div>
 
@@ -498,6 +499,7 @@
       <div class="jobRow">
         <button class="jobBtn" data-job="none">🏃 백수</button>
         <button class="jobBtn" data-job="gambler">🎰 도박사</button>
+        <button class="jobBtn" data-job="levitator">🎈 공중부양사</button>
       </div>
 
       <button id="btnRetry">다시 하기</button>
@@ -537,7 +539,7 @@
   const elFinal = document.getElementById("finalScore");
   const elTitle = document.getElementById("overTitle");
 
-  const GAME_VERSION = "v1.1.27";   // 코드를 고칠 때마다 뒤 두 자리를 올린다
+  const GAME_VERSION = "v1.1.28";   // 코드를 고칠 때마다 뒤 두 자리를 올린다
   document.getElementById("ver").textContent = GAME_VERSION;
 
   const LS_NAME = "epjpddongpi_name";
@@ -550,7 +552,7 @@
   const PLAYER_MAX_SPEED = 780;      // 좌우 이동 최고 속도 (논리 px/초)
   const PLAYER_UP = GROUND_H + 54;   // 화면 바닥에서 캐릭터 머리 중심까지
   const player = { x: 240, y: H - 139, r: 32, tx: 240, ty: 0, tilt: 0, hy: 0 };
-  const FLY_TOP = 0.34;              // 초전도 이재가 올라갈 수 있는 최고 높이 (화면 비율)
+  const FLY_TOP = 0.07;              // 나는 직업이 올라갈 수 있는 최고 높이 (그림이 안 잘리는 선)
   let groundY = 0;                   // 발이 땅에 닿는 기준 높이
   let flyOn = false;                 // 초전도 이재 — 위아래로도 날 수 있는 상태
 
@@ -558,8 +560,10 @@
   const LS_JOB = "epjpddongpi_job";
   const JOBS = {
     none:    { nm: "백수",   ic: "🏃", ds: "아무 효과 없음. 순수한 몸뚱이 하나" },
-    gambler: { nm: "도박사", ic: "🎰", ds: "목숨 1개 시작 · 하트 안 나옴 · 모든 점수 +50%" }
+    gambler: { nm: "도박사", ic: "🎰", ds: "목숨 1개 시작 · 하트 안 나옴 · 모든 점수 +50%" },
+    levitator: { nm: "공중부양사", ic: "🎈", ds: "하늘 어디든 날 수 있다 · 이동 +30% · 은은한 자석 기운" }
   };
+  function spdMul() { return job === "levitator" ? 1.3 : 1; }   // 이동 속도 배율
   let job = "none";
   try { const j = localStorage.getItem(LS_JOB); if (JOBS[j]) job = j; } catch (e) {}
   // hy = 발을 바닥에 고정했을 때 머리(판정 중심)가 player.y 에서 얼마나 떨어지는지.
@@ -641,6 +645,11 @@
     right: { img: null, aspect: 0.522, head: 0.369, cx: 0.590, cy: 0.319, adj: 0.6263 },
     hurt:  { img: null, aspect: 0.439, head: 0.415, cx: 0.487, cy: 0.347, adj: 0.7651 }
   };
+  const SPR_LEV = {
+    left:  { img: null, aspect: 0.578, head: 0.440, cx: 0.433, cy: 0.264, adj: 0.7467 },
+    right: { img: null, aspect: 0.606, head: 0.417, cx: 0.541, cy: 0.258, adj: 0.7081 },
+    hurt:  { img: null, aspect: 0.542, head: 0.438, cx: 0.544, cy: 0.258, adj: 0.8072 }
+  };
   const SPACE_Z = 6;                 // 오로라 지대 — 여기부터 우주복 차림
   /* 우주에 올라서면 체감 난이도를 이 배율만큼 올린다.
      낙하 속도와 낙하 빈도에 각각 제곱근을 나눠 걸어 둘을 합친 체감이 정확히 이 값이 된다. */
@@ -650,6 +659,7 @@
   function sprSet() {
     if (inSpace() && SPR_SPACE.right.img) return SPR_SPACE;   // 우주에선 직업과 무관하게 우주복
     if (job === "gambler" && SPR_GAMBLER.right.img) return SPR_GAMBLER;
+    if (job === "levitator" && SPR_LEV.right.img) return SPR_LEV;
     return SPR;
   }
 
@@ -665,6 +675,9 @@
     const gi = new Image();
     gi.onload = () => { SPR_GAMBLER[key].img = gi; };
     gi.src = "assets/gambler_" + key + ".png";
+    const li = new Image();
+    li.onload = () => { SPR_LEV[key].img = li; };
+    li.src = "assets/levitator_" + key + ".png";
   }
 
   // 도와줘 정연핑 — 아래에서 위로 날아가며 지나간 자리의 똥을 부순다
@@ -1036,14 +1049,6 @@
       hidden: true, once: true,
       cond: () => augCount["lucky"] >= 1 && augCount["fever_time"] >= 1 && augCount["downpour"] >= 1,
       go: () => { aug.subs = true; subsTimer = 0; } },
-    { id: "fly",        ic: "🧲", nm: "초전도 이재",  ds: "몸이 25% 작아지고, 위아래로도 날아다닌다",
-      hidden: true, once: true, cond: () => augCount["small"] >= 2,
-      go: () => {
-        flyOn = true;
-        aug.hitboxMul *= 0.75;
-        player.ty = groundY;
-        popText(player.x, player.y - 90, "🧲 부양!", "#9fe4ff", 26);
-      } },
     { id: "clone",      ic: "👯", nm: "벼랑 끝 분신술", ds: "작은 이재가 날아가 똥과 함께 자폭한다",
       hidden: true, once: true, cond: () => level >= 7 && lives <= 2,
       go: () => { aug.clone = true; cloneTimer = 1.5; } }
@@ -1293,6 +1298,10 @@
       lives = 1;
       aug.maxLives = 1;               // 하트는 애초에 별로 대체되어 떨어진다
       aug.scoreMul *= 1.5;            // 모든 점수 +50%
+    }
+    if (job === "levitator") {
+      flyOn = true;                   // 처음부터 하늘을 난다 (몸 크기는 그대로)
+      player.ty = groundY;
     }
     augScreen.classList.add("hidden");
     facing = "right";
@@ -1595,7 +1604,7 @@
       zoneShown = zi;
     }
 
-    const kSpeed = 560 * dt;
+    const kSpeed = 560 * spdMul() * dt;
     if (keys.ArrowLeft  || keys.a || keys.A) player.tx -= kSpeed;
     if (keys.ArrowRight || keys.d || keys.D) player.tx += kSpeed;
     player.tx = Math.max(player.r, Math.min(W - player.r, player.tx));
@@ -1608,7 +1617,7 @@
     const prev = player.x;
     // 손가락을 반대편에 찍어도 순간이동하지 않도록 최고 속도를 제한한다
     const want = (player.tx - player.x) * Math.min(1, dt * 20);
-    const maxStep = PLAYER_MAX_SPEED * dt;
+    const maxStep = PLAYER_MAX_SPEED * spdMul() * dt;
     player.x += Math.max(-maxStep, Math.min(maxStep, want));
     if (player.x - prev < -0.25) facing = "left";
     else if (player.x - prev > 0.25) facing = "right";   // 멈춰 있으면 마지막 방향 유지
@@ -1618,7 +1627,7 @@
     // 위아래 이동 — 가로보다 조금 느리게 따라간다 (붕 뜬 느낌)
     if (flyOn) {
       const wantY = (player.ty - player.y) * Math.min(1, dt * 14);
-      const stepY = PLAYER_MAX_SPEED * 0.72 * dt;
+      const stepY = PLAYER_MAX_SPEED * 0.72 * spdMul() * dt;
       player.y += Math.max(-stepY, Math.min(stepY, wantY));
     } else if (player.y !== groundY) {
       player.y += (groundY - player.y) * Math.min(1, dt * 10);
@@ -1902,21 +1911,26 @@
 
       const cy = player.y + player.hy;
       const dx = it.x - player.x, dy = it.y - cy;
-      if (aug.blackhole && it.type === "poop" && it.skin === "fever") {
+      if ((aug.blackhole || job === "levitator") && it.type === "poop" && it.skin === "fever") {
         // 뚜니핑 낙하물은 가까이 왔을 때만 끌어당긴다 (전부 빨아들이면 너무 세다)
-        const d = Math.hypot(dx, dy), R = 195;
+        // 공중부양사 기본치는 블랙홀의 절반 반경·45% 힘
+        const d = Math.hypot(dx, dy), R = aug.blackhole ? 195 : 98;
         if (d < R && d > 1) {
-          const pull = 481 * dt * (1 - d / R);
+          const pull = (aug.blackhole ? 481 : 216) * dt * (1 - d / R);
           it.x -= dx / d * pull;
           it.y -= dy / d * pull * 0.5;
         }
       }
-      if (aug.magnet > 0 && (it.type !== "poop" || it.gold)) {
+      /* 공중부양사는 자석이 없어도 기본 흡인(자석의 약 20%)을 갖고 시작한다.
+         자석 증강을 먹으면 온전한 자석으로 덮어쓴다. */
+      const magR = aug.magnet > 0 ? aug.magnet : (job === "levitator" ? 110 : 0);
+      const magF = aug.magnet > 0 ? 1 : 0.45;
+      if (magR > 0 && (it.type !== "poop" || it.gold)) {
         const d = Math.hypot(dx, dy);
         // 황금똥은 아이템의 절반 반경에서, 절반 힘으로만 끌려온다
-        const R = it.gold ? aug.magnet * 0.5 : aug.magnet;
+        const R = it.gold ? magR * 0.5 : magR;
         if (d < R && d > 1) {
-          const pull = (676 * (1 - d / R) + 78) * dt * (it.gold ? 0.5 : 1);
+          const pull = (676 * (1 - d / R) + 78) * dt * magF * (it.gold ? 0.5 : 1);
           it.x -= dx / d * pull;
           it.y -= dy / d * pull * 0.55;
         }
@@ -2460,7 +2474,8 @@
   const AUG_HIDDEN = {};
   for (const a of AUGMENTS) { AUG_NAMES[a.id] = a.nm; AUG_HIDDEN[a.id] = !!a.hidden; }
   AUG_NAMES.gamble = "도박꾼(삭제됨)";   // 옛 기록 표시용
-  const JOB_NAMES = { none: "백수", gambler: "도박사", "(none)": "(기록 없음)" };
+  AUG_NAMES.fly = "초전도 이재(삭제됨)";
+  const JOB_NAMES = { none: "백수", gambler: "도박사", levitator: "공중부양사", "(none)": "(기록 없음)" };
   const devScreen = document.getElementById("devScreen");
   const devPw     = document.getElementById("devPw");
   const devBody   = document.getElementById("devBody");
