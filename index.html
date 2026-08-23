@@ -532,7 +532,7 @@
   const elFinal = document.getElementById("finalScore");
   const elTitle = document.getElementById("overTitle");
 
-  const GAME_VERSION = "v1.1.24";   // 코드를 고칠 때마다 뒤 두 자리를 올린다
+  const GAME_VERSION = "v1.1.25";   // 코드를 고칠 때마다 뒤 두 자리를 올린다
   document.getElementById("ver").textContent = GAME_VERSION;
 
   const LS_NAME = "epjpddongpi_name";
@@ -553,7 +553,7 @@
   const LS_JOB = "epjpddongpi_job";
   const JOBS = {
     none:    { nm: "백수",   ic: "🏃", ds: "아무 효과 없음. 순수한 몸뚱이 하나" },
-    gambler: { nm: "도박사", ic: "🎰", ds: "목숨 1개 시작 · 하트가 별로 대체 · 모든 점수 +50%" }
+    gambler: { nm: "도박사", ic: "🎰", ds: "목숨 1개 시작 · 하트 안 나옴 · 모든 점수 +50%" }
   };
   let job = "none";
   try { const j = localStorage.getItem(LS_JOB); if (JOBS[j]) job = j; } catch (e) {}
@@ -1472,6 +1472,7 @@
 
   function spawnBonus(picked) {
     let pick = picked;
+    if (pick.type === "heart" && job === "gambler") return;   // 도박사에겐 하트가 아예 안 나온다
     if (pick.type === "heart" && lives >= aug.maxLives) {
       pick = BONUS.find(b => b.type === "star");    // 목숨 꽉 차면 별로 대체
     }
