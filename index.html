@@ -545,7 +545,7 @@
   const elFinal = document.getElementById("finalScore");
   const elTitle = document.getElementById("overTitle");
 
-  const GAME_VERSION = "v1.1.48";   // 코드를 고칠 때마다 뒤 두 자리를 올린다
+  const GAME_VERSION = "v1.1.49";   // 코드를 고칠 때마다 뒤 두 자리를 올린다
   document.getElementById("ver").textContent = GAME_VERSION;
 
   const LS_NAME = "epjpddongpi_name";
@@ -2424,6 +2424,7 @@
     /* 아래 두 값은 나중에 추가한 컬럼이라 DB에 아직 없을 수 있다.
        컬럼이 없으면 요청 전체가 거부되므로, 실패하면 기본 항목만으로 다시 보낸다. */
     const tries = [
+      Object.assign({}, base, { device: deviceId, augs: augCount, job: job }),
       Object.assign({}, base, { device: deviceId, augs: augCount }),
       Object.assign({}, base, { device: deviceId }),
       base
@@ -2769,14 +2770,15 @@
       try {
         const rows = await fetchRange(weekStartMs(0), null, TOP_N);
         devPanes.rank.appendChild(devSection("이번 주 TOP " + TOP_N,
-          ["#", "이름", "점수", "Lv", "증강"],
+          ["#", "이름", "직업", "점수", "Lv", "증강"],
           rows.length ? rows.map((r, i) => [
             (i + 1) + "",
             r.name,
+            r.job ? (JOB_NAMES[r.job] || r.job) : "-",
             { t: Number(r.score || 0).toLocaleString(), c: "num" },
             { t: r.level == null ? "-" : r.level, c: "num" },
             { t: augLabel(r.augs), c: "lft" }
-          ]) : [["", "기록 없음", "", "", ""]]));
+          ]) : [["", "기록 없음", "", "", "", ""]]));
       } catch (e) {
         devPanes.rank.appendChild(devSection("이번 주 TOP " + TOP_N, null,
           [["랭킹을 불러오지 못했습니다", ""]]));
