@@ -284,7 +284,11 @@
   }
 
   /* ─────────── 시작 화면 ─────────── */
-  #startScreen { gap: clamp(8px, 1.8vh, 14px); }
+  #startScreen {
+    gap: clamp(8px, 1.8vh, 14px);
+    background: rgba(10,11,16,.52);            /* 뒤 인트로가 비쳐 보이게 */
+    -webkit-backdrop-filter: blur(2px); backdrop-filter: blur(2px);
+  }
   /* 화면 위쪽에 은은한 빛을 깔아 패널이 떠 보이게 한다 */
   #startScreen::before {
     content: ""; position: absolute; inset: 0; pointer-events: none;
@@ -509,7 +513,7 @@
   const elFinal = document.getElementById("finalScore");
   const elTitle = document.getElementById("overTitle");
 
-  const GAME_VERSION = "v1.1.12";   // 코드를 고칠 때마다 뒤 두 자리를 올린다
+  const GAME_VERSION = "v1.1.14";   // 코드를 고칠 때마다 뒤 두 자리를 올린다
   document.getElementById("ver").textContent = GAME_VERSION;
 
   const LS_NAME = "epjpddongpi_name";
@@ -645,6 +649,105 @@
     si.src = "assets/space_poop.png";
   }
 
+  /* ---------- 시작 화면 인트로 ----------
+     게임 플레이가 아니라 '여정'을 보여주는 연출.
+     잔디밭에서 블랙홀까지 한 바퀴 훑고 처음으로 돌아온다. */
+  const INTRO_LOOP = 32;                    // 한 바퀴(초)
+  let introT = 0, introPoops = [], introSpawn = 0, introSuit = false, introBoom = 0;
+
+  function introUpdate(dt, now) {
+    introT += dt;
+    if (introT >= INTRO_LOOP) { introT = 0; introPoops.length = 0; introSuit = false; }
+    // 배경이 잔디밭 → 우주 → 블랙홀까지 흘러간다
+    levelTime = (introT / INTRO_LOOP) * (12 * ZONES.length);
+    level = 1 + Math.floor(levelTime / 12);
+
+    const suit = inSpace();
+    if (suit && !introSuit) { feverFlash = Math.max(feverFlash, .55); introBoom = 1; }
+    introSuit = suit;
+    if (introBoom > 0) introBoom -= dt * 1.6;
+
+    // 스쳐 지나가는 것들 — 위로 솟구치니 아래로 흘러간다
+    introSpawn -= dt;
+    if (introSpawn <= 0) {
+      introSpawn = 0.14 + Math.random() * 0.20;
+      const r = 9 + Math.random() * 19;
+      const roll = Math.random();
+      introPoops.push({
+        x: 16 + Math.random() * Math.max(1, W - 32), y: -r - 24,
+        r: r, vy: 460 + Math.random() * 620,
+        rot: Math.random() * 6.28, vr: (Math.random() - .5) * 7,
+        kind: roll < .06 ? "star" : roll < .10 ? "gold" : "poop"
+      });
+    }
+    for (let i = introPoops.length - 1; i >= 0; i--) {
+      const q = introPoops[i];
+      q.y += q.vy * dt;
+      q.rot += q.vr * dt;
+      if (q.y - q.r > H + 50) introPoops.splice(i, 1);
+    }
+
+    facing = Math.sin(introT * 0.9) > 0 ? "right" : "left";
+    player.hy = headOffset(currentSprite(now));
+  }
+
+  function drawIntro(now) {
+    const bh = zv("bh");
+    // 위로 솟구치는 속도선
+    ctx.lineWidth = 2;
+    for (let i = 0; i < 14; i++) {
+      const x = ((i * 173 + introT * 30) % (W + 60)) - 30;
+      const y = ((i * 271 + introT * 1100) % (H + 260)) - 130;
+      ctx.strokeStyle = "rgba(255,255,255," + (inSpace() ? .16 : .10) + ")";
+      ctx.beginPath(); ctx.moveTo(x, y); ctx.lineTo(x, y + (inSpace() ? 120 : 60)); ctx.stroke();
+    }
+
+    // 스쳐 가는 똥·별·황금똥
+    ctx.textAlign = "center"; ctx.textBaseline = "middle";
+    for (const q of introPoops) {
+      ctx.save();
+      ctx.globalAlpha = 1;
+      ctx.translate(q.x, q.y);
+      ctx.rotate(q.rot);
+      if (q.kind === "gold") {
+        const gg = ctx.createRadialGradient(0, 0, 0, 0, 0, q.r * 1.6);
+        gg.addColorStop(0, "rgba(255,214,80,.5)");
+        gg.addColorStop(1, "rgba(255,214,80,0)");
+        ctx.fillStyle = gg;
+        ctx.beginPath(); ctx.arc(0, 0, q.r * 1.6, 0, 6.283); ctx.fill();
+        if (ctx.filter !== undefined)
+          ctx.filter = "sepia(1) saturate(2.6) hue-rotate(-12deg) brightness(1.2)";
+      }
+      ctx.fillStyle = "#fff";
+      ctx.font = (q.r * 2) + "px serif";
+      ctx.fillText(q.kind === "star" ? "⭐" : "💩", 0, 0);
+      if (ctx.filter !== undefined) ctx.filter = "none";
+      ctx.restore();
+    }
+
+    // 주인공 — 붕 떠서 위로 나아간다. 블랙홀에 가까워지면 빨려 들어간다.
+    const spr = currentSprite(now);
+    if (!spr) return;
+    const pull = Math.max(0, (bh - 0.55) / 0.95);          // 블랙홀 흡인 진행도
+    const cx = W / 2 + (W * 0.5 - W / 2) * 0 + Math.sin(introT * 0.7) * W * 0.16 * (1 - pull);
+    const cy = H * (0.60 - 0.30 * pull) + Math.sin(introT * 2.1) * 9 * (1 - pull);
+    const scale = 1.15 * (1 - pull * 0.8);
+    const sh = spriteHeight(spr) * scale, sw = sh * spr.aspect;
+
+    ctx.save();
+    ctx.translate(cx, cy);
+    ctx.rotate(Math.sin(introT * 1.5) * 0.10 + pull * 7);   // 빨려들 땐 빙글빙글
+    // 뒤로 번지는 빛
+    const g = ctx.createRadialGradient(0, 0, 0, 0, 0, sh * 0.95);
+    const glow = introBoom > 0 ? .45 : .20;
+    g.addColorStop(0, "rgba(255,210,63," + glow.toFixed(2) + ")");
+    g.addColorStop(1, "rgba(255,210,63,0)");
+    ctx.fillStyle = g;
+    ctx.beginPath(); ctx.arc(0, 0, sh * 0.95, 0, 6.283); ctx.fill();
+    ctx.drawImage(spr.img, -sw * spr.cx, -sh * spr.cy, sw, sh);
+    ctx.restore();
+  }
+
   /* ---------- 사운드 ---------- */
   let ac = null;
   function beep(freq, dur, type, vol) {
@@ -773,7 +876,8 @@
       hidden: true, once: true, cond: () => augCount["fever_time"] >= 1 && augCount["downpour"] >= 1,
       go: () => { aug.refill = true; } },
     { id: "subs",       ic: "📦", nm: "휴지 정기구독", ds: "휴지가 더 자주, 안 오면 강제 배송된다",
-      hidden: true, once: true, cond: () => augCount["lucky"] >= 1 && augCount["fever_time"] >= 1,
+      hidden: true, once: true,
+      cond: () => augCount["lucky"] >= 1 && augCount["fever_time"] >= 1 && augCount["downpour"] >= 1,
       go: () => { aug.subs = true; subsTimer = 0; } },
     { id: "clone",      ic: "👯", nm: "벼랑 끝 분신술", ds: "작은 이재가 날아가 똥과 함께 자폭한다",
       hidden: true, once: true, cond: () => level >= 7 && lives <= 2,
@@ -967,7 +1071,7 @@
     testMode = (test === true);    // 정확히 true 일 때만 테스트 모드 (이벤트 객체가 새어들지 않게)
     btnTestEnd.classList.toggle("on", testMode);
     layout();
-    items = []; particles = []; floats = []; warns = [];
+    items = []; particles = []; floats = []; warns = []; introPoops = []; introT = 0;
     // 테스트 모드는 어차피 목숨이 안 줄어드니, 목숨 조건 증강(당근거래·분신술)을
     // 바로 시험해볼 수 있게 1부터 시작한다.
     score = 0; lives = testMode ? 1 : 3; level = 1; elapsed = 0; levelTime = 0; starCount = 0;
@@ -1257,6 +1361,7 @@
       beep(520, .12, "triangle", .04);
     }
 
+    if (state === STATE.READY) { introUpdate(dt, now); return; }
     if (state !== STATE.PLAY) return;
 
     elapsed += dt;
@@ -2628,9 +2733,11 @@
     }
 
     // 발밑 — 단계가 바뀌는 동안 다음 지형이 겹쳐 올라온다
-    const za = ZONES[zoneIdx()], zb = ZONES[Math.min(LAST_Z, zoneIdx() + 1)], zf = zoneFrac();
-    drawGround(za.gr, 1);
-    if (zb.gr !== za.gr && zf > 0.45) drawGround(zb.gr, Math.min(1, (zf - 0.45) / 0.35));
+    if (state !== STATE.READY) {          // 인트로에서는 발판 없이 날아간다
+      const za = ZONES[zoneIdx()], zb = ZONES[Math.min(LAST_Z, zoneIdx() + 1)], zf = zoneFrac();
+      drawGround(za.gr, 1);
+      if (zb.gr !== za.gr && zf > 0.45) drawGround(zb.gr, Math.min(1, (zf - 0.45) / 0.35));
+    }
   }
 
   /* ---- 배경 조각들 ---- */
@@ -3347,10 +3454,14 @@
     ctx.save();
     if (shake > 0) ctx.translate((Math.random() - .5) * shake, (Math.random() - .5) * shake);
     drawBackground(now);
-    drawWarnings(now);
-    drawItems();
-    drawHelpers();
-    if (state !== STATE.OVER) drawPlayer(now);
+    if (state === STATE.READY) {
+      drawIntro(now);
+    } else {
+      drawWarnings(now);
+      drawItems();
+      drawHelpers();
+      if (state !== STATE.OVER) drawPlayer(now);
+    }
     drawEffects();
     ctx.restore();
     if (state === STATE.PLAY) drawHud();
