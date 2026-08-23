@@ -509,7 +509,7 @@
   const elFinal = document.getElementById("finalScore");
   const elTitle = document.getElementById("overTitle");
 
-  const GAME_VERSION = "v1.1.09";   // 코드를 고칠 때마다 뒤 두 자리를 올린다
+  const GAME_VERSION = "v1.1.10";   // 코드를 고칠 때마다 뒤 두 자리를 올린다
   document.getElementById("ver").textContent = GAME_VERSION;
 
   const LS_NAME = "epjpddongpi_name";
@@ -1362,14 +1362,14 @@
       if (cloneTimer <= 0) {
         let best = null, bd = 1e9;
         for (const q of items) {
-          if (q.type !== "poop" || q.gold) continue;
+          if (q.type !== "poop") continue;            // 황금똥·특수똥도 표적으로 삼는다
           if (q.y > player.y - 40) continue;          // 이미 지나친 똥은 무시
           const d = Math.hypot(q.x - player.x, q.y - (player.y + player.hy));
           if (d < bd) { bd = d; best = q; }
         }
         if (best) {
           clones.push({ x: player.x, y: player.y + player.hy, t: best, life: 3 });
-          cloneTimer = 4;                             // 4초마다 한 명 출격
+          cloneTimer = 1;                             // 1초마다 한 명 출격
           beep(740, .08, "square", .04);
         } else cloneTimer = 0.5;
       }
@@ -1383,7 +1383,7 @@
       c.x += dx2 / d2 * 760 * dt;
       c.y += dy2 / d2 * 760 * dt;
       if ((alive && d2 < (c.t.r || 20) + 16) || c.life <= 0) {
-        smashPoopsAround(c.x, c.y, 110);              // 폭발 반경 110px (특수똥은 반응만)
+        smashPoopsAround(c.x, c.y, 70, true);         // 폭발 반경 70px (특수똥까지 부순다)
         burst(c.x, c.y, "#ffd23f", 26);
         shake = Math.max(shake, 8);
         beep(240, .12, "square", .05);
@@ -1781,7 +1781,7 @@
   }
 
   // 정연핑이 지나간 자리의 똥을 부순다 (뚜니핑 낙하물은 제 점수를 그대로 준다)
-  function smashPoopsAround(x, y, radius) {
+  function smashPoopsAround(x, y, radius, force) {
     for (let i = items.length - 1; i >= 0; i--) {
       const it = items[i];
       if (it.type !== "poop") continue;
@@ -1791,6 +1791,12 @@
         score += g;
         burst(it.x, it.y, "#ffd23f", 18);
         popText(it.x, it.y, "✨ +" + g.toLocaleString(), "#ffe07a");
+        items.splice(i, 1);
+        continue;
+      }
+      if (it.special && force) {              // 분신 폭발은 까다로운 똥도 부순다
+        score += 3 * scoreMul();
+        burst(it.x, it.y, "#ffd23f", 16);
         items.splice(i, 1);
         continue;
       }
