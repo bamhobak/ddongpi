@@ -513,7 +513,7 @@
   const elFinal = document.getElementById("finalScore");
   const elTitle = document.getElementById("overTitle");
 
-  const GAME_VERSION = "v1.1.19";   // 코드를 고칠 때마다 뒤 두 자리를 올린다
+  const GAME_VERSION = "v1.1.20";   // 코드를 고칠 때마다 뒤 두 자리를 올린다
   document.getElementById("ver").textContent = GAME_VERSION;
 
   const LS_NAME = "epjpddongpi_name";
@@ -728,7 +728,8 @@
       if (c.y < -220 || c.y > H + 220) introCameo.splice(i, 1);
     }
 
-    facing = Math.sin(introT * (6.283185 / INTRO_LOOP) * 5) >= 0 ? "right" : "left";
+    // 위상을 조금 밀어 두어야 루프 경계(0 교차점)에서 방향이 뒤집히지 않는다
+    facing = Math.sin(introT * (6.283185 / INTRO_LOOP) * 5 + 0.4) >= 0 ? "right" : "left";
     player.hy = headOffset(currentSprite(now));
   }
 
