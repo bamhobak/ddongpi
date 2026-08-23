@@ -539,7 +539,7 @@
   const elFinal = document.getElementById("finalScore");
   const elTitle = document.getElementById("overTitle");
 
-  const GAME_VERSION = "v1.1.32";   // 코드를 고칠 때마다 뒤 두 자리를 올린다
+  const GAME_VERSION = "v1.1.33";   // 코드를 고칠 때마다 뒤 두 자리를 올린다
   document.getElementById("ver").textContent = GAME_VERSION;
 
   const LS_NAME = "epjpddongpi_name";
@@ -2877,7 +2877,13 @@
   const BH_Z = LAST_Z;                 // 블랙홀 안 — 여기부터 모든 조건이 두 배
   function inBlackhole() { return zoneIdx() >= BH_Z; }
   function bhMul() { return inBlackhole() ? 2 : 1; }
-  function scoreMul() { return aug.scoreMul * bhMul(); }
+  /* 부양사 — 높이 날수록 모든 점수가 커진다. 바닥 +0%, 중간 +25%, 꼭대기 +50%. */
+  function levMul() {
+    if (job !== "levitator" || !flyOn) return 1;
+    const air = Math.max(0, Math.min(1, (groundY - player.y) / Math.max(1, groundY - H * FLY_TOP)));
+    return 1 + 0.5 * air;
+  }
+  function scoreMul() { return aug.scoreMul * bhMul() * levMul(); }
 
   function zoneIdx() { return Math.min(LAST_Z, level - 1); }
   // 지금 단계와 다음 단계 사이의 진행도 — 색이 뚝 끊기지 않고 이어지도록
