@@ -497,7 +497,7 @@
   const elRank  = document.getElementById("rankLine");
   const elTitle = document.getElementById("overTitle");
 
-  const GAME_VERSION = "v1.0.93";   // 코드를 고칠 때마다 뒤 두 자리를 올린다
+  const GAME_VERSION = "v1.0.94";   // 코드를 고칠 때마다 뒤 두 자리를 올린다
   document.getElementById("ver").textContent = GAME_VERSION;
 
   const LS_NAME = "epjpddongpi_name";
@@ -1849,7 +1849,7 @@
     // DB 제약(최대 1억점)에 걸려 등록이 실패하지 않도록 방어
     const base = {
       name: name,
-      score: Math.min(100000000, Math.max(0, sc)),
+      score: Math.min(10000000000, Math.max(0, sc)),   // 상한 100억
       level: lv
     };
     /* 아래 두 값은 나중에 추가한 컬럼이라 DB에 아직 없을 수 있다.
@@ -1939,7 +1939,7 @@
         method: "POST",
         headers: sbHeaders({ "Content-Type": "application/json", Prefer: "return=minimal" }),
         body: JSON.stringify({
-          score: Math.min(100000000, Math.max(0, sc)),
+          score: Math.min(10000000000, Math.max(0, sc)),   // 상한 100억
           level: level,
           secs: Math.round(elapsed),
           stars: starCount,
