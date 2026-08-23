@@ -3627,7 +3627,7 @@
     // 보유 증강 — 오른쪽 위 하트 아래에 붙인다 (우산은 머리 위에 이미 보이므로 제외)
     const owned = AUGMENTS.filter(a => augCount[a.id] && !a.noCount);
     if (owned.length) {
-      let x = W - 16, ay = top + 44;
+      let x = W - 16, ay = top + (lives > 10 ? 62 : 44);   // 하트가 두 줄이면 그 아래로
       for (let i = owned.length - 1; i >= 0; i--) {
         const a = owned[i], n = augCount[a.id];
         const wItem = n > 1 ? 30 : 21;
