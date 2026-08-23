@@ -143,7 +143,7 @@
   #startName:focus { outline: none; border-color: #ffd23f; }
 
   /* ---- 직업 선택 ---- */
-  #jobRow { display: flex; gap: 8px; }
+  .jobRow { display: flex; gap: 8px; justify-content: center; }
   .jobBtn {
     padding: 8px 18px; font-size: 13px; border-radius: 999px;
     background: rgba(255,255,255,.08); color: #b8bdcc;
@@ -439,7 +439,7 @@
         <button id="btnSaveName">저장</button>
       </div>
 
-      <div id="jobRow">
+      <div class="jobRow">
         <button class="jobBtn" data-job="none">🏃 백수</button>
         <button class="jobBtn" data-job="gambler">🎰 도박사</button>
       </div>
@@ -495,6 +495,11 @@
         <div class="note" id="noteOver"></div>
       </div>
 
+      <div class="jobRow">
+        <button class="jobBtn" data-job="none">🏃 백수</button>
+        <button class="jobBtn" data-job="gambler">🎰 도박사</button>
+      </div>
+
       <button id="btnRetry">다시 하기</button>
     </div>
   </div>
@@ -532,7 +537,7 @@
   const elFinal = document.getElementById("finalScore");
   const elTitle = document.getElementById("overTitle");
 
-  const GAME_VERSION = "v1.1.25";   // 코드를 고칠 때마다 뒤 두 자리를 올린다
+  const GAME_VERSION = "v1.1.26";   // 코드를 고칠 때마다 뒤 두 자리를 올린다
   document.getElementById("ver").textContent = GAME_VERSION;
 
   const LS_NAME = "epjpddongpi_name";
@@ -631,9 +636,10 @@
   /* 직업: 도박사 복장 (우주복 이전 구간에서만 입는다).
      head/cx/cy/adj 는 실측값 — 헬멧 대신 얼굴이 판정 기준이다. */
   const SPR_GAMBLER = {
-    left:  { img: null, aspect: 0.519, head: 0.394, cx: 0.519, cy: 0.322, adj: 0.5808 },
-    right: { img: null, aspect: 0.522, head: 0.369, cx: 0.590, cy: 0.319, adj: 0.5446 },
-    hurt:  { img: null, aspect: 0.467, head: 0.402, cx: 0.458, cy: 0.306, adj: 0.6453 }
+    // 모자·머리숱이 커서 같은 몸높이면 작아 보인다 — 15% 키워 백수와 체감을 맞췄다
+    left:  { img: null, aspect: 0.522, head: 0.394, cx: 0.516, cy: 0.314, adj: 0.6691 },
+    right: { img: null, aspect: 0.519, head: 0.369, cx: 0.588, cy: 0.317, adj: 0.6263 },
+    hurt:  { img: null, aspect: 0.439, head: 0.386, cx: 0.475, cy: 0.311, adj: 0.7128 }
   };
   const SPACE_Z = 6;                 // 오로라 지대 — 여기부터 우주복 차림
   /* 우주에 올라서면 체감 난이도를 이 배율만큼 올린다.
