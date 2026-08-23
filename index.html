@@ -511,7 +511,7 @@
   const elRank  = document.getElementById("rankLine");
   const elTitle = document.getElementById("overTitle");
 
-  const GAME_VERSION = "v1.1.00";   // 코드를 고칠 때마다 뒤 두 자리를 올린다
+  const GAME_VERSION = "v1.1.01";   // 코드를 고칠 때마다 뒤 두 자리를 올린다
   document.getElementById("ver").textContent = GAME_VERSION;
 
   const LS_NAME = "epjpddongpi_name";
@@ -2186,14 +2186,13 @@
 
     const rec = data.recent || [];
     P.rec.appendChild(devSection("최근 20판",
-      ["이름", "점수", "생존", "버전", "증강"],
+      ["이름", "점수", "생존", "증강"],
       rec.length ? rec.map(r => [
         r.name || "-",
         { t: Number(r.score || 0).toLocaleString(), c: "num" },
         { t: (r.secs || 0) + "초", c: "num" },
-        { t: r.ver || "-", c: "num" },
         { t: augLabel(r.augs), c: "lft" }
-      ]) : [["기록 없음", "", "", "", ""]]));
+      ]) : [["기록 없음", "", "", ""]]));
 
   }
 
