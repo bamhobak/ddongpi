@@ -509,7 +509,7 @@
   const elFinal = document.getElementById("finalScore");
   const elTitle = document.getElementById("overTitle");
 
-  const GAME_VERSION = "v1.1.04";   // 코드를 고칠 때마다 뒤 두 자리를 올린다
+  const GAME_VERSION = "v1.1.05";   // 코드를 고칠 때마다 뒤 두 자리를 올린다
   document.getElementById("ver").textContent = GAME_VERSION;
 
   const LS_NAME = "epjpddongpi_name";
@@ -1579,18 +1579,20 @@
       const cy = player.y + player.hy;
       const dx = it.x - player.x, dy = it.y - cy;
       if (aug.blackhole && it.type === "poop" && it.skin === "fever") {
-        // 뚜니핑 낙하물은 가까이 왔을 때만 살짝 끌어당긴다 (전부 빨아들이면 너무 세다)
-        const d = Math.hypot(dx, dy), R = 130;
+        // 뚜니핑 낙하물은 가까이 왔을 때만 끌어당긴다 (전부 빨아들이면 너무 세다)
+        const d = Math.hypot(dx, dy), R = 150;
         if (d < R && d > 1) {
-          const pull = 300 * dt * (1 - d / R);   // 20% 상향
+          const pull = 420 * dt * (1 - d / R);
           it.x -= dx / d * pull;
           it.y -= dy / d * pull * 0.5;
         }
       }
-      if (aug.magnet > 0 && it.type !== "poop") {
+      if (aug.magnet > 0 && (it.type !== "poop" || it.gold)) {
         const d = Math.hypot(dx, dy);
         if (d < aug.magnet && d > 1) {
-          const pull = 520 * dt * (1 - d / aug.magnet) + 60 * dt;
+          // 황금똥은 아이템의 절반 힘으로만 끌려온다
+          const str = it.gold ? 0.5 : 1;
+          const pull = (520 * (1 - d / aug.magnet) + 60) * dt * str;
           it.x -= dx / d * pull;
           it.y -= dy / d * pull * 0.55;
         }
@@ -1724,9 +1726,9 @@
       beep(900, .12, "triangle", .05);
     }
     if (it.type === "star") {
-      // 먹을 때마다 1.5배: 1번째 1,000 → 2번째 1,500 → 3번째 2,250 → 4번째 3,375 …
+      // 먹을 때마다 1.5배: 1번째 1,300 → 2번째 1,950 → 3번째 2,925 → 4번째 4,388 …
       starCount++;
-      const gain = Math.round(1000 * Math.pow(1.5, starCount - 1) * aug.starMul * scoreMul());
+      const gain = Math.round(1300 * Math.pow(1.5, starCount - 1) * aug.starMul * scoreMul());
       score += gain;
       popText(it.x, it.y, "⭐×" + starCount + "  +" + gain.toLocaleString(), "#ffd23f");
       beep(1400, .1, "square", .05);
