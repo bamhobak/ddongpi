@@ -234,10 +234,10 @@
   #testMsg { font-size: 12px; color: #ff8f8f; min-height: 14px; }
   /* 일시정지 — 왼쪽 가장자리, 반투명이라 게임을 가리지 않는다 */
   #btnPause {
-    position: absolute; left: 10px; top: 30%; z-index: 4; display: none;
-    width: 44px; height: 44px; padding: 0; border-radius: 50%;
-    background: rgba(255,255,255,.14); color: #fff;
-    font-size: 17px; opacity: .45;
+    position: absolute; left: 12px; bottom: max(12px, env(safe-area-inset-bottom)); z-index: 4; display: none;
+    width: 46px; height: 46px; padding: 0; border-radius: 50%;
+    background: rgba(255,255,255,.22); color: #fff;
+    font-size: 18px; opacity: .75;
   }
   #btnPause.on { display: block; }
   #btnPause:active { opacity: .9; }
@@ -568,7 +568,7 @@
   const elFinal = document.getElementById("finalScore");
   const elTitle = document.getElementById("overTitle");
 
-  const GAME_VERSION = "v1.1.63";   // 코드를 고칠 때마다 뒤 두 자리를 올린다
+  const GAME_VERSION = "v1.1.64";   // 코드를 고칠 때마다 뒤 두 자리를 올린다
   document.getElementById("ver").textContent = GAME_VERSION;
 
   const LS_NAME = "epjpddongpi_name";
