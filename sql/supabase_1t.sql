@@ -22,7 +22,3 @@ create policy ddongpi_runs_insert on public.ddongpi_runs
 
 notify pgrst, 'reload schema';
 
--- 확인용
-select conname, pg_get_constraintdef(oid)
-  from pg_constraint
- where conname in ('ddongpi_score_range', 'ddongpi_runs_score');
