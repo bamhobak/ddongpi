@@ -568,7 +568,7 @@
   const elFinal = document.getElementById("finalScore");
   const elTitle = document.getElementById("overTitle");
 
-  const GAME_VERSION = "v1.1.69";   // 코드를 고칠 때마다 뒤 두 자리를 올린다
+  const GAME_VERSION = "v1.1.70";   // 코드를 고칠 때마다 뒤 두 자리를 올린다
   document.getElementById("ver").textContent = GAME_VERSION;
 
   const LS_NAME = "epjpddongpi_name";
@@ -593,7 +593,7 @@
     levitator: { nm: "부양사", ic: "🎈", ds: "하늘 어디든 날 수 있다 · 높이 있을수록 점수 UP" },
     fit: { nm: "헬스걸", ic: "💪", ds: "목숨 5개로 시작 · 벌크업 좀 된 상태" },
     powerj: { nm: "파워J", ic: "📋", ds: "달이 잘 나온다 · 대신 증강은 계획대로 1개만" },
-    powerp: { nm: "무소유", ic: "🙏", ds: "달이 아예 안 나온다 · 별이 잘 나온다 · 레벨이 오를수록 점수 배율 UP" }
+    powerp: { nm: "무소유", ic: "🙏", ds: "달이 아예 안 나온다 · 별이 잘 나온다 · 안 맞을수록 점수가 치솟는다" }
   };
   function spdMul() { return job === "levitator" ? 2 : 1; }   // 이동 속도 배율 (부양사 2배)
   let job = "none";
@@ -1236,6 +1236,7 @@
   let bulletT = 0, interTimer = 10;// 인터스텔라: 불릿타임 남은 시간 / 다음 발동까지
   let refillLeft = 0;              // 뚜니핑 무한리필: 이번 뚜니핑에서 더 늘릴 수 있는 양(ms)
   let subsTimer = 0;               // 휴지 정기구독: 마지막 휴지 이후 지난 시간
+  let noHitSec = 0;                // 마지막 피격 이후 버틴 시간 (무소유 배율용)
   let clones = [], cloneTimer = 0; // 벼랑 끝 분신술: 날아가는 작은 이재들
   let ghostTimer = 6;              // 유령화: 다음 무적까지 남은 시간
   let hurtUntil = 0;               // 똥에 맞은 직후 (아픈 그림 표시)
@@ -1415,6 +1416,7 @@
     aug.angryUmb = false; aug.goldChance = 0; aug.inter = false;
     aug.refill = false; aug.subs = false; aug.clone = false;
     spawnHold = 0; bulletT = 0; interTimer = 10; refillLeft = 0; subsTimer = 0;
+    noHitSec = 0;
     clones = []; cloneTimer = 0;
     shieldTimer = UMB_SEC;
     aug.itemRateMul = 1; aug.feverRateMul = 1; aug.giant = 0; aug.magnet = 0;
@@ -1721,6 +1723,7 @@
     if (state !== STATE.PLAY) return;
 
     elapsed += dt;
+    noHitSec += dt;                          // 안 맞고 버틴 시간 (피격 시 0으로)
     /* 레벨 시계는 뚜니핑 타임 동안 멈춘다. 무적으로 낙하물을 줍는 시간까지
        레벨에 포함되면, 정작 실력으로 버틴 시간이 아닌데도 난이도가 올라간다. */
     if (!fever) levelTime += dt;
@@ -2145,6 +2148,7 @@
           if (now >= invUntil) {
             if (shields > 0) {
               shields--;
+              noHitSec = 0;
               invUntil = now + 1000;        // 목숨을 잃었을 때와 같은 무적 시간
               shake = Math.max(shake, 14);
               burst(it.x, it.y, "#7ec8ff", 20);
@@ -2170,6 +2174,7 @@
               }
             } else {
               if (!testMode) lives--;      // 테스트 모드는 맞아도 목숨이 줄지 않는다
+              noHitSec = 0;
               invUntil = now + 1000;
               hurtUntil = now + 1000;   // 무적 시간 동안 아픈 그림으로
               shake = 22; flash = 1;
@@ -3067,9 +3072,12 @@
     const air = Math.max(0, Math.min(1, (groundY - player.y) / Math.max(1, groundY - H * FLY_TOP)));
     return 1 + 1.0 * air;
   }
-  /* 무소유 — 증강이 없는 대신 레벨마다 배율이 커진다.
-     Lv1 +200%(×3) → Lv2 +300%(×4) → Lv3 +400%(×5) … 상한 없음. */
-  function monkMul() { return job === "powerp" ? level + 2 : 1; }
+  /* 무소유 — 증강이 없는 대신 레벨마다 배율이 커지고 (Lv1 ×3, 레벨마다 +1),
+     여기에 안 맞고 버틴 시간만큼 초당 +10% 가 더 곱해진다. 맞으면 무피격 보너스만 초기화. */
+  function monkMul() {
+    if (job !== "powerp") return 1;
+    return (level + 2) * (1 + 0.10 * noHitSec);
+  }
   function scoreMul() { return aug.scoreMul * bhMul() * levMul() * monkMul(); }
 
   function zoneIdx() { return Math.min(LAST_Z, level - 1); }
@@ -3777,6 +3785,10 @@
     ctx.font = "600 13px system-ui, sans-serif";
     ctx.fillStyle = "rgba(255,255,255,.9)";
     ctx.fillText(ZONES[zoneIdx()].ic + " " + ZONES[zoneIdx()].nm, 17, top + 32);
+    if (job === "powerp") {
+      ctx.fillStyle = "#ffe08a";
+      ctx.fillText("🧘 무피격 +" + Math.round(noHitSec * 10) + "%", 17, top + 50);
+    }
 
 
     // 목숨은 이모지 대신 직접 그린다.
