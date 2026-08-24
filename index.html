@@ -568,7 +568,7 @@
   const elFinal = document.getElementById("finalScore");
   const elTitle = document.getElementById("overTitle");
 
-  const GAME_VERSION = "v1.1.72";   // 코드를 고칠 때마다 뒤 두 자리를 올린다
+  const GAME_VERSION = "v1.1.73";   // 코드를 고칠 때마다 뒤 두 자리를 올린다
   document.getElementById("ver").textContent = GAME_VERSION;
 
   const LS_NAME = "epjpddongpi_name";
@@ -3783,10 +3783,6 @@
     ctx.font = "600 13px system-ui, sans-serif";
     ctx.fillStyle = "rgba(255,255,255,.9)";
     ctx.fillText(ZONES[zoneIdx()].ic + " " + ZONES[zoneIdx()].nm, 17, top + 32);
-    if (job === "powerp") {
-      ctx.fillStyle = "#ffe08a";
-      ctx.fillText("🧘 무피격 +" + Math.round(noHitSec * 10) + "%", 17, top + 50);
-    }
 
 
     // 목숨은 이모지 대신 직접 그린다.
@@ -3817,6 +3813,13 @@
     }
 
     // 하트가 많으면 작게 그리고 10개 단위로 줄을 바꾼다 (헬스걸은 최대 20개)
+    if (job === "powerp") {                 // 무소유 — 무피격으로 버틴 시간
+      ctx.textAlign = "right";
+      ctx.font = "700 13px system-ui, sans-serif";
+      ctx.fillStyle = "#ffe08a";
+      ctx.fillText("🧘 " + Math.floor(noHitSec) + "초", W - 16, top + 44);
+      ctx.textAlign = "left";
+    }
     const hr = lives > 5 ? 7.5 : 10.5, hgap = lives > 5 ? 18 : 30;
     for (let i = 0; i < lives; i++) {
       const cx = W - 18 - hr * 1.32 - (i % 10) * hgap;
