@@ -568,7 +568,7 @@
   const elFinal = document.getElementById("finalScore");
   const elTitle = document.getElementById("overTitle");
 
-  const GAME_VERSION = "v1.1.61";   // 코드를 고칠 때마다 뒤 두 자리를 올린다
+  const GAME_VERSION = "v1.1.62";   // 코드를 고칠 때마다 뒤 두 자리를 올린다
   document.getElementById("ver").textContent = GAME_VERSION;
 
   const LS_NAME = "epjpddongpi_name";
@@ -1099,7 +1099,8 @@
       once: true, cond: () => job !== "fit",   // 헬스걸은 방패가 없어 의미가 없다
       go: () => { aug.angryUmb = true; } },
     { id: "gold",       ic: "✨", nm: "황금똥 연금술", ds: "똥이 가끔 황금똥으로 변한다. 먹으면 점수!",
-      go: () => { aug.goldChance += 0.10 * dim("gold"); } },
+      // 1개째는 10%, 그 뒤로는 절반(5%)씩만 — 첫 픽의 맛은 지키고 몰빵만 눌렀다
+      go: () => { aug.goldChance += (augCount["gold"] ? 0.05 : 0.10) * dim("gold"); } },
     { id: "dopa",       ic: "📱", nm: "도파민 중독",  ds: "똥이 빨라지고, 생존 점수가 크게 오른다",
       go: () => { aug.fallMul *= 1 + 0.20 * dim("dopa"); aug.timeMul *= 1 + 0.5 * dim("dopa"); } },
     { id: "carrot",     ic: "🥕", nm: "하트 당근거래", ds: "목숨 1개를 팔고, 앞으로 얻는 모든 점수 +20%",
