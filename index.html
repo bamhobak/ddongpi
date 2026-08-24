@@ -568,7 +568,7 @@
   const elFinal = document.getElementById("finalScore");
   const elTitle = document.getElementById("overTitle");
 
-  const GAME_VERSION = "v1.1.62";   // 코드를 고칠 때마다 뒤 두 자리를 올린다
+  const GAME_VERSION = "v1.1.63";   // 코드를 고칠 때마다 뒤 두 자리를 올린다
   document.getElementById("ver").textContent = GAME_VERSION;
 
   const LS_NAME = "epjpddongpi_name";
@@ -704,13 +704,18 @@
   const SPACE_DIFF = 1.18;
   function spaceF() { return inSpace() ? Math.sqrt(SPACE_DIFF) : 1; }
   function inSpace() { return zoneIdx() >= SPACE_Z; }
+  const JOB_SPRS = { gambler: SPR_GAMBLER, levitator: SPR_LEV, fit: SPR_FIT, powerj: SPR_PJ, powerp: SPR_MONK };
+  // 인트로의 이재는 매 루프마다 아무 직업이나 입고 나온다 (직업은 판마다 고르는 방식이라)
+  let introJob = "none";
+  function rollIntroJob() {
+    const keys = Object.keys(JOBS);
+    introJob = keys[Math.floor(Math.random() * keys.length)];
+  }
+  rollIntroJob();                        // 첫 바퀴부터 무작위
   function sprSet() {
     if (inSpace() && SPR_SPACE.right.img) return SPR_SPACE;   // 우주에선 직업과 무관하게 우주복
-    if (job === "gambler" && SPR_GAMBLER.right.img) return SPR_GAMBLER;
-    if (job === "levitator" && SPR_LEV.right.img) return SPR_LEV;
-    if (job === "fit" && SPR_FIT.right.img) return SPR_FIT;
-    if (job === "powerj" && SPR_PJ.right.img) return SPR_PJ;
-    if (job === "powerp" && SPR_MONK.right.img) return SPR_MONK;
+    const S = JOB_SPRS[state === STATE.READY ? introJob : job];
+    if (S && S.right.img) return S;
     return SPR;
   }
 
@@ -793,6 +798,7 @@
     if (introT >= INTRO_LOOP) {
       introT = 0; introPoops.length = 0; introSuit = false;
       introCameo.length = 0; introCameoT = 3 + Math.random() * 4;
+      rollIntroJob();                       // 이번 바퀴는 다른 옷을 입고 나온다
     }
     /* 26초 동안 잔디밭 → 우주 → 블랙홀 안까지 훑고,
        남은 6초는 블랙홀 안에서 잔디밭으로 이어지는 웜홀을 통과한다. */
