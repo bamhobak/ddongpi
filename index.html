@@ -568,7 +568,7 @@
   const elFinal = document.getElementById("finalScore");
   const elTitle = document.getElementById("overTitle");
 
-  const GAME_VERSION = "v1.1.74";   // 코드를 고칠 때마다 뒤 두 자리를 올린다
+  const GAME_VERSION = "v1.1.75";   // 코드를 고칠 때마다 뒤 두 자리를 올린다
   document.getElementById("ver").textContent = GAME_VERSION;
 
   const LS_NAME = "epjpddongpi_name";
@@ -1725,7 +1725,7 @@
        레벨에 포함되면, 정작 실력으로 버틴 시간이 아닌데도 난이도가 올라간다. */
     if (!fever) levelTime += dt;
     level = 1 + Math.floor(levelTime / 12);   // 레벨 하나당 12초
-    score += dt * Math.pow(2, level - 1) * aug.timeMul * scoreMul();  // 생존 점수: 레벨마다 2배
+    score += dt * Math.pow(1.8, level - 1) * aug.timeMul * scoreMul();  // 생존 점수: 레벨마다 1.8배
 
     // 한 단계 올라설 때마다 어디에 도착했는지 알려준다
     const zi = zoneIdx();
