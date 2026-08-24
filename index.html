@@ -568,7 +568,7 @@
   const elFinal = document.getElementById("finalScore");
   const elTitle = document.getElementById("overTitle");
 
-  const GAME_VERSION = "v1.1.78";   // 코드를 고칠 때마다 뒤 두 자리를 올린다
+  const GAME_VERSION = "v1.1.79";   // 코드를 고칠 때마다 뒤 두 자리를 올린다
   document.getElementById("ver").textContent = GAME_VERSION;
 
   const LS_NAME = "epjpddongpi_name";
@@ -1133,6 +1133,19 @@
 
   let augPauseAt = 0;      // 증강 고르는 동안 흘러간 시간을 나중에 되돌려주기 위한 기준
 
+  /* 별을 먹은 것과 똑같은 점수 처리 — 별 아이템과,
+     고를 증강이 다 떨어졌을 때의 달 보상 대체에 함께 쓴다. */
+  function eatStar(x, y) {
+    // 먹을 때마다 1.4배: 1번째 1,000 → 2번째 1,400 → 3번째 1,960 → 4번째 2,744 …
+    starCount++;
+    const gain = Math.round(1000 * Math.pow(1.4, starCount - 1) * aug.starMul * scoreMul());
+    score += gain;
+    popText(x, y, "⭐×" + starCount + "  +" + gain.toLocaleString(), "#ffd23f");
+    beep(1400, .1, "square", .05);
+    beep(1750, .12, "square", .04);
+    return gain;
+  }
+
   function openAugment(times) {
     augTotal = times || 1;
     augRemain = augTotal;
@@ -1141,6 +1154,20 @@
     showAugmentPick();
     beep(1100, .1, "triangle", .05);
     if (navigator.vibrate) navigator.vibrate(augTotal > 1 ? [40, 50, 40, 50, 40] : 40);
+  }
+
+  function closeAugScreen() {
+    augScreen.classList.add("hidden");
+    state = STATE.PLAY;
+    /* 증강을 고르는 동안 게임은 멈춰 있었지만 뚜니핑 타임·무적 시간은
+       실제 시계로 재고 있어서 그대로 두면 고민한 만큼 깎여 나간다.
+       멈춰 있던 시간만큼 마감 시각을 뒤로 밀어 원래 남은 시간을 돌려준다. */
+    const paused = performance.now() - augPauseAt;
+    if (powerUntil > 0) powerUntil += paused;
+    if (invUntil  > 0) invUntil  += paused;
+    if (hurtUntil > 0) hurtUntil += paused;
+    // 멈춰 있던 똥이 코앞에 있을 수 있으니 0.5초 무적으로 빠져나갈 틈을 준다
+    invUntil = Math.max(invUntil, performance.now() + 500);
   }
 
   function showAugmentPick() {
@@ -1166,6 +1193,15 @@
         n -= w;
       }
       picks.push(pool.splice(idx, 1)[0]);
+    }
+    if (!picks.length) {
+      // 상한·조건 때문에 고를 증강이 하나도 안 남았다 — 남은 횟수만큼 별로 대체
+      const times = augRemain;
+      augRemain = 0;
+      for (let k = 0; k < times; k++)
+        eatStar(player.x, player.y - 60 - k * 28);
+      closeAugScreen();
+      return;
     }
     augList.innerHTML = "";
     for (const a of picks) {
@@ -1201,17 +1237,7 @@
           showAugmentPick();
           return;
         }
-        augScreen.classList.add("hidden");
-        state = STATE.PLAY;
-        /* 증강을 고르는 동안 게임은 멈춰 있었지만 뚜니핑 타임·무적 시간은
-           실제 시계로 재고 있어서 그대로 두면 고민한 만큼 깎여 나간다.
-           멈춰 있던 시간만큼 마감 시각을 뒤로 밀어 원래 남은 시간을 돌려준다. */
-        const paused = performance.now() - augPauseAt;
-        if (powerUntil > 0) powerUntil += paused;
-        if (invUntil  > 0) invUntil  += paused;
-        if (hurtUntil > 0) hurtUntil += paused;
-        // 멈춰 있던 똥이 코앞에 있을 수 있으니 0.5초 무적으로 빠져나갈 틈을 준다
-        invUntil = Math.max(invUntil, performance.now() + 500);
+        closeAugScreen();
         popText(player.x, player.y - 70, a.ic + " " + picked, "#ffd23f", 24);
       });
       augList.appendChild(card);
@@ -2219,13 +2245,7 @@
       beep(900, .12, "triangle", .05);
     }
     if (it.type === "star") {
-      // 먹을 때마다 1.4배: 1번째 1,000 → 2번째 1,400 → 3번째 1,960 → 4번째 2,744 …
-      starCount++;
-      const gain = Math.round(1000 * Math.pow(1.4, starCount - 1) * aug.starMul * scoreMul());
-      score += gain;
-      popText(it.x, it.y, "⭐×" + starCount + "  +" + gain.toLocaleString(), "#ffd23f");
-      beep(1400, .1, "square", .05);
-      beep(1750, .12, "square", .04);
+      const gain = eatStar(it.x, it.y);
       if (aug.starburst) {
         // 화면의 똥을 전부 없애고, 개당 방금 먹은 별 점수의 1%를 받는다 (까다로운 똥도 함께)
         let cnt = 0, bonus = 0;
