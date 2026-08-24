@@ -568,7 +568,7 @@
   const elFinal = document.getElementById("finalScore");
   const elTitle = document.getElementById("overTitle");
 
-  const GAME_VERSION = "v1.1.75";   // 코드를 고칠 때마다 뒤 두 자리를 올린다
+  const GAME_VERSION = "v1.1.76";   // 코드를 고칠 때마다 뒤 두 자리를 올린다
   document.getElementById("ver").textContent = GAME_VERSION;
 
   const LS_NAME = "epjpddongpi_name";
@@ -1608,7 +1608,7 @@
     let mean = BONUS_BASE / (b.w / BONUS_W_TOTAL) * aug.itemRateMul * lvFactor / bhMul();
     if (b.type === "paper" && aug.subs) mean /= 1.7;  // 정기구독 — 휴지만 1.7배 빈도
     if (b.type === "heart" && job === "fit") mean /= 5;  // 헬스걸 — 하트 5배
-    if ((b.type === "moon" || b.type === "fullmoon") && job === "powerj") mean /= 1.5;  // 파워J — 달 +50%
+    if ((b.type === "moon" || b.type === "fullmoon") && job === "powerj") mean /= 1.75;  // 파워J — 달 +75%
     if (b.type === "star" && job === "powerp") mean /= 2;  // 무소유 — 별만 2배
     /* 평균 간격을 중심으로 ±25% 안에서만 흔들린다.
        판마다 개수가 들쭉날쭉하지 않도록 폭을 좁혔다 (별 기준 한 판에 7~9개).
