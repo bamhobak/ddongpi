@@ -234,6 +234,11 @@
   #btnTestEnd.on { display: block; }
   #devScreen { justify-content: flex-start; padding-top: 28px; gap: 12px; }
   #devScreen h2 { font-size: 20px; color: #ffd23f; }
+  #devHead { display: flex; align-items: center; gap: 10px; }
+  #devHome {
+    padding: 7px 13px; font-size: 12px; border-radius: 999px;
+    background: rgba(255,255,255,.14); color: #fff;
+  }
   #devPwRow { display: flex; gap: 8px; align-items: center; }
   #devPw {
     font: inherit; font-size: 16px; text-align: center; letter-spacing: 4px;
@@ -441,7 +446,10 @@
     </div>
 
     <div id="devScreen" class="screen hidden">
-      <h2>개발자 페이지</h2>
+      <div id="devHead">
+        <h2>개발자 페이지</h2>
+        <button id="devHome">메인으로</button>
+      </div>
       <div id="devPwRow">
         <input id="devPw" type="password" inputmode="numeric" maxlength="16" autocomplete="off">
         <button id="devGo">확인</button>
@@ -529,7 +537,7 @@
   const elFinal = document.getElementById("finalScore");
   const elTitle = document.getElementById("overTitle");
 
-  const GAME_VERSION = "v1.1.55";   // 코드를 고칠 때마다 뒤 두 자리를 올린다
+  const GAME_VERSION = "v1.1.56";   // 코드를 고칠 때마다 뒤 두 자리를 올린다
   document.getElementById("ver").textContent = GAME_VERSION;
 
   const LS_NAME = "epjpddongpi_name";
@@ -2763,6 +2771,7 @@
       devMsg.textContent = "";
       devPw.value = "";
       devPwOK = pw;
+      document.getElementById("devPwRow").style.display = "none";   // 들어왔으면 비번창은 치운다
       devInitTabs();
       renderDevStats(await res.json());
       await devRenderRaw();
@@ -2790,9 +2799,13 @@
 
   document.getElementById("devDot").addEventListener("click", () => {
     devBody.innerHTML = ""; devMsg.textContent = ""; devPw.value = "";
+    document.getElementById("devPwRow").style.display = "";
     document.getElementById("devTabs").classList.remove("on");
     devScreen.classList.remove("hidden");
     devPw.focus();
+  });
+  document.getElementById("devHome").addEventListener("click", () => {
+    devScreen.classList.add("hidden");
   });
   document.getElementById("devClose").addEventListener("click", () => {
     devScreen.classList.add("hidden");
