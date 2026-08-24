@@ -568,7 +568,7 @@
   const elFinal = document.getElementById("finalScore");
   const elTitle = document.getElementById("overTitle");
 
-  const GAME_VERSION = "v1.1.79";   // 코드를 고칠 때마다 뒤 두 자리를 올린다
+  const GAME_VERSION = "v1.1.80";   // 코드를 고칠 때마다 뒤 두 자리를 올린다
   document.getElementById("ver").textContent = GAME_VERSION;
 
   const LS_NAME = "epjpddongpi_name";
@@ -1556,7 +1556,7 @@
   const HUGE_R = 66;           // 반지름 — 초대형(52~62)의 약 1.26배
   /* 까다로운 똥이 나올 확률 — 레벨 7에서 SPEC_BASE 로 시작해 레벨마다 SPEC_STEP 씩 오른다.
      상한은 없다 (아주 오래 버티면 거의 매번 특수똥). */
-  const SPEC_FROM = 7, SPEC_BASE = 0.023, SPEC_STEP = 0.025;
+  const SPEC_FROM = 7, SPEC_BASE = 0.023, SPEC_STEP = 0.04;
   const LASER_WARN = 1;        // 예고 시간(초)
   const LASER_VY = 4500;       // 낙하 속도 — 똥이 아니라 레이저처럼 내리꽂힌다
   let warns = [];              // 예고 중인 레이저 자리
@@ -1567,10 +1567,10 @@
     // 뚜니핑 타임에 나온 것은 외형·점수를 스스로 기억한다 → 뚜니핑 타임이 끝나도 모습이 바뀌지 않는다
     const inFever = fever;
     const cls = inFever ? pickFeverSize() : null;
-    // 황금똥 연금술 — 맞아도 무해하고 먹으면 점수 (레이저는 예고선과 어긋나서 제외)
+    // 황금똥 연금술 — 맞아도 무해하고 먹으면 점수 (특수똥은 위협으로 남아야 해서 제외)
     let gold = false;
-    if (!inFever && special !== "laser" && aug.goldChance > 0 && Math.random() < aug.goldChance) {
-      gold = true; special = null;
+    if (!inFever && !special && aug.goldChance > 0 && Math.random() < aug.goldChance) {
+      gold = true;
     }
     let r = (cls ? cls.min + Math.random() * (cls.max - cls.min)
                  : 12.6 + Math.random() * 11.7) * aug.poopMul;   // 기본 크기 10% 축소
@@ -1635,6 +1635,9 @@
     if (b.type === "paper" && aug.subs) mean /= 1.7;  // 정기구독 — 휴지만 1.7배 빈도
     if (b.type === "heart" && job === "fit") mean /= 5;  // 헬스걸 — 하트 5배
     if ((b.type === "moon" || b.type === "fullmoon") && job === "powerj") mean /= 1.75;  // 파워J — 달 +75%
+    // 후반 견제 — Lv15부터 달이 레벨마다 7%씩 뜸해진다 (뚜니핑 타임 가동률을 떨어뜨린다)
+    if ((b.type === "moon" || b.type === "fullmoon") && level > 15)
+      mean *= Math.pow(1.07, level - 15);
     if (b.type === "star" && job === "powerp") mean /= 2;  // 무소유 — 별만 2배
     /* 평균 간격을 중심으로 ±25% 안에서만 흔들린다.
        판마다 개수가 들쭉날쭉하지 않도록 폭을 좁혔다 (별 기준 한 판에 7~9개).
