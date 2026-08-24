@@ -568,7 +568,7 @@
   const elFinal = document.getElementById("finalScore");
   const elTitle = document.getElementById("overTitle");
 
-  const GAME_VERSION = "v1.1.66";   // 코드를 고칠 때마다 뒤 두 자리를 올린다
+  const GAME_VERSION = "v1.1.67";   // 코드를 고칠 때마다 뒤 두 자리를 올린다
   document.getElementById("ver").textContent = GAME_VERSION;
 
   const LS_NAME = "epjpddongpi_name";
@@ -765,7 +765,7 @@
   let helpers = [];
   let helperTimer = 0;
   let fetchers = [];        // 배고픈 정연핑 — 아이템을 대신 먹으러 가는 정연핑
-  const FETCH_DELAY = 0.75; // 아이템이 보이고 몇 초 뒤에 출발하는지
+  const FETCH_DELAY = 1;    // 아이템이 보이고 몇 초 뒤에 출발하는지
   const FETCH_SPEED = 840;   // 배고픈 정연핑도 같은 비율로 20% 빠르게
   let helperQueue = 0;      // 이번 차례에 아직 안 나온 인원
   let helperGap = 0;        // 다음 한 명까지 남은 시간
