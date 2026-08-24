@@ -568,7 +568,7 @@
   const elFinal = document.getElementById("finalScore");
   const elTitle = document.getElementById("overTitle");
 
-  const GAME_VERSION = "v1.1.83";   // 코드를 고칠 때마다 뒤 두 자리를 올린다
+  const GAME_VERSION = "v1.1.84";   // 코드를 고칠 때마다 뒤 두 자리를 올린다
   document.getElementById("ver").textContent = GAME_VERSION;
 
   const LS_NAME = "epjpddongpi_name";
@@ -1079,7 +1079,8 @@
       hidden: true, once: true, cond: () => aug.helper > 0 && aug.magnet > 0,   // 정연핑 + 자석
       go: () => { aug.hungry = true; } },
     { id: "steelUmb",   ic: "☔", nm: "우산 로켓배송", ds: "우산이 없으면 저절로 배송된다",
-      hidden: true, once: true, cond: () => augCount["umbrella3"] > 0,
+      hidden: true, once: true,
+      cond: () => augCount["umbrella3"] > 0 && job !== "fit",   // 헬스걸은 하트 자동재생이 돼버려 제외
       go: () => { aug.steelUmb = true; shieldTimer = UMB_SEC; } },
     { id: "starburst",  ic: "🌠", nm: "별핑별",     ds: "별이 하늘의 똥을 쓸어버린다",
       hidden: true, once: true, cond: () => augCount["star50"] > 0,
