@@ -116,8 +116,15 @@
   }
   .board .empty { font-size: 13px; color: #7f8494; padding: 6px 0; }
   .board[hidden] { display: none; }
-  .board.last { background: rgba(255,210,63,.09); }
-  .board.last h3 { color: #ffe08a; }
+  .board.last { background: rgba(255,210,63,.09); padding: 9px 12px 10px; }
+  .board.last h3 { color: #ffe08a; margin-bottom: 6px; padding-bottom: 6px; }
+  .lastRow { display: flex; gap: 6px; justify-content: center; flex-wrap: wrap; }
+  .lastRow .lp {
+    display: flex; align-items: center; gap: 4px;
+    font-size: 11.5px; color: #e7eaf2; white-space: nowrap;
+    background: rgba(255,255,255,.07); border-radius: 999px; padding: 4px 10px;
+  }
+  .lastRow .lp b { color: #ffd23f; font-weight: 700; }
   .board .note {
     margin-top: 8px; padding-top: 8px;
     border-top: 1px solid rgba(255,255,255,.08);
@@ -344,7 +351,7 @@
   /* 랭킹판 — 유리판 느낌 */
   #startScreen .board, #overScreen .board {
     max-width: 340px;
-    padding: 14px 16px 12px;
+    padding: 10px 14px 9px;
     border-radius: 18px;
     background:
       linear-gradient(180deg, rgba(255,255,255,.085), rgba(255,255,255,.03));
@@ -366,7 +373,7 @@
     background: rgba(255,255,255,.07); color: #9aa0b4;
     font-size: 11px; font-weight: 700;
   }
-  #startScreen .board li, #overScreen .board li { padding: 5px 0; }
+  #startScreen .board li, #overScreen .board li { padding: 3px 0; }
 
   /* 1위 줄에 아주 느리게 빛이 흐른다 */
   .board li.p1 { position: relative; overflow: hidden; }
@@ -379,7 +386,7 @@
   @keyframes shine { 0%, 62% { transform: translateX(-120%); } 88%, 100% { transform: translateX(120%); } }
 
   .board .note {
-    display: inline-block; margin-top: 10px; padding: 5px 11px;
+    display: inline-block; margin-top: 6px; padding: 4px 10px;
     border: 0; border-radius: 999px;
     background: rgba(255,255,255,.055); color: #868c9e; font-size: 10.5px;
   }
@@ -438,7 +445,7 @@
       </div>
       <div class="board last" id="lastBoard" hidden>
         <h3 id="lastTitle">👑 지난주 명예의 전당</h3>
-        <ol id="boardLast"></ol>
+        <div id="boardLast" class="lastRow"></div>
       </div>
       <div id="nameBox">
         <span class="who">플레이어 <b id="myName">-</b></span>
@@ -545,7 +552,7 @@
   const elFinal = document.getElementById("finalScore");
   const elTitle = document.getElementById("overTitle");
 
-  const GAME_VERSION = "v1.1.57";   // 코드를 고칠 때마다 뒤 두 자리를 올린다
+  const GAME_VERSION = "v1.1.58";   // 코드를 고칠 때마다 뒤 두 자리를 올린다
   document.getElementById("ver").textContent = GAME_VERSION;
 
   const LS_NAME = "epjpddongpi_name";
@@ -2418,9 +2425,23 @@
     try {
       const list = await fetchRange(from, to, 3);
       if (!list.length) { lastBoard.hidden = true; return; }
-      document.getElementById("lastTitle").textContent =
-        "👑 지난주 명예의 전당 (" + kstDateLabel(from) + "~" + kstDateLabel(to - 1) + ")";
-      renderBoard(document.getElementById("boardLast"), list);
+      // 억/만 단위로 줄여 한 줄 칩으로 담는다
+      const short = n => n >= 1e8 ? (n / 1e8).toFixed(n >= 1e9 ? 0 : 1) + "억"
+                       : n >= 1e4 ? Math.round(n / 1e4).toLocaleString() + "만"
+                       : n.toLocaleString();
+      const medal = ["🥇", "🥈", "🥉"];
+      const row = document.getElementById("boardLast");
+      row.innerHTML = "";
+      list.forEach((r, i) => {
+        const chip = document.createElement("span");
+        chip.className = "lp";
+        const nm = document.createElement("span");
+        nm.textContent = medal[i] + " " + r.name;
+        const sc = document.createElement("b");
+        sc.textContent = short(Number(r.score) || 0);
+        chip.append(nm, sc);
+        row.appendChild(chip);
+      });
       lastBoard.hidden = false;
     } catch (e) {
       lastBoard.hidden = true;
