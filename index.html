@@ -568,7 +568,7 @@
   const elFinal = document.getElementById("finalScore");
   const elTitle = document.getElementById("overTitle");
 
-  const GAME_VERSION = "v1.1.71";   // 코드를 고칠 때마다 뒤 두 자리를 올린다
+  const GAME_VERSION = "v1.1.72";   // 코드를 고칠 때마다 뒤 두 자리를 올린다
   document.getElementById("ver").textContent = GAME_VERSION;
 
   const LS_NAME = "epjpddongpi_name";
@@ -1115,9 +1115,6 @@
     { id: "inter",      ic: "🕰️", nm: "인터스텔라", ds: "이따금 세상만 느려진다. 점수 시계는 그대로",
       hidden: true, once: true, cond: () => augCount["slow"] >= 2,
       go: () => { aug.inter = true; interTimer = 10; } },
-    { id: "refill",     ic: "🍚", nm: "뚜니핑 무한리필", ds: "뚜니핑 타임에 먹을수록 시간이 늘어난다",
-      hidden: true, once: true, cond: () => augCount["fever_time"] >= 1 && augCount["downpour"] >= 1,
-      go: () => { aug.refill = true; } },
     { id: "subs",       ic: "📦", nm: "휴지 정기구독", ds: "휴지가 더 자주, 안 오면 강제 배송된다",
       hidden: true, once: true,
       cond: () => augCount["lucky"] >= 1 && augCount["fever_time"] >= 1 && augCount["downpour"] >= 1,
@@ -2650,6 +2647,7 @@
   for (const a of AUGMENTS) { AUG_NAMES[a.id] = a.nm; AUG_HIDDEN[a.id] = !!a.hidden; }
   AUG_NAMES.gamble = "도박꾼(삭제됨)";   // 옛 기록 표시용
   AUG_NAMES.fly = "초전도 이재(삭제됨)";
+  AUG_NAMES.refill = "뚜니핑 무한리필(삭제됨)";
   const JOB_NAMES = { none: "백수", gambler: "도박사", levitator: "부양사", fit: "헬스걸", powerj: "파워J", powerp: "무소유", "(none)": "(기록 없음)" };
   const devScreen = document.getElementById("devScreen");
   const devPw     = document.getElementById("devPw");
