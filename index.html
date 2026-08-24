@@ -552,7 +552,7 @@
   const elFinal = document.getElementById("finalScore");
   const elTitle = document.getElementById("overTitle");
 
-  const GAME_VERSION = "v1.1.59";   // 코드를 고칠 때마다 뒤 두 자리를 올린다
+  const GAME_VERSION = "v1.1.60";   // 코드를 고칠 때마다 뒤 두 자리를 올린다
   document.getElementById("ver").textContent = GAME_VERSION;
 
   const LS_NAME = "epjpddongpi_name";
@@ -2455,7 +2455,7 @@
     // DB 제약(최대 1억점)에 걸려 등록이 실패하지 않도록 방어
     const base = {
       name: name,
-      score: Math.min(10000000000, Math.max(0, sc)),   // 상한 100억
+      score: Math.min(1000000000000, Math.max(0, sc)),   // 상한 1조
       level: lv
     };
     /* 아래 두 값은 나중에 추가한 컬럼이라 DB에 아직 없을 수 있다.
@@ -2543,7 +2543,7 @@
   function logRun(sc) {
     if (!SB_ON || testMode) return;    // 테스트 기록은 통계에 섞지 않는다
     const base = {
-      score: Math.min(10000000000, Math.max(0, sc)),   // 상한 100억
+      score: Math.min(1000000000000, Math.max(0, sc)),   // 상한 1조
       level: level,
       secs: Math.round(elapsed),
       stars: starCount,
