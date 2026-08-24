@@ -552,7 +552,7 @@
   const elFinal = document.getElementById("finalScore");
   const elTitle = document.getElementById("overTitle");
 
-  const GAME_VERSION = "v1.1.58";   // 코드를 고칠 때마다 뒤 두 자리를 올린다
+  const GAME_VERSION = "v1.1.59";   // 코드를 고칠 때마다 뒤 두 자리를 올린다
   document.getElementById("ver").textContent = GAME_VERSION;
 
   const LS_NAME = "epjpddongpi_name";
@@ -1955,6 +1955,9 @@
 
     for (let i = items.length - 1; i >= 0; i--) {
       const it = items[i];
+      /* 별핑별·성난 우산처럼 순회 도중 목록을 무더기로 지우는 일이 있으면
+         인덱스가 새 길이를 넘어설 수 있다 — 그 칸은 건너뛴다 (없으면 게임이 멈춘다) */
+      if (!it) continue;
       if (it.bumpCd > 0) it.bumpCd -= dt;
       if (it.special === "split") {
         // 정해진 높이까지 내려오면 둘로 쪼개진다. 조각은 평범한 똥이라 정연핑이 부술 수 있다.
