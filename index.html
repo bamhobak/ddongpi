@@ -278,6 +278,14 @@
     max-width: 46px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
   }
   #devBody .tbRecent .lft { min-width: 45%; }
+  #devBody .tbTop th:first-child, #devBody .tbTop td:first-child {
+    width: 14px; max-width: 14px; padding: 3px 0;
+  }
+  #devBody .tbTop th:nth-child(2), #devBody .tbTop td:nth-child(2),
+  #devBody .tbTop th:nth-child(3), #devBody .tbTop td:nth-child(3) {
+    max-width: 52px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+  }
+  #devBody .tbTop .lft { min-width: 42%; }
   #devTabs {
     display: none; gap: 6px; width: 100%; max-width: 340px;
     justify-content: center; flex-wrap: wrap;
@@ -537,7 +545,7 @@
   const elFinal = document.getElementById("finalScore");
   const elTitle = document.getElementById("overTitle");
 
-  const GAME_VERSION = "v1.1.56";   // 코드를 고칠 때마다 뒤 두 자리를 올린다
+  const GAME_VERSION = "v1.1.57";   // 코드를 고칠 때마다 뒤 두 자리를 올린다
   document.getElementById("ver").textContent = GAME_VERSION;
 
   const LS_NAME = "epjpddongpi_name";
@@ -2774,11 +2782,10 @@
       document.getElementById("devPwRow").style.display = "none";   // 들어왔으면 비번창은 치운다
       devInitTabs();
       renderDevStats(await res.json());
-      await devRenderRaw();
-      // 이번 주 랭킹은 별도 테이블이라 따로 불러와 랭킹 탭에 덧붙인다 (레벨·등록시각까지)
+      // 이번 주 랭킹은 별도 테이블이라 따로 불러와 랭킹 탭 맨 위에 붙인다
       try {
         const rows = await fetchRange(weekStartMs(0), null, TOP_N);
-        devPanes.rank.appendChild(devSection("이번 주 TOP " + TOP_N,
+        const topSec = devSection("이번 주 TOP " + TOP_N,
           ["#", "이름", "직업", "점수", "Lv", "증강"],
           rows.length ? rows.map((r, i) => [
             (i + 1) + "",
@@ -2787,11 +2794,14 @@
             { t: Number(r.score || 0).toLocaleString(), c: "num" },
             { t: r.level == null ? "-" : r.level, c: "num" },
             { t: augLabel(r.augs), c: "lft" }
-          ]) : [["", "기록 없음", "", "", "", ""]]));
+          ]) : [["", "기록 없음", "", "", "", ""]]);
+        topSec.querySelector("table").classList.add("tbTop");
+        devPanes.rank.appendChild(topSec);
       } catch (e) {
         devPanes.rank.appendChild(devSection("이번 주 TOP " + TOP_N, null,
           [["랭킹을 불러오지 못했습니다", ""]]));
       }
+      await devRenderRaw();
     } catch (e) {
       devMsg.textContent = "불러오지 못했습니다";
     }
