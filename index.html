@@ -152,6 +152,7 @@
   /* ---- 직업 선택 ---- */
   #jobScreen h2 { color: #ffd23f; }
   #jobList { display: flex; flex-direction: column; gap: 10px; width: 100%; max-width: 340px; }
+  #jobList img.ic { width: 44px; height: 56px; object-fit: contain; flex: none; }
 
   /* ---- 이름 등록 ---- */
   #nameRow { display: none; flex-direction: column; align-items: center; gap: 10px; width: 100%; }
@@ -568,7 +569,7 @@
   const elFinal = document.getElementById("finalScore");
   const elTitle = document.getElementById("overTitle");
 
-  const GAME_VERSION = "v1.1.84";   // 코드를 고칠 때마다 뒤 두 자리를 올린다
+  const GAME_VERSION = "v1.1.85";   // 코드를 고칠 때마다 뒤 두 자리를 올린다
   document.getElementById("ver").textContent = GAME_VERSION;
 
   const LS_NAME = "epjpddongpi_name";
@@ -1391,11 +1392,15 @@
   function openJobSelect() {
     const list = document.getElementById("jobList");
     list.innerHTML = "";
+    // 카드 앞에는 이모지 대신 그 직업의 이재(오른쪽 이동 모습)를 보여준다
+    const JOB_IMG = { none: "player", gambler: "gambler", levitator: "levitator",
+                      fit: "fit", powerj: "powerj", powerp: "monk" };
     for (const id in JOBS) {
       const j = JOBS[id];
       const card = document.createElement("button");
       card.className = "augCard";
-      const ic = document.createElement("span"); ic.className = "ic"; ic.textContent = j.ic;
+      const ic = document.createElement("img"); ic.className = "ic";
+      ic.src = "assets/" + JOB_IMG[id] + "_right.png"; ic.alt = j.ic;
       const tx = document.createElement("div"); tx.className = "tx";
       const nm = document.createElement("div"); nm.className = "nm2"; nm.textContent = j.nm;
       const ds = document.createElement("div"); ds.className = "ds"; ds.textContent = j.ds;
