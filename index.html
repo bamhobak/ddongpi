@@ -568,7 +568,7 @@
   const elFinal = document.getElementById("finalScore");
   const elTitle = document.getElementById("overTitle");
 
-  const GAME_VERSION = "v1.1.70";   // 코드를 고칠 때마다 뒤 두 자리를 올린다
+  const GAME_VERSION = "v1.1.71";   // 코드를 고칠 때마다 뒤 두 자리를 올린다
   document.getElementById("ver").textContent = GAME_VERSION;
 
   const LS_NAME = "epjpddongpi_name";
@@ -2147,8 +2147,7 @@
              첫 번째로 무적이 걸렸는데도 두 번째가 그대로 들어와 방패가 두 개 깨진다. */
           if (now >= invUntil) {
             if (shields > 0) {
-              shields--;
-              noHitSec = 0;
+              shields--;                     // 우산이 막아준 건 '맞은 것'으로 치지 않는다
               invUntil = now + 1000;        // 목숨을 잃었을 때와 같은 무적 시간
               shake = Math.max(shake, 14);
               burst(it.x, it.y, "#7ec8ff", 20);
@@ -3073,7 +3072,8 @@
     return 1 + 1.0 * air;
   }
   /* 무소유 — 증강이 없는 대신 레벨마다 배율이 커지고 (Lv1 ×3, 레벨마다 +1),
-     여기에 안 맞고 버틴 시간만큼 초당 +10% 가 더 곱해진다. 맞으면 무피격 보너스만 초기화. */
+     여기에 안 맞고 버틴 시간만큼 초당 +10% 가 더 곱해진다.
+     목숨을 잃을 때만 무피격 보너스가 초기화된다 (우산 방어는 무피격 유지). */
   function monkMul() {
     if (job !== "powerp") return 1;
     return (level + 2) * (1 + 0.10 * noHitSec);
