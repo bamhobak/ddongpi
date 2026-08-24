@@ -568,7 +568,7 @@
   const elFinal = document.getElementById("finalScore");
   const elTitle = document.getElementById("overTitle");
 
-  const GAME_VERSION = "v1.1.64";   // 코드를 고칠 때마다 뒤 두 자리를 올린다
+  const GAME_VERSION = "v1.1.65";   // 코드를 고칠 때마다 뒤 두 자리를 올린다
   document.getElementById("ver").textContent = GAME_VERSION;
 
   const LS_NAME = "epjpddongpi_name";
@@ -765,7 +765,7 @@
   let helpers = [];
   let helperTimer = 0;
   let fetchers = [];        // 배고픈 정연핑 — 아이템을 대신 먹으러 가는 정연핑
-  const FETCH_DELAY = 1.5;  // 아이템이 보이고 몇 초 뒤에 출발하는지
+  const FETCH_DELAY = 0.5;  // 아이템이 보이고 몇 초 뒤에 출발하는지
   const FETCH_SPEED = 840;   // 배고픈 정연핑도 같은 비율로 20% 빠르게
   let helperQueue = 0;      // 이번 차례에 아직 안 나온 인원
   let helperGap = 0;        // 다음 한 명까지 남은 시간
@@ -1608,7 +1608,7 @@
     // 블랙홀 안에서는 아이템도 두 배로 자주 나온다
     let mean = BONUS_BASE / (b.w / BONUS_W_TOTAL) * aug.itemRateMul * lvFactor / bhMul();
     if (b.type === "paper" && aug.subs) mean /= 1.7;  // 정기구독 — 휴지만 1.7배 빈도
-    if (b.type === "heart" && job === "fit") mean /= 3;  // 헬스걸 — 하트 3배
+    if (b.type === "heart" && job === "fit") mean /= 5;  // 헬스걸 — 하트 5배
     if ((b.type === "moon" || b.type === "fullmoon") && job === "powerj") mean /= 1.5;  // 파워J — 달 +50%
     /* 평균 간격을 중심으로 ±25% 안에서만 흔들린다.
        판마다 개수가 들쭉날쭉하지 않도록 폭을 좁혔다 (별 기준 한 판에 7~9개).
