@@ -590,7 +590,7 @@
   const elFinal = document.getElementById("finalScore");
   const elTitle = document.getElementById("overTitle");
 
-  const GAME_VERSION = "v1.1.90";   // 코드를 고칠 때마다 뒤 두 자리를 올린다
+  const GAME_VERSION = "v1.1.91";   // 코드를 고칠 때마다 뒤 두 자리를 올린다
   document.getElementById("ver").textContent = GAME_VERSION;
 
   const LS_NAME = "epjpddongpi_name";
@@ -1617,7 +1617,7 @@
     r = Math.min(r, (W - 24) / 2);        // 화면보다 커지지 않게
     // 일반 똥은 레벨이 오를수록 빨라지지만, 뚜니핑 낙하물은 처음이나 나중이나 같은 속도로 떨어진다
     const baseVy = inFever ? FEVER_VY + Math.random() * 110
-                           : 223 + level * 21.87 + Math.random() * 110;   // 레벨당 상승폭 완화
+                           : 227.4 + level * 17.5 + Math.random() * 110;   // 레벨당 상승폭 완화(레벨 1 속도는 동일)
     let vy = baseVy * m * DIFF_F * spaceF() * bhMul() * aug.fallMul
            * (inFever ? 1 : lateMul());   // 후반 가속 — 뚜니핑 낙하물은 그대로
     if (special === "huge") vy *= 0.55;   // 덩치값 — 느릿느릿 굴러떨어진다
