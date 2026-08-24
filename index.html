@@ -590,7 +590,7 @@
   const elFinal = document.getElementById("finalScore");
   const elTitle = document.getElementById("overTitle");
 
-  const GAME_VERSION = "v1.1.88";   // 코드를 고칠 때마다 뒤 두 자리를 올린다
+  const GAME_VERSION = "v1.1.89";   // 코드를 고칠 때마다 뒤 두 자리를 올린다
   document.getElementById("ver").textContent = GAME_VERSION;
 
   const LS_NAME = "epjpddongpi_name";
@@ -679,20 +679,18 @@
      headRatio 는 머리 지름 / 이미지 높이. 실제 이미지를 측정해 넣은 값이다.
      이미지가 없으면 코드로 그린 기본 캐릭터로 넘어간다. */
   const SPR = {
-    // adj = 전체 크기 보정. 왼쪽 그림이 머리에 비해 몸이 커서 오른쪽과 크기가 안 맞아
-    // 왼쪽을 0.947배로 줄여 둘의 몸 크기를 일치시킨다.
-    left:  { img: null, aspect: 0.683, head: 0.642, cx: 0.474, cy: 0.381, adj: 0.947 },
-    right: { img: null, aspect: 0.692, head: 0.678, cx: 0.549, cy: 0.397, adj: 1 },
-    hurt:  { img: null, aspect: 0.544, head: 0.536, cx: 0.502, cy: 0.378, adj: 0.86 }
+    // adj = 전체 크기 보정 — 몸 높이가 판정지름의 1.475배(피격은 1.604배)가 되게 맞춘다.
+    left:  { img: null, aspect: 0.631, head: 0.550, cx: 0.506, cy: 0.287, adj: 0.8113 },
+    right: { img: null, aspect: 0.639, head: 0.564, cx: 0.501, cy: 0.283, adj: 0.8317 },
+    hurt:  { img: null, aspect: 0.472, head: 0.464, cx: 0.499, cy: 0.324, adj: 0.7441 }
   };
   /* 공기가 없는 높이부터는 우주복 차림으로 바뀐다.
      헬멧이 곧 머리라서 값을 따로 재어 넣었다 (판정원 = 헬멧 지름). */
   const SPR_SPACE = {
-    // adj = 평상복 차림과 몸 크기를 똑같이 맞추는 보정값.
-    // 우주복 그림은 헬멧이 몸에 비해 작아서, 그대로 두면 29% 커 보인다.
-    left:  { img: null, aspect: 0.636, head: 0.517, cx: 0.450, cy: 0.272, adj: 0.7626 },
-    right: { img: null, aspect: 0.669, head: 0.525, cx: 0.614, cy: 0.286, adj: 0.7743 },
-    hurt:  { img: null, aspect: 0.511, head: 0.422, cx: 0.511, cy: 0.267, adj: 0.6771 }
+    // adj = 평상복 차림과 몸 크기를 똑같이 맞추는 보정값 (몸 높이 1.475D / 피격 1.604D).
+    left:  { img: null, aspect: 0.631, head: 0.542, cx: 0.457, cy: 0.324, adj: 0.7990 },
+    right: { img: null, aspect: 0.681, head: 0.586, cx: 0.525, cy: 0.324, adj: 0.8645 },
+    hurt:  { img: null, aspect: 0.508, head: 0.497, cx: 0.506, cy: 0.324, adj: 0.7975 }
   };
   /* 직업: 도박사 복장 (우주복 이전 구간에서만 입는다).
      head/cx/cy/adj 는 실측값 — 헬멧 대신 얼굴이 판정 기준이다. */
