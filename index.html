@@ -145,7 +145,6 @@
   /* ---- 직업 선택 ---- */
   #jobScreen h2 { color: #ffd23f; }
   #jobList { display: flex; flex-direction: column; gap: 10px; width: 100%; max-width: 340px; }
-  .augCard.sel { border-color: #ffd23f; background: rgba(255,210,63,.12); }
 
   /* ---- 이름 등록 ---- */
   #nameRow { display: none; flex-direction: column; align-items: center; gap: 10px; width: 100%; }
@@ -523,7 +522,7 @@
   const elFinal = document.getElementById("finalScore");
   const elTitle = document.getElementById("overTitle");
 
-  const GAME_VERSION = "v1.1.53";   // 코드를 고칠 때마다 뒤 두 자리를 올린다
+  const GAME_VERSION = "v1.1.54";   // 코드를 고칠 때마다 뒤 두 자리를 올린다
   document.getElementById("ver").textContent = GAME_VERSION;
 
   const LS_NAME = "epjpddongpi_name";
@@ -1276,7 +1275,7 @@
     for (const id in JOBS) {
       const j = JOBS[id];
       const card = document.createElement("button");
-      card.className = "augCard" + (id === job ? " sel" : "");
+      card.className = "augCard";
       const ic = document.createElement("span"); ic.className = "ic"; ic.textContent = j.ic;
       const tx = document.createElement("div"); tx.className = "tx";
       const nm = document.createElement("div"); nm.className = "nm2"; nm.textContent = j.nm;
