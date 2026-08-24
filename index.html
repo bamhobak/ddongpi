@@ -77,6 +77,7 @@
   }
   /* 4위 이하는 굵게 하지 않는다 — 굵기는 1~3위 전용 */
   .board .sc { flex: none; font-weight: 400; color: #ffd23f; font-variant-numeric: tabular-nums; }
+  .board .sc img.jic { width: 15px; height: 19px; object-fit: contain; vertical-align: -4px; margin-right: 4px; }
 
   /* 1~3위는 금·은·동으로 따로 */
   .board li.p1, .board li.p2, .board li.p3 {
@@ -569,7 +570,7 @@
   const elFinal = document.getElementById("finalScore");
   const elTitle = document.getElementById("overTitle");
 
-  const GAME_VERSION = "v1.1.85";   // 코드를 고칠 때마다 뒤 두 자리를 올린다
+  const GAME_VERSION = "v1.1.86";   // 코드를 고칠 때마다 뒤 두 자리를 올린다
   document.getElementById("ver").textContent = GAME_VERSION;
 
   const LS_NAME = "epjpddongpi_name";
@@ -596,6 +597,9 @@
     powerj: { nm: "파워J", ic: "📋", ds: "달이 잘 나온다 · 대신 증강은 계획대로 1개만" },
     powerp: { nm: "무소유", ic: "🙏", ds: "달이 아예 안 나온다 · 별이 잘 나온다 · 안 맞을수록 점수가 치솟는다" }
   };
+  // 직업별 캐릭터 그림(오른쪽 이동 모습) — 직업 카드와 순위표에서 함께 쓴다
+  const JOB_IMG = { none: "player", gambler: "gambler", levitator: "levitator",
+                    fit: "fit", powerj: "powerj", powerp: "monk" };
   function spdMul() { return job === "levitator" ? 2 : 1; }   // 이동 속도 배율 (부양사 2배)
   let job = "none";
   try { const j = localStorage.getItem(LS_JOB); if (JOBS[j]) job = j; } catch (e) {}
@@ -1393,8 +1397,6 @@
     const list = document.getElementById("jobList");
     list.innerHTML = "";
     // 카드 앞에는 이모지 대신 그 직업의 이재(오른쪽 이동 모습)를 보여준다
-    const JOB_IMG = { none: "player", gambler: "gambler", levitator: "levitator",
-                      fit: "fit", powerj: "powerj", powerp: "monk" };
     for (const id in JOBS) {
       const j = JOBS[id];
       const card = document.createElement("button");
@@ -2622,8 +2624,14 @@
       nm.textContent = row.name;               // textContent → HTML 삽입 불가
       const sc = document.createElement("span");
       sc.className = "sc";
-      const jic = row.job && JOBS[row.job] ? JOBS[row.job].ic + " " : "";
-      sc.textContent = jic + Number(row.score).toLocaleString();
+      if (row.job && JOBS[row.job]) {
+        const im = document.createElement("img");
+        im.className = "jic";
+        im.src = "assets/" + JOB_IMG[row.job] + "_right.png";
+        im.alt = JOBS[row.job].ic;
+        sc.appendChild(im);
+      }
+      sc.appendChild(document.createTextNode(Number(row.score).toLocaleString()));
       li.append(rk, nm, sc);
       el.appendChild(li);
     });
