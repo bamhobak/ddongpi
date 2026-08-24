@@ -568,7 +568,7 @@
   const elFinal = document.getElementById("finalScore");
   const elTitle = document.getElementById("overTitle");
 
-  const GAME_VERSION = "v1.1.76";   // 코드를 고칠 때마다 뒤 두 자리를 올린다
+  const GAME_VERSION = "v1.1.77";   // 코드를 고칠 때마다 뒤 두 자리를 올린다
   document.getElementById("ver").textContent = GAME_VERSION;
 
   const LS_NAME = "epjpddongpi_name";
@@ -591,7 +591,7 @@
     none:    { nm: "백수",   ic: "🏃", ds: "시작할 때 증강 1개를 고른다" },
     gambler: { nm: "도박사", ic: "🎰", ds: "목숨 1개 + 우산 1개 시작 · 하트 안 나옴 · 모든 점수 +100%" },
     levitator: { nm: "부양사", ic: "🎈", ds: "하늘 어디든 날 수 있다 · 높이 있을수록 점수 UP" },
-    fit: { nm: "헬스걸", ic: "💪", ds: "목숨 5개로 시작 · 벌크업 좀 된 상태" },
+    fit: { nm: "헬스걸", ic: "💪", ds: "목숨 10개로 시작 · 벌크업 좀 된 상태" },
     powerj: { nm: "파워J", ic: "📋", ds: "달이 잘 나온다 · 대신 증강은 계획대로 1개만" },
     powerp: { nm: "무소유", ic: "🙏", ds: "달이 아예 안 나온다 · 별이 잘 나온다 · 안 맞을수록 점수가 치솟는다" }
   };
@@ -683,9 +683,9 @@
     hurt:  { img: null, aspect: 0.542, head: 0.438, cx: 0.544, cy: 0.258, adj: 0.7019 }
   };
   const SPR_FIT = {
-    left:  { img: null, aspect: 0.739, head: 0.485, cx: 0.462, cy: 0.283, adj: 0.7447 },
-    right: { img: null, aspect: 0.700, head: 0.463, cx: 0.528, cy: 0.289, adj: 0.7121 },
-    hurt:  { img: null, aspect: 0.531, head: 0.445, cx: 0.492, cy: 0.314, adj: 0.7443 }
+    left:  { img: null, aspect: 0.739, head: 0.485, cx: 0.462, cy: 0.283, adj: 0.7149 },
+    right: { img: null, aspect: 0.700, head: 0.463, cx: 0.528, cy: 0.289, adj: 0.6836 },
+    hurt:  { img: null, aspect: 0.531, head: 0.445, cx: 0.492, cy: 0.314, adj: 0.7145 }
   };
   const SPR_PJ = {
     left:  { img: null, aspect: 0.675, head: 0.452, cx: 0.535, cy: 0.378, adj: 0.6660 },
@@ -1432,9 +1432,9 @@
       player.ty = groundY;
     }
     if (job === "fit") {
-      lives = 5;
-      aug.maxLives = 20;              // 하트를 쌓아 올리는 직업
-      aug.hitboxMul *= 1.2;           // 몸이 커서 잘 맞는다
+      lives = 10;
+      aug.maxLives = 30;              // 하트를 쌓아 올리는 직업
+      aug.hitboxMul *= 1.3;           // 몸이 커서 잘 맞는다
     }
     augScreen.classList.add("hidden");
     facing = "right";
@@ -3795,7 +3795,7 @@
     // 보유 증강 — 오른쪽 위 하트 아래에 붙인다 (우산은 머리 위에 이미 보이므로 제외)
     const owned = AUGMENTS.filter(a => augCount[a.id] && !a.noCount);
     if (owned.length) {
-      let x = W - 16, ay = top + (lives > 10 ? 62 : 44);   // 하트가 두 줄이면 그 아래로
+      let x = W - 16, ay = top + (lives > 20 ? 82 : lives > 10 ? 62 : 44);   // 하트 줄 수만큼 아래로
       for (let i = owned.length - 1; i >= 0; i--) {
         const a = owned[i], n = augCount[a.id];
         const wItem = n > 1 ? 30 : 21;
