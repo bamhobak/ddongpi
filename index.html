@@ -568,7 +568,7 @@
   const elFinal = document.getElementById("finalScore");
   const elTitle = document.getElementById("overTitle");
 
-  const GAME_VERSION = "v1.1.77";   // 코드를 고칠 때마다 뒤 두 자리를 올린다
+  const GAME_VERSION = "v1.1.78";   // 코드를 고칠 때마다 뒤 두 자리를 올린다
   document.getElementById("ver").textContent = GAME_VERSION;
 
   const LS_NAME = "epjpddongpi_name";
@@ -1046,13 +1046,13 @@
 
   const AUGMENTS = [
     { id: "fever_time", ic: "🔥", nm: "뚜니핑 연장", ds: "뚜니핑 타임 증가",
-      go: () => { aug.feverBonus += 3000; } },   // 먹을 때마다 그대로 +3초
+      go: () => { aug.feverBonus += 2500; } },   // 먹을 때마다 +25%(2.5초), 감쇠 없음
     { id: "star50",     ic: "⭐", nm: "별빛 증폭",   ds: "별 점수 증가",
       go: () => { aug.starMul += 0.4 * dim("star50"); } },
     { id: "time2x",     ic: "⏱️", nm: "시간 가속",   ds: "생존 점수 증가",
       go: () => { aug.timeMul *= 1 + 0.5 * dim("time2x"); } },
     { id: "fever50",    ic: "🌙", nm: "뚜니핑 대박", ds: "뚜니핑 낙하물 점수 증가",
-      go: () => { aug.feverScoreMul += 0.45 * dim("fever50"); } },
+      go: () => { aug.feverScoreMul += 0.25; } },   // 먹을 때마다 +25%, 감쇠 없음
     { id: "slow",       ic: "🐢", nm: "느린 하늘",   ds: "똥이 느리게 떨어진다",
       go: () => { aug.fallMul *= 1 - 0.15 * dim("slow"); } },
     { id: "small",      ic: "🎯", nm: "마운자로 이재", ds: "몸집이 작아진다",
@@ -1086,7 +1086,7 @@
       go: () => { aug.starburst = true; } },
     { id: "ghost",      ic: "👻", nm: "유령화",     ds: "이따금 몸이 잠깐 사라진다",
       hidden: true, once: true, cond: () => augCount["small"] >= 2,
-      go: () => { aug.ghost = true; ghostTimer = 6; } },
+      go: () => { aug.ghost = true; ghostTimer = 3; } },
     { id: "blackhole",  ic: "🕳️", nm: "블랙홀",     ds: "끌어당기는 힘이 더 세지며, 뚜니핑도 약간의 영향을 받는다",
       hidden: true, once: true, cond: () => aug.magnet > 0,
       go: () => { aug.blackhole = true; aug.magnet = 390; } },   // 자석 220 → 390 으로 확장
@@ -1100,7 +1100,7 @@
     { id: "giant",      ic: "🌝", nm: "대왕 뚜니핑", ds: "대왕 뚜니핑 두둥등장",
       once: true, go: () => { aug.giant = 1; } },
     { id: "downpour",   ic: "🌧️", nm: "뚜니핑 폭우", ds: "뚜니핑이 더 많이 쏟아진다",
-      go: () => { aug.feverRateMul /= 1 + 0.45 * dim("downpour"); } },
+      go: () => { aug.feverRateMul = 1 / (1 / aug.feverRateMul + 0.25); } },   // 먹을 때마다 양 +25%, 감쇠 없음
     { id: "angryUmb",   ic: "💢", nm: "성난 우산",   ds: "방패가 깨질 때 화면의 똥이 전부 사라진다",
       once: true, cond: () => job !== "fit",   // 헬스걸은 방패가 없어 의미가 없다
       go: () => { aug.angryUmb = true; } },
@@ -1235,7 +1235,7 @@
   let subsTimer = 0;               // 휴지 정기구독: 마지막 휴지 이후 지난 시간
   let noHitSec = 0;                // 마지막 피격 이후 버틴 시간 (무소유 배율용)
   let clones = [], cloneTimer = 0; // 벼랑 끝 분신술: 날아가는 작은 이재들
-  let ghostTimer = 6;              // 유령화: 다음 무적까지 남은 시간
+  let ghostTimer = 3;              // 유령화: 다음 무적까지 남은 시간
   let hurtUntil = 0;               // 똥에 맞은 직후 (아픈 그림 표시)
   let zoneShown = -1;              // 도착 안내를 이미 띄운 단계
   let shake = 0, flash = 0, feverFlash = 0;
@@ -1408,7 +1408,7 @@
     aug.feverBonus = 0; aug.starMul = 1; aug.timeMul = 1;
     aug.feverScoreMul = 1; aug.fallMul = 1; aug.hitboxMul = 1; aug.poopMul = 1;
     aug.steelUmb = false; aug.starburst = false; aug.gamble = false; aug.scoreMul = 1;
-    aug.ghost = false; aug.blackhole = false; aug.legion = false; ghostTimer = 6;
+    aug.ghost = false; aug.blackhole = false; aug.legion = false; ghostTimer = 3;
     flyOn = false;
     aug.angryUmb = false; aug.goldChance = 0; aug.inter = false;
     aug.refill = false; aug.subs = false; aug.clone = false;
@@ -1792,12 +1792,12 @@
       }
     }
 
-    // ---- 유령화: 6초마다 1.5초씩 몸이 사라진다 ----
+    // ---- 유령화: 3초마다 1초씩 몸이 사라진다 ----
     if (aug.ghost) {
       ghostTimer -= dt;
       if (ghostTimer <= 0) {
-        ghostTimer = 6;
-        invUntil = Math.max(invUntil, now + 1500);
+        ghostTimer = 3;
+        invUntil = Math.max(invUntil, now + 1000);
         popText(player.x, player.y - 60, "👻 유령화", "#cfe4ff");
         beep(520, .1, "sine", .04);
         beep(700, .12, "sine", .03);
@@ -1974,11 +1974,11 @@
         // 뚜니핑 타임: 똥이 폭포처럼 쏟아지고 속도도 2배 이상
         const n = 3 + Math.floor(Math.random() * 4);   // 스폰당 3~6개 (평균 4.5개)
         // 증강으로 낙하량이 늘면 화면 상한도 같이 올려야 늘린 만큼이 깎이지 않는다
-        const cap = Math.min(280, Math.round(150 / aug.feverRateMul));
+        const cap = Math.min(280, Math.round(165 / aug.feverRateMul));
         if (items.length < cap) {
-          for (let k = 0; k < n; k++) spawnPoop(2.2 + Math.random() * 0.9);
+          for (let k = 0; k < n; k++) spawnPoop(2.09 + Math.random() * 0.855);
         }
-        spawnTimer = (0.14 / 1.3) * aug.feverRateMul * widthFactor;   // 간격 ÷1.3 → 낙하량 +30%
+        spawnTimer = (0.14 / 1.43) * aug.feverRateMul * widthFactor;   // 간격 ÷1.43 → 낙하량 +43%
       } else {
         spawnPoop();
         if (level >= 3 && Math.random() < .35) spawnPoop();
