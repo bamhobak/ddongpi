@@ -266,6 +266,13 @@
   #devBody .del:hover { background: rgba(255,80,80,.85); }
   #devBody .del:disabled { opacity: .4; cursor: default; }
   #devBody .hid { color: #c98bff; }        /* 히든 증강은 보라색으로 구분 */
+  #devBody .tbRecent th:first-child, #devBody .tbRecent td:first-child {
+    max-width: 56px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+  }
+  #devBody .tbRecent th:nth-child(2), #devBody .tbRecent td:nth-child(2) {
+    max-width: 46px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+  }
+  #devBody .tbRecent .lft { min-width: 45%; }
   #devTabs {
     display: none; gap: 6px; width: 100%; max-width: 340px;
     justify-content: center; flex-wrap: wrap;
@@ -522,7 +529,7 @@
   const elFinal = document.getElementById("finalScore");
   const elTitle = document.getElementById("overTitle");
 
-  const GAME_VERSION = "v1.1.54";   // 코드를 고칠 때마다 뒤 두 자리를 올린다
+  const GAME_VERSION = "v1.1.55";   // 코드를 고칠 때마다 뒤 두 자리를 올린다
   document.getElementById("ver").textContent = GAME_VERSION;
 
   const LS_NAME = "epjpddongpi_name";
@@ -2615,7 +2622,7 @@
     }
 
     const rec = data.recent || [];
-    P.rec.appendChild(devSection("최근 20판",
+    const recSec = devSection("최근 20판",
       ["이름", "직업", "점수", "생존", "증강"],
       rec.length ? rec.map(r => [
         r.name || "-",
@@ -2623,7 +2630,9 @@
         { t: Number(r.score || 0).toLocaleString(), c: "num" },
         { t: (r.secs || 0) + "초", c: "num" },
         { t: augLabel(r.augs), c: "lft" }
-      ]) : [["기록 없음", "", "", "", ""]]));
+      ]) : [["기록 없음", "", "", "", ""]]);
+    recSec.querySelector("table").classList.add("tbRecent");
+    P.rec.appendChild(recSec);
 
   }
 
