@@ -264,6 +264,11 @@
   #btnPause.on { display: block; }
   #btnPause:active { opacity: .9; }
   #pauseScreen h2 { color: #ffd23f; }
+  #btnPauseRetry {
+    font-size: 12px; padding: 7px 16px; margin-top: -2px;
+    background: rgba(255,255,255,.08); color: #b8bdcc;
+    border: 1px solid rgba(255,255,255,.12); box-shadow: none;
+  }
   #btnTestEnd {
     position: absolute; right: 12px; top: 96px; z-index: 5; display: none;
     appearance: none; border: 0; cursor: pointer; font: inherit;
@@ -485,7 +490,7 @@
         <button id="btnEditName">수정</button>
       </div>
       <div id="nameEdit">
-        <input id="startName" type="text" maxlength="12" placeholder="이름 (최대 12자)"
+        <input id="startName" type="text" maxlength="5" placeholder="이름 (최대 5자)"
                autocomplete="off" autocorrect="off" spellcheck="false">
         <button id="btnSaveName">저장</button>
       </div>
@@ -511,6 +516,7 @@
     <div id="pauseScreen" class="screen hidden">
       <h2>일시정지</h2>
       <button id="btnResume">▶ 계속하기</button>
+      <button id="btnPauseRetry">↻ 다시하기</button>
     </div>
 
     <div id="jobScreen" class="screen hidden">
@@ -541,7 +547,7 @@
       <div id="nameRow">
         <div class="tag" id="nameTag">🎉 TOP 10 진입! 이름을 남기세요</div>
         <div id="nameForm">
-          <input id="nameInput" type="text" maxlength="12" placeholder="이름 (최대 12자)"
+          <input id="nameInput" type="text" maxlength="5" placeholder="이름 (최대 5자)"
                  autocomplete="off" autocorrect="off" spellcheck="false">
           <button id="btnSave">등록</button>
         </div>
@@ -590,7 +596,7 @@
   const elFinal = document.getElementById("finalScore");
   const elTitle = document.getElementById("overTitle");
 
-  const GAME_VERSION = "v1.1.94";   // 코드를 고칠 때마다 뒤 두 자리를 올린다
+  const GAME_VERSION = "v1.1.95";   // 코드를 고칠 때마다 뒤 두 자리를 올린다
   document.getElementById("ver").textContent = GAME_VERSION;
 
   const LS_NAME = "epjpddongpi_name";
@@ -1365,7 +1371,7 @@
     startName.focus();
   }
   function saveName() {
-    const n = startName.value.trim().slice(0, 12);
+    const n = startName.value.trim().slice(0, 5);
     if (!n) { startName.focus(); return; }
     try { localStorage.setItem(LS_NAME, n); } catch (e) {}
     showNameView();
@@ -1400,6 +1406,15 @@
     pauseScreen.classList.add("hidden");
     resumeCountEnd = performance.now() + 3000;   // 3초 세고 나서 재개
     beep(700, .08, "sine", .04);
+  });
+
+  // 일시정지에서 다시하기 — 이번 판은 기록 없이 버리고 직업 선택부터 다시
+  document.getElementById("btnPauseRetry").addEventListener("click", () => {
+    pauseScreen.classList.add("hidden");
+    resumeCountEnd = 0;
+    state = STATE.OVER;
+    beep(520, .08, "square", .04);
+    openJobSelect();
   });
 
   function finishResume(now) {
@@ -3117,7 +3132,7 @@
   }
 
   async function saveMyScore() {
-    const name = nameInput.value.trim().slice(0, 12);
+    const name = nameInput.value.trim().slice(0, 5);
     if (!name) { nameInput.focus(); return; }
     btnSave.disabled = true;
     btnSave.textContent = "등록 중…";
