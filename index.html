@@ -178,7 +178,8 @@
   /* 순위판 왼쪽 세로 레일 — 제목은 위에 가로로, 그 아래는 [탭 | 목록] */
   .board.withTabs {
     display: grid; grid-template-columns: 30px minmax(0, 1fr); column-gap: 8px;
-    grid-template-areas: "h h" "tabs list" "tabs note";
+    grid-template-areas: "h h" "tabs list";
+    position: relative;
   }
   .board.withTabs h3 { grid-area: h; }
   .board.withTabs ol { grid-area: list; min-width: 0; }
@@ -190,7 +191,11 @@
   .board li.p1 .sc.xlong { font-size: .86em; }
   .board li.p2 .sc.long, .board li.p3 .sc.long   { font-size: .98em; }
   .board li.p2 .sc.xlong, .board li.p3 .sc.xlong { font-size: .82em; }
-  .board.withTabs .note { grid-area: note; justify-self: center; }
+  /* 초기화 안내는 제목 줄 오른쪽 끝에 작게 */
+  .board.withTabs .note {
+    position: absolute; top: 9px; right: 12px; margin: 0;
+    padding: 2px 8px; font-size: 9.5px; letter-spacing: 0;
+  }
   .jobTabs {
     grid-area: tabs; display: flex; flex-direction: column; align-items: center;
     gap: 3px; margin: 0; align-self: start; padding-top: 2px;
@@ -633,7 +638,7 @@
   const elFinal = document.getElementById("finalScore");
   const elTitle = document.getElementById("overTitle");
 
-  const GAME_VERSION = "v1.2.10";   // 코드를 고칠 때마다 뒤 두 자리를 올린다
+  const GAME_VERSION = "v1.2.11";   // 코드를 고칠 때마다 뒤 두 자리를 올린다
   document.getElementById("ver").textContent = GAME_VERSION;
 
   const LS_NAME = "epjpddongpi_name";
@@ -2618,7 +2623,7 @@
     const d = Math.floor(left / 86400000);
     const h = Math.floor(left / 3600000) % 24;
     const m = Math.floor(left / 60000) % 60;
-    const remain = d > 0 ? d + "일 " + h + "시간" : (h > 0 ? h + "시간 " + m + "분" : m + "분");
+    const remain = d > 0 ? d + "d" : (h > 0 ? h + "h" : m + "m");   // 짧게: 5d / 12h / 40m
     return "초기화까지 " + remain;
   }
 
