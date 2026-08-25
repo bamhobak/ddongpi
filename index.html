@@ -373,7 +373,8 @@
   #devBody .tabPane { display: none; }
   #devBody .tabPane.on { display: block; }
 
-  #ver {
+  /* 시작 화면 자식에 position: relative 를 주는 규칙이 있어 그보다 우선순위를 높여 둔다 */
+  #startScreen #ver {
     position: absolute;
     bottom: max(8px, env(safe-area-inset-bottom));
     right: 14px;
@@ -632,7 +633,7 @@
   const elFinal = document.getElementById("finalScore");
   const elTitle = document.getElementById("overTitle");
 
-  const GAME_VERSION = "v1.2.08";   // 코드를 고칠 때마다 뒤 두 자리를 올린다
+  const GAME_VERSION = "v1.2.09";   // 코드를 고칠 때마다 뒤 두 자리를 올린다
   document.getElementById("ver").textContent = GAME_VERSION;
 
   const LS_NAME = "epjpddongpi_name";
