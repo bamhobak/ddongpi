@@ -596,7 +596,7 @@
   const elFinal = document.getElementById("finalScore");
   const elTitle = document.getElementById("overTitle");
 
-  const GAME_VERSION = "v1.1.95";   // 코드를 고칠 때마다 뒤 두 자리를 올린다
+  const GAME_VERSION = "v1.1.96";   // 코드를 고칠 때마다 뒤 두 자리를 올린다
   document.getElementById("ver").textContent = GAME_VERSION;
 
   const LS_NAME = "epjpddongpi_name";
@@ -2284,7 +2284,7 @@
               }
             } else {
               if (!testMode) lives--;      // 테스트 모드는 맞아도 목숨이 줄지 않는다
-              noHitSec = 0;
+              noHitSec *= 0.5;             // 무소유 무피격 배율 — 맞으면 절반만 잃는다
               invUntil = now + 1000;
               hurtUntil = now + 1000;   // 무적 시간 동안 아픈 그림으로
               shake = 22; flash = 1;
