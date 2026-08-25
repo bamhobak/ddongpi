@@ -174,6 +174,16 @@
   #jobScreen h2 { color: #ffd23f; }
   #jobList { display: flex; flex-direction: column; gap: 10px; width: 100%; max-width: 340px; }
   #jobList img.ic { width: 44px; height: 56px; object-fit: contain; flex: none; }
+  /* 순위표 직업 탭 — 전체 + 직업별 */
+  .jobTabs { display: flex; flex-wrap: wrap; justify-content: center; gap: 4px; margin: 0 0 8px; }
+  .jobTab {
+    display: inline-flex; align-items: center; gap: 3px;
+    font-size: 11px; font-weight: 600; padding: 3px 8px; border-radius: 999px;
+    background: rgba(255,255,255,.07); color: #b8bdcc;
+    border: 1px solid transparent; box-shadow: none;
+  }
+  .jobTab img { width: 13px; height: 17px; object-fit: contain; }
+  .jobTab.on { color: #ffd23f; background: rgba(255,210,63,.14); border-color: rgba(255,210,63,.55); }
 
   /* ---- 이름 등록 ---- */
   #nameRow { display: none; flex-direction: column; align-items: center; gap: 10px; width: 100%; }
@@ -478,6 +488,7 @@
       <h1><span id="testDot">💩</span> <span class="ttl">이피재피똥피</span> <span id="devDot">💩</span></h1>
       <div class="board">
         <h3>🏆 이번 주 TOP 10</h3>
+        <div class="jobTabs" id="jobTabsStart"></div>
         <ol id="boardStart"><li class="empty">불러오는 중…</li></ol>
         <div class="note" id="noteStart"></div>
       </div>
@@ -555,6 +566,7 @@
 
       <div class="board">
         <h3>🏆 이번 주 TOP 10</h3>
+        <div class="jobTabs" id="jobTabsOver"></div>
         <ol id="boardOver"><li class="empty">불러오는 중…</li></ol>
         <div class="note" id="noteOver"></div>
       </div>
@@ -596,7 +608,7 @@
   const elFinal = document.getElementById("finalScore");
   const elTitle = document.getElementById("overTitle");
 
-  const GAME_VERSION = "v1.2.01";   // 코드를 고칠 때마다 뒤 두 자리를 올린다
+  const GAME_VERSION = "v1.2.02";   // 코드를 고칠 때마다 뒤 두 자리를 올린다
   document.getElementById("ver").textContent = GAME_VERSION;
 
   const LS_NAME = "epjpddongpi_name";
@@ -2567,20 +2579,24 @@
     return "초기화까지 " + remain;
   }
 
-  async function fetchRange(fromMs, toMs, limit) {
+  async function fetchRange(fromMs, toMs, limit, jb) {
     // 기기별 최고 기록만 남기는 건 SQL 함수 쪽에서 처리한다 (한 사람이 순위를 도배하지 않도록)
+    // jb 가 있으면 그 직업으로 낸 기록 중 기기별 최고 (ddongpi_top_job)
     try {
-      const res = await fetch(SB_URL + "/rest/v1/rpc/ddongpi_top", {
+      const body = {
+        since: new Date(fromMs).toISOString(),
+        until: toMs ? new Date(toMs).toISOString() : null,
+        lim: limit
+      };
+      if (jb) body.jb = jb;
+      const res = await fetch(SB_URL + "/rest/v1/rpc/" + (jb ? "ddongpi_top_job" : "ddongpi_top"), {
         method: "POST",
         headers: sbHeaders({ "Content-Type": "application/json" }),
-        body: JSON.stringify({
-          since: new Date(fromMs).toISOString(),
-          until: toMs ? new Date(toMs).toISOString() : null,
-          lim: limit
-        })
+        body: JSON.stringify(body)
       });
       if (res.ok) return await res.json();
-    } catch (e) { /* 아래 방식으로 넘어간다 */ }
+      if (jb) throw new Error("HTTP " + res.status);   // 직업별은 함수가 없으면 대체 경로가 없다
+    } catch (e) { if (jb) throw e; /* 아래 방식으로 넘어간다 */ }
     // 함수가 아직 없으면 예전처럼 표에서 바로 읽는다 (기기 중복 제거는 안 됨)
     let url = SB_URL + "/rest/v1/" + SB_TABLE +
       "?select=name,score,level,created_at" +
@@ -2733,6 +2749,57 @@
   const noteStart = document.getElementById("noteStart");
   const noteOver  = document.getElementById("noteOver");
 
+  /* ---------- 직업별 TOP 10 탭 ----------
+     전체 목록(topList)은 순위 계산에도 쓰이므로 그대로 두고,
+     직업별 목록은 탭을 누를 때 따로 받아서 캐시해 둔다. */
+  let boardJob = "all";
+  let jobLists = {};
+  function buildJobTabs() {
+    for (const id of ["jobTabsStart", "jobTabsOver"]) {
+      const box = document.getElementById(id);
+      box.innerHTML = "";
+      const mk = (key, label, img) => {
+        const b = document.createElement("button");
+        b.className = "jobTab" + (key === boardJob ? " on" : "");
+        b.dataset.job = key;
+        if (img) {
+          const im = document.createElement("img");
+          im.src = "assets/" + img + "_right.png"; im.alt = "";
+          b.appendChild(im);
+        }
+        b.appendChild(document.createTextNode(label));
+        b.addEventListener("click", () => {
+          if (boardJob === key) return;
+          boardJob = key;
+          beep(760, .06, "square", .03);
+          for (const t of document.querySelectorAll(".jobTab"))
+            t.classList.toggle("on", t.dataset.job === key);
+          showBoards();
+        });
+        box.appendChild(b);
+      };
+      mk("all", "전체", null);
+      for (const jid in JOBS) mk(jid, JOBS[jid].nm, JOB_IMG[jid]);
+    }
+  }
+  buildJobTabs();
+
+  // 현재 탭에 맞는 목록을 두 순위표에 그린다
+  async function showBoards(els) {
+    els = els || [boardStart, boardOver];
+    if (boardJob === "all") { els.forEach(el => renderBoard(el, topList)); return; }
+    if (!jobLists[boardJob]) {
+      els.forEach(el => renderBoard(el, null, "불러오는 중…"));
+      try {
+        jobLists[boardJob] = await fetchRange(weekStartMs(0), null, TOP_N, boardJob);
+      } catch (e) {
+        els.forEach(el => renderBoard(el, null, "직업별 랭킹을 불러오지 못했습니다"));
+        return;
+      }
+    }
+    if (boardJob !== "all") els.forEach(el => renderBoard(el, jobLists[boardJob]));
+  }
+
   async function refreshBoards(target) {
     const els = target ? [target] : [boardStart, boardOver];
     const note = resetNote();
@@ -2744,7 +2811,8 @@
     }
     try {
       topList = await fetchTop();
-      els.forEach(el => renderBoard(el, topList));
+      jobLists = {};                       // 새 기록이 있을 수 있으니 직업별 캐시도 비운다
+      await showBoards(els);
     } catch (e) {
       els.forEach(el => renderBoard(el, null, "랭킹을 불러오지 못했습니다 (오프라인?)"));
     }
