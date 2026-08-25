@@ -175,14 +175,26 @@
   #jobList { display: flex; flex-direction: column; gap: 10px; width: 100%; max-width: 340px; }
   #jobList img.ic { width: 44px; height: 56px; object-fit: contain; flex: none; }
   /* 순위표 직업 탭 — 전체 + 직업별 */
-  .jobTabs { display: flex; flex-wrap: wrap; justify-content: center; gap: 4px; margin: 0 0 5px; }
+  /* 순위판 왼쪽 세로 레일 — 제목은 위에 가로로, 그 아래는 [탭 | 목록] */
+  .board.withTabs {
+    display: grid; grid-template-columns: 30px 1fr; column-gap: 8px;
+    grid-template-areas: "h h" "tabs list" "tabs note";
+  }
+  .board.withTabs h3 { grid-area: h; }
+  .board.withTabs ol { grid-area: list; min-width: 0; }
+  .board.withTabs .note { grid-area: note; justify-self: center; }
+  .jobTabs {
+    grid-area: tabs; display: flex; flex-direction: column; align-items: center;
+    gap: 3px; margin: 0; align-self: start; padding-top: 2px;
+  }
   .jobTab {
-    display: inline-flex; align-items: center; gap: 3px;
-    font-size: 11px; font-weight: 600; padding: 2px 7px; border-radius: 999px;
+    display: inline-flex; align-items: center; justify-content: center;
+    width: 30px; height: 30px; padding: 0; border-radius: 50%;
+    font-size: 10px; font-weight: 700; letter-spacing: -.5px;
     background: rgba(255,255,255,.07); color: #b8bdcc;
     border: 1px solid transparent; box-shadow: none;
   }
-  .jobTab img { width: 16px; height: 20px; object-fit: contain; }
+  .jobTab img { width: 18px; height: 22px; object-fit: contain; }
   .jobTab.on { color: #ffd23f; background: rgba(255,210,63,.14); border-color: rgba(255,210,63,.55); }
 
   /* ---- 이름 등록 ---- */
@@ -487,7 +499,7 @@
     <div id="startScreen" class="screen">
       <div id="ver"></div>
       <h1><span id="testDot">💩</span> <span class="ttl">이피재피똥피</span> <span id="devDot">💩</span></h1>
-      <div class="board">
+      <div class="board withTabs">
         <h3>🏆 이번 주 TOP 10</h3>
         <div class="jobTabs" id="jobTabsStart"></div>
         <ol id="boardStart"><li class="empty">불러오는 중…</li></ol>
@@ -565,7 +577,7 @@
         </div>
       </div>
 
-      <div class="board">
+      <div class="board withTabs">
         <h3>🏆 이번 주 TOP 10</h3>
         <div class="jobTabs" id="jobTabsOver"></div>
         <ol id="boardOver"><li class="empty">불러오는 중…</li></ol>
@@ -609,7 +621,7 @@
   const elFinal = document.getElementById("finalScore");
   const elTitle = document.getElementById("overTitle");
 
-  const GAME_VERSION = "v1.2.03";   // 코드를 고칠 때마다 뒤 두 자리를 올린다
+  const GAME_VERSION = "v1.2.04";   // 코드를 고칠 때마다 뒤 두 자리를 올린다
   document.getElementById("ver").textContent = GAME_VERSION;
 
   const LS_NAME = "epjpddongpi_name";
