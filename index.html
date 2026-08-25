@@ -442,6 +442,9 @@
     font-size: 11px; font-weight: 700;
   }
   #startScreen .board li, #overScreen .board li { padding: 3px 0; }
+  /* 1~3위 줄은 좌우 여백을 되살린다 — 위 규칙이 덮어써서 점수가 줄 끝에 딱 붙어 잘려 보였다 */
+  #startScreen .board li.p1, #startScreen .board li.p2, #startScreen .board li.p3,
+  #overScreen .board li.p1, #overScreen .board li.p2, #overScreen .board li.p3 { padding: 4px 9px 4px 8px; }
 
   /* 1위 줄에 아주 느리게 빛이 흐른다 */
   .board li.p1 { position: relative; overflow: hidden; }
@@ -629,7 +632,7 @@
   const elFinal = document.getElementById("finalScore");
   const elTitle = document.getElementById("overTitle");
 
-  const GAME_VERSION = "v1.2.05";   // 코드를 고칠 때마다 뒤 두 자리를 올린다
+  const GAME_VERSION = "v1.2.06";   // 코드를 고칠 때마다 뒤 두 자리를 올린다
   document.getElementById("ver").textContent = GAME_VERSION;
 
   const LS_NAME = "epjpddongpi_name";
