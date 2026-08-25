@@ -632,7 +632,7 @@
   const elFinal = document.getElementById("finalScore");
   const elTitle = document.getElementById("overTitle");
 
-  const GAME_VERSION = "v1.2.07";   // 코드를 고칠 때마다 뒤 두 자리를 올린다
+  const GAME_VERSION = "v1.2.08";   // 코드를 고칠 때마다 뒤 두 자리를 올린다
   document.getElementById("ver").textContent = GAME_VERSION;
 
   const LS_NAME = "epjpddongpi_name";
@@ -861,7 +861,8 @@
      아직 안 불러졌으면 예전처럼 글자 이모지로 그린다. */
   const ITEM_IMG = {};
   for (const [type, file] of [["moon", "crescent_moon"], ["fullmoon", "full_moon"], ["paper", "roll_of_paper"],
-                              ["umbrella", "umbrella"], ["star", "star"], ["heart", "red_heart"]]) {
+                              ["umbrella", "umbrella"], ["star", "star"], ["heart", "red_heart"],
+                              ["poop", "poop"]]) {
     const im = new Image();
     im.onload = () => { ITEM_IMG[type] = im; };
     im.src = "assets/item_" + file + ".png";
@@ -1004,9 +1005,10 @@
         if (ctx.filter !== undefined)
           ctx.filter = "sepia(1) saturate(7) hue-rotate(-14deg) brightness(1.5) contrast(1.15)";
       }
-      if (q.kind === "star" && ITEM_IMG.star) {
+      const qi = q.kind === "star" ? ITEM_IMG.star : ITEM_IMG.poop;
+      if (qi) {
         const d = q.r * 2 * ITEM_IMG_SCALE;
-        ctx.drawImage(ITEM_IMG.star, -d / 2, -d / 2, d, d);
+        ctx.drawImage(qi, -d / 2, -d / 2, d, d);
       } else {
         ctx.fillStyle = "#fff";
         ctx.font = (q.r * 2) + "px serif";
@@ -4012,7 +4014,7 @@
           if (ctx.filter !== undefined)
             ctx.filter = "sepia(1) saturate(7) hue-rotate(-14deg) brightness(1.5) contrast(1.15)";
         }
-        const ii = it.type !== "poop" ? ITEM_IMG[it.type] : null;
+        const ii = ITEM_IMG[it.type];      // 똥도 같은 3D 그림 (황금똥 필터는 그림에도 먹는다)
         if (ii) {
           const d = it.size * ITEM_IMG_SCALE;
           ctx.drawImage(ii, -d / 2, -d / 2, d, d);
