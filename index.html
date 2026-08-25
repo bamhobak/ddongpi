@@ -590,7 +590,7 @@
   const elFinal = document.getElementById("finalScore");
   const elTitle = document.getElementById("overTitle");
 
-  const GAME_VERSION = "v1.1.93";   // 코드를 고칠 때마다 뒤 두 자리를 올린다
+  const GAME_VERSION = "v1.1.94";   // 코드를 고칠 때마다 뒤 두 자리를 올린다
   document.getElementById("ver").textContent = GAME_VERSION;
 
   const LS_NAME = "epjpddongpi_name";
@@ -1416,7 +1416,7 @@
   /* ---------- 직업 선택 화면 ----------
      시작하기·다시하기를 누르면 먼저 직업을 고르고, 고르는 순간 게임이 시작된다. */
   const jobScreen = document.getElementById("jobScreen");
-  function openJobSelect() {
+  function openJobSelect(test) {           // test === true 면 고른 뒤 테스트 모드로 시작
     const list = document.getElementById("jobList");
     list.innerHTML = "";
     // 카드 앞에는 이모지 대신 그 직업의 이재(오른쪽 이동 모습)를 보여준다
@@ -1436,7 +1436,7 @@
         try { localStorage.setItem(LS_JOB, job); } catch (e) {}
         jobScreen.classList.add("hidden");
         beep(900, .08, "square", .05);
-        reset();
+        reset(test === true);
       });
       list.appendChild(card);
     }
@@ -3094,7 +3094,7 @@
     testMsg.textContent = "";
     testPw.value = "";
     testScreen.classList.add("hidden");
-    reset(true);
+    openJobSelect(true);                   // 테스트 모드도 직업을 고르고 시작
   }
 
   btnTestEnd.addEventListener("click", () => {
