@@ -590,7 +590,7 @@
   const elFinal = document.getElementById("finalScore");
   const elTitle = document.getElementById("overTitle");
 
-  const GAME_VERSION = "v1.1.91";   // 코드를 고칠 때마다 뒤 두 자리를 올린다
+  const GAME_VERSION = "v1.1.92";   // 코드를 고칠 때마다 뒤 두 자리를 올린다
   document.getElementById("ver").textContent = GAME_VERSION;
 
   const LS_NAME = "epjpddongpi_name";
@@ -1086,8 +1086,7 @@
       go: () => { aug.poopMul *= 1 - 0.15 * dim("tinypoop"); } },
     { id: "umbrella3",  ic: "☂️", nm: "우산 다발", ds: "우산을 3개 얻는다",
       max: 99,                    // 조건이 막아주므로 보유 상한은 사실상 없음
-      // 헬스걸은 우산이 하트로 바뀌므로 목숨이 상한이면 후보에서 뺀다
-      cond: () => (job === "fit" ? lives < aug.maxLives : shields <= 2),
+      cond: () => job !== "fit" && shields <= 2,   // 헬스걸은 방패가 없는 직업 — 미등장
       noCount: true,              // 방패 수는 화면에 우산으로 보이니 보유 뱃지는 생략
       go: () => {
         if (job === "fit") lives = Math.min(aug.maxLives, lives + 3);   // 우산 대신 하트
@@ -1673,7 +1672,7 @@
     // 블랙홀 안에서는 아이템도 두 배로 자주 나온다
     let mean = BONUS_BASE / (b.w / BONUS_W_TOTAL) * aug.itemRateMul * lvFactor / bhMul();
     if (b.type === "paper" && aug.subs) mean /= 1.7;  // 정기구독 — 휴지만 1.7배 빈도
-    if (b.type === "heart" && job === "fit") mean /= 5;  // 헬스걸 — 하트 5배
+    if (b.type === "heart" && job === "fit") mean /= 3;  // 헬스걸 — 하트 3배
     if ((b.type === "moon" || b.type === "fullmoon") && job === "powerj") mean /= 1.75;  // 파워J — 달 +75%
     // 후반 견제 — Lv15부터 달이 레벨마다 7%씩 뜸해진다 (뚜니핑 타임 가동률을 떨어뜨린다)
     if ((b.type === "moon" || b.type === "fullmoon") && level > 15)
