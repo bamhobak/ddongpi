@@ -177,11 +177,19 @@
   /* 순위표 직업 탭 — 전체 + 직업별 */
   /* 순위판 왼쪽 세로 레일 — 제목은 위에 가로로, 그 아래는 [탭 | 목록] */
   .board.withTabs {
-    display: grid; grid-template-columns: 30px 1fr; column-gap: 8px;
+    display: grid; grid-template-columns: 30px minmax(0, 1fr); column-gap: 8px;
     grid-template-areas: "h h" "tabs list" "tabs note";
   }
   .board.withTabs h3 { grid-area: h; }
   .board.withTabs ol { grid-area: list; min-width: 0; }
+  .board.withTabs li { min-width: 0; }
+  /* 자릿수가 많은 점수는 글자를 줄여 오른쪽이 잘리지 않게 */
+  .board .sc.long  { font-size: .88em; }
+  .board .sc.xlong { font-size: .74em; }
+  .board li.p1 .sc.long  { font-size: 1.02em; }
+  .board li.p1 .sc.xlong { font-size: .86em; }
+  .board li.p2 .sc.long, .board li.p3 .sc.long   { font-size: .98em; }
+  .board li.p2 .sc.xlong, .board li.p3 .sc.xlong { font-size: .82em; }
   .board.withTabs .note { grid-area: note; justify-self: center; }
   .jobTabs {
     grid-area: tabs; display: flex; flex-direction: column; align-items: center;
@@ -621,7 +629,7 @@
   const elFinal = document.getElementById("finalScore");
   const elTitle = document.getElementById("overTitle");
 
-  const GAME_VERSION = "v1.2.04";   // 코드를 고칠 때마다 뒤 두 자리를 올린다
+  const GAME_VERSION = "v1.2.05";   // 코드를 고칠 때마다 뒤 두 자리를 올린다
   document.getElementById("ver").textContent = GAME_VERSION;
 
   const LS_NAME = "epjpddongpi_name";
@@ -2717,7 +2725,8 @@
       nm.className = "nm";
       nm.textContent = row.name;               // textContent → HTML 삽입 불가
       const sc = document.createElement("span");
-      sc.className = "sc";
+      const digits = String(Math.round(Number(row.score) || 0)).length;
+      sc.className = "sc" + (digits >= 13 ? " xlong" : digits >= 10 ? " long" : "");
       if (row.job && JOBS[row.job]) {
         const im = document.createElement("img");
         im.className = "jic";
