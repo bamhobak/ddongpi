@@ -590,7 +590,7 @@
   const elFinal = document.getElementById("finalScore");
   const elTitle = document.getElementById("overTitle");
 
-  const GAME_VERSION = "v1.1.92";   // 코드를 고칠 때마다 뒤 두 자리를 올린다
+  const GAME_VERSION = "v1.1.93";   // 코드를 고칠 때마다 뒤 두 자리를 올린다
   document.getElementById("ver").textContent = GAME_VERSION;
 
   const LS_NAME = "epjpddongpi_name";
@@ -630,7 +630,9 @@
     if (now < hurtUntil && S.hurt.img) return S.hurt;
     return S[facing].img ? S[facing] : (SPR[facing].img ? SPR[facing] : null);
   }
-  function spriteHeight(spr) { return (player.r * 2 * aug.hitboxMul) / spr.head * spr.adj; }
+  // 판정·그림 크기 배율 — 스테로이드 약발 중에는 두 배
+  function hitMul() { return aug.hitboxMul * (roidT > 0 ? 2 : 1); }
+  function spriteHeight(spr) { return (player.r * 2 * hitMul()) / spr.head * spr.adj; }
   function headOffset(spr) { return spr ? FOOT - spriteHeight(spr) * (1 - spr.cy) : 0; }  // 실제 크기 = 도안의 80%
 
   const MIN_W = 340, MAX_W = 620;    // 논리 가로 허용 범위
@@ -1100,6 +1102,9 @@
     { id: "hungry",     ic: "😋", nm: "마운자로를 이겨낸 정연핑", ds: "정연핑이 아이템을 대신 먹어준다",
       hidden: true, once: true, cond: () => aug.helper > 0 && aug.magnet > 0,   // 정연핑 + 자석
       go: () => { aug.hungry = true; } },
+    { id: "roid",       ic: "💉", nm: "스테로이드 과다 복용", ds: "10초 동안 몸이 2배로 부풀고, 모든 똥을 튕겨낸다",
+      max: 99, noCount: true, cond: () => job === "fit" && level >= 7,   // 헬스걸 전용 — 우산 다발 자리
+      go: () => { roidT = 10; } },
     { id: "steelUmb",   ic: "☔", nm: "우산 로켓배송", ds: "우산이 없으면 저절로 배송된다",
       hidden: true, once: true,
       cond: () => augCount["umbrella3"] > 0 && job !== "fit",   // 헬스걸은 하트 자동재생이 돼버려 제외
@@ -1288,6 +1293,7 @@
   let noHitSec = 0;                // 마지막 피격 이후 버틴 시간 (무소유 배율용)
   let clones = [], cloneTimer = 0; // 벼랑 끝 분신술: 날아가는 작은 이재들
   let ghostTimer = 3;              // 유령화: 다음 무적까지 남은 시간
+  let roidT = 0;                   // 스테로이드 과다 복용: 남은 약발 시간(초)
   let hurtUntil = 0;               // 똥에 맞은 직후 (아픈 그림 표시)
   let zoneShown = -1;              // 도착 안내를 이미 띄운 단계
   let shake = 0, flash = 0, feverFlash = 0;
@@ -1462,7 +1468,7 @@
     aug.feverBonus = 0; aug.starMul = 1; aug.timeMul = 1;
     aug.feverScoreMul = 1; aug.fallMul = 1; aug.hitboxMul = 1; aug.poopMul = 1;
     aug.steelUmb = false; aug.starburst = false; aug.gamble = false; aug.scoreMul = 1;
-    aug.ghost = false; aug.blackhole = false; aug.legion = false; ghostTimer = 3;
+    aug.ghost = false; aug.blackhole = false; aug.legion = false; ghostTimer = 3; roidT = 0;
     flyOn = false;
     aug.angryUmb = false; aug.goldChance = 0; aug.inter = false; aug.goldLord = false;
     aug.refill = false; aug.subs = false; aug.clone = false;
@@ -1672,7 +1678,7 @@
     // 블랙홀 안에서는 아이템도 두 배로 자주 나온다
     let mean = BONUS_BASE / (b.w / BONUS_W_TOTAL) * aug.itemRateMul * lvFactor / bhMul();
     if (b.type === "paper" && aug.subs) mean /= 1.7;  // 정기구독 — 휴지만 1.7배 빈도
-    if (b.type === "heart" && job === "fit") mean /= 3;  // 헬스걸 — 하트 3배
+    if (b.type === "heart" && job === "fit") mean /= 4;  // 헬스걸 — 하트 4배
     if ((b.type === "moon" || b.type === "fullmoon") && job === "powerj") mean /= 1.75;  // 파워J — 달 +75%
     // 후반 견제 — Lv15부터 달이 레벨마다 7%씩 뜸해진다 (뚜니핑 타임 가동률을 떨어뜨린다)
     if ((b.type === "moon" || b.type === "fullmoon") && level > 15)
@@ -1857,6 +1863,16 @@
         spawnPoop(1, "laser", wn.x, wn.ang);
         beep(180, .16, "sawtooth", .06);
         warns.splice(k, 1);
+      }
+    }
+
+    // ---- 스테로이드 과다 복용: 약발이 도는 동안 몸이 2배, 똥이 튕겨 나간다 ----
+    if (roidT > 0) {
+      roidT -= dt;
+      if (roidT <= 0) {
+        roidT = 0;
+        popText(player.x, player.y - 70, "💉 약발 끝", "#ff8f8f", 22);
+        beep(300, .12, "sine", .04);
       }
     }
 
@@ -2162,8 +2178,8 @@
          맞는 쪽만 줄여 뒀다 (.78 → .702 → .632). */
       const dmg = it.type === "poop" && !powered && it.skin !== "fever";
       // 끝점만 보면 빠른 똥이 캐릭터를 뛰어넘을 수 있어서, 이번 프레임에 지나온 선분과의 거리를 본다
-      const hit = segDist(player.x, cy, prevX, prevY, it.x, it.y)
-                  < it.r + player.r * (dmg ? .632 : .78) * aug.hitboxMul;
+      const hit = !it.bounced && segDist(player.x, cy, prevX, prevY, it.x, it.y)
+                  < it.r + player.r * (dmg ? .632 : .78) * hitMul();
 
       if (hit) {
         if (it.type === "poop") {
@@ -2206,6 +2222,20 @@
             }
             items.splice(i, 1);
             if (gain >= 25 || Math.random() < .5) beep(note + Math.random() * 200, .06, "square", .04);
+            continue;
+          }
+          if (roidT > 0) {
+            /* 스테로이드 — 몸에 닿은 똥이 위로 튕겨 나간다. 피한 것과 같은 점수를 받고,
+               특수 성질(분열·지그재그·레이저)은 튕기는 순간 사라진다. */
+            score += 3 * scoreMul();
+            const away = it.x - player.x;
+            it.vx = away * 5 + (Math.random() - .5) * 160;
+            it.vy = -(Math.abs(it.vy) * 0.6 + 320);
+            it.vr = (Math.random() - .5) * 12;
+            it.special = null; it.bounced = true;
+            burst(it.x, it.y, "#ff6a6a", 10);
+            shake = Math.max(shake, 5);
+            beep(560 + Math.random() * 200, .05, "square", .035);
             continue;
           }
           /* 무적 여부는 이 자리에서 그때그때 확인해야 한다.
@@ -2258,6 +2288,7 @@
         }
       }
 
+      if (it.bounced && it.y + it.r < -40) { items.splice(i, 1); continue; }   // 튕겨 나간 똥은 하늘로 퇴장
       if (it.y - it.r > H + 20) {
         // 뚜니핑 타임 낙하물은 워낙 많이 쏟아져서, 안 먹고 흘려보낸 것에 점수를 주면
         // 가만히 있어도 점수가 폭등한다. 뚜니핑 타임 것은 0점 — 직접 받아야만 점수가 오른다.
@@ -3572,9 +3603,17 @@
       // 발이 항상 FOOT 선에 닿도록 아래를 기준으로 그린다 (작아져도 뜨지 않는다)
       ctx.drawImage(spr.img, -sw * spr.cx, FOOT - sh, sw, sh);
 
+      if (roidT > 0) {                      // 스테로이드 — 붉게 달아오른 근육 오라
+        ctx.globalAlpha = .18 + Math.sin(now / 70) * .08;
+        ctx.fillStyle = "#ff4b4b";
+        ctx.beginPath(); ctx.arc(0, player.hy, player.r * hitMul() + 18, 0, 6.283); ctx.fill();
+        ctx.globalAlpha = 1;
+        ctx.strokeStyle = "rgba(255,90,90,.9)"; ctx.lineWidth = 4;
+        ctx.beginPath(); ctx.arc(0, player.hy, player.r * hitMul() + 18, 0, 6.283); ctx.stroke();
+      }
       if (now < powerUntil) {
         ctx.beginPath();
-        ctx.arc(0, player.hy, player.r * aug.hitboxMul + 14 + Math.sin(now / 90) * 3, 0, 6.283);
+        ctx.arc(0, player.hy, player.r * hitMul() + 14 + Math.sin(now / 90) * 3, 0, 6.283);
         ctx.strokeStyle = "rgba(255,255,255,.85)";
         ctx.lineWidth = 4; ctx.setLineDash([10, 8]);
         ctx.lineDashOffset = -now / 20;
@@ -3582,12 +3621,12 @@
         ctx.setLineDash([]);
         ctx.globalAlpha = .22 + feverT * .18;
         ctx.fillStyle = "#fff";
-        ctx.beginPath(); ctx.arc(0, player.hy, player.r * aug.hitboxMul + 14, 0, 6.283); ctx.fill();
+        ctx.beginPath(); ctx.arc(0, player.hy, player.r * hitMul() + 14, 0, 6.283); ctx.fill();
         ctx.globalAlpha = 1;
       }
       ctx.restore();
 
-      drawShields(player.y + player.hy - player.r * aug.hitboxMul - 21);
+      drawShields(player.y + player.hy - player.r * hitMul() - 21);
       return;
     }
 
@@ -3596,7 +3635,7 @@
     ctx.save();
     ctx.translate(player.x, player.y);
     ctx.rotate(player.tilt);
-    ctx.scale(player.r * aug.hitboxMul / R, player.r * aug.hitboxMul / R); // 실제 크기로 축소
+    ctx.scale(player.r * hitMul() / R, player.r * hitMul() / R); // 실제 크기로 축소
     ctx.globalAlpha = blink ? .35 : 1;
 
     ctx.save();
@@ -3659,7 +3698,7 @@
   // 머리 위에 남은 방패 수만큼 우산을 나란히 그린다
   function drawShields(y) {
     if (shields <= 0) return;
-    const size = 30 * aug.hitboxMul;
+    const size = 30 * hitMul();
     const gap = size * 0.78;
     ctx.save();
     ctx.translate(player.x, y);
