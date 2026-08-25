@@ -596,7 +596,7 @@
   const elFinal = document.getElementById("finalScore");
   const elTitle = document.getElementById("overTitle");
 
-  const GAME_VERSION = "v1.1.99";   // 코드를 고칠 때마다 뒤 두 자리를 올린다
+  const GAME_VERSION = "v1.2.00";   // 코드를 고칠 때마다 뒤 두 자리를 올린다
   document.getElementById("ver").textContent = GAME_VERSION;
 
   const LS_NAME = "epjpddongpi_name";
@@ -626,7 +626,7 @@
   // 직업별 캐릭터 그림(오른쪽 이동 모습) — 직업 카드와 순위표에서 함께 쓴다
   const JOB_IMG = { none: "player", gambler: "gambler", levitator: "levitator",
                     fit: "fit", powerj: "powerj", powerp: "monk" };
-  function spdMul() { return job === "levitator" ? 2 : 1; }   // 이동 속도 배율 (부양사 2배)
+  function spdMul() { return job === "levitator" ? 2.2 : 1; }   // 이동 속도 배율 (부양사 2.2배)
   let job = "none";
   try { const j = localStorage.getItem(LS_JOB); if (JOBS[j]) job = j; } catch (e) {}
   // hy = 발을 바닥에 고정했을 때 머리(판정 중심)가 player.y 에서 얼마나 떨어지는지.
