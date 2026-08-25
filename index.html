@@ -596,7 +596,7 @@
   const elFinal = document.getElementById("finalScore");
   const elTitle = document.getElementById("overTitle");
 
-  const GAME_VERSION = "v1.2.00";   // 코드를 고칠 때마다 뒤 두 자리를 올린다
+  const GAME_VERSION = "v1.2.01";   // 코드를 고칠 때마다 뒤 두 자리를 올린다
   document.getElementById("ver").textContent = GAME_VERSION;
 
   const LS_NAME = "epjpddongpi_name";
@@ -2130,7 +2130,7 @@
           for (const dir of [-1, 1]) {
             /* 좌우로 벌어지는 각도와 속도를 조각마다 따로 뽑는다.
                늘 같은 폭으로 갈라지면 한 번 외우면 끝이라 재미가 없다. */
-            const ang = dir * (0.22 + Math.random() * Math.random() * 1.15);   // 세로 기준 12~78도
+            const ang = dir * (0.22 + Math.random() * Math.random() * 0.65);   // 세로 기준 12~50도 (가로로 눕지 않게)
             const sp = it.vy * (0.50 + Math.random() * 0.28);   // 쪼개진 뒤엔 확 느려진다
             items.push({
               type: "poop", emoji: "💩",
