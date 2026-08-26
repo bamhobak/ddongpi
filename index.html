@@ -695,7 +695,7 @@
   const elFinal = document.getElementById("finalScore");
   const elTitle = document.getElementById("overTitle");
 
-  const GAME_VERSION = "v1.2.25";   // 코드를 고칠 때마다 뒤 두 자리를 올린다
+  const GAME_VERSION = "v1.2.26";   // 코드를 고칠 때마다 뒤 두 자리를 올린다
   document.getElementById("ver").textContent = GAME_VERSION;
 
   const LS_NAME = "epjpddongpi_name";
@@ -725,7 +725,7 @@
   // 직업별 캐릭터 그림(오른쪽 이동 모습) — 직업 카드와 순위표에서 함께 쓴다
   const JOB_IMG = { none: "player", gambler: "gambler", levitator: "levitator",
                     fit: "fit", powerj: "powerj", powerp: "monk" };
-  function spdMul() { return 1; }   // 이동 속도 배율 — 모든 직업 동일
+  function spdMul() { return job === "levitator" ? 2.2 : 1; }   // 이동 속도 배율 (부양사 2.2배)
   let job = "none";
   try { const j = localStorage.getItem(LS_JOB); if (JOBS[j]) job = j; } catch (e) {}
   // hy = 발을 바닥에 고정했을 때 머리(판정 중심)가 player.y 에서 얼마나 떨어지는지.
@@ -1495,12 +1495,15 @@
   const padKnob = dpad.querySelector(".knob");
   /* 패드를 민 정도(0~1). 키보드로 조작할 때는 항상 1이라 예전과 똑같다. */
   let padAmpX = 1, padAmpY = 1;
-  const PAD_MIN = 0.15;          // 살짝만 밀었을 때의 최소 속도 비율
-  const PAD_STEPS = 10;          // 최소~최대 사이를 이만큼의 단계로 나눈다
-  const PAD_RANGE = 78;          // 이 거리(px)까지 밀면 최고 속도 — 패드 밖으로 나가도 이어진다
+  const PAD_MIN = 0.10;          // 살짝만 밀었을 때의 최소 속도 비율
+  const PAD_STEPS = 16;          // 최소~최대 사이를 이만큼의 단계로 나눈다
+  const PAD_RANGE = 105;         // 이 거리(px)까지 밀어야 최고 속도 — 패드 밖으로 나가도 이어진다
+  /* 느린 구간을 넓게 잡아 섬세하게 다루고, 끝까지 밀었을 때만 최고 속도가 나온다.
+     빠른 캐릭터(부양사)일수록 저속 구간이 더 넓어야 조준이 된다. */
   function padAmp(v, dead) {
     const t = Math.max(0, Math.min(1, (Math.abs(v) - dead) / (PAD_RANGE - dead)));
-    const q = Math.round(Math.pow(t, 1.35) * PAD_STEPS) / PAD_STEPS;   // 10단계로 끊어 준다
+    const e = 1.6 + (spdMul() - 1) * 0.5;        // 빠른 직업은 더 완만하게
+    const q = Math.round(Math.pow(t, e) * PAD_STEPS) / PAD_STEPS;
     return PAD_MIN + (1 - PAD_MIN) * q;
   }
   const padArrow = {
