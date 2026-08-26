@@ -697,7 +697,7 @@
   const elFinal = document.getElementById("finalScore");
   const elTitle = document.getElementById("overTitle");
 
-  const GAME_VERSION = "v1.2.21";   // 코드를 고칠 때마다 뒤 두 자리를 올린다
+  const GAME_VERSION = "v1.2.22";   // 코드를 고칠 때마다 뒤 두 자리를 올린다
   document.getElementById("ver").textContent = GAME_VERSION;
 
   const LS_NAME = "epjpddongpi_name";
@@ -1532,8 +1532,8 @@
       const max = r.width / 2 - 34;
       const kx = Math.max(-max, Math.min(max, dx));
       padKnob.style.transform = "translateX(" + kx.toFixed(1) + "px)";
-      if (Math.abs(dx) < 10) { padSet(false, false, false, false); return; }
-      padAmpX = padAmp(dx, 10);
+      if (Math.abs(dx) < 5) { padSet(false, false, false, false); return; }
+      padAmpX = padAmp(dx, 5);
       padSet(dx < 0, dx > 0, false, false);
       return;
     }
@@ -1541,13 +1541,13 @@
     const max = r.width / 2 - 16;
     const k = dist > max ? max / dist : 1;         // 손잡이는 패드 안에서만 움직인다
     padKnob.style.transform = "translate(" + (dx * k).toFixed(1) + "px," + (dy * k).toFixed(1) + "px)";
-    if (dist < 15) { padSet(false, false, false, false); return; }   // 가운데는 정지
+    if (dist < 7) { padSet(false, false, false, false); return; }    // 가운데는 정지
     // 가로·세로 성분 중 확실히 큰 쪽만 켠다. 둘이 비슷하면(2배 이내) 대각선.
     const horiz = Math.abs(dx) >= Math.abs(dy) * 0.5;
     const vert  = flyOn && Math.abs(dy) >= Math.abs(dx) * 0.5;
     // 민 거리에 비례한 세기 — 축마다 따로 잰다 (대각선에서도 자연스럽게)
-    padAmpX = padAmp(dx, 8);
-    padAmpY = padAmp(dy, 8);
+    padAmpX = padAmp(dx, 4);
+    padAmpY = padAmp(dy, 4);
     padSet(horiz && dx < 0, horiz && dx > 0, vert && dy < 0, vert && dy > 0);
   }
   dpad.addEventListener("pointerdown", e => {
