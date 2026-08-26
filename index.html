@@ -321,7 +321,8 @@
   /* 십자패드 — 오른쪽 아래, 누르고 있는 동안 이동 */
   /* 하나의 둥근 패드 — 누른 채 밀면 방향이 바로 바뀐다 (손가락을 뗄 필요가 없다) */
   #dpad {
-    position: absolute; right: 12px; bottom: max(12px, env(safe-area-inset-bottom)); z-index: 4;
+    position: absolute; left: 50%; transform: translateX(-50%);
+    bottom: max(12px, env(safe-area-inset-bottom)); z-index: 4;
     display: none; width: 132px; height: 132px; border-radius: 50%;
     background: rgba(255,255,255,.13); border: 1px solid rgba(255,255,255,.20);
     opacity: .82; touch-action: none; -webkit-user-select: none; user-select: none;
@@ -687,7 +688,7 @@
   const elFinal = document.getElementById("finalScore");
   const elTitle = document.getElementById("overTitle");
 
-  const GAME_VERSION = "v1.2.17";   // 코드를 고칠 때마다 뒤 두 자리를 올린다
+  const GAME_VERSION = "v1.2.18";   // 코드를 고칠 때마다 뒤 두 자리를 올린다
   document.getElementById("ver").textContent = GAME_VERSION;
 
   const LS_NAME = "epjpddongpi_name";
