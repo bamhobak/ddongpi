@@ -638,7 +638,7 @@
   const elFinal = document.getElementById("finalScore");
   const elTitle = document.getElementById("overTitle");
 
-  const GAME_VERSION = "v1.2.11";   // 코드를 고칠 때마다 뒤 두 자리를 올린다
+  const GAME_VERSION = "v1.2.12";   // 코드를 고칠 때마다 뒤 두 자리를 올린다
   document.getElementById("ver").textContent = GAME_VERSION;
 
   const LS_NAME = "epjpddongpi_name";
@@ -2530,15 +2530,18 @@
     btnSave.textContent = "등록";
     nameTag.textContent = "🎉 TOP 10 진입! 이름을 남기세요";
     refreshBoards(boardOver).then(async () => {
-      if (state !== STATE.OVER || !qualifies(s)) return;
+      if (state !== STATE.OVER) return;
+      const nm = savedName();
+      /* 이름이 있으면 전체 TOP 10에 못 들어도 등록한다 — 직업별 순위표는 전체와 별개라서
+         전체 기준으로만 걸러 버리면 직업별 판이 비게 된다. 이름이 없으면 예전처럼 진입했을 때만 묻는다. */
+      if (!(nm ? canSubmit(s) : qualifies(s))) return;
       const r = topList.findIndex(v => s > v.score);
       const rank = (r < 0 ? topList.length + 1 : r + 1);
-      const nm = savedName();
       if (nm) {
         // 이름을 미리 정해뒀으면 곧바로 등록한다
         nameRow.classList.add("on");
         nameForm.style.display = "none";
-        nameTag.textContent = "🎉 이번 주 " + rank + "위 등록 중…";
+        nameTag.textContent = qualifies(s) ? "🎉 이번 주 " + rank + "위 등록 중…" : "기록 등록 중…";
         try {
           await submitScore(nm, pendingScore, pendingLevel);
           myRowKey = nm + "|" + pendingScore;
@@ -2547,8 +2550,18 @@
           /* 한 기기당 한 줄만 남기 때문에, 예전 기록이 더 높으면 이번 판은 순위표에
              올라가지 않는다. 실제로 올라갔을 때만 달성 문구를 띄운다. */
           const at = topList.findIndex(v => v.name + "|" + Number(v.score) === myRowKey);
-          if (at < 0) nameRow.classList.remove("on");
-          else nameTag.textContent = "🎉 이번 주 " + (at + 1) + "위 달성! (" + nm + ")";
+          if (at >= 0) nameTag.textContent = "🎉 이번 주 " + (at + 1) + "위 달성! (" + nm + ")";
+          else {
+            // 전체엔 못 들어도 직업별 TOP 10엔 들어갔을 수 있다
+            let jat = -1;
+            try {
+              const jl = await fetchRange(weekStartMs(0), null, TOP_N, job);
+              jobLists[job] = jl;
+              jat = jl.findIndex(v => v.name + "|" + Number(v.score) === myRowKey);
+            } catch (e) {}
+            if (jat >= 0) nameTag.textContent = "🎉 이번 주 " + JOBS[job].nm + " " + (jat + 1) + "위 달성! (" + nm + ")";
+            else nameRow.classList.remove("on");
+          }
         } catch (e) {
           nameTag.textContent = "등록 실패 — 아래에서 다시 시도해주세요";
           nameForm.style.display = "";
@@ -3243,8 +3256,9 @@
 
   /* 화면에 보이는 이번 주 TOP 10 을 기준으로만 판단한다.
      내 지난 기록이 더 높든 낮든 상관없이, 지금 점수가 순위표에 들어갈 점수면 등록할 수 있다. */
-  function qualifies(sc) {
-    if (!SB_ON || testMode || sc <= 0) return false;   // 테스트 점수는 랭킹에 올리지 않는다
+  function canSubmit(sc) { return SB_ON && !testMode && sc > 0; }   // 테스트 점수는 랭킹에 올리지 않는다
+  function qualifies(sc) {                                            // 전체 TOP 10 진입 여부
+    if (!canSubmit(sc)) return false;
     if (topList.length < TOP_N) return true;
     return sc > topList[topList.length - 1].score;
   }
