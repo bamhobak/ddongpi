@@ -638,7 +638,7 @@
   const elFinal = document.getElementById("finalScore");
   const elTitle = document.getElementById("overTitle");
 
-  const GAME_VERSION = "v1.2.12";   // 코드를 고칠 때마다 뒤 두 자리를 올린다
+  const GAME_VERSION = "v1.2.13";   // 코드를 고칠 때마다 뒤 두 자리를 올린다
   document.getElementById("ver").textContent = GAME_VERSION;
 
   const LS_NAME = "epjpddongpi_name";
@@ -2017,10 +2017,10 @@
       const alive = items.indexOf(c.t) >= 0;
       const tx2 = alive ? c.t.x : c.x, ty2 = alive ? c.t.y : c.y - 120;
       const dx2 = tx2 - c.x, dy2 = ty2 - c.y, d2 = Math.hypot(dx2, dy2) || 1;
-      c.x += dx2 / d2 * 760 * dt;
-      c.y += dy2 / d2 * 760 * dt;
+      c.x += dx2 / d2 * 1200 * dt;
+      c.y += dy2 / d2 * 1200 * dt;
       if ((alive && d2 < (c.t.r || 20) + 16) || c.life <= 0) {
-        smashPoopsAround(c.x, c.y, 70, true);         // 폭발 반경 70px (특수똥까지 부순다)
+        smashPoopsAround(c.x, c.y, 100, true);        // 폭발 반경 100px (특수똥까지 부순다)
         burst(c.x, c.y, "#ffd23f", 26);
         shake = Math.max(shake, 8);
         beep(240, .12, "square", .05);
@@ -4159,10 +4159,10 @@
       const ci = (S.right && S.right.img) ? S.right : (SPR.right.img ? SPR.right : null);
       for (const c of clones) {
         if (ci) {
-          const h = 46, w = h * ci.aspect;
+          const h = 69, w = h * ci.aspect;      // 1.5배 키움
           ctx.drawImage(ci.img, c.x - w / 2, c.y - h / 2, w, h);
         } else {
-          ctx.font = "26px serif";
+          ctx.font = "39px serif";
           ctx.textAlign = "center"; ctx.textBaseline = "middle";
           ctx.fillStyle = "#fff";
           ctx.fillText("🏃", c.x, c.y);
