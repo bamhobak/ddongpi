@@ -319,20 +319,23 @@
   #ctrlBox .ctrlBtn.on { color: #ffd23f; background: rgba(255,210,63,.14); border-color: rgba(255,210,63,.55); }
 
   /* 십자패드 — 오른쪽 아래, 누르고 있는 동안 이동 */
-  /* 한 줄 [◀ ▶ | ▼ ▲] — 땅 띠 높이 안에 들어가서 캐릭터를 가리지 않는다 */
+  /* 날 수 있으면 십자(▲ / ◀ ▶ / ▼), 아니면 땅 띠 안에 한 줄 [◀ ▶] */
   #dpad {
     position: absolute; right: 12px; bottom: max(12px, env(safe-area-inset-bottom)); z-index: 4;
-    display: none; align-items: center; gap: 6px; opacity: .8; touch-action: none; user-select: none;
+    display: none; grid-template-columns: 50px 50px 50px; grid-template-rows: 50px 50px 50px; gap: 4px;
+    grid-template-areas: ". up ." "lf . rt" ". dn ."; opacity: .8; touch-action: none; user-select: none;
   }
-  #dpad.on { display: flex; }
+  #dpad.on { display: grid; }
   #dpad .dk {
-    width: 52px; height: 52px; padding: 0; border-radius: 50%;
-    background: rgba(255,255,255,.22); color: #fff; font-size: 20px; box-shadow: none;
+    width: 50px; height: 50px; padding: 0; border-radius: 50%;
+    background: rgba(255,255,255,.22); color: #fff; font-size: 19px; box-shadow: none;
     touch-action: none; -webkit-user-select: none; user-select: none;
   }
   #dpad .dk.dn { background: rgba(255,210,63,.55); transform: scale(.94); }
-  #dpad .sep { width: 8px; }
-  #dpad.noVert .up, #dpad.noVert .dn2, #dpad.noVert .sep { display: none; }   /* 날 수 없으면 좌우만 */
+  #dpad .up { grid-area: up; } #dpad .lf { grid-area: lf; } #dpad .rt { grid-area: rt; } #dpad .dn2 { grid-area: dn; }
+  #dpad.on.noVert { display: flex; gap: 6px; }
+  #dpad.noVert .dk { width: 52px; height: 52px; }
+  #dpad.noVert .up, #dpad.noVert .dn2 { display: none; }
   #btnTestEnd {
     position: absolute; right: 12px; top: 96px; z-index: 5; display: none;
     appearance: none; border: 0; cursor: pointer; font: inherit;
@@ -541,11 +544,10 @@
     <canvas id="cv"></canvas>
     <button id="btnPause">⏸</button>
     <div id="dpad">
+      <button class="dk up" data-k="ArrowUp">▲</button>
       <button class="dk lf" data-k="ArrowLeft">◀</button>
       <button class="dk rt" data-k="ArrowRight">▶</button>
-      <span class="sep"></span>
       <button class="dk dn2" data-k="ArrowDown">▼</button>
-      <button class="dk up" data-k="ArrowUp">▲</button>
     </div>
     <button id="btnTestEnd">테스트 종료</button>
 
@@ -679,7 +681,7 @@
   const elFinal = document.getElementById("finalScore");
   const elTitle = document.getElementById("overTitle");
 
-  const GAME_VERSION = "v1.2.15";   // 코드를 고칠 때마다 뒤 두 자리를 올린다
+  const GAME_VERSION = "v1.2.16";   // 코드를 고칠 때마다 뒤 두 자리를 올린다
   document.getElementById("ver").textContent = GAME_VERSION;
 
   const LS_NAME = "epjpddongpi_name";
