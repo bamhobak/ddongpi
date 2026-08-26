@@ -343,7 +343,16 @@
     transition: background .1s ease;
   }
   #dpad.press .knob { background: rgba(255,210,63,.55); }
-  #dpad.noVert .up, #dpad.noVert .dn { opacity: .12; }   /* 날 수 없으면 위아래는 흐리게 */
+  /* 좌우만 되는 직업은 가로로 긴 알약 패드 — 엄지로 좌우로 밀기 좋다 */
+  #dpad.noVert {
+    width: 232px; height: 74px; border-radius: 999px;
+  }
+  #dpad.noVert .up, #dpad.noVert .dn { display: none; }
+  #dpad.noVert .lf { left: 22px; }
+  #dpad.noVert .rt { right: 22px; }
+  #dpad.noVert .knob {
+    width: 62px; height: 62px; margin: -31px 0 0 -31px;
+  }
   #btnTestEnd {
     position: absolute; right: 12px; top: 96px; z-index: 5; display: none;
     appearance: none; border: 0; cursor: pointer; font: inherit;
@@ -688,7 +697,7 @@
   const elFinal = document.getElementById("finalScore");
   const elTitle = document.getElementById("overTitle");
 
-  const GAME_VERSION = "v1.2.18";   // 코드를 고칠 때마다 뒤 두 자리를 올린다
+  const GAME_VERSION = "v1.2.19";   // 코드를 고칠 때마다 뒤 두 자리를 올린다
   document.getElementById("ver").textContent = GAME_VERSION;
 
   const LS_NAME = "epjpddongpi_name";
@@ -1486,6 +1495,13 @@
   /* 패드 안에서 누른 지점의 방향으로 움직인다. 손가락을 떼지 않고 밀기만 해도 방향이 바뀌고,
      가운데로 돌아오면 멈춘다. 대각선도 된다. */
   const padKnob = dpad.querySelector(".knob");
+  /* 패드를 민 정도(0~1). 키보드로 조작할 때는 항상 1이라 예전과 똑같다. */
+  let padAmpX = 1, padAmpY = 1;
+  const PAD_MIN = 0.28;          // 살짝만 밀었을 때의 최소 속도 비율
+  function padAmp(v, dead, max) {
+    const t = Math.max(0, Math.min(1, (Math.abs(v) - dead) / Math.max(1, max - dead)));
+    return PAD_MIN + (1 - PAD_MIN) * t * t;    // 끝으로 갈수록 가팔라진다
+  }
   const padArrow = {
     ArrowUp: dpad.querySelector(".up"), ArrowDown: dpad.querySelector(".dn"),
     ArrowLeft: dpad.querySelector(".lf"), ArrowRight: dpad.querySelector(".rt")
@@ -1498,6 +1514,7 @@
     padArrow.ArrowDown.classList.toggle("hit", d);
   }
   function padClear() {
+    padAmpX = padAmpY = 1;
     padSet(false, false, false, false);
     dpad.classList.remove("press");
     padKnob.style.transform = "";
@@ -1506,6 +1523,17 @@
     const r = dpad.getBoundingClientRect();
     const dx = e.clientX - (r.left + r.width / 2);
     const dy = e.clientY - (r.top + r.height / 2);
+    const flat = dpad.classList.contains("noVert");   // 좌우 전용 알약 패드
+    if (flat) {
+      // 가로로만 움직인다. 가운데 12px 안쪽은 정지 구역.
+      const max = r.width / 2 - 34;
+      const kx = Math.max(-max, Math.min(max, dx));
+      padKnob.style.transform = "translateX(" + kx.toFixed(1) + "px)";
+      if (Math.abs(dx) < 12) { padSet(false, false, false, false); return; }
+      padAmpX = padAmp(dx, 12, max);
+      padSet(dx < 0, dx > 0, false, false);
+      return;
+    }
     const dist = Math.hypot(dx, dy);
     const max = r.width / 2 - 16;
     const k = dist > max ? max / dist : 1;         // 손잡이는 패드 안에서만 움직인다
@@ -1514,6 +1542,9 @@
     // 가로·세로 성분 중 확실히 큰 쪽만 켠다. 둘이 비슷하면(2배 이내) 대각선.
     const horiz = Math.abs(dx) >= Math.abs(dy) * 0.5;
     const vert  = flyOn && Math.abs(dy) >= Math.abs(dx) * 0.5;
+    // 민 거리에 비례한 세기 — 축마다 따로 잰다 (대각선에서도 자연스럽게)
+    padAmpX = padAmp(dx, 10, max);
+    padAmpY = padAmp(dy, 10, max);
     padSet(horiz && dx < 0, horiz && dx > 0, vert && dy < 0, vert && dy > 0);
   }
   dpad.addEventListener("pointerdown", e => {
@@ -2021,12 +2052,15 @@
     }
 
     const kSpeed = 560 * spdMul() * dt;
-    if (keys.ArrowLeft  || keys.a || keys.A) player.tx -= kSpeed;
-    if (keys.ArrowRight || keys.d || keys.D) player.tx += kSpeed;
+    // 패드는 민 정도만큼 속도가 붙는다 (키보드는 늘 최고 속도)
+    const kx = kSpeed * (ctrlMode === "pad" ? padAmpX : 1);
+    const ky = kSpeed * (ctrlMode === "pad" ? padAmpY : 1);
+    if (keys.ArrowLeft  || keys.a || keys.A) player.tx -= kx;
+    if (keys.ArrowRight || keys.d || keys.D) player.tx += kx;
     player.tx = Math.max(player.r, Math.min(W - player.r, player.tx));
     if (flyOn) {
-      if (keys.ArrowUp   || keys.w || keys.W) player.ty -= kSpeed;
-      if (keys.ArrowDown || keys.s || keys.S) player.ty += kSpeed;
+      if (keys.ArrowUp   || keys.w || keys.W) player.ty -= ky;
+      if (keys.ArrowDown || keys.s || keys.S) player.ty += ky;
       player.ty = Math.max(H * FLY_TOP, Math.min(groundY, player.ty));
     }
 
