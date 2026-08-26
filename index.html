@@ -47,8 +47,7 @@
     gap: clamp(10px, 2.2vh, 16px);
     padding: max(20px, env(safe-area-inset-top)) 20px max(20px, env(safe-area-inset-bottom));
     text-align: center;
-    background: rgba(10,11,16,.84);
-    -webkit-backdrop-filter: blur(6px); backdrop-filter: blur(6px);
+    background: rgba(10,11,16,.90);   /* blur 대신 불투명도로 — 매 프레임 블러는 발열이 크다 */
   }
   .screen.hidden { display: none; }
   .screen { overflow-y: auto; }
@@ -439,8 +438,7 @@
   /* ─────────── 시작 화면 ─────────── */
   #startScreen {
     gap: clamp(8px, 1.8vh, 14px);
-    background: rgba(10,11,16,.52);            /* 뒤 인트로가 비쳐 보이게 */
-    -webkit-backdrop-filter: blur(2px); backdrop-filter: blur(2px);
+    background: rgba(10,11,16,.60);            /* 뒤 인트로가 비쳐 보이게 */
   }
   /* 화면 위쪽에 은은한 빛을 깔아 패널이 떠 보이게 한다 */
   #startScreen::before {
@@ -480,7 +478,7 @@
       linear-gradient(180deg, rgba(255,255,255,.085), rgba(255,255,255,.03));
     border: 1px solid rgba(255,255,255,.09);
     box-shadow: 0 18px 40px rgba(0,0,0,.45), inset 0 1px 0 rgba(255,255,255,.09);
-    -webkit-backdrop-filter: blur(10px); backdrop-filter: blur(10px);
+    background-color: rgba(16,18,26,.55);   /* blur 없이도 순위표가 또렷하게 */
   }
   #startScreen .board h3, #overScreen .board h3 {
     display: flex; align-items: center; justify-content: center; gap: 6px;
@@ -697,7 +695,7 @@
   const elFinal = document.getElementById("finalScore");
   const elTitle = document.getElementById("overTitle");
 
-  const GAME_VERSION = "v1.2.23";   // 코드를 고칠 때마다 뒤 두 자리를 올린다
+  const GAME_VERSION = "v1.2.24";   // 코드를 고칠 때마다 뒤 두 자리를 올린다
   document.getElementById("ver").textContent = GAME_VERSION;
 
   const LS_NAME = "epjpddongpi_name";
@@ -1810,7 +1808,7 @@
      0.13초부터는 곱셈으로 줄여서 0 아래로 내려가지 않는다. */
   function spawnGap() {
     // 레벨당 좁아지는 폭을 완화했다 (레벨 1 간격은 그대로)
-    const lin = 0.5086 - level * 0.030618;
+    const lin = 0.50707 - level * 0.029087;
     return (lin > 0.13 ? lin : 0.13 * Math.pow(0.9271, level - 12.37)) / Math.sqrt(lateMul());
   }
 
@@ -1853,7 +1851,7 @@
     r = Math.min(r, (W - 24) / 2);        // 화면보다 커지지 않게
     // 일반 똥은 레벨이 오를수록 빨라지지만, 뚜니핑 낙하물은 처음이나 나중이나 같은 속도로 떨어진다
     const baseVy = inFever ? FEVER_VY + Math.random() * 110
-                           : 227.4 + level * 17.5 + Math.random() * 110;   // 레벨당 상승폭 완화(레벨 1 속도는 동일)
+                           : 228.3 + level * 16.63 + Math.random() * 110;   // 레벨당 상승폭 완화(레벨 1 속도는 동일)
     let vy = baseVy * m * DIFF_F * spaceF() * bhMul() * aug.fallMul
            * (inFever ? 1 : lateMul());   // 후반 가속 — 뚜니핑 낙하물은 그대로
     if (special === "huge") vy *= 0.55;   // 덩치값 — 느릿느릿 굴러떨어진다
@@ -4370,7 +4368,20 @@
     }
   }
 
+  /* 화면이 멈춰 있거나 메뉴일 때는 초당 그리는 장수를 줄여 발열·배터리를 아낀다.
+     게임 중(PLAY)은 예전 그대로 60fps. */
+  let lastPaint = 0;
+  function frameCap() {
+    if (state === STATE.PLAY) return 0;                       // 제한 없음
+    if (state === STATE.PAUSE) return resumeCountEnd ? 0 : 10; // 카운트다운 중에는 부드럽게
+    if (state === STATE.AUG) return 10;                        // 증강 고르는 중
+    return 30;                                                 // 인트로·게임오버 화면
+  }
+
   function frame(now) {
+    const cap = frameCap();
+    if (cap && now - lastPaint < 1000 / cap - 1) { requestAnimationFrame(frame); return; }
+    lastPaint = now;
     if (!last) last = now;
     const dt = Math.min(0.05, (now - last) / 1000);
     last = now;
