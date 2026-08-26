@@ -345,13 +345,13 @@
   #dpad.press .knob { background: rgba(255,210,63,.55); }
   /* 좌우만 되는 직업은 가로로 긴 알약 패드 — 엄지로 좌우로 밀기 좋다 */
   #dpad.noVert {
-    width: 232px; height: 74px; border-radius: 999px;
+    width: 178px; height: 68px; border-radius: 999px;
   }
   #dpad.noVert .up, #dpad.noVert .dn { display: none; }
-  #dpad.noVert .lf { left: 22px; }
-  #dpad.noVert .rt { right: 22px; }
+  #dpad.noVert .lf { left: 15px; }
+  #dpad.noVert .rt { right: 15px; }
   #dpad.noVert .knob {
-    width: 62px; height: 62px; margin: -31px 0 0 -31px;
+    width: 54px; height: 54px; margin: -27px 0 0 -27px;
   }
   #btnTestEnd {
     position: absolute; right: 12px; top: 96px; z-index: 5; display: none;
@@ -697,7 +697,7 @@
   const elFinal = document.getElementById("finalScore");
   const elTitle = document.getElementById("overTitle");
 
-  const GAME_VERSION = "v1.2.20";   // 코드를 고칠 때마다 뒤 두 자리를 올린다
+  const GAME_VERSION = "v1.2.21";   // 코드를 고칠 때마다 뒤 두 자리를 올린다
   document.getElementById("ver").textContent = GAME_VERSION;
 
   const LS_NAME = "epjpddongpi_name";
@@ -1497,10 +1497,13 @@
   const padKnob = dpad.querySelector(".knob");
   /* 패드를 민 정도(0~1). 키보드로 조작할 때는 항상 1이라 예전과 똑같다. */
   let padAmpX = 1, padAmpY = 1;
-  const PAD_MIN = 0.28;          // 살짝만 밀었을 때의 최소 속도 비율
-  function padAmp(v, dead, max) {
-    const t = Math.max(0, Math.min(1, (Math.abs(v) - dead) / Math.max(1, max - dead)));
-    return PAD_MIN + (1 - PAD_MIN) * t * t;    // 끝으로 갈수록 가팔라진다
+  const PAD_MIN = 0.15;          // 살짝만 밀었을 때의 최소 속도 비율
+  const PAD_STEPS = 10;          // 최소~최대 사이를 이만큼의 단계로 나눈다
+  const PAD_RANGE = 78;          // 이 거리(px)까지 밀면 최고 속도 — 패드 밖으로 나가도 이어진다
+  function padAmp(v, dead) {
+    const t = Math.max(0, Math.min(1, (Math.abs(v) - dead) / (PAD_RANGE - dead)));
+    const q = Math.round(Math.pow(t, 1.35) * PAD_STEPS) / PAD_STEPS;   // 10단계로 끊어 준다
+    return PAD_MIN + (1 - PAD_MIN) * q;
   }
   const padArrow = {
     ArrowUp: dpad.querySelector(".up"), ArrowDown: dpad.querySelector(".dn"),
@@ -1529,8 +1532,8 @@
       const max = r.width / 2 - 34;
       const kx = Math.max(-max, Math.min(max, dx));
       padKnob.style.transform = "translateX(" + kx.toFixed(1) + "px)";
-      if (Math.abs(dx) < 12) { padSet(false, false, false, false); return; }
-      padAmpX = padAmp(dx, 12, max);
+      if (Math.abs(dx) < 10) { padSet(false, false, false, false); return; }
+      padAmpX = padAmp(dx, 10);
       padSet(dx < 0, dx > 0, false, false);
       return;
     }
@@ -1543,8 +1546,8 @@
     const horiz = Math.abs(dx) >= Math.abs(dy) * 0.5;
     const vert  = flyOn && Math.abs(dy) >= Math.abs(dx) * 0.5;
     // 민 거리에 비례한 세기 — 축마다 따로 잰다 (대각선에서도 자연스럽게)
-    padAmpX = padAmp(dx, 10, max);
-    padAmpY = padAmp(dy, 10, max);
+    padAmpX = padAmp(dx, 8);
+    padAmpY = padAmp(dy, 8);
     padSet(horiz && dx < 0, horiz && dx > 0, vert && dy < 0, vert && dy > 0);
   }
   dpad.addEventListener("pointerdown", e => {
