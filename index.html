@@ -323,7 +323,7 @@
   #dpad {
     position: absolute; left: 50%; transform: translateX(-50%);
     bottom: max(12px, env(safe-area-inset-bottom)); z-index: 4;
-    display: none; width: 132px; height: 132px; border-radius: 50%;
+    display: none; width: 158px; height: 158px; border-radius: 50%;
     background: rgba(255,255,255,.13); border: 1px solid rgba(255,255,255,.20);
     opacity: .82; touch-action: none; -webkit-user-select: none; user-select: none;
   }
@@ -333,12 +333,12 @@
     transition: opacity .08s ease, color .08s ease;
   }
   #dpad .ar.hit { opacity: 1; color: #ffd23f; text-shadow: 0 0 10px rgba(255,210,63,.6); }
-  #dpad .up { top: 7px;  left: 50%; transform: translateX(-50%); }
-  #dpad .dn { bottom: 7px; left: 50%; transform: translateX(-50%); }
-  #dpad .lf { left: 9px;  top: 50%; transform: translateY(-50%); }
-  #dpad .rt { right: 9px; top: 50%; transform: translateY(-50%); }
+  #dpad .up { top: 9px;  left: 50%; transform: translateX(-50%); }
+  #dpad .dn { bottom: 9px; left: 50%; transform: translateX(-50%); }
+  #dpad .lf { left: 11px;  top: 50%; transform: translateY(-50%); }
+  #dpad .rt { right: 11px; top: 50%; transform: translateY(-50%); }
   #dpad .knob {
-    position: absolute; left: 50%; top: 50%; width: 50px; height: 50px; margin: -25px 0 0 -25px;
+    position: absolute; left: 50%; top: 50%; width: 60px; height: 60px; margin: -30px 0 0 -30px;
     border-radius: 50%; background: rgba(255,255,255,.30); pointer-events: none;
     transition: background .1s ease;
   }
@@ -697,7 +697,7 @@
   const elFinal = document.getElementById("finalScore");
   const elTitle = document.getElementById("overTitle");
 
-  const GAME_VERSION = "v1.2.22";   // 코드를 고칠 때마다 뒤 두 자리를 올린다
+  const GAME_VERSION = "v1.2.23";   // 코드를 고칠 때마다 뒤 두 자리를 올린다
   document.getElementById("ver").textContent = GAME_VERSION;
 
   const LS_NAME = "epjpddongpi_name";
