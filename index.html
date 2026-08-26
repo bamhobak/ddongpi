@@ -638,7 +638,7 @@
   const elFinal = document.getElementById("finalScore");
   const elTitle = document.getElementById("overTitle");
 
-  const GAME_VERSION = "v1.2.13";   // 코드를 고칠 때마다 뒤 두 자리를 올린다
+  const GAME_VERSION = "v1.2.14";   // 코드를 고칠 때마다 뒤 두 자리를 올린다
   document.getElementById("ver").textContent = GAME_VERSION;
 
   const LS_NAME = "epjpddongpi_name";
@@ -2529,6 +2529,9 @@
     btnSave.disabled = false;
     btnSave.textContent = "등록";
     nameTag.textContent = "🎉 TOP 10 진입! 이름을 남기세요";
+    // 게임오버 순위표는 이번 판 직업 탭으로 연다 (전체 TOP 10에 들면 아래에서 전체 탭으로 바꾼다)
+    boardJob = job;
+    for (const t of document.querySelectorAll(".jobTab")) t.classList.toggle("on", t.dataset.job === job);
     refreshBoards(boardOver).then(async () => {
       if (state !== STATE.OVER) return;
       const nm = savedName();
@@ -2550,8 +2553,10 @@
           /* 한 기기당 한 줄만 남기 때문에, 예전 기록이 더 높으면 이번 판은 순위표에
              올라가지 않는다. 실제로 올라갔을 때만 달성 문구를 띄운다. */
           const at = topList.findIndex(v => v.name + "|" + Number(v.score) === myRowKey);
-          if (at >= 0) nameTag.textContent = "🎉 이번 주 " + (at + 1) + "위 달성! (" + nm + ")";
-          else {
+          if (at >= 0) {
+            nameTag.textContent = "🎉 이번 주 " + (at + 1) + "위 달성! (" + nm + ")";
+            setBoardJob("all");                 // 전체 순위에 들었으니 전체 탭으로
+          } else {
             // 전체엔 못 들어도 직업별 TOP 10엔 들어갔을 수 있다
             let jat = -1;
             try {
@@ -2833,11 +2838,8 @@
         if (label) b.appendChild(document.createTextNode(label));
         b.addEventListener("click", () => {
           if (boardJob === key) return;
-          boardJob = key;
           beep(760, .06, "square", .03);
-          for (const t of document.querySelectorAll(".jobTab"))
-            t.classList.toggle("on", t.dataset.job === key);
-          showBoards();
+          setBoardJob(key);
         });
         box.appendChild(b);
       };
@@ -2846,6 +2848,13 @@
     }
   }
   buildJobTabs();
+  // 탭을 바꾸고(두 화면 모두) 목록을 다시 그린다
+  function setBoardJob(key, els) {
+    boardJob = key;
+    for (const t of document.querySelectorAll(".jobTab"))
+      t.classList.toggle("on", t.dataset.job === key);
+    return showBoards(els);
+  }
 
   // 현재 탭에 맞는 목록을 두 순위표에 그린다
   async function showBoards(els) {
