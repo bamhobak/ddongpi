@@ -695,7 +695,7 @@
   const elFinal = document.getElementById("finalScore");
   const elTitle = document.getElementById("overTitle");
 
-  const GAME_VERSION = "v1.2.29";   // 코드를 고칠 때마다 뒤 두 자리를 올린다
+  const GAME_VERSION = "v1.2.30";   // 코드를 고칠 때마다 뒤 두 자리를 올린다
   document.getElementById("ver").textContent = GAME_VERSION;
 
   const LS_NAME = "epjpddongpi_name";
@@ -1726,7 +1726,7 @@
     if (job === "fit") {
       lives = 5;
       aug.maxLives = 30;              // 하트를 쌓아 올리는 직업
-      aug.hitboxMul *= 1.35;          // 몸이 커서 잘 맞는다
+      aug.hitboxMul *= 1.25;          // 몸이 커서 잘 맞는다
     }
     augScreen.classList.add("hidden");
     facing = "right";
