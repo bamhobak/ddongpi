@@ -695,7 +695,7 @@
   const elFinal = document.getElementById("finalScore");
   const elTitle = document.getElementById("overTitle");
 
-  const GAME_VERSION = "v1.2.33";   // 코드를 고칠 때마다 뒤 두 자리를 올린다
+  const GAME_VERSION = "v1.2.34";   // 코드를 고칠 때마다 뒤 두 자리를 올린다
   document.getElementById("ver").textContent = GAME_VERSION;
 
   const LS_NAME = "epjpddongpi_name";
@@ -4024,12 +4024,20 @@
     ctx.font = size + "px serif";
     ctx.fillStyle = "#fff";                    // 이모지가 앞의 투명도를 물려받지 않게
     ctx.textAlign = "center"; ctx.textBaseline = "middle";
-    const start = -(shields - 1) * gap / 2;
-    for (let k = 0; k < shields; k++) {
-      if (ITEM_IMG.umbrella) {
-        const d = size * ITEM_IMG_SCALE;
-        ctx.drawImage(ITEM_IMG.umbrella, start + k * gap - d / 2, -d / 2, d, d);
-      } else ctx.fillText("☂️", start + k * gap, 0);
+    /* 5개까지는 한 줄, 그보다 많으면 두 줄로 나눠 머리 위에 얹는다.
+       (아랫줄이 원래 자리, 윗줄이 그 위) */
+    const rows = shields > 5 ? 2 : 1;
+    const perRow = Math.ceil(shields / rows);
+    const d = size * ITEM_IMG_SCALE;
+    let k = 0;
+    for (let r = 0; r < rows; r++) {
+      const n = Math.min(perRow, shields - k);       // 윗줄이 모자라면 그만큼만
+      const start = -(n - 1) * gap / 2;
+      const ry = (rows - 1 - r) * -gap * 0.82;       // 위로 한 줄씩 쌓는다
+      for (let i = 0; i < n; i++, k++) {
+        if (ITEM_IMG.umbrella) ctx.drawImage(ITEM_IMG.umbrella, start + i * gap - d / 2, ry - d / 2, d, d);
+        else ctx.fillText("☂️", start + i * gap, ry);
+      }
     }
     ctx.restore();
   }
