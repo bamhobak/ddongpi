@@ -695,7 +695,7 @@
   const elFinal = document.getElementById("finalScore");
   const elTitle = document.getElementById("overTitle");
 
-  const GAME_VERSION = "v1.2.35";   // 코드를 고칠 때마다 뒤 두 자리를 올린다
+  const GAME_VERSION = "v1.2.36";   // 코드를 고칠 때마다 뒤 두 자리를 올린다
   document.getElementById("ver").textContent = GAME_VERSION;
 
   const LS_NAME = "epjpddongpi_name";
@@ -932,7 +932,7 @@
   }
   const ITEM_IMG_SCALE = 1.18;
 
-  /* 황금똥은 일반 똥과 헷갈리지 않게 무지갯빛으로 돌면서 번쩍인다.
+  /* 무지개똥은 일반 똥과 헷갈리지 않게 무지갯빛으로 돌면서 번쩍인다.
      seed 를 섞어 서로 다른 색으로 떨어진다. */
   function goldFx(now, seed) {
     const hue = (now * 0.42 + seed * 53) % 360;
@@ -1064,7 +1064,7 @@
       ctx.beginPath(); ctx.moveTo(x, y); ctx.lineTo(x, y + (inSpace() ? 120 : 60)); ctx.stroke();
     }
 
-    // 스쳐 가는 똥·별·황금똥
+    // 스쳐 가는 똥·별·무지개똥
     ctx.textAlign = "center"; ctx.textBaseline = "middle";
     for (const q of introPoops) {
       ctx.save();
@@ -1268,7 +1268,7 @@
     { id: "angryUmb",   ic: "💢", nm: "성난 우산",   ds: "방패가 깨질 때 화면의 똥이 전부 사라진다",
       once: true, cond: () => job !== "fit",   // 헬스걸은 방패가 없어 의미가 없다
       go: () => { aug.angryUmb = true; } },
-    { id: "gold",       ic: "✨", nm: "황금똥 연금술", ds: "똥이 가끔 황금똥으로 변한다. 먹으면 점수!",
+    { id: "gold",       ic: "🌈", nm: "무지개똥 연금술", ds: "똥이 가끔 무지개똥으로 변한다. 먹으면 점수!",
       // 1개째는 10%, 그 뒤로는 절반(5%)씩만 — 첫 픽의 맛은 지키고 몰빵만 눌렀다
       go: () => { aug.goldChance += (augCount["gold"] ? 0.05 : 0.10) * dim("gold"); } },
     { id: "dopa",       ic: "📱", nm: "도파민 중독",  ds: "똥이 빨라지고, 생존 점수가 크게 오른다",
@@ -1276,7 +1276,7 @@
     { id: "carrot",     ic: "🥕", nm: "하트 당근거래", ds: "목숨 1개를 팔고, 앞으로 얻는 모든 점수 +20%",
       max: 5, cond: () => lives >= 2,
       go: () => { lives = Math.max(1, lives - 1); aug.scoreMul *= 1.2; } },
-    { id: "goldLord",   ic: "💰", nm: "황금 수집가", ds: "황금똥이 두 배 멀리서 세게 끌려오고, 점수 5배",
+    { id: "goldLord",   ic: "🦄", nm: "무지개 수집가", ds: "무지개똥이 두 배 멀리서 세게 끌려오고, 점수 5배",
       hidden: true, once: true, cond: () => (augCount["gold"] || 0) >= 1,
       go: () => { aug.goldLord = true; } },
     { id: "inter",      ic: "🕰️", nm: "인터스텔라", ds: "이따금 세상만 느려진다. 점수 시계는 그대로",
@@ -1859,7 +1859,7 @@
     // 뚜니핑 타임에 나온 것은 외형·점수를 스스로 기억한다 → 뚜니핑 타임이 끝나도 모습이 바뀌지 않는다
     const inFever = fever;
     const cls = inFever ? pickFeverSize() : null;
-    // 황금똥 연금술 — 맞아도 무해하고 먹으면 점수 (특수똥은 위협으로 남아야 해서 제외)
+    // 무지개똥 연금술 — 맞아도 무해하고 먹으면 점수 (특수똥은 위협으로 남아야 해서 제외)
     let gold = false;
     if (!inFever && !special && aug.goldChance > 0 && Math.random() < aug.goldChance) {
       gold = true;
@@ -2175,7 +2175,7 @@
       if (cloneTimer <= 0) {
         let best = null, bd = 1e9;
         for (const q of items) {
-          if (q.type !== "poop") continue;            // 황금똥·특수똥도 표적으로 삼는다
+          if (q.type !== "poop") continue;            // 무지개똥·특수똥도 표적으로 삼는다
           if (q.y > player.y - 40) continue;          // 이미 지나친 똥은 무시
           const d = Math.hypot(q.x - player.x, q.y - (player.y + player.hy));
           if (d < bd) { bd = d; best = q; }
@@ -2416,7 +2416,7 @@
       const magF = aug.magnet > 0 ? 1 : 0.45;
       if (magR > 0 && (it.type !== "poop" || it.gold)) {
         const d = Math.hypot(dx, dy);
-        // 황금똥은 아이템의 절반 반경·절반 힘 — 수집가라면 두 배(아이템과 동일)
+        // 무지개똥은 아이템의 절반 반경·절반 힘 — 수집가라면 두 배(아이템과 동일)
         const goldF = it.gold ? (aug.goldLord ? 1 : 0.5) : 1;
         const R = magR * goldF;
         if (d < R && d > 1) {
@@ -2434,7 +2434,7 @@
 
       if (hit) {
         if (it.type === "poop") {
-          if (it.gold) {                    // 황금똥 — 먹으면 점수 (레벨이 오를수록 값지다)
+          if (it.gold) {                    // 무지개똥 — 먹으면 점수 (레벨이 오를수록 값지다)
             const g = Math.round(60 * (aug.goldLord ? 5 : 1) * scoreMul() * Math.pow(1.3, level - 1));
             score += g;
             burst(it.x, it.y, "hsl(" + Math.round(goldFx(now, it.x).hue) + ",100%,62%)", 20);
@@ -2624,7 +2624,7 @@
       const it = items[i];
       if (it.type !== "poop") continue;
       if (Math.hypot(it.x - x, it.y - y) >= radius + it.r) continue;
-      if (it.gold) {                         // 황금똥 — 부수면 직접 먹은 것과 같은 점수
+      if (it.gold) {                         // 무지개똥 — 부수면 직접 먹은 것과 같은 점수
         const g = Math.round(60 * (aug.goldLord ? 5 : 1) * scoreMul() * Math.pow(1.3, level - 1));
         score += g;
         burst(it.x, it.y, "#ffd23f", 18);
@@ -4305,7 +4305,7 @@
       } else {
         /* 색 이모지도 fillStyle 의 투명도를 그대로 따라간다.
            바로 앞에 그린 구름의 반투명 흰색이 남아 있으면 똥까지 비쳐 보인다. */
-        if (it.gold) {                       // 황금똥 — 무지갯빛으로 돌며 번쩍인다
+        if (it.gold) {                       // 무지개똥 — 무지갯빛으로 돌며 번쩍인다
           const fx = goldFx(now, it.x);
           const R = it.size * (0.95 + fx.puls * 0.18);
           const gg = ctx.createRadialGradient(0, 0, 0, 0, 0, R);
@@ -4316,7 +4316,7 @@
           ctx.beginPath(); ctx.arc(0, 0, R, 0, 6.283); ctx.fill();
           if (ctx.filter !== undefined) ctx.filter = fx.css;
         }
-        const ii = ITEM_IMG[it.type];      // 똥도 같은 3D 그림 (황금똥 필터는 그림에도 먹는다)
+        const ii = ITEM_IMG[it.type];      // 똥도 같은 3D 그림 (무지개똥 필터는 그림에도 먹는다)
         if (ii) {
           const d = it.size * ITEM_IMG_SCALE;
           ctx.drawImage(ii, -d / 2, -d / 2, d, d);
