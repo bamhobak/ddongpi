@@ -695,7 +695,7 @@
   const elFinal = document.getElementById("finalScore");
   const elTitle = document.getElementById("overTitle");
 
-  const GAME_VERSION = "v1.2.34";   // 코드를 고칠 때마다 뒤 두 자리를 올린다
+  const GAME_VERSION = "v1.2.35";   // 코드를 고칠 때마다 뒤 두 자리를 올린다
   document.getElementById("ver").textContent = GAME_VERSION;
 
   const LS_NAME = "epjpddongpi_name";
@@ -930,7 +930,20 @@
     im.onload = () => { ITEM_IMG[type] = im; };
     im.src = "assets/item_" + file + ".png";
   }
-  const ITEM_IMG_SCALE = 1.18;   // 그림에 여백이 있어 글자 이모지와 같은 덩치가 되게 살짝 키운다
+  const ITEM_IMG_SCALE = 1.18;
+
+  /* 황금똥은 일반 똥과 헷갈리지 않게 무지갯빛으로 돌면서 번쩍인다.
+     seed 를 섞어 서로 다른 색으로 떨어진다. */
+  function goldFx(now, seed) {
+    const hue = (now * 0.42 + seed * 53) % 360;
+    const puls = 0.5 + 0.5 * Math.sin(now / 85 + seed);          // 0~1 로 오가는 번쩍임
+    return {
+      hue: hue,
+      puls: puls,
+      css: "sepia(1) saturate(9) hue-rotate(" + Math.round(hue) + "deg) brightness("
+           + (1.05 + puls * 0.45).toFixed(2) + ") contrast(1.35)"
+    };
+  }   // 그림에 여백이 있어 글자 이모지와 같은 덩치가 되게 살짝 키운다
 
   let introT = 0, introPoops = [], introSpawn = 0, introSuit = false, introBoom = 0;
   let introCameo = [], introCameoT = 5;     // 이따금 지나가는 정연핑·뚜니핑
@@ -1059,14 +1072,14 @@
       ctx.translate(q.x, q.y);
       ctx.rotate(q.rot);
       if (q.kind === "gold") {
+        const fx = goldFx(performance.now(), q.x);
         const gg = ctx.createRadialGradient(0, 0, 0, 0, 0, q.r * 1.9);
-        gg.addColorStop(0, "rgba(255,224,90,.85)");
-        gg.addColorStop(0.45, "rgba(255,196,40,.42)");
-        gg.addColorStop(1, "rgba(255,180,20,0)");
+        gg.addColorStop(0, "hsla(" + fx.hue + ",100%,72%," + (0.75 + fx.puls * 0.25).toFixed(2) + ")");
+        gg.addColorStop(0.45, "hsla(" + ((fx.hue + 60) % 360) + ",100%,60%,.4)");
+        gg.addColorStop(1, "hsla(" + ((fx.hue + 120) % 360) + ",100%,55%,0)");
         ctx.fillStyle = gg;
         ctx.beginPath(); ctx.arc(0, 0, q.r * 1.9, 0, 6.283); ctx.fill();
-        if (ctx.filter !== undefined)
-          ctx.filter = "sepia(1) saturate(7) hue-rotate(-14deg) brightness(1.5) contrast(1.15)";
+        if (ctx.filter !== undefined) ctx.filter = fx.css;
       }
       const qi = q.kind === "star" ? ITEM_IMG.star : ITEM_IMG.poop;
       if (qi) {
@@ -2424,8 +2437,8 @@
           if (it.gold) {                    // 황금똥 — 먹으면 점수 (레벨이 오를수록 값지다)
             const g = Math.round(60 * (aug.goldLord ? 5 : 1) * scoreMul() * Math.pow(1.3, level - 1));
             score += g;
-            burst(it.x, it.y, "#ffd23f", 20);
-            popText(it.x, it.y, "✨ +" + g.toLocaleString(), "#ffe07a");
+            burst(it.x, it.y, "hsl(" + Math.round(goldFx(now, it.x).hue) + ",100%,62%)", 20);
+            popText(it.x, it.y, "🌈 +" + g.toLocaleString(), "#ffe07a");
             beep(1250, .1, "square", .05);
             items.splice(i, 1);
             continue;
@@ -4292,16 +4305,16 @@
       } else {
         /* 색 이모지도 fillStyle 의 투명도를 그대로 따라간다.
            바로 앞에 그린 구름의 반투명 흰색이 남아 있으면 똥까지 비쳐 보인다. */
-        if (it.gold) {                       // 황금똥 — 확실히 노랗게, 강한 금빛 광채와 함께
-          const pulse = 0.82 + 0.18 * Math.sin(now / 110 + it.x);
-          const gg = ctx.createRadialGradient(0, 0, 0, 0, 0, it.size * 0.95);
-          gg.addColorStop(0, "rgba(255,224,90," + (0.85 * pulse).toFixed(2) + ")");
-          gg.addColorStop(0.45, "rgba(255,196,40," + (0.42 * pulse).toFixed(2) + ")");
-          gg.addColorStop(1, "rgba(255,180,20,0)");
+        if (it.gold) {                       // 황금똥 — 무지갯빛으로 돌며 번쩍인다
+          const fx = goldFx(now, it.x);
+          const R = it.size * (0.95 + fx.puls * 0.18);
+          const gg = ctx.createRadialGradient(0, 0, 0, 0, 0, R);
+          gg.addColorStop(0, "hsla(" + fx.hue + ",100%,72%," + (0.75 + fx.puls * 0.25).toFixed(2) + ")");
+          gg.addColorStop(0.42, "hsla(" + ((fx.hue + 60) % 360) + ",100%,60%," + (0.34 + fx.puls * 0.2).toFixed(2) + ")");
+          gg.addColorStop(1, "hsla(" + ((fx.hue + 120) % 360) + ",100%,55%,0)");
           ctx.fillStyle = gg;
-          ctx.beginPath(); ctx.arc(0, 0, it.size * 0.95, 0, 6.283); ctx.fill();
-          if (ctx.filter !== undefined)
-            ctx.filter = "sepia(1) saturate(7) hue-rotate(-14deg) brightness(1.5) contrast(1.15)";
+          ctx.beginPath(); ctx.arc(0, 0, R, 0, 6.283); ctx.fill();
+          if (ctx.filter !== undefined) ctx.filter = fx.css;
         }
         const ii = ITEM_IMG[it.type];      // 똥도 같은 3D 그림 (황금똥 필터는 그림에도 먹는다)
         if (ii) {
