@@ -695,7 +695,7 @@
   const elFinal = document.getElementById("finalScore");
   const elTitle = document.getElementById("overTitle");
 
-  const GAME_VERSION = "v1.2.30";   // 코드를 고칠 때마다 뒤 두 자리를 올린다
+  const GAME_VERSION = "v1.2.31";   // 코드를 고칠 때마다 뒤 두 자리를 올린다
   document.getElementById("ver").textContent = GAME_VERSION;
 
   const LS_NAME = "epjpddongpi_name";
@@ -2549,7 +2549,7 @@
       if (navigator.vibrate) navigator.vibrate([40, 40, 80]);
     }
     if (it.type === "umbrella") {
-      shields = Math.max(shields, Math.min(shields + 1, 3));   // 아이템으로는 3개까지 누적
+      shields = Math.max(shields, Math.min(shields + 1, 5));   // 아이템으로도 5개까지 누적
       popText(player.x, player.y - 60, "☂️ 방패!", "#7ec8ff");
       beep(900, .12, "triangle", .05);
     }
