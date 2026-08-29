@@ -695,7 +695,7 @@
   const elFinal = document.getElementById("finalScore");
   const elTitle = document.getElementById("overTitle");
 
-  const GAME_VERSION = "v1.2.31";   // 코드를 고칠 때마다 뒤 두 자리를 올린다
+  const GAME_VERSION = "v1.2.32";   // 코드를 고칠 때마다 뒤 두 자리를 올린다
   document.getElementById("ver").textContent = GAME_VERSION;
 
   const LS_NAME = "epjpddongpi_name";
@@ -1211,11 +1211,11 @@
       go: () => { aug.poopMul *= 1 - 0.15 * dim("tinypoop"); } },
     { id: "umbrella3",  ic: "☂️", nm: "우산 다발", ds: "우산을 3개 얻는다",
       max: 99,                    // 조건이 막아주므로 보유 상한은 사실상 없음
-      cond: () => job !== "fit" && shields <= 2,   // 헬스걸은 방패가 없는 직업 — 미등장
+      cond: () => job !== "fit" && shields < 10,   // 헬스걸은 방패가 없는 직업 — 미등장
       noCount: true,              // 방패 수는 화면에 우산으로 보이니 보유 뱃지는 생략
       go: () => {
         if (job === "fit") lives = Math.min(aug.maxLives, lives + 3);   // 우산 대신 하트
-        else shields = Math.min(shields + 3, 5);                        // 방패는 최대 5개까지
+        else shields = Math.min(shields + 3, 10);                       // 증강으로는 최대 10개까지
       } },
     { id: "helper",     ic: "🦸", nm: "도와줘 정연핑", ds: "정연핑이 지나가는 자리의 똥을 부순다",
       go: () => { aug.helper++; helperTimer = Math.min(helperTimer, 0.6); } },
