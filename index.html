@@ -732,7 +732,7 @@
   const elFinal = document.getElementById("finalScore");
   const elTitle = document.getElementById("overTitle");
 
-  const GAME_VERSION = "v1.3.08";   // 코드를 고칠 때마다 뒤 두 자리를 올린다
+  const GAME_VERSION = "v1.3.09";   // 코드를 고칠 때마다 뒤 두 자리를 올린다
   document.getElementById("ver").textContent = GAME_VERSION;
 
   const LS_NAME = "epjpddongpi_name";
@@ -1890,6 +1890,11 @@
 
   /* 꾸밈 고르기 — 0·1 은 민얼굴이라 셋 중 하나쯤은 장식이 없다. */
   function randFace() { return Math.floor(Math.random() * 14); }
+  /* 눈·입은 따로 굴려서 장식과 조합된다 (0 = 그림 그대로) */
+  function randEye() { const r = Math.random(); return r < 0.42 ? 0 : 1 + Math.floor(Math.random() * 9); }
+  function randMouth() { const r = Math.random(); return r < 0.55 ? 0 : 1 + Math.floor(Math.random() * 3); }
+  // 눈을 통째로 덮는 장식(선글라스·X눈·하트눈·별눈·안대)이면 눈 변형은 건너뛴다
+  const EYE_COVER = { 3: 1, 4: 1, 8: 1, 9: 1, 12: 1 };
 
   function spawnPoop(mul, special, forceX, forceAng) {
     if (spawnHold > 0) return;              // 성난 우산 직후에는 똥이 나오지 않는다
@@ -1938,6 +1943,7 @@
       splitAt: H * (0.14 + Math.random() * 0.20),   // 분열똥이 쪼개지는 높이 (화면 위쪽)
       sz0: 0,
       face: randFace(),                      // 표정 장식 (0~1은 기본 얼굴)
+      eye: randEye(), mouth: randMouth(),    // 눈·입 변형
       gain: cls ? cls.score : 0,
       giant: !!(cls && cls.giant)
     });
@@ -2413,7 +2419,7 @@
               rot: Math.random() * 6.28, vr: (Math.random() - .5) * 5,
               size: r2 * 2, sz: r2, fast: false,
               skin: "poop", space: it.space, special: null, bumpCd: 0, phase: 0, splitAt: 0,
-              sz0: 0, face: randFace(), gain: 0, giant: false
+              sz0: 0, face: randFace(), eye: randEye(), mouth: randMouth(), gain: 0, giant: false
             });
           }
           burst(it.x, it.y, "#c86bff", 20);
@@ -2698,7 +2704,7 @@
               rot: Math.random() * 6.28, vr: (Math.random() - .5) * 5,
               size: r2 * 2, sz: r2, fast: false,
               skin: "poop", space: it.space, special: null, bumpCd: 0, phase: 0, splitAt: 0,
-              sz0: 0, face: randFace(), gain: 0, giant: false
+              sz0: 0, face: randFace(), eye: randEye(), mouth: randMouth(), gain: 0, giant: false
             });
           }
           burst(it.x, it.y, "#ff963c", 28);
@@ -4112,6 +4118,90 @@
 
   /* 똥 위에 덧그리는 표정. 이모지 폰트가 기기마다 달라서 눈·입을 새로 그리는 대신
      어느 폰트에서나 자연스럽게 얹히는 장식(선글라스·눈썹·홍조 등)으로 표현한다. */
+  /* 눈·입 변형 — 그림의 흰자가 순백이라 눈동자를 흰색으로 덮고 다시 그리면 이음매가 없다.
+     입은 자홍색 영역 안에 이빨·혀를 얹기만 하므로 지울 필요가 없다. (모두 실측 좌표) */
+  const SCL_R = 0.163;                  // 흰자 반지름 / 그림 크기
+  const PUP_R = 0.085;                  // 원래 눈동자 반지름
+  const PUP_C = "#3f2930";              // 원래 눈동자 색
+  const MOU_TOP = 0.327, MOU_BOT = 0.475, MOU_HW = 0.145;   // 입 범위
+
+  function eyeBase(S) {                 // 흰자만 남기고 눈동자를 지운다
+    ctx.fillStyle = "#fff";
+    for (const sx of [-1, 1]) {
+      ctx.beginPath();
+      ctx.arc(sx * EYE_X * S, EYE_Y * S, SCL_R * S * 0.99, 0, 6.283);
+      ctx.fill();
+    }
+  }
+  function pupil(S, sx, dx, dy, r) {    // 흰자 안에서만 움직이도록 가둔다
+    const cx = sx * EYE_X * S, cy = EYE_Y * S;
+    const lim = (SCL_R - r) * S;
+    const ox = Math.max(-lim, Math.min(lim, dx * S));
+    const oy = Math.max(-lim, Math.min(lim, dy * S));
+    ctx.fillStyle = PUP_C;
+    ctx.beginPath(); ctx.arc(cx + ox, cy + oy, r * S, 0, 6.283); ctx.fill();
+  }
+  /* 0 = 그림 그대로. 1~9 는 눈동자를 다시 그린다. */
+  function drawPoopEyes(kind, S) {
+    if (!kind) return;
+    ctx.save();
+    if (kind === 7 || kind === 8) {                 // 감은 눈 / 윙크
+      eyeBase(S);
+      ctx.strokeStyle = PUP_C;
+      ctx.lineWidth = Math.max(2, S * 0.035);
+      ctx.lineCap = "round";
+      for (const sx of [-1, 1]) {
+        if (kind === 8 && sx > 0) { pupil(S, sx, 0, 0, PUP_R); continue; }   // 윙크는 한쪽만 감는다
+        const cx = sx * EYE_X * S, cy = EYE_Y * S, r = SCL_R * S * 0.72;
+        ctx.beginPath();
+        ctx.arc(cx, cy + r * 0.55, r, Math.PI * 1.15, Math.PI * 1.85);
+        ctx.stroke();
+      }
+      ctx.restore();
+      return;
+    }
+    eyeBase(S);
+    switch (kind) {
+      case 1: for (const sx of [-1, 1]) pupil(S, sx, -0.09, 0, PUP_R); break;        // 왼쪽 곁눈질
+      case 2: for (const sx of [-1, 1]) pupil(S, sx,  0.09, 0, PUP_R); break;        // 오른쪽 곁눈질
+      case 3: for (const sx of [-1, 1]) pupil(S, sx, 0, -0.08, PUP_R); break;        // 위 보기
+      case 4: pupil(S, -1, 0.10, 0, PUP_R); pupil(S, 1, -0.10, 0, PUP_R); break;     // 사팔뜨기
+      case 5: for (const sx of [-1, 1]) pupil(S, sx, 0, 0.02, PUP_R * 0.5); break;   // 콩눈
+      case 6: for (const sx of [-1, 1]) pupil(S, sx, 0, 0, PUP_R * 1.45); break;     // 부릅뜬 눈
+      case 9: pupil(S, -1, 0, 0, PUP_R * 1.4); pupil(S, 1, 0.03, 0.02, PUP_R * 0.55); break;   // 짝눈
+    }
+    ctx.restore();
+  }
+
+  /* 입 — 원래 입 안에 덧그리기만 한다. 0 = 그림 그대로. */
+  function drawPoopMouth(kind, S) {
+    if (!kind) return;
+    ctx.save();
+    const top = MOU_TOP * S, bot = MOU_BOT * S, hw = MOU_HW * S;
+    if (kind === 1) {                       // 윗니
+      ctx.fillStyle = "#fff";
+      ctx.beginPath();
+      ctx.roundRect(-hw * 0.72, top + S * 0.004, hw * 1.44, (bot - top) * 0.34, S * 0.012);
+      ctx.fill();
+    } else if (kind === 2) {                // 혀
+      ctx.fillStyle = "#ff7ab0";
+      ctx.beginPath();
+      ctx.ellipse(0, bot - (bot - top) * 0.22, hw * 0.52, (bot - top) * 0.34, 0, 0, 6.283);
+      ctx.fill();
+    } else if (kind === 3) {                // 송곳니
+      ctx.fillStyle = "#fff";
+      for (const sx of [-1, 1]) {
+        const x = sx * hw * 0.52;
+        ctx.beginPath();
+        ctx.moveTo(x - hw * 0.13, top + S * 0.004);
+        ctx.lineTo(x + hw * 0.13, top + S * 0.004);
+        ctx.lineTo(x, top + (bot - top) * 0.52);
+        ctx.closePath(); ctx.fill();
+      }
+    }
+    ctx.restore();
+  }
+
   /* 똥 꾸밈. 3D 그림의 눈은 가운데보다 조금 아래(y +0.124S), 좌우 ±0.221S 에 있고
      눈 반지름은 0.16S 쯤 된다 — 아래 좌표는 전부 그 실측값에 맞춰 두었다. */
   const EYE_X = 0.221, EYE_Y = 0.124, EYE_R = 0.155;
@@ -4364,8 +4454,10 @@
           ctx.fillText(it.emoji, 0, 0);
         }
         if (ctx.filter !== undefined) ctx.filter = "none";
-        if (it.type === "poop" && it.face > 1 && it.size >= 28 && !it.gold) {
-          drawPoopFace(it.face, it.size);
+        if (it.type === "poop" && it.size >= 28 && !it.gold) {
+          if (!EYE_COVER[it.face]) drawPoopEyes(it.eye || 0, it.size);
+          drawPoopMouth(it.mouth || 0, it.size);
+          if (it.face > 1) drawPoopFace(it.face, it.size);
         }
       }
       ctx.restore();
