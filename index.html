@@ -120,18 +120,19 @@
   .board li.p2 .sc img.jic, .board li.p3 .sc img.jic { width: 24px; height: 30px; vertical-align: -9px; }
 
   .board li.p2 {
-    border-left-color: #cfe3ff;
-    background: linear-gradient(90deg, rgba(200,225,255,.20), rgba(200,225,255,.02));
+    border-left-color: #dfe6ef;
+    background: linear-gradient(90deg, rgba(223,230,239,.26), rgba(223,230,239,.03));
+    box-shadow: 0 0 12px rgba(223,230,239,.14);
   }
-  .board li.p2 .nm { color: #eaf6ff; font-weight: 700; }
-  .board li.p2 .sc { color: #dff0ff; font-size: 1.13em; font-weight: 700; }
+  .board li.p2 .nm { color: #f4f7fc; font-weight: 700; text-shadow: 0 0 10px rgba(223,230,239,.35); }
+  .board li.p2 .sc { color: #e8eef7; font-size: 1.13em; font-weight: 700; }
 
   .board li.p3 {
-    border-left-color: #ff3ea5;
-    background: linear-gradient(90deg, rgba(255,62,165,.20), rgba(255,62,165,.02));
+    border-left-color: #cd7f32;
+    background: linear-gradient(90deg, rgba(205,127,50,.20), rgba(205,127,50,.02));
   }
-  .board li.p3 .nm { color: #ffd7ec; font-weight: 700; }
-  .board li.p3 .sc { color: #ff8ecb; font-size: 1.10em; font-weight: 700; }
+  .board li.p3 .nm { color: #efc79b; font-weight: 700; }
+  .board li.p3 .sc { color: #d99257; font-size: 1.10em; font-weight: 700; }
 
   .board li.p1 .rk, .board li.p2 .rk, .board li.p3 .rk { font-size: 1.15em; }
   /* 내 기록 강조 — 금·은·동 색을 덮지 않도록 테두리로만 표시 */
@@ -214,16 +215,16 @@
   }
   .jobTabs {
     grid-area: tabs; display: flex; flex-direction: column; align-items: center;
-    gap: 4px; margin: 0; align-self: start; padding-top: 2px;
+    gap: 4px; margin: 0; align-self: stretch; padding-top: 0;
   }
   .jobTab {
     display: inline-flex; align-items: center; justify-content: center;
-    width: 44px; height: 44px; padding: 0; border-radius: 4px;
+    width: 44px; flex: 1 1 0; min-height: 0; max-height: 52px; padding: 0; border-radius: 4px;
     font-size: 12px; font-weight: 700; letter-spacing: -.5px;
     background: rgba(53,240,255,.08); color: #9fb4d0;
     border: 1px solid rgba(53,240,255,.35); box-shadow: none;
   }
-  .jobTab img { width: 29px; height: 36px; object-fit: contain; }
+  .jobTab img { width: 28px; height: 78%; max-height: 36px; object-fit: contain; }
   .jobTab.on {
     color: #05060d; background: #ffd23f; border-color: #ffd23f;
     box-shadow: 0 0 12px rgba(255,210,63,.55);
@@ -729,7 +730,7 @@
   const elFinal = document.getElementById("finalScore");
   const elTitle = document.getElementById("overTitle");
 
-  const GAME_VERSION = "v1.3.04";   // 코드를 고칠 때마다 뒤 두 자리를 올린다
+  const GAME_VERSION = "v1.3.06";   // 코드를 고칠 때마다 뒤 두 자리를 올린다
   document.getElementById("ver").textContent = GAME_VERSION;
 
   const LS_NAME = "epjpddongpi_name";
