@@ -143,6 +143,8 @@
     padding: 5px 7px;
   }
   .board .empty { font-size: 13px; color: #7f8494; padding: 6px 0; }
+  #startScreen .board ol, #overScreen .board ol { display: flex; flex-direction: column; }
+  #startScreen .board .empty, #overScreen .board .empty { margin: auto 0; text-align: center; }
   .board[hidden] { display: none; }
   .board.last,
   #startScreen .board.last, #overScreen .board.last {
@@ -219,7 +221,7 @@
   }
   .jobTab {
     display: inline-flex; align-items: center; justify-content: center;
-    width: 44px; flex: 1 1 0; min-height: 0; max-height: 52px; padding: 0; border-radius: 4px;
+    width: 44px; flex: 1 1 0; min-height: 40px; max-height: 52px; padding: 0; border-radius: 4px;
     font-size: 12px; font-weight: 700; letter-spacing: -.5px;
     background: rgba(53,240,255,.08); color: #9fb4d0;
     border: 1px solid rgba(53,240,255,.35); box-shadow: none;
@@ -730,7 +732,7 @@
   const elFinal = document.getElementById("finalScore");
   const elTitle = document.getElementById("overTitle");
 
-  const GAME_VERSION = "v1.3.07";   // 코드를 고칠 때마다 뒤 두 자리를 올린다
+  const GAME_VERSION = "v1.3.08";   // 코드를 고칠 때마다 뒤 두 자리를 올린다
   document.getElementById("ver").textContent = GAME_VERSION;
 
   const LS_NAME = "epjpddongpi_name";
