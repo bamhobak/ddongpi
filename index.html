@@ -729,7 +729,7 @@
   const elFinal = document.getElementById("finalScore");
   const elTitle = document.getElementById("overTitle");
 
-  const GAME_VERSION = "v1.3.03";   // 코드를 고칠 때마다 뒤 두 자리를 올린다
+  const GAME_VERSION = "v1.3.04";   // 코드를 고칠 때마다 뒤 두 자리를 올린다
   document.getElementById("ver").textContent = GAME_VERSION;
 
   const LS_NAME = "epjpddongpi_name";
@@ -1156,7 +1156,8 @@
     const swayX = Math.sin(introT * w0 * 3) * 0.72 + Math.sin(introT * w0 * 7 + 1.1) * 0.24;
     const swayY = Math.sin(introT * w0 * 4 + 0.6) * 0.62 + Math.sin(introT * w0 * 9) * 0.22;
     const bx = W / 2 + swayX * W * 0.34;
-    const by = H * 0.56 + swayY * H * 0.16;
+    // 점수판에 가리지 않게 화면 아래쪽에서 논다 (위아래 흔들림도 그만큼 줄인다)
+    const by = H * 0.845 + swayY * H * 0.075;
     const px = W / 2, py = H * 0.30;                       // 구멍 한가운데
     const suck = Math.min(1, warp / 0.45);                 // 빨려 들어가는 정도
     const out  = Math.max(0, (warp - 0.5) / 0.5);          // 구멍 안에서 다시 나오는 정도
