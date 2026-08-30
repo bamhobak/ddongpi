@@ -732,7 +732,7 @@
   const elFinal = document.getElementById("finalScore");
   const elTitle = document.getElementById("overTitle");
 
-  const GAME_VERSION = "v1.3.15";   // 코드를 고칠 때마다 뒤 두 자리를 올린다
+  const GAME_VERSION = "v1.3.16";   // 코드를 고칠 때마다 뒤 두 자리를 올린다
   document.getElementById("ver").textContent = GAME_VERSION;
 
   const LS_NAME = "epjpddongpi_name";
@@ -2218,10 +2218,15 @@
       cloneTimer -= dt;
       if (cloneTimer <= 0) {
         let best = null, bd = 1e9;
+        const py = player.y + player.hy;
         for (const q of items) {
           if (q.type !== "poop") continue;            // 무지개똥·특수똥도 표적으로 삼는다
           if (q.y > player.y - 40) continue;          // 이미 지나친 똥은 무시
-          const d = Math.hypot(q.x - player.x, q.y - (player.y + player.hy));
+          /* 머리 위쪽 좁은 부채꼴 안에서만 고른다. 옆으로 멀리 날아가면
+             분신이 가로로 새는 것처럼 보여서, 가로 거리에 벌점을 준다. */
+          const dy = py - q.y, dx = Math.abs(q.x - player.x);
+          if (dx > 70 + dy * 0.55) continue;          // 위로 갈수록 조금씩만 넓어진다 (약 29도)
+          const d = Math.hypot(dx, dy) + dx * 1.4;
           if (d < bd) { bd = d; best = q; }
         }
         if (best) {
