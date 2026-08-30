@@ -59,7 +59,7 @@
 
   /* ---- 랭킹판 ---- */
   .board {
-    width: 100%; max-width: 320px;
+    width: 100%; max-width: 460px;
     background: rgba(255,255,255,.06);
     border-radius: 14px; padding: 12px 14px;
   }
@@ -84,14 +84,14 @@
   .board .sc img.jic { width: 22px; height: 28px; object-fit: contain; vertical-align: -8px; margin-right: 5px; }
 
   /* 4~6위(셋), 7~10위(넷)는 세로 미니 카드로 한 줄에 담는다 */
-  .board li.duo, .board li.five { display: flex; gap: 5px; padding: 3px 0; }
+  .board li.duo, .board li.five { display: flex; gap: 6px; padding: 5px 0; }
   .board .mini {
     flex: 1; min-width: 0; display: flex; flex-direction: column; align-items: center; gap: 1px;
     background: rgba(53,240,255,.07); border: 1px solid rgba(53,240,255,.22);
-    border-radius: 3px; padding: 4px 3px;
+    border-radius: 3px; padding: 7px 3px;
   }
-  .board .mini img.jic2 { width: 26px; height: 33px; object-fit: contain; }
-  .board li.five .mini img.jic2 { width: 22px; height: 28px; }
+  .board .mini img.jic2 { width: 30px; height: 38px; object-fit: contain; }
+  .board li.five .mini img.jic2 { width: 26px; height: 33px; }
   .board .mini .mn {
     max-width: 100%; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
     font-size: 10.5px; color: #dfe3ee;
@@ -193,7 +193,7 @@
   /* 순위표 직업 탭 — 전체 + 직업별 */
   /* 순위판 왼쪽 세로 레일 — 제목은 위에 가로로, 그 아래는 [탭 | 목록] */
   .board.withTabs {
-    display: grid; grid-template-columns: 30px minmax(0, 1fr); column-gap: 8px;
+    display: grid; grid-template-columns: 44px minmax(0, 1fr); column-gap: 9px;
     grid-template-areas: "h h" "tabs list";
     position: relative;
   }
@@ -214,16 +214,16 @@
   }
   .jobTabs {
     grid-area: tabs; display: flex; flex-direction: column; align-items: center;
-    gap: 3px; margin: 0; align-self: start; padding-top: 2px;
+    gap: 4px; margin: 0; align-self: start; padding-top: 2px;
   }
   .jobTab {
     display: inline-flex; align-items: center; justify-content: center;
-    width: 30px; height: 30px; padding: 0; border-radius: 3px;
-    font-size: 10px; font-weight: 700; letter-spacing: -.5px;
+    width: 44px; height: 44px; padding: 0; border-radius: 4px;
+    font-size: 12px; font-weight: 700; letter-spacing: -.5px;
     background: rgba(53,240,255,.08); color: #9fb4d0;
     border: 1px solid rgba(53,240,255,.35); box-shadow: none;
   }
-  .jobTab img { width: 18px; height: 22px; object-fit: contain; }
+  .jobTab img { width: 29px; height: 36px; object-fit: contain; }
   .jobTab.on {
     color: #05060d; background: #ffd23f; border-color: #ffd23f;
     box-shadow: 0 0 12px rgba(255,210,63,.55);
@@ -235,7 +235,7 @@
   #nameRow .tag {
     font-size: 14px; font-weight: 700; color: #ffd23f;
   }
-  #nameForm { display: flex; gap: 8px; width: 100%; max-width: 320px; }
+  #nameForm { display: flex; gap: 8px; width: 100%; max-width: 380px; }
   #nameInput {
     flex: 1; min-width: 0;
     font: inherit; font-size: 16px;
@@ -484,7 +484,7 @@
   }
   #startScreen > * { position: relative; }
 
-  #startScreen { gap: clamp(6px, 1.4vh, 10px); }
+  #startScreen { gap: clamp(6px, 1.4vh, 10px); padding-left: 10px; padding-right: 10px; }
   #startScreen h1 {
     font-size: clamp(24px, 6.5vw, 32px);
     letter-spacing: -1.5px; line-height: 1.15;
@@ -503,7 +503,7 @@
 
   /* 랭킹판 — 유리판 느낌 */
   #startScreen .board, #overScreen .board {
-    max-width: 340px;
+    max-width: 460px;
     padding: 10px 14px 9px;
     border-radius: 4px;
     background: rgba(6,8,20,.82);
@@ -528,7 +528,7 @@
   #startScreen .board li, #overScreen .board li { padding: 3px 0; }
   /* 1~3위 줄은 좌우 여백을 되살린다 — 위 규칙이 덮어써서 점수가 줄 끝에 딱 붙어 잘려 보였다 */
   #startScreen .board li.p1, #startScreen .board li.p2, #startScreen .board li.p3,
-  #overScreen .board li.p1, #overScreen .board li.p2, #overScreen .board li.p3 { padding: 4px 9px 4px 8px; }
+  #overScreen .board li.p1, #overScreen .board li.p2, #overScreen .board li.p3 { padding: 6px 11px 6px 10px; }
 
   /* 1위 줄에 아주 느리게 빛이 흐른다 */
   .board li.p1 { position: relative; overflow: hidden; }
@@ -729,7 +729,7 @@
   const elFinal = document.getElementById("finalScore");
   const elTitle = document.getElementById("overTitle");
 
-  const GAME_VERSION = "v1.3.00";   // 코드를 고칠 때마다 뒤 두 자리를 올린다
+  const GAME_VERSION = "v1.3.02";   // 코드를 고칠 때마다 뒤 두 자리를 올린다
   document.getElementById("ver").textContent = GAME_VERSION;
 
   const LS_NAME = "epjpddongpi_name";
