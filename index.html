@@ -732,7 +732,7 @@
   const elFinal = document.getElementById("finalScore");
   const elTitle = document.getElementById("overTitle");
 
-  const GAME_VERSION = "v1.3.16";   // 코드를 고칠 때마다 뒤 두 자리를 올린다
+  const GAME_VERSION = "v1.3.17";   // 코드를 고칠 때마다 뒤 두 자리를 올린다
   document.getElementById("ver").textContent = GAME_VERSION;
 
   const LS_NAME = "epjpddongpi_name";
@@ -1341,9 +1341,9 @@
   /* 별을 먹은 것과 똑같은 점수 처리 — 별 아이템과,
      고를 증강이 다 떨어졌을 때의 달 보상 대체에 함께 쓴다. */
   function eatStar(x, y) {
-    // 먹을 때마다 1.4배: 1번째 1,000 → 2번째 1,400 → 3번째 1,960 → 4번째 2,744 …
+    // 먹을 때마다 1.75배: 1번째 1,000 → 2번째 1,750 → 3번째 3,063 → 4번째 5,359 …
     starCount++;
-    const gain = Math.round(1000 * Math.pow(1.4, starCount - 1) * aug.starMul * scoreMul());
+    const gain = Math.round(1000 * Math.pow(1.75, starCount - 1) * aug.starMul * scoreMul());
     score += gain;
     popText(x, y, "⭐×" + starCount + "  +" + gain.toLocaleString(), "#ffd23f");
     beep(1400, .1, "square", .05);
