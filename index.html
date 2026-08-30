@@ -730,7 +730,7 @@
   const elFinal = document.getElementById("finalScore");
   const elTitle = document.getElementById("overTitle");
 
-  const GAME_VERSION = "v1.3.06";   // 코드를 고칠 때마다 뒤 두 자리를 올린다
+  const GAME_VERSION = "v1.3.07";   // 코드를 고칠 때마다 뒤 두 자리를 올린다
   document.getElementById("ver").textContent = GAME_VERSION;
 
   const LS_NAME = "epjpddongpi_name";
@@ -4239,7 +4239,7 @@
         ctx.strokeStyle = "#1b1c22";
         ctx.lineWidth = Math.max(1.5, S * 0.028);
         ctx.beginPath();
-        ctx.moveTo(-ex - er * 2.0, ey - er * 1.9); ctx.lineTo(ex + er * 1.6, ey - er * 0.2);
+        ctx.moveTo(-ex - er * 1.15, ey - er * 1.35); ctx.lineTo(ex + er * 0.85, ey - er * 0.3);
         ctx.stroke();
         ctx.fillStyle = "#1b1c22";
         ctx.beginPath();
