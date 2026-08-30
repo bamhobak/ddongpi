@@ -732,7 +732,7 @@
   const elFinal = document.getElementById("finalScore");
   const elTitle = document.getElementById("overTitle");
 
-  const GAME_VERSION = "v1.3.13";   // 코드를 고칠 때마다 뒤 두 자리를 올린다
+  const GAME_VERSION = "v1.3.14";   // 코드를 고칠 때마다 뒤 두 자리를 올린다
   document.getElementById("ver").textContent = GAME_VERSION;
 
   const LS_NAME = "epjpddongpi_name";
@@ -1914,7 +1914,7 @@
     // 일반 똥은 레벨이 오를수록 빨라지지만, 뚜니핑 낙하물은 처음이나 나중이나 같은 속도로 떨어진다
     const baseVy = inFever ? FEVER_VY + Math.random() * 110
                            : 230.0 + level * 14.97 + Math.random() * 110;   // 레벨당 상승폭 완화(레벨 1 속도는 동일)
-    let vy = baseVy * m * DIFF_F * spaceF() * bhMul() * aug.fallMul
+    let vy = baseVy * m * DIFF_F * spaceF() * bhDiff() * aug.fallMul
            * (inFever ? 1 : lateMul());   // 후반 가속 — 뚜니핑 낙하물은 그대로
     if (special === "huge") vy *= 0.55;   // 덩치값 — 느릿느릿 굴러떨어진다
     let px = r + Math.random() * (W - r * 2);
@@ -2384,7 +2384,7 @@
             spawnPoop(1, kind);
           }
         }
-        spawnTimer = spawnGap() / DIFF_F / spaceF() / bhMul() * widthFactor * (0.7 + Math.random() * 0.6);
+        spawnTimer = spawnGap() / DIFF_F / spaceF() / bhDiff() * widthFactor * (0.7 + Math.random() * 0.6);
       }
     }
     if (!powered) {
@@ -3569,6 +3569,8 @@
   const BH_Z = LAST_Z;                 // 블랙홀 안 — 여기부터 모든 조건이 두 배
   function inBlackhole() { return zoneIdx() >= BH_Z; }
   function bhMul() { return inBlackhole() ? 2 : 1; }
+  // 블랙홀 안의 '난이도' 배율 — 점수·아이템 배율(2배)과 달리 낙하 속도·똥 수량에만 쓴다
+  function bhDiff() { return inBlackhole() ? 1.5 : 1; }
   /* 부양사 — 높이 날수록 모든 점수가 커진다. 바닥 +0%, 중간 +50%, 꼭대기 +100%. */
   function levMul() {
     if (job !== "levitator" || !flyOn) return 1;
