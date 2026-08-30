@@ -732,7 +732,7 @@
   const elFinal = document.getElementById("finalScore");
   const elTitle = document.getElementById("overTitle");
 
-  const GAME_VERSION = "v1.3.18";   // 코드를 고칠 때마다 뒤 두 자리를 올린다
+  const GAME_VERSION = "v1.3.19";   // 코드를 고칠 때마다 뒤 두 자리를 올린다
   document.getElementById("ver").textContent = GAME_VERSION;
 
   const LS_NAME = "epjpddongpi_name";
@@ -1975,7 +1975,7 @@
     // 후반 견제 — Lv15부터 달이 레벨마다 7%씩 뜸해진다 (뚜니핑 타임 가동률을 떨어뜨린다)
     if ((b.type === "moon" || b.type === "fullmoon") && level > 15)
       mean *= Math.pow(1.07, level - 15);
-    if (b.type === "star" && job === "powerp") mean /= 2 / 1.106;  // 무소유 — 예전 빈도 그대로 유지
+    if (b.type === "star" && job === "powerp") mean /= 1.5;  // 무소유 — 별 1.5배
     /* 평균 간격을 중심으로 ±12% 안에서만 흔들린다 — 판마다 개수가 들쭉날쭉하지 않게.
        종류별로 타이머가 따로 도는 건 그대로라 여러 개가 한꺼번에 나오는 일은 여전히 생긴다.
        (0.4초 하한은 완전히 겹쳐 떨어지는 것만 막는 장치) */
@@ -3582,12 +3582,12 @@
     const air = Math.max(0, Math.min(1, (groundY - player.y) / Math.max(1, groundY - H * FLY_TOP)));
     return 1 + 1.0 * air;
   }
-  /* 무소유 — 증강이 없는 대신 레벨마다 배율이 커지고 (Lv1 ×2, 레벨마다 +1),
+  /* 무소유 — 증강이 없는 대신 레벨마다 배율이 커지고 (Lv1 ×4, 레벨마다 +1),
      여기에 안 맞고 버틴 시간만큼 초당 +10% 가 더 곱해진다.
      목숨을 잃으면 무피격 시간이 절반으로 줄어든다 (우산 방어는 무피격 유지). */
   function monkMul() {
     if (job !== "powerp") return 1;
-    return (level + 1) * (1 + 0.10 * noHitSec);
+    return (level + 3) * (1 + 0.10 * noHitSec);
   }
   function scoreMul() { return aug.scoreMul * bhMul() * levMul() * monkMul(); }
 
