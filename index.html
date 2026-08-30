@@ -507,8 +507,8 @@
     padding: 10px 14px 9px;
     border-radius: 4px;
     background: rgba(6,8,20,.82);
-    border: 2px solid #35f0ff;
-    box-shadow: 0 0 18px rgba(53,240,255,.35), inset 0 0 24px rgba(53,240,255,.10);
+    border: 1px solid rgba(53,240,255,.75);
+    box-shadow: 0 0 14px rgba(53,240,255,.28), inset 0 0 20px rgba(53,240,255,.08);
   }
   #startScreen .board h3, #overScreen .board h3 {
     display: flex; align-items: center; justify-content: center; gap: 6px;
@@ -562,7 +562,7 @@
     margin-top: 0;
     padding: 12px 42px;
     background: linear-gradient(180deg, #ffe07a, #ffc42e 55%, #f5a70f);
-    border: 2px solid #fff3c4;
+    border: 1px solid rgba(255,243,196,.85);
     box-shadow: 0 0 24px rgba(255,196,46,.55), 0 5px 0 #a8700a;
     letter-spacing: 3px;
     animation: breathe 3.4s ease-in-out infinite;
@@ -729,7 +729,7 @@
   const elFinal = document.getElementById("finalScore");
   const elTitle = document.getElementById("overTitle");
 
-  const GAME_VERSION = "v1.3.02";   // 코드를 고칠 때마다 뒤 두 자리를 올린다
+  const GAME_VERSION = "v1.3.03";   // 코드를 고칠 때마다 뒤 두 자리를 올린다
   document.getElementById("ver").textContent = GAME_VERSION;
 
   const LS_NAME = "epjpddongpi_name";
