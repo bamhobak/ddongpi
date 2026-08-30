@@ -732,7 +732,7 @@
   const elFinal = document.getElementById("finalScore");
   const elTitle = document.getElementById("overTitle");
 
-  const GAME_VERSION = "v1.3.09";   // 코드를 고칠 때마다 뒤 두 자리를 올린다
+  const GAME_VERSION = "v1.3.10";   // 코드를 고칠 때마다 뒤 두 자리를 올린다
   document.getElementById("ver").textContent = GAME_VERSION;
 
   const LS_NAME = "epjpddongpi_name";
@@ -1970,7 +1970,7 @@
     // 블랙홀 안에서는 아이템도 두 배로 자주 나온다
     let mean = BONUS_BASE / (b.w / BONUS_W_TOTAL) * aug.itemRateMul * lvFactor / bhMul();
     if (b.type === "paper" && aug.subs) mean /= 1.7;  // 정기구독 — 휴지만 1.7배 빈도
-    if (b.type === "heart" && job === "fit") mean /= 4;  // 헬스걸 — 하트 4배
+    if (b.type === "heart" && job === "fit") mean /= 5;  // 헬스걸 — 하트 5배
     if ((b.type === "moon" || b.type === "fullmoon") && job === "powerj") mean /= 1.75;  // 파워J — 달 +75%
     // 후반 견제 — Lv15부터 달이 레벨마다 7%씩 뜸해진다 (뚜니핑 타임 가동률을 떨어뜨린다)
     if ((b.type === "moon" || b.type === "fullmoon") && level > 15)
