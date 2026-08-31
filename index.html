@@ -732,7 +732,7 @@
   const elFinal = document.getElementById("finalScore");
   const elTitle = document.getElementById("overTitle");
 
-  const GAME_VERSION = "v1.3.30";   // 코드를 고칠 때마다 뒤 두 자리를 올린다
+  const GAME_VERSION = "v1.3.31";   // 코드를 고칠 때마다 뒤 두 자리를 올린다
   document.getElementById("ver").textContent = GAME_VERSION;
 
   const LS_NAME = "epjpddongpi_name";
@@ -1311,7 +1311,7 @@
       // 1개째는 10%, 그 뒤로는 절반(5%)씩만 — 첫 픽의 맛은 지키고 몰빵만 눌렀다
       go: () => { aug.goldChance += (augCount["gold"] ? 0.05 : 0.10) * dim("gold"); } },
     { id: "dopa",       ic: "📱", nm: "도파민 중독",  ds: "똥이 빨라지고, 생존 점수가 크게 오른다",
-      go: () => { aug.fallMul *= 1 + 0.20 * dim("dopa"); aug.timeMul *= 1 + 0.5 * dim("dopa"); } },
+      go: () => { aug.fallMul *= 1 + 0.15 * dim("dopa"); aug.timeMul *= 1 + 0.5 * dim("dopa"); } },
     { id: "carrot",     ic: "🥕", nm: "하트 당근거래", ds: "목숨 1개를 팔고, 앞으로 얻는 모든 점수 +20%",
       max: 5, cond: () => lives >= 2,
       go: () => { lives = Math.max(1, lives - 1); aug.scoreMul *= 1.2; } },
@@ -1320,7 +1320,7 @@
       go: () => { aug.goldLord = true; } },
     { id: "inter",      ic: "🕰️", nm: "인터스텔라", ds: "이따금 세상만 느려진다. 점수 시계는 그대로",
       hidden: true, once: true, cond: () => augCount["slow"] >= 2,
-      go: () => { aug.inter = true; interTimer = 10; } },
+      go: () => { aug.inter = true; interTimer = 8; } },
     { id: "subs",       ic: "📦", nm: "휴지 정기구독", ds: "휴지가 더 자주, 안 오면 강제 배송된다",
       hidden: true, once: true,
       cond: () => augCount["lucky"] >= 1 && augCount["fever_time"] >= 1 && augCount["downpour"] >= 1,
@@ -1480,7 +1480,7 @@
   const UMB_SEC = 5.5;             // 우산 로켓배송: 방패가 없을 때 몇 초마다 하나씩 오는지
   let shieldTimer = UMB_SEC;       // 다음 하나까지 남은 시간
   let spawnHold = 0;               // 성난 우산: 똥 생성이 멈춰 있는 남은 시간
-  let bulletT = 0, interTimer = 10;// 인터스텔라: 불릿타임 남은 시간 / 다음 발동까지
+  let bulletT = 0, interTimer = 8;// 인터스텔라: 불릿타임 남은 시간 / 다음 발동까지
   let refillLeft = 0;              // 뚜니핑 무한리필: 이번 뚜니핑에서 더 늘릴 수 있는 양(ms)
   let subsTimer = 0;               // 휴지 정기구독: 마지막 휴지 이후 지난 시간
   let noHitSec = 0;                // 마지막 피격 이후 버틴 시간 (무소유 배율용)
@@ -1777,7 +1777,7 @@
     for (const k in augSeen) delete augSeen[k];
     for (const k in augTook) delete augTook[k];
     aug.refill = false; aug.subs = false; aug.clone = false;
-    spawnHold = 0; bulletT = 0; interTimer = 10; refillLeft = 0; subsTimer = 0;
+    spawnHold = 0; bulletT = 0; interTimer = 8; refillLeft = 0; subsTimer = 0;
     noHitSec = 0;
     clones = []; cloneTimer = 0;
     shieldTimer = UMB_SEC;
@@ -2213,7 +2213,7 @@
       else if (!fever) {
         interTimer -= dt;
         if (interTimer <= 0) {
-          interTimer = 10; bulletT = 2;
+          interTimer = 8; bulletT = 2;
           popText(W / 2, H * 0.35, "🕰️ 인터스텔라", "#9fd4ff", 26);
           beep(320, .14, "sine", .05);
           beep(210, .2, "sine", .05);
