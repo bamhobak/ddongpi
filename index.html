@@ -732,7 +732,7 @@
   const elFinal = document.getElementById("finalScore");
   const elTitle = document.getElementById("overTitle");
 
-  const GAME_VERSION = "v1.3.34";   // 코드를 고칠 때마다 뒤 두 자리를 올린다
+  const GAME_VERSION = "v1.3.35";   // 코드를 고칠 때마다 뒤 두 자리를 올린다
   document.getElementById("ver").textContent = GAME_VERSION;
 
   const LS_NAME = "epjpddongpi_name";
@@ -1937,8 +1937,10 @@
     // 일반 똥은 레벨이 오를수록 빨라지지만, 뚜니핑 낙하물은 처음이나 나중이나 같은 속도로 떨어진다
     const baseVy = inFever ? FEVER_VY + Math.random() * 110
                            : 230.0 + level * 14.97 + Math.random() * 110;   // 레벨당 상승폭 완화(레벨 1 속도는 동일)
-    let vy = baseVy * m * DIFF_F * spaceF() * bhDiff() * aug.fallMul
-           * (inFever ? 1 : lateMul());   // 후반 가속 — 뚜니핑 낙하물은 그대로
+    /* 뚜니핑 낙하물은 언제나 같은 속도로 떨어진다 — 레벨·지대·증강(느린 하늘·도파민)
+       어느 것에도 영향받지 않는다. 화면 높이 보정(m)만 그대로 둔다. */
+    let vy = inFever ? baseVy * m
+                     : baseVy * m * DIFF_F * spaceF() * bhDiff() * aug.fallMul * lateMul();
     if (special === "huge") vy *= 0.55;   // 덩치값 — 느릿느릿 굴러떨어진다
     let px = r + Math.random() * (W - r * 2);
     let pvx = (Math.random() - Math.random()) * vy * SPREAD_POOP;
