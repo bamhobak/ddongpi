@@ -732,7 +732,7 @@
   const elFinal = document.getElementById("finalScore");
   const elTitle = document.getElementById("overTitle");
 
-  const GAME_VERSION = "v1.3.33";   // 코드를 고칠 때마다 뒤 두 자리를 올린다
+  const GAME_VERSION = "v1.3.34";   // 코드를 고칠 때마다 뒤 두 자리를 올린다
   document.getElementById("ver").textContent = GAME_VERSION;
 
   const LS_NAME = "epjpddongpi_name";
@@ -1929,8 +1929,9 @@
     if (!inFever && !special && aug.goldChance > 0 && Math.random() < aug.goldChance) {
       gold = true;
     }
-    let r = (cls ? cls.min + Math.random() * (cls.max - cls.min)
-                 : 12.6 + Math.random() * 11.7) * aug.poopMul;   // 기본 크기 10% 축소
+    // 뚜니핑 낙하물은 크기가 곧 점수라서 '작아진 똥'의 영향을 받지 않는다
+    let r = cls ? cls.min + Math.random() * (cls.max - cls.min)
+                : (12.6 + Math.random() * 11.7) * aug.poopMul;   // 기본 크기 10% 축소
     if (special === "huge") r = (HUGE_R + Math.random() * 13) * aug.poopMul;   // 초거대 똥
     r = Math.min(r, (W - 24) / 2);        // 화면보다 커지지 않게
     // 일반 똥은 레벨이 오를수록 빨라지지만, 뚜니핑 낙하물은 처음이나 나중이나 같은 속도로 떨어진다
