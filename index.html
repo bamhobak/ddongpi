@@ -732,7 +732,7 @@
   const elFinal = document.getElementById("finalScore");
   const elTitle = document.getElementById("overTitle");
 
-  const GAME_VERSION = "v1.3.24";   // 코드를 고칠 때마다 뒤 두 자리를 올린다
+  const GAME_VERSION = "v1.3.25";   // 코드를 고칠 때마다 뒤 두 자리를 올린다
   document.getElementById("ver").textContent = GAME_VERSION;
 
   const LS_NAME = "epjpddongpi_name";
@@ -1315,7 +1315,7 @@
     { id: "carrot",     ic: "🥕", nm: "하트 당근거래", ds: "목숨 1개를 팔고, 앞으로 얻는 모든 점수 +20%",
       max: 5, cond: () => lives >= 2,
       go: () => { lives = Math.max(1, lives - 1); aug.scoreMul *= 1.2; } },
-    { id: "goldLord",   ic: "🦄", nm: "무지개 수집가", ds: "무지개똥이 세 배 멀리서 세게 끌려오고, 점수 5배",
+    { id: "goldLord",   ic: "🦄", nm: "무지개 수집가", ds: "무지개똥이 세 배 멀리서 세게 끌려오고, 점수 3배",
       hidden: true, once: true, cond: () => (augCount["gold"] || 0) >= 1,
       go: () => { aug.goldLord = true; } },
     { id: "inter",      ic: "🕰️", nm: "인터스텔라", ds: "이따금 세상만 느려진다. 점수 시계는 그대로",
@@ -2485,7 +2485,7 @@
       if (hit) {
         if (it.type === "poop") {
           if (it.gold) {                    // 무지개똥 — 먹으면 점수 (레벨이 오를수록 값지다)
-            const g = Math.round(120 * (aug.goldLord ? 5 : 1) * scoreMul() * Math.pow(1.3, level - 1));
+            const g = Math.round(120 * (aug.goldLord ? 3 : 1) * scoreMul() * Math.pow(1.3, level - 1));
             score += g;
             burst(it.x, it.y, "hsl(" + Math.round(goldFx(now, it.x).hue) + ",100%,62%)", 20);
             popText(it.x, it.y, "🌈 +" + g.toLocaleString(), "#ffe07a");
@@ -2674,7 +2674,7 @@
       if (it.type !== "poop") continue;
       if (Math.hypot(it.x - x, it.y - y) >= radius + it.r) continue;
       if (it.gold) {                         // 무지개똥 — 부수면 직접 먹은 것과 같은 점수
-        const g = Math.round(120 * (aug.goldLord ? 5 : 1) * scoreMul() * Math.pow(1.3, level - 1));
+        const g = Math.round(120 * (aug.goldLord ? 3 : 1) * scoreMul() * Math.pow(1.3, level - 1));
         score += g;
         burst(it.x, it.y, "#ffd23f", 18);
         popText(it.x, it.y, "✨ +" + g.toLocaleString(), "#ffe07a");
