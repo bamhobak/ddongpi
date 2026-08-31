@@ -732,7 +732,7 @@
   const elFinal = document.getElementById("finalScore");
   const elTitle = document.getElementById("overTitle");
 
-  const GAME_VERSION = "v1.3.27";   // 코드를 고칠 때마다 뒤 두 자리를 올린다
+  const GAME_VERSION = "v1.3.28";   // 코드를 고칠 때마다 뒤 두 자리를 올린다
   document.getElementById("ver").textContent = GAME_VERSION;
 
   const LS_NAME = "epjpddongpi_name";
@@ -1315,7 +1315,7 @@
     { id: "carrot",     ic: "🥕", nm: "하트 당근거래", ds: "목숨 1개를 팔고, 앞으로 얻는 모든 점수 +20%",
       max: 5, cond: () => lives >= 2,
       go: () => { lives = Math.max(1, lives - 1); aug.scoreMul *= 1.2; } },
-    { id: "goldLord",   ic: "🦄", nm: "무지개 수집가", ds: "무지개똥이 세 배 멀리서 세게 끌려오고, 점수 3배",
+    { id: "goldLord",   ic: "🦄", nm: "무지개 수집가", ds: "무지개똥이 두 배 멀리서 세게 끌려오고, 점수 3배",
       hidden: true, once: true, cond: () => (augCount["gold"] || 0) >= 1,
       go: () => { aug.goldLord = true; } },
     { id: "inter",      ic: "🕰️", nm: "인터스텔라", ds: "이따금 세상만 느려진다. 점수 시계는 그대로",
@@ -2487,8 +2487,8 @@
       const magF = aug.magnet > 0 ? 1 : 0.45;
       if (magR > 0 && (it.type !== "poop" || it.gold)) {
         const d = Math.hypot(dx, dy);
-        // 무지개똥은 아이템의 절반 반경·절반 힘 — 수집가라면 그 3배(아이템의 1.5배)
-        const goldF = it.gold ? (aug.goldLord ? 1.5 : 0.5) : 1;
+        // 무지개똥은 아이템의 절반 반경·절반 힘 — 수집가라면 그 2배(아이템과 동일)
+        const goldF = it.gold ? (aug.goldLord ? 1 : 0.5) : 1;
         const R = magR * goldF;
         if (d < R && d > 1) {
           const pull = (676 * (1 - d / R) + 78) * dt * magF * goldF;
