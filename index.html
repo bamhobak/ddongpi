@@ -732,7 +732,7 @@
   const elFinal = document.getElementById("finalScore");
   const elTitle = document.getElementById("overTitle");
 
-  const GAME_VERSION = "v1.3.25";   // 코드를 고칠 때마다 뒤 두 자리를 올린다
+  const GAME_VERSION = "v1.3.26";   // 코드를 고칠 때마다 뒤 두 자리를 올린다
   document.getElementById("ver").textContent = GAME_VERSION;
 
   const LS_NAME = "epjpddongpi_name";
@@ -1334,6 +1334,8 @@
   const augList   = document.getElementById("augList");
   const augTitle  = document.getElementById("augTitle");
 
+  let augRound = 0;       // 지금까지 증강을 고른 횟수 (같은 게 연달아 뜨지 않게 쓰는 기준)
+  const augSeen = {};     // 증강별로 마지막에 후보로 떴던 차례
   let augRemain = 0;      // 남은 연속 선택 횟수
   let augTotal = 1;
 
@@ -1377,6 +1379,7 @@
   }
 
   function showAugmentPick() {
+    augRound++;                        // 이번이 몇 번째 선택 차례인지
     augTitle.textContent = augTotal > 1
       ? "🌕 보름달! 증강 " + augTotal + "연속 (" + (augTotal - augRemain + 1) + "/" + augTotal + ")"
       : "⭐ 증강 선택 🌙";
@@ -1385,8 +1388,14 @@
        once 증강은 상한 1과 같다. */
     const pool = AUGMENTS.filter(a =>
       (augCount[a.id] || 0) < maxOf(a) && (!a.cond || a.cond()));
-    // 뽑히는 가중치: 따로 지정한 값이 우선, 히든은 일반의 1/3, 나머지는 1
-    const wOf = a => (a.w !== undefined ? a.w : (a.hidden ? (1 / 4) : 1));
+    /* 뽑히는 가중치: 따로 지정한 값이 우선, 히든은 일반의 1/4, 나머지는 1.
+       방금 본 증강이 계속 나오면 지겨우니, 바로 앞 차례에 떴던 것은 1/3,
+       두 차례 전에 떴던 것은 1/2 로 낮춘다 (세 차례 뒤에는 원래대로). */
+    const wOf = a => {
+      const base = (a.w !== undefined ? a.w : (a.hidden ? (1 / 4) : 1));
+      const gap = augRound - (augSeen[a.id] || -9);
+      return base * (gap === 1 ? 1 / 3 : gap === 2 ? 1 / 2 : 1);
+    };
     const picks = [];
     const nPick = job === "powerj" ? 1 : 3;   // 파워J — 계획은 하나면 충분하다
     while (picks.length < nPick && pool.length) {
@@ -1400,6 +1409,7 @@
       }
       picks.push(pool.splice(idx, 1)[0]);
     }
+    for (const a of picks) augSeen[a.id] = augRound;   // 이번에 보여준 것들을 기억해 둔다
     if (!picks.length) {
       // 상한·조건 때문에 고를 증강이 하나도 안 남았다 — 남은 횟수만큼 별로 대체
       const times = augRemain;
@@ -1755,6 +1765,7 @@
     aug.ghost = false; aug.blackhole = false; aug.legion = false; ghostTimer = 3; roidT = 0;
     flyOn = false;
     aug.angryUmb = false; aug.goldChance = 0; aug.inter = false; aug.goldLord = false;
+    augRound = 0; for (const k in augSeen) delete augSeen[k];
     aug.refill = false; aug.subs = false; aug.clone = false;
     spawnHold = 0; bulletT = 0; interTimer = 10; refillLeft = 0; subsTimer = 0;
     noHitSec = 0;
