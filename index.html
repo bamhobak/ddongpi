@@ -732,7 +732,7 @@
   const elFinal = document.getElementById("finalScore");
   const elTitle = document.getElementById("overTitle");
 
-  const GAME_VERSION = "v1.3.23";   // 코드를 고칠 때마다 뒤 두 자리를 올린다
+  const GAME_VERSION = "v1.3.24";   // 코드를 고칠 때마다 뒤 두 자리를 올린다
   document.getElementById("ver").textContent = GAME_VERSION;
 
   const LS_NAME = "epjpddongpi_name";
@@ -1304,7 +1304,8 @@
     { id: "downpour",   ic: "🌧️", nm: "뚜니핑 폭우", ds: "뚜니핑이 더 많이 쏟아진다",
       go: () => { aug.feverRateMul = 1 / (1 / aug.feverRateMul + 0.25); } },   // 먹을 때마다 양 +25%, 감쇠 없음
     { id: "angryUmb",   ic: "💢", nm: "성난 우산",   ds: "방패가 깨질 때 화면의 똥이 전부 사라진다",
-      once: true, cond: () => job !== "fit",   // 헬스걸은 방패가 없어 의미가 없다
+      hidden: true, once: true,
+      cond: () => job !== "fit" && shields >= 5,   // 헬스걸은 방패가 없어 의미가 없다
       go: () => { aug.angryUmb = true; } },
     { id: "gold",       ic: "🌈", nm: "무지개똥 연금술", ds: "똥이 가끔 무지개똥으로 변한다. 먹으면 점수!",
       // 1개째는 10%, 그 뒤로는 절반(5%)씩만 — 첫 픽의 맛은 지키고 몰빵만 눌렀다
