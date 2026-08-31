@@ -732,7 +732,7 @@
   const elFinal = document.getElementById("finalScore");
   const elTitle = document.getElementById("overTitle");
 
-  const GAME_VERSION = "v1.3.22";   // 코드를 고칠 때마다 뒤 두 자리를 올린다
+  const GAME_VERSION = "v1.3.23";   // 코드를 고칠 때마다 뒤 두 자리를 올린다
   document.getElementById("ver").textContent = GAME_VERSION;
 
   const LS_NAME = "epjpddongpi_name";
@@ -926,8 +926,8 @@
   const HELPER_ASPECT_SPACE = 0.771;
   function helperPic()    { return (inSpace() && helperSpaceImg) ? helperSpaceImg : helperImg; }
   function helperAspect() { return (inSpace() && helperSpaceImg) ? HELPER_ASPECT_SPACE : HELPER_ASPECT; }
-  const HELPER_H = 110;          // 화면에 그릴 높이 (기존 96에서 15% 확대)
-  const HELPER_R = 53;           // 똥을 부수는 반경 (크기에 맞춰 함께 확대)
+  const HELPER_H = 99;           // 화면에 그릴 높이 (110에서 10% 축소)
+  const HELPER_R = 48;           // 똥을 부수는 반경 (크기에 맞춰 함께 축소)
   function helperScale() { return aug.helperRush ? 1.3 : 1; } // 히든 '대폭주' 시 1.3배 (면적 1.69배)
   let helpers = [];
   let helperTimer = 0;
@@ -1458,7 +1458,7 @@
   let spawnTimer = 0;
   let invUntil = 0, powerUntil = 0;
   let shields = 0;                 // 남은 방패 수 — 우산 아이템은 최대 1, 증강으로만 여러 개
-  const UMB_SEC = 4;               // 우산 로켓배송: 방패가 없을 때 몇 초마다 하나씩 오는지
+  const UMB_SEC = 5.5;             // 우산 로켓배송: 방패가 없을 때 몇 초마다 하나씩 오는지
   let shieldTimer = UMB_SEC;       // 다음 하나까지 남은 시간
   let spawnHold = 0;               // 성난 우산: 똥 생성이 멈춰 있는 남은 시간
   let bulletT = 0, interTimer = 10;// 인터스텔라: 불릿타임 남은 시간 / 다음 발동까지
@@ -2561,7 +2561,6 @@
                   if (k < i) i--;            // 앞쪽이 지워지면 내 자리도 한 칸 당겨진다
                 }
                 warns = [];
-                spawnHold = 0.5;
                 shake = Math.max(shake, 22);
                 feverFlash = Math.max(feverFlash, 0.4);
                 popText(player.x, player.y - 95, "💢 성난 우산!", "#7ec8ff", 26);
