@@ -732,7 +732,7 @@
   const elFinal = document.getElementById("finalScore");
   const elTitle = document.getElementById("overTitle");
 
-  const GAME_VERSION = "v1.3.28";   // 코드를 고칠 때마다 뒤 두 자리를 올린다
+  const GAME_VERSION = "v1.3.29";   // 코드를 고칠 때마다 뒤 두 자리를 올린다
   document.getElementById("ver").textContent = GAME_VERSION;
 
   const LS_NAME = "epjpddongpi_name";
@@ -1276,9 +1276,9 @@
     { id: "hungry",     ic: "😋", nm: "마운자로를 이겨낸 정연핑", ds: "정연핑이 아이템을 대신 먹어준다",
       hidden: true, once: true, cond: () => aug.helper > 0 && aug.magnet > 0,   // 정연핑 + 자석
       go: () => { aug.hungry = true; } },
-    { id: "roid",       ic: "💉", nm: "스테로이드 과다 복용", ds: "10초 동안 몸이 2배로 부풀고, 모든 똥을 튕겨낸다",
+    { id: "roid",       ic: "💉", nm: "스테로이드 과다 복용", ds: "8초 동안 몸이 2배로 부풀고, 모든 똥을 튕겨낸다",
       max: 99, noCount: true, cond: () => job === "fit" && level >= 7,   // 헬스걸 전용 — 우산 다발 자리
-      go: () => { roidT = 10; } },
+      go: () => { roidT = 8; } },
     { id: "steelUmb",   ic: "☔", nm: "우산 로켓배송", ds: "우산이 없으면 저절로 배송된다",
       hidden: true, once: true,
       cond: () => augCount["umbrella3"] > 0 && job !== "fit",   // 헬스걸은 하트 자동재생이 돼버려 제외
