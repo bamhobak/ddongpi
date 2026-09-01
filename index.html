@@ -732,7 +732,7 @@
   const elFinal = document.getElementById("finalScore");
   const elTitle = document.getElementById("overTitle");
 
-  const GAME_VERSION = "v1.3.46";   // 코드를 고칠 때마다 뒤 두 자리를 올린다
+  const GAME_VERSION = "v1.3.47";   // 코드를 고칠 때마다 뒤 두 자리를 올린다
   document.getElementById("ver").textContent = GAME_VERSION;
 
   const LS_NAME = "epjpddongpi_name";
@@ -2603,7 +2603,7 @@
                    반경은 화면의 2/3 넘게 덮도록 잡는다 (까다로운 똥도 함께 부순다).
                    지금 부딪힌 똥(i)은 바로 아래 공용 splice 가 지우므로 건드리지 않는다. */
                 const bx = player.x, by = player.y + player.hy;
-                const bR = Math.sqrt(4 * W * H / (3 * Math.PI)) * 1.05;
+                const bR = Math.sqrt(4 * W * H / (3 * Math.PI)) * 1.15;
                 for (let k = items.length - 1; k >= 0; k--) {
                   const q = items[k];
                   if (q.type !== "poop" || k === i) continue;
