@@ -732,7 +732,7 @@
   const elFinal = document.getElementById("finalScore");
   const elTitle = document.getElementById("overTitle");
 
-  const GAME_VERSION = "v1.3.38";   // 코드를 고칠 때마다 뒤 두 자리를 올린다
+  const GAME_VERSION = "v1.3.39";   // 코드를 고칠 때마다 뒤 두 자리를 올린다
   document.getElementById("ver").textContent = GAME_VERSION;
 
   const LS_NAME = "epjpddongpi_name";
@@ -2312,8 +2312,8 @@
 
     // ---- 도와줘 정연핑 ----
     if (aug.helper > 0) {
-      // 1명이면 4초, 2명이면 5.5초, 3명이면 7초… 인원이 늘수록 주기도 함께 길어진다
-      const cycle = 2.5 + 1.5 * aug.helper;
+      // 1명이면 4.5초, 2명이면 5.5초, 3명이면 6.5초… 인원이 늘수록 주기가 1초씩 길어진다
+      const cycle = 3.5 + 1.0 * aug.helper;
       helperTimer -= dt;
       if (helperTimer <= 0 && helperQueue <= 0) {
         helperTimer = cycle;
