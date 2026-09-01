@@ -732,7 +732,7 @@
   const elFinal = document.getElementById("finalScore");
   const elTitle = document.getElementById("overTitle");
 
-  const GAME_VERSION = "v1.3.36";   // 코드를 고칠 때마다 뒤 두 자리를 올린다
+  const GAME_VERSION = "v1.3.37";   // 코드를 고칠 때마다 뒤 두 자리를 올린다
   document.getElementById("ver").textContent = GAME_VERSION;
 
   const LS_NAME = "epjpddongpi_name";
@@ -1956,9 +1956,9 @@
       r: r * (special === "huge" ? 0.70 : 0.82),
       vx: pvx,
       vy: vy,
-      /* 얼굴이 보이도록 회전 대신 살랑인다. 시작 각도는 ±30도 안에서 제각각이고,
+      /* 회전 대신 살랑인다. 시작 각도는 ±90도 안에서 제각각이고,
          거기서 ±12도씩 천천히 오간다 (레이저는 예고선을 따라야 해서 고정). */
-      rot: special === "laser" ? 0 : (Math.random() - Math.random()) * 0.52,
+      rot: special === "laser" ? 0 : (Math.random() - Math.random()) * 1.571,
       vr: 0,
       swayA: special === "laser" ? 0 : 0.14 + Math.random() * 0.07,   // 흔들 폭 (약 8~12도)
       swayW: 1.1 + Math.random() * 1.1,                               // 흔드는 속도
@@ -2451,7 +2451,7 @@
               type: "poop", emoji: "💩",
               x: it.x, y: it.y, r: r2 * 0.82,
               vx: Math.sin(ang) * sp, vy: Math.cos(ang) * sp,
-              rot: (Math.random() - Math.random()) * 0.52, vr: 0,
+              rot: (Math.random() - Math.random()) * 1.571, vr: 0,
               swayA: 0.14 + Math.random() * 0.07, swayW: 1.1 + Math.random() * 1.1,
               swayP: Math.random() * 6.28,
               size: r2 * 2, sz: r2, fast: false,
@@ -2740,7 +2740,7 @@
               type: "poop", emoji: "💩",
               x: it.x, y: it.y, r: r2 * 0.82,
               vx: dir * (170 + Math.random() * 90) * aug.fallMul, vy: it.vy * 1.4,
-              rot: (Math.random() - Math.random()) * 0.52, vr: 0,
+              rot: (Math.random() - Math.random()) * 1.571, vr: 0,
               swayA: 0.14 + Math.random() * 0.07, swayW: 1.1 + Math.random() * 1.1,
               swayP: Math.random() * 6.28,
               size: r2 * 2, sz: r2, fast: false,
