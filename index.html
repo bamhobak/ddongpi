@@ -732,7 +732,7 @@
   const elFinal = document.getElementById("finalScore");
   const elTitle = document.getElementById("overTitle");
 
-  const GAME_VERSION = "v1.3.35";   // 코드를 고칠 때마다 뒤 두 자리를 올린다
+  const GAME_VERSION = "v1.3.36";   // 코드를 고칠 때마다 뒤 두 자리를 올린다
   document.getElementById("ver").textContent = GAME_VERSION;
 
   const LS_NAME = "epjpddongpi_name";
@@ -1891,7 +1891,7 @@
   /* 낙하 각도. 좌우 속도를 낙하 속도에 비례시켜서 레벨이 올라도 기울기 느낌이 일정하다.
      (Math.random() - Math.random()) 은 0 근처가 흔하고 양 끝이 드문 삼각분포 →
      대부분은 적당히 기울고 일부만 크게 비스듬히 떨어진다. */
-  const SPREAD_POOP  = 0.22;   // 최대 약 12도
+  const SPREAD_POOP  = 0.16;   // 최대 약 9도 (예전 12도에서 완화)
   const SPREAD_BONUS = 0.28;   // 아이템은 조금 얌전하게 (약 16도)
 
   const FEVER_VY = 245;      // 뚜니핑 낙하물 기준 속도 — 레벨이 올라도 그대로 유지한다
@@ -1956,8 +1956,13 @@
       r: r * (special === "huge" ? 0.70 : 0.82),
       vx: pvx,
       vy: vy,
-      rot: special === "laser" ? 0 : Math.random() * 6.28,
-      vr: special === "laser" ? 0 : (Math.random() - .5) * 5,
+      /* 얼굴이 보이도록 회전 대신 살랑인다. 시작 각도는 ±30도 안에서 제각각이고,
+         거기서 ±12도씩 천천히 오간다 (레이저는 예고선을 따라야 해서 고정). */
+      rot: special === "laser" ? 0 : (Math.random() - Math.random()) * 0.52,
+      vr: 0,
+      swayA: special === "laser" ? 0 : 0.14 + Math.random() * 0.07,   // 흔들 폭 (약 8~12도)
+      swayW: 1.1 + Math.random() * 1.1,                               // 흔드는 속도
+      swayP: Math.random() * 6.28,
       size: r * 2, sz: r, fast: m > 1,
       skin: inFever ? "fever" : "poop",
       space: inSpace(),
@@ -2446,7 +2451,9 @@
               type: "poop", emoji: "💩",
               x: it.x, y: it.y, r: r2 * 0.82,
               vx: Math.sin(ang) * sp, vy: Math.cos(ang) * sp,
-              rot: Math.random() * 6.28, vr: (Math.random() - .5) * 5,
+              rot: (Math.random() - Math.random()) * 0.52, vr: 0,
+              swayA: 0.14 + Math.random() * 0.07, swayW: 1.1 + Math.random() * 1.1,
+              swayP: Math.random() * 6.28,
               size: r2 * 2, sz: r2, fast: false,
               skin: "poop", space: it.space, special: null, bumpCd: 0, phase: 0, splitAt: 0,
               sz0: 0, face: randFace(), eye: randEye(), mouth: randMouth(), gain: 0, giant: false
@@ -2465,7 +2472,10 @@
       const prevX = it.x, prevY = it.y;      // 한 프레임에 크게 움직이면 스쳐 지나갈 수 있다
       it.x += it.vx * dt * tsc;
       it.y += it.vy * dt * tsc;
-      it.rot += it.vr * dt * tsc;
+      if (it.swayA) {                       // 살랑임 — 처음 각도를 중심으로 오간다
+        it.swayP += dt * tsc * it.swayW;
+        it.rot = (it.rot0 === undefined ? (it.rot0 = it.rot) : it.rot0) + Math.sin(it.swayP) * it.swayA;
+      } else it.rot += it.vr * dt * tsc;
       if (it.special !== "laser") {          // 레이저는 예고한 선을 그대로 지나간다
         if (it.x < it.r) { it.x = it.r; it.vx = Math.abs(it.vx); }
         if (it.x > W - it.r) { it.x = W - it.r; it.vx = -Math.abs(it.vx); }
@@ -2730,7 +2740,9 @@
               type: "poop", emoji: "💩",
               x: it.x, y: it.y, r: r2 * 0.82,
               vx: dir * (170 + Math.random() * 90) * aug.fallMul, vy: it.vy * 1.4,
-              rot: Math.random() * 6.28, vr: (Math.random() - .5) * 5,
+              rot: (Math.random() - Math.random()) * 0.52, vr: 0,
+              swayA: 0.14 + Math.random() * 0.07, swayW: 1.1 + Math.random() * 1.1,
+              swayP: Math.random() * 6.28,
               size: r2 * 2, sz: r2, fast: false,
               skin: "poop", space: it.space, special: null, bumpCd: 0, phase: 0, splitAt: 0,
               sz0: 0, face: randFace(), eye: randEye(), mouth: randMouth(), gain: 0, giant: false
