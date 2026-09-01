@@ -732,7 +732,7 @@
   const elFinal = document.getElementById("finalScore");
   const elTitle = document.getElementById("overTitle");
 
-  const GAME_VERSION = "v1.3.44";   // 코드를 고칠 때마다 뒤 두 자리를 올린다
+  const GAME_VERSION = "v1.3.45";   // 코드를 고칠 때마다 뒤 두 자리를 올린다
   document.getElementById("ver").textContent = GAME_VERSION;
 
   const LS_NAME = "epjpddongpi_name";
@@ -1901,6 +1901,11 @@
   const SPREAD_BONUS = 0.28;   // 아이템은 조금 얌전하게 (약 16도)
 
   const FEVER_VY = 245;      // 뚜니핑 낙하물 기준 속도 — 레벨이 올라도 그대로 유지한다
+  /* 뚜니핑 낙하물이 터질 때 쓰는 색 — 점수와 무관하게 무작위로 골라 폭죽처럼 보이게 한다 */
+  const FEVER_TONES = [
+    "#ff4d6d", "#ff7a45", "#ffd23f", "#8bde5a", "#35f0ff", "#4d8bff",
+    "#c86bff", "#ff5ec7", "#ffffff", "#7dffcf", "#ffe3a8", "#a0ff4d"
+  ];
 
   /* 레벨 7부터 섞여 나오는 까다로운 똥들
      split  = 내려오다 둘로 쪼개진다 (쪼개진 조각은 평범한 똥)
@@ -2539,15 +2544,18 @@
             // 크기가 곧 점수. 뚜니핑 타임 중 생성된 건 자기 점수를 갖고 있고,
             // 뚜니핑 타임 전에 떨어지던 일반 똥은 크기로 환산한다.
             const gain = feverGain(it);
-            let tone, burstN, note, textSize;
-            if (gain >= 110)     { tone = "#c86bff"; burstN = 80; note = 2200; textSize = 48; }
-            else if (gain >= 40) { tone = "#ff2170"; burstN = 54; note = 2000; textSize = 40; }
-            else if (gain >= 25) { tone = "#ff3b3b"; burstN = 42; note = 1800; textSize = 34; }
-            else if (gain >= 15) { tone = "#ff6a2a"; burstN = 34; note = 1650; textSize = 30; }
-            else if (gain >= 10) { tone = "#ff8f3a"; burstN = 26; note = 1500; textSize = 27; }
-            else if (gain >= 8)  { tone = "#ffcc33"; burstN = 18; note = 1350; textSize = 24; }
-            else if (gain >= 5)  { tone = "#ffd23f"; burstN = 12; note = 1150; textSize = 22; }
-            else                 { tone = "#ffe3a8"; burstN = 8;  note = 900;  textSize = 22; }
+            /* 터지는 색은 점수와 무관하게 매번 무작위 — 무지갯빛 폭죽처럼 보이게 한다.
+               입자 수·소리만 점수(크기)에 따라 커진다. */
+            const tone = FEVER_TONES[Math.floor(Math.random() * FEVER_TONES.length)];
+            let burstN, note;
+            if (gain >= 110)     { burstN = 80; note = 2200; }
+            else if (gain >= 40) { burstN = 54; note = 2000; }
+            else if (gain >= 25) { burstN = 42; note = 1800; }
+            else if (gain >= 15) { burstN = 34; note = 1650; }
+            else if (gain >= 10) { burstN = 26; note = 1500; }
+            else if (gain >= 8)  { burstN = 18; note = 1350; }
+            else if (gain >= 5)  { burstN = 12; note = 1150; }
+            else                 { burstN = 8;  note = 900;  }
             score += gain;
             if (aug.refill && powered && refillLeft > 0) {   // 무한리필 — 먹은 만큼 길어진다
               const add = Math.min(150, refillLeft);
