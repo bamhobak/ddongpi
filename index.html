@@ -732,7 +732,7 @@
   const elFinal = document.getElementById("finalScore");
   const elTitle = document.getElementById("overTitle");
 
-  const GAME_VERSION = "v1.3.47";   // 코드를 고칠 때마다 뒤 두 자리를 올린다
+  const GAME_VERSION = "v1.3.48";   // 코드를 고칠 때마다 뒤 두 자리를 올린다
   document.getElementById("ver").textContent = GAME_VERSION;
 
   const LS_NAME = "epjpddongpi_name";
@@ -2776,10 +2776,10 @@
         continue;                            // 레이저는 아무 반응 없이 지나간다
       }
       if (it.skin === "fever") {
+        // 뚜니핑 낙하물은 직접 먹을 때와 똑같이 — 점수 표시 없이, 색은 무작위로 터진다
         const g = feverGain(it);
         score += g;
-        burst(it.x, it.y, g >= 25 ? "#ff3b3b" : "#ffd23f", g >= 25 ? 30 : 16);
-        if (g >= 15) popText(it.x, it.y, "+" + g, "#ffd23f", g >= 40 ? 30 : 24);
+        burst(it.x, it.y, FEVER_TONES[Math.floor(Math.random() * FEVER_TONES.length)], g >= 25 ? 30 : 16);
       } else {
         score += 3 * scoreMul();
         burst(it.x, it.y, "#ffd23f", 14);
