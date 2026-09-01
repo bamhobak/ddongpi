@@ -732,7 +732,7 @@
   const elFinal = document.getElementById("finalScore");
   const elTitle = document.getElementById("overTitle");
 
-  const GAME_VERSION = "v1.3.49";   // 코드를 고칠 때마다 뒤 두 자리를 올린다
+  const GAME_VERSION = "v1.3.50";   // 코드를 고칠 때마다 뒤 두 자리를 올린다
   document.getElementById("ver").textContent = GAME_VERSION;
 
   const LS_NAME = "epjpddongpi_name";
@@ -753,7 +753,7 @@
   const LS_JOB = "epjpddongpi_job";
   const JOBS = {
     none:    { nm: "백수",   ic: "🏃", ds: "시작할 때 증강 1개를 고른다" },
-    gambler: { nm: "도박사", ic: "🎰", ds: "목숨 1개 + 우산 1개 시작 · 하트 안 나옴 · 모든 점수 3배" },
+    gambler: { nm: "도박사", ic: "🎰", ds: "목숨 1개로 시작 · 하트 안 나옴 · 모든 점수 3배 · 안 맞을수록 점수 UP" },
     levitator: { nm: "부양사", ic: "🎈", ds: "하늘 어디든 날 수 있다 · 높이 있을수록 점수 UP" },
     fit: { nm: "헬스걸", ic: "💪", ds: "목숨 5개로 시작 · 벌크업 좀 된 상태" },
     powerj: { nm: "파워J", ic: "📋", ds: "달이 잘 나온다 · 대신 증강은 계획대로 1개만" },
@@ -1795,7 +1795,6 @@
     if (job === "gambler") {
       lives = 1;
       aug.maxLives = 1;               // 하트는 애초에 별로 대체되어 떨어진다
-      shields = 1;                    // 대신 우산 1개를 쥐여 준다
       aug.scoreMul *= 3;              // 모든 점수 3배
     }
     if (job === "levitator") {
@@ -3637,12 +3636,13 @@
     const air = Math.max(0, Math.min(1, (groundY - player.y) / Math.max(1, groundY - H * FLY_TOP)));
     return 1 + 1.0 * air;
   }
-  /* 무소유 — 증강이 없는 대신 레벨마다 배율이 커지고 (Lv1 ×4, 레벨마다 +1),
-     여기에 안 맞고 버틴 시간만큼 초당 +10% 가 더 곱해진다.
+  /* 무피격 보너스 — 안 맞고 버틴 시간만큼 초당 +10%.
+     무소유는 여기에 레벨 배율(Lv1 ×4, 레벨마다 +1)이 더 곱해진다.
      목숨을 잃으면 무피격 시간이 절반으로 줄어든다 (우산 방어는 무피격 유지). */
   function monkMul() {
-    if (job !== "powerp") return 1;
-    return (level + 3) * (1 + 0.10 * noHitSec);
+    if (job === "powerp") return (level + 3) * (1 + 0.10 * noHitSec);
+    if (job === "gambler") return 1 + 0.10 * noHitSec;
+    return 1;
   }
   function scoreMul() { return aug.scoreMul * bhMul() * levMul() * monkMul(); }
 
@@ -4588,7 +4588,7 @@
     }
 
     // 하트가 많으면 작게 그리고 10개 단위로 줄을 바꾼다 (헬스걸은 최대 20개)
-    if (job === "powerp") {                 // 무소유 — 무피격으로 버틴 시간
+    if (job === "powerp" || job === "gambler") {   // 무피격으로 버틴 시간
       ctx.textAlign = "right";
       ctx.font = "700 13px system-ui, sans-serif";
       ctx.fillStyle = "#ffe08a";
