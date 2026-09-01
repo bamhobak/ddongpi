@@ -732,7 +732,7 @@
   const elFinal = document.getElementById("finalScore");
   const elTitle = document.getElementById("overTitle");
 
-  const GAME_VERSION = "v1.3.37";   // 코드를 고칠 때마다 뒤 두 자리를 올린다
+  const GAME_VERSION = "v1.3.38";   // 코드를 고칠 때마다 뒤 두 자리를 올린다
   document.getElementById("ver").textContent = GAME_VERSION;
 
   const LS_NAME = "epjpddongpi_name";
@@ -1368,6 +1368,7 @@
   function closeAugScreen() {
     augScreen.classList.add("hidden");
     state = STATE.PLAY;
+    inputHoldUntil = performance.now() + 350;   // 방금 누른 자리로 캐릭터가 순간이동하지 않게
     /* 증강을 고르는 동안 게임은 멈춰 있었지만 뚜니핑 타임·무적 시간은
        실제 시계로 재고 있어서 그대로 두면 고민한 만큼 깎여 나간다.
        멈춰 있던 시간만큼 마감 시각을 뒤로 밀어 원래 남은 시간을 돌려준다. */
@@ -1485,6 +1486,7 @@
   let subsTimer = 0;               // 휴지 정기구독: 마지막 휴지 이후 지난 시간
   let noHitSec = 0;                // 마지막 피격 이후 버틴 시간 (무소유 배율용)
   let clones = [], cloneTimer = 0; // 벼랑 끝 분신술: 날아가는 작은 이재들
+  let inputHoldUntil = 0;          // 이 시각까지는 화면 터치를 조작으로 받지 않는다
   let ghostTimer = 3;              // 유령화: 다음 무적까지 남은 시간
   let roidT = 0;                   // 스테로이드 과다 복용: 남은 약발 시간(초)
   let hurtUntil = 0;               // 똥에 맞은 직후 (아픈 그림 표시)
@@ -1522,6 +1524,9 @@
   }
   function movePointer(e) {
     if (state !== STATE.PLAY) return;
+    /* 화면(증강·직업 선택)을 누른 손가락이 그대로 게임 조작으로 새는 걸 막는다.
+       화면이 닫힌 뒤 브라우저가 같은 자리에 흉내내는 마우스 이벤트를 흘려보낸다. */
+    if (performance.now() < inputHoldUntil) { if (e.cancelable) e.preventDefault(); return; }
     if (ctrlMode === "pad") { if (e.cancelable) e.preventDefault(); return; }
     player.tx = Math.max(player.r, Math.min(W - player.r, pointerX(e)));
     if (flyOn) {
@@ -1810,6 +1815,7 @@
     overScreen.classList.add("hidden");
     nameRow.classList.remove("on");
     beep(660, .1, "square", .04);
+    inputHoldUntil = performance.now() + 350;   // 직업 카드를 누른 손가락이 조작으로 새지 않게
     btnPause.classList.add("on"); syncPad();
     pauseScreen.classList.add("hidden");
     resumeCountEnd = 0;
