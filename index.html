@@ -732,7 +732,7 @@
   const elFinal = document.getElementById("finalScore");
   const elTitle = document.getElementById("overTitle");
 
-  const GAME_VERSION = "v1.3.45";   // 코드를 고칠 때마다 뒤 두 자리를 올린다
+  const GAME_VERSION = "v1.3.46";   // 코드를 고칠 때마다 뒤 두 자리를 올린다
   document.getElementById("ver").textContent = GAME_VERSION;
 
   const LS_NAME = "epjpddongpi_name";
@@ -1303,7 +1303,7 @@
       once: true, go: () => { aug.giant = 1; } },
     { id: "downpour",   ic: "🌧️", nm: "뚜니핑 폭우", ds: "뚜니핑이 더 많이 쏟아진다",
       go: () => { aug.feverRateMul = 1 / (1 / aug.feverRateMul + 0.25); } },   // 먹을 때마다 양 +25%, 감쇠 없음
-    { id: "angryUmb",   ic: "💢", nm: "성난 우산",   ds: "방패가 깨질 때 화면의 똥이 전부 사라진다",
+    { id: "angryUmb",   ic: "💢", nm: "성난 우산",   ds: "방패가 깨질 때 우산이 터져 주변을 크게 쓸어버린다",
       hidden: true, once: true,
       cond: () => job !== "fit" && shields >= 5,   // 헬스걸은 방패가 없어 의미가 없다
       go: () => { aug.angryUmb = true; } },
@@ -1480,7 +1480,8 @@
   let shields = 0;                 // 남은 방패 수 — 우산 아이템은 최대 1, 증강으로만 여러 개
   const UMB_SEC = 5.5;             // 우산 로켓배송: 방패가 없을 때 몇 초마다 하나씩 오는지
   let shieldTimer = UMB_SEC;       // 다음 하나까지 남은 시간
-  let spawnHold = 0;               // 성난 우산: 똥 생성이 멈춰 있는 남은 시간
+  let spawnHold = 0;               // 별핑별·성난 우산: 똥 생성이 멈춰 있는 남은 시간
+  let umbBlast = null;             // 성난 우산 폭발 파동 {x, y, r, t}
   let bulletT = 0, interTimer = 8;// 인터스텔라: 불릿타임 남은 시간 / 다음 발동까지
   let refillLeft = 0;              // 뚜니핑 무한리필: 이번 뚜니핑에서 더 늘릴 수 있는 양(ms)
   let subsTimer = 0;               // 휴지 정기구독: 마지막 휴지 이후 지난 시간
@@ -1782,7 +1783,7 @@
     for (const k in augSeen) delete augSeen[k];
     for (const k in augTook) delete augTook[k];
     aug.refill = false; aug.subs = false; aug.clone = false;
-    spawnHold = 0; bulletT = 0; interTimer = 8; refillLeft = 0; subsTimer = 0;
+    spawnHold = 0; umbBlast = null; bulletT = 0; interTimer = 8; refillLeft = 0; subsTimer = 0;
     noHitSec = 0;
     clones = []; cloneTimer = 0;
     shieldTimer = UMB_SEC;
@@ -2225,6 +2226,7 @@
     }
 
     if (spawnHold > 0) spawnHold -= dt;
+    if (umbBlast) { umbBlast.t -= dt; if (umbBlast.t <= 0) umbBlast = null; }
 
     // ---- 인터스텔라: 10초마다 2초씩 세상만 느려진다 (점수 시계는 그대로) ----
     if (aug.inter) {
@@ -2597,17 +2599,23 @@
               beep(400, .12, "triangle", .06);
               if (navigator.vibrate) navigator.vibrate(60);
               if (aug.angryUmb) {
-                /* 성난 우산 — 화면의 똥이 전부 사라지고 잠깐 새 똥도 안 나온다.
+                /* 성난 우산 — 우산이 터지면서 넓게 퍼지는 폭발이 똥을 쓸어낸다.
+                   반경은 화면의 2/3 넘게 덮도록 잡는다 (까다로운 똥도 함께 부순다).
                    지금 부딪힌 똥(i)은 바로 아래 공용 splice 가 지우므로 건드리지 않는다. */
+                const bx = player.x, by = player.y + player.hy;
+                const bR = Math.sqrt(4 * W * H / (3 * Math.PI)) * 1.05;
                 for (let k = items.length - 1; k >= 0; k--) {
                   const q = items[k];
                   if (q.type !== "poop" || k === i) continue;
+                  if (Math.hypot(q.x - bx, q.y - by) > bR + q.r) continue;   // 폭발 밖은 살아남는다
                   burst(q.x, q.y, "#9fd4ff", 7);
+                  score += 3 * scoreMul();
                   items.splice(k, 1);
                   if (k < i) i--;            // 앞쪽이 지워지면 내 자리도 한 칸 당겨진다
                 }
                 warns = [];
-                shake = Math.max(shake, 22);
+                umbBlast = { x: bx, y: by, r: bR, t: 0.42 };
+                shake = Math.max(shake, 26);
                 feverFlash = Math.max(feverFlash, 0.4);
                 popText(player.x, player.y - 95, "💢 성난 우산!", "#7ec8ff", 26);
                 beep(190, .22, "square", .06);
@@ -2679,6 +2687,7 @@
         if (cnt) {
           bonus = Math.round(bonus);
           score += bonus;
+          spawnHold = Math.max(spawnHold, 1);   // 쓸어낸 뒤 1초는 새 똥이 없다
           shake = Math.max(shake, 18);
           feverFlash = Math.max(feverFlash, 0.7);
           popText(player.x, player.y - 110,
@@ -4624,6 +4633,23 @@
   }
 
   function drawEffects() {
+    // 성난 우산 폭발 — 퍼져 나가는 파동
+    if (umbBlast) {
+      const k = 1 - umbBlast.t / 0.42;                 // 0 → 1
+      const rr = umbBlast.r * (0.25 + 0.75 * k);
+      ctx.save();
+      ctx.globalAlpha = (1 - k) * 0.9;
+      ctx.strokeStyle = "#9fd4ff";
+      ctx.lineWidth = 8 * (1 - k) + 2;
+      ctx.beginPath(); ctx.arc(umbBlast.x, umbBlast.y, rr, 0, 6.283); ctx.stroke();
+      ctx.globalAlpha = (1 - k) * 0.28;
+      const g = ctx.createRadialGradient(umbBlast.x, umbBlast.y, rr * 0.55, umbBlast.x, umbBlast.y, rr);
+      g.addColorStop(0, "rgba(126,200,255,0)");
+      g.addColorStop(1, "rgba(126,200,255,.85)");
+      ctx.fillStyle = g;
+      ctx.beginPath(); ctx.arc(umbBlast.x, umbBlast.y, rr, 0, 6.283); ctx.fill();
+      ctx.restore();
+    }
     // 벼랑 끝 분신술 — 작은 이재가 날아간다
     if (clones.length) {
       const S = sprSet();
