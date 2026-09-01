@@ -732,7 +732,7 @@
   const elFinal = document.getElementById("finalScore");
   const elTitle = document.getElementById("overTitle");
 
-  const GAME_VERSION = "v1.3.41";   // 코드를 고칠 때마다 뒤 두 자리를 올린다
+  const GAME_VERSION = "v1.3.42";   // 코드를 고칠 때마다 뒤 두 자리를 올린다
   document.getElementById("ver").textContent = GAME_VERSION;
 
   const LS_NAME = "epjpddongpi_name";
@@ -4281,7 +4281,8 @@
         ctx.fill();
         break;
       }
-      case 4: {  // 뿅 간 눈 (X)
+      case 4: {  // 뿅 간 눈 (X) — 눈동자를 지우고 X 만 남긴다
+        eyeBase(S);
         ctx.strokeStyle = "#2b1a10";
         ctx.lineWidth = Math.max(2, S * 0.045);
         for (const sx of [-1, 1]) {
@@ -4323,7 +4324,8 @@
         }
         break;
       }
-      case 8: {  // 하트 눈
+      case 8: {  // 하트 눈 — 원래 눈동자는 지우고 하트만 남긴다
+        eyeBase(S);
         ctx.fillStyle = "#ff3d68";
         for (const sx of [-1, 1]) {
           const cx = sx * ex, cy = ey, r = er * 1.05;
@@ -4335,7 +4337,8 @@
         }
         break;
       }
-      case 9: {  // 별 눈
+      case 9: {  // 별 눈 — 원래 눈동자는 지우고 별만 남긴다
+        eyeBase(S);
         ctx.fillStyle = "#ffd23f";
         for (const sx of [-1, 1]) {
           const cx = sx * ex, cy = ey, r = er * 1.15;
