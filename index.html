@@ -732,7 +732,7 @@
   const elFinal = document.getElementById("finalScore");
   const elTitle = document.getElementById("overTitle");
 
-  const GAME_VERSION = "v1.3.51";   // 코드를 고칠 때마다 뒤 두 자리를 올린다
+  const GAME_VERSION = "v1.3.52";   // 코드를 고칠 때마다 뒤 두 자리를 올린다
   document.getElementById("ver").textContent = GAME_VERSION;
 
   const LS_NAME = "epjpddongpi_name";
@@ -753,7 +753,7 @@
   const LS_JOB = "epjpddongpi_job";
   const JOBS = {
     none:    { nm: "백수",   ic: "🏃", ds: "시작할 때 증강 1개를 고른다" },
-    gambler: { nm: "도박사", ic: "🎰", ds: "목숨 1개 + 우산 1개 시작 · 하트 안 나옴 · 모든 점수 3배" },
+    gambler: { nm: "도박사", ic: "🎰", ds: "목숨 1개 + 우산 1개 시작 · 우산이 잘 나옴 · 하트 안 나옴 · 모든 점수 3배" },
     levitator: { nm: "부양사", ic: "🎈", ds: "하늘 어디든 날 수 있다 · 높이 있을수록 점수 UP" },
     fit: { nm: "헬스걸", ic: "💪", ds: "목숨 5개로 시작 · 벌크업 좀 된 상태" },
     powerj: { nm: "파워J", ic: "📋", ds: "달이 잘 나온다 · 대신 증강은 계획대로 1개만" },
@@ -2013,6 +2013,7 @@
     let mean = BONUS_BASE / (b.w / BONUS_W_TOTAL) * aug.itemRateMul * lvFactor / bhMul();
     if (b.type === "paper" && aug.subs) mean /= 1.7;  // 정기구독 — 휴지만 1.7배 빈도
     if (b.type === "heart" && job === "fit") mean /= 5;  // 헬스걸 — 하트 5배
+    if (b.type === "umbrella" && job === "gambler") mean /= 1.5;  // 도박사 — 우산 1.5배
     if ((b.type === "moon" || b.type === "fullmoon") && job === "powerj") mean /= 2;  // 파워J — 달 2배
     if (b.type === "star" && job === "powerp") mean /= 1.25;  // 무소유 — 별 1.25배
     // 후반 견제 — Lv15부터 달이 레벨마다 7%씩 뜸해진다 (뚜니핑 타임 가동률을 떨어뜨린다)
