@@ -754,7 +754,7 @@
   const elFinal = document.getElementById("finalScore");
   const elTitle = document.getElementById("overTitle");
 
-  const GAME_VERSION = "v1.3.61";   // 코드를 고칠 때마다 뒤 두 자리를 올린다
+  const GAME_VERSION = "v1.3.62";   // 코드를 고칠 때마다 뒤 두 자리를 올린다
   document.getElementById("ver").textContent = GAME_VERSION;
 
   const LS_NAME = "epjpddongpi_name";
@@ -803,9 +803,9 @@
   function headOffset(spr) { return spr ? FOOT - spriteHeight(spr) * (1 - spr.cy) : 0; }  // 실제 크기 = 도안의 80%
 
   const MIN_W = 340, MAX_W = 620;    // 논리 가로 허용 범위
-  /* 기기마다 피할 공간이 다르면 형평성이 깨지므로 놀이판 비율을 하나로 고정한다.
-     (논리 360×720) 남는 자리는 여백으로 두고 배경으로 채운다. */
-  const RATIO = 0.5;
+  /* 화면 비율을 그대로 따르되, 가로가 넓은 기기(폴더블·태블릿)에서 피할 공간이
+     넓어지지 않게 상한을 둔다. 상한을 넘는 만큼은 여백으로 두고 배경으로 채운다. */
+  const RATIO_MAX = 0.62;
   const MAX_CSS_H = 1100;   // 놀이판이 지나치게 커지지 않게 하는 상한(px)
 
   /* 전체 난이도 배율. 낙하 속도와 낙하 빈도에 각각 제곱근을 적용해서
@@ -816,7 +816,7 @@
   function layout() {
     const rect = stage.getBoundingClientRect();
     const bw = Math.max(1, rect.width), bh = Math.max(1, rect.height);
-    const ratio = RATIO;    // 어떤 기기에서도 같은 넓이·높이에서 피한다
+    const ratio = Math.min(bw / bh, RATIO_MAX);   // 넓은 화면은 0.62 에서 멈춘다
 
     // 화면 비율과 논리 캔버스 비율을 '항상 똑같이' 맞춘다.
     // 가로가 범위를 벗어나면 가로를 자르는 대신 세로를 늘리고 줄여서 비율을 유지 → 잘림/찌그러짐 없음
