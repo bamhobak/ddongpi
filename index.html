@@ -732,7 +732,7 @@
   const elFinal = document.getElementById("finalScore");
   const elTitle = document.getElementById("overTitle");
 
-  const GAME_VERSION = "v1.3.53";   // 코드를 고칠 때마다 뒤 두 자리를 올린다
+  const GAME_VERSION = "v1.3.54";   // 코드를 고칠 때마다 뒤 두 자리를 올린다
   document.getElementById("ver").textContent = GAME_VERSION;
 
   const LS_NAME = "epjpddongpi_name";
@@ -2008,10 +2008,9 @@
   const BONUS_BASE = 6.82;                // 아이템 전체의 평균 등장 간격(초)
 
   function bonusInterval(b) {
-    const lvFactor = Math.max(0.5, 1 / (1 + (level - 1) * 0.06));   // 레벨이 오르면 더 자주
-    // 블랙홀 안에서는 아이템도 두 배로 자주 나온다
-    let mean = BONUS_BASE / (b.w / BONUS_W_TOTAL) * aug.itemRateMul * lvFactor / bhMul();
-    if (b.type === "paper" && aug.subs) mean /= 1.7;  // 정기구독 — 휴지만 1.7배 빈도
+    const lvFactor = Math.max(0.5, 1 / (1 + (level - 1) * 0.03));   // 레벨이 오르면 조금 더 자주
+    let mean = BONUS_BASE / (b.w / BONUS_W_TOTAL) * aug.itemRateMul * lvFactor;
+    if (b.type === "paper" && aug.subs) mean /= 1.6;  // 정기구독 — 휴지만 1.6배 빈도
     if (b.type === "heart" && job === "fit") mean /= 4;  // 헬스걸 — 하트 4배
     if (b.type === "umbrella" && job === "gambler") mean /= 1.5;  // 도박사 — 우산 1.5배
     if ((b.type === "moon" || b.type === "fullmoon") && job === "powerj") mean /= 2;  // 파워J — 달 2배
@@ -2022,7 +2021,7 @@
     /* 평균 간격을 중심으로 ±12% 안에서만 흔들린다 — 판마다 개수가 들쭉날쭉하지 않게.
        종류별로 타이머가 따로 도는 건 그대로라 여러 개가 한꺼번에 나오는 일은 여전히 생긴다.
        (0.4초 하한은 완전히 겹쳐 떨어지는 것만 막는 장치) */
-    return Math.max(0.4 / bhMul(), mean * (0.88 + Math.random() * 0.24));
+    return Math.max(0.4, mean * (0.88 + Math.random() * 0.24));
   }
   function resetBonusTimers() {
     /* 첫 등장까지의 시간. 예전에는 편차가 큰 지수분포라 어떤 판은 별이 한참 안 나왔다.
