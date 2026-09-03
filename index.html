@@ -754,7 +754,7 @@
   const elFinal = document.getElementById("finalScore");
   const elTitle = document.getElementById("overTitle");
 
-  const GAME_VERSION = "v1.3.63";   // 코드를 고칠 때마다 뒤 두 자리를 올린다
+  const GAME_VERSION = "v1.3.64";   // 코드를 고칠 때마다 뒤 두 자리를 올린다
   document.getElementById("ver").textContent = GAME_VERSION;
 
   const LS_NAME = "epjpddongpi_name";
@@ -1434,13 +1434,15 @@
        방금 본 증강이 계속 나오면 지겨우니 최근일수록 확률을 낮춘다.
          고른 증강    — 바로 다음 차례 1/3, 그다음 1/2, 그 뒤로는 원래대로
          안 고른 두 장 — 바로 다음 차례 1/2, 그 뒤로는 원래대로 */
+    const pj = job === "powerj";      // 파워J는 한 장뿐이라 거절이 안 되니 더 세게 누른다
     const wOf = a => {
       const base = (a.w !== undefined ? a.w : (a.hidden ? (1 / 4) : 1));
       const gapT = augRound - (augTook[a.id] || -9);      // 골랐던 차례와의 간격
       const gapS = augSeen[a.id] || -9;                   // 후보로만 떴던 차례
       let m = 1;
-      if (gapT === 1) m = 1 / 3;
-      else if (gapT === 2) m = 1 / 2;
+      if (gapT === 1) m = pj ? 1 / 8 : 1 / 3;
+      else if (gapT === 2) m = pj ? 1 / 4 : 1 / 2;
+      else if (gapT === 3) { if (pj) m = 1 / 2; }
       else if (augRound - gapS === 1) m = 1 / 2;
       return base * m;
     };
