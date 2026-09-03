@@ -40,7 +40,10 @@
     box-shadow: 0 20px 60px rgba(0,0,0,.6);
   }
   @media (min-width: 560px) and (min-height: 700px) { #stage { border-radius: 16px; } }
-  canvas { display: block; width: 100%; height: 100%; }
+  canvas {
+    display: block;
+    position: absolute; left: 50%; top: 50%; transform: translate(-50%, -50%);
+  }
 
   .screen {
     position: absolute; inset: 0;
@@ -732,7 +735,7 @@
   const elFinal = document.getElementById("finalScore");
   const elTitle = document.getElementById("overTitle");
 
-  const GAME_VERSION = "v1.3.56";   // 코드를 고칠 때마다 뒤 두 자리를 올린다
+  const GAME_VERSION = "v1.3.57";   // 코드를 고칠 때마다 뒤 두 자리를 올린다
   document.getElementById("ver").textContent = GAME_VERSION;
 
   const LS_NAME = "epjpddongpi_name";
@@ -781,6 +784,9 @@
   function headOffset(spr) { return spr ? FOOT - spriteHeight(spr) * (1 - spr.cy) : 0; }  // 실제 크기 = 도안의 80%
 
   const MIN_W = 340, MAX_W = 620;    // 논리 가로 허용 범위
+  /* 가로가 넓은 기기(폴더블·태블릿)에서 피할 공간이 넓어지면 형평성이 깨진다.
+     세로 대비 가로 비율에 상한을 두고, 남는 좌우는 여백으로 둔다. */
+  const RATIO_MAX = 0.62;
 
   /* 전체 난이도 배율. 낙하 속도와 낙하 빈도에 각각 제곱근을 적용해서
      둘을 합친 체감 난이도가 정확히 이 배율이 되게 한다. 값 하나만 고치면 된다. */
@@ -790,7 +796,8 @@
   function layout() {
     const rect = stage.getBoundingClientRect();
     const bw = Math.max(1, rect.width), bh = Math.max(1, rect.height);
-    const ratio = bw / bh;
+    // 가로가 지나치게 넓으면 그만큼은 쓰지 않는다 (기기마다 같은 넓이에서 피하도록)
+    const ratio = Math.min(bw / bh, RATIO_MAX);
 
     // 화면 비율과 논리 캔버스 비율을 '항상 똑같이' 맞춘다.
     // 가로가 범위를 벗어나면 가로를 자르는 대신 세로를 늘리고 줄여서 비율을 유지 → 잘림/찌그러짐 없음
@@ -798,6 +805,12 @@
     W = Math.round(H * ratio);
     if (W < MIN_W)      { W = MIN_W; H = Math.round(W / ratio); }
     else if (W > MAX_W) { W = MAX_W; H = Math.round(W / ratio); }
+
+    // 실제로 그려지는 크기 — 비율을 지킨 채 화면 안에 가장 크게 넣고 가운데 정렬한다
+    let cssW = bw, cssH = bw / ratio;
+    if (cssH > bh) { cssH = bh; cssW = bh * ratio; }
+    cv.style.width  = cssW + "px";
+    cv.style.height = cssH + "px";
 
     const dpr = Math.min(window.devicePixelRatio || 1, 1.5);   // 발열·배터리 절약 (화질 차이는 거의 없다)
     cv.width  = Math.round(W * dpr);
