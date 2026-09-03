@@ -754,7 +754,7 @@
   const elFinal = document.getElementById("finalScore");
   const elTitle = document.getElementById("overTitle");
 
-  const GAME_VERSION = "v1.3.62";   // 코드를 고칠 때마다 뒤 두 자리를 올린다
+  const GAME_VERSION = "v1.3.63";   // 코드를 고칠 때마다 뒤 두 자리를 올린다
   document.getElementById("ver").textContent = GAME_VERSION;
 
   const LS_NAME = "epjpddongpi_name";
@@ -835,7 +835,7 @@
     stage.style.setProperty("--lbx", ((bw - cssW) / 2) + "px");
     stage.style.setProperty("--lby", ((bh - cssH) / 2) + "px");
 
-    const dpr = Math.min(window.devicePixelRatio || 1, 1.5);   // 발열·배터리 절약 (화질 차이는 거의 없다)
+    const dpr = Math.min(window.devicePixelRatio || 1, 2);   // 2 를 넘겨도 화질 차이는 거의 없고 발열만 커진다
     cv.width  = Math.round(W * dpr);
     cv.height = Math.round(H * dpr);
     ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
