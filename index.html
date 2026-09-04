@@ -754,7 +754,7 @@
   const elFinal = document.getElementById("finalScore");
   const elTitle = document.getElementById("overTitle");
 
-  const GAME_VERSION = "v1.3.78";   // 코드를 고칠 때마다 뒤 두 자리를 올린다
+  const GAME_VERSION = "v1.3.80";   // 코드를 고칠 때마다 뒤 두 자리를 올린다
   document.getElementById("ver").textContent = GAME_VERSION;
 
   const LS_NAME = "epjpddongpi_name";
@@ -785,6 +785,50 @@
   const JOB_IMG = { none: "player", gambler: "gambler", levitator: "levitator",
                     fit: "fit", powerj: "powerj", powerp: "monk" };
   function spdMul() { return job === "levitator" ? 2.2 : 1; }   // 이동 속도 배율 (부양사 2.2배)
+  /* 갤러그 전투기 — 위를 향한 모양으로 직접 그린다 (이모지는 죄다 비스듬하다) */
+  function drawShip(x, y, t) {
+    const S = 15;                                   // 반높이
+    ctx.save();
+    ctx.translate(x, y);
+    // 엔진 불꽃
+    const f = 0.6 + 0.4 * Math.sin(t / 60);
+    ctx.fillStyle = "rgba(255,170,60," + (0.55 + f * 0.35).toFixed(2) + ")";
+    ctx.beginPath();
+    ctx.moveTo(-S * 0.26, S * 0.72);
+    ctx.lineTo(0, S * (1.05 + f * 0.5));
+    ctx.lineTo(S * 0.26, S * 0.72);
+    ctx.closePath(); ctx.fill();
+    // 날개
+    ctx.fillStyle = "#35f0ff";
+    ctx.beginPath();
+    ctx.moveTo(-S * 0.28, -S * 0.05);
+    ctx.lineTo(-S * 0.95, S * 0.62);
+    ctx.lineTo(-S * 0.95, S * 0.82);
+    ctx.lineTo(-S * 0.28, S * 0.72);
+    ctx.closePath(); ctx.fill();
+    ctx.beginPath();
+    ctx.moveTo(S * 0.28, -S * 0.05);
+    ctx.lineTo(S * 0.95, S * 0.62);
+    ctx.lineTo(S * 0.95, S * 0.82);
+    ctx.lineTo(S * 0.28, S * 0.72);
+    ctx.closePath(); ctx.fill();
+    // 몸통
+    ctx.fillStyle = "#eef6ff";
+    ctx.beginPath();
+    ctx.moveTo(0, -S);
+    ctx.lineTo(S * 0.30, S * 0.35);
+    ctx.lineTo(S * 0.30, S * 0.78);
+    ctx.lineTo(-S * 0.30, S * 0.78);
+    ctx.lineTo(-S * 0.30, S * 0.35);
+    ctx.closePath(); ctx.fill();
+    // 조종석
+    ctx.fillStyle = "#ff3ea5";
+    ctx.beginPath();
+    ctx.ellipse(0, -S * 0.18, S * 0.17, S * 0.28, 0, 0, 6.283);
+    ctx.fill();
+    ctx.restore();
+  }
+
   /* 갤러그 우주선 자리 — 캐릭터를 가운데 두고 좌우로 번갈아 늘어선다 */
   function shipX(k) {
     const gap = 52;
@@ -4831,17 +4875,8 @@
       }
     }
     if (aug.galaga > 0) {
-      const sy = H - GROUND_H * 0.55;
-      ctx.font = "26px serif";
-      ctx.textAlign = "center"; ctx.textBaseline = "middle";
-      ctx.fillStyle = "#fff";
-      for (let k = 0; k < aug.galaga; k++) {
-        ctx.save();
-        ctx.translate(shipX(k), sy);
-        ctx.rotate(-Math.PI / 4);        // 그림이 비스듬해서 위를 보게 돌려 준다
-        ctx.fillText("🚀", 0, 0);
-        ctx.restore();
-      }
+      const sy = H - GROUND_H * 0.55, tn = performance.now();   // drawEffects 에는 now 가 없다
+      for (let k = 0; k < aug.galaga; k++) drawShip(shipX(k), sy, tn + k * 137);
     }
     // 도박사의 비둘기
     for (const c of doves) {
