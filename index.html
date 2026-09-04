@@ -754,7 +754,7 @@
   const elFinal = document.getElementById("finalScore");
   const elTitle = document.getElementById("overTitle");
 
-  const GAME_VERSION = "v1.3.77";   // 코드를 고칠 때마다 뒤 두 자리를 올린다
+  const GAME_VERSION = "v1.3.78";   // 코드를 고칠 때마다 뒤 두 자리를 올린다
   document.getElementById("ver").textContent = GAME_VERSION;
 
   const LS_NAME = "epjpddongpi_name";
@@ -785,6 +785,12 @@
   const JOB_IMG = { none: "player", gambler: "gambler", levitator: "levitator",
                     fit: "fit", powerj: "powerj", powerp: "monk" };
   function spdMul() { return job === "levitator" ? 2.2 : 1; }   // 이동 속도 배율 (부양사 2.2배)
+  /* 갤러그 우주선 자리 — 캐릭터를 가운데 두고 좌우로 번갈아 늘어선다 */
+  function shipX(k) {
+    const gap = 52;
+    const off = (k % 2 ? 1 : -1) * Math.ceil((k + 1) / 2) * gap;
+    return Math.max(22, Math.min(W - 22, player.x + off));
+  }
   let job = "none";
   try { const j = localStorage.getItem(LS_JOB); if (JOBS[j]) job = j; } catch (e) {}
   // hy = 발을 바닥에 고정했을 때 머리(판정 중심)가 player.y 에서 얼마나 떨어지는지.
@@ -1253,6 +1259,7 @@
     timeMul: 1,         // 생존 점수 배율
     feverScoreMul: 1,   // 뚜니핑 낙하물 점수 배율
     fallMul: 1,         // 낙하 속도 배율
+    galaga: 0,          // 갤러그 우주선 수
     hitboxMul: 1,       // 피격 판정 + 캐릭터 크기 배율
     poopMul: 1,         // 똥 크기 배율
     itemRateMul: 1,     // 아이템 등장 간격 배율(작을수록 자주)
@@ -1308,6 +1315,8 @@
         if (job === "fit") lives = Math.min(aug.maxLives, lives + 3);   // 우산 대신 하트
         else shields = Math.min(shields + 3, 10);                       // 증강으로는 최대 10개까지
       } },
+    { id: "galaga",     ic: "🚀", nm: "갤러그", ds: "우주선이 땅에서 1초마다 총알을 쏘아 올린다",
+      go: () => { aug.galaga++; } },
     { id: "helper",     ic: "🦸", nm: "도와줘 정연핑", ds: "정연핑이 지나가는 자리의 똥을 부순다",
       go: () => { aug.helper++; helperTimer = Math.min(helperTimer, 0.6); } },
     { id: "helperRush", ic: "💥", nm: "정연핑 대폭주", ds: "정연핑!!!?? 무엇!!?!",
@@ -1532,6 +1541,7 @@
   /* 도박사 — 100m 움직일 때마다 품에서 비둘기가 날아간다.
      게임 안의 1m = 논리 좌표 12px 로 본다 (캐릭터 키가 대략 1.5m 쯤 되는 비율). */
   let doves = [], moveDist = 0;
+  let bullets = [], shipTimer = 0;   // 갤러그: 날아가는 총알과 다음 발사까지 남은 시간
   const M_PX = 12, DOVE_EVERY = 100 * M_PX;
   let inputHoldUntil = 0;          // 이 시각까지는 화면 터치를 조작으로 받지 않는다
   let ghostTimer = 3;              // 유령화: 다음 무적까지 남은 시간
@@ -1833,9 +1843,10 @@
     noHitSec = 0;
     clones = []; cloneTimer = 0;
     doves = []; moveDist = 0;
+    bullets = []; shipTimer = 0; aug.galaga = 0;
     shieldTimer = UMB_SEC;
     aug.itemRateMul = 1; aug.feverRateMul = 1; aug.giant = 0; aug.magnet = 0;
-    aug.helper = 0; aug.helperRush = false; aug.hungry = false;
+    aug.helper = 0; aug.helperRush = false; aug.hungry = false; aug.galaga = 0;
     helpers = []; fetchers = [];
     helperTimer = 0; helperQueue = 0; helperGap = 0; aug.maxLives = 5;
     // ---- 직업 효과 ----
@@ -2363,6 +2374,34 @@
         beep(240, .12, "square", .05);
         clones.splice(k, 1);
       }
+    }
+
+      // ---- 갤러그 — 땅에 늘어선 우주선이 1초마다 총알을 쏘아 올린다 ----
+    if (aug.galaga > 0) {
+      shipTimer -= dt;
+      if (shipTimer <= 0) {
+        shipTimer = 1;
+        for (let k = 0; k < aug.galaga; k++) {
+          const sx = shipX(k);
+          bullets.push({ x: sx, y: H - GROUND_H * 0.55 - 14, vy: -760 });
+        }
+        beep(1250, .05, "square", .03);
+      }
+    }
+    for (let k = bullets.length - 1; k >= 0; k--) {
+      const bu = bullets[k];
+      bu.y += bu.vy * dt * tsc;
+      let hit = false;
+      for (let j = items.length - 1; j >= 0; j--) {
+        const q = items[j];
+        if (q.type !== "poop" || q.blast) continue;
+        if (Math.hypot(q.x - bu.x, q.y - bu.y) > q.r + 6) continue;
+        smashPoopsAround(bu.x, bu.y, 8, true);      // 맞은 똥 하나만 부순다
+        burst(bu.x, bu.y, "#9fe8ff", 10);
+        hit = true;
+        break;
+      }
+      if (hit || bu.y < -20) bullets.splice(k, 1);
     }
 
     // ---- 도박사의 비둘기 — 목표에 부딪히면 반경 50px 로 터진다 ----
@@ -4782,6 +4821,26 @@
           ctx.fillStyle = "#fff";
           ctx.fillText("🏃", c.x, c.y);
         }
+      }
+    }
+    // 갤러그 — 총알과 우주선
+    if (bullets.length) {
+      ctx.fillStyle = "#9fe8ff";
+      for (const bu of bullets) {
+        ctx.fillRect(bu.x - 2, bu.y - 9, 4, 18);
+      }
+    }
+    if (aug.galaga > 0) {
+      const sy = H - GROUND_H * 0.55;
+      ctx.font = "26px serif";
+      ctx.textAlign = "center"; ctx.textBaseline = "middle";
+      ctx.fillStyle = "#fff";
+      for (let k = 0; k < aug.galaga; k++) {
+        ctx.save();
+        ctx.translate(shipX(k), sy);
+        ctx.rotate(-Math.PI / 4);        // 그림이 비스듬해서 위를 보게 돌려 준다
+        ctx.fillText("🚀", 0, 0);
+        ctx.restore();
       }
     }
     // 도박사의 비둘기
