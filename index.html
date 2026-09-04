@@ -746,9 +746,7 @@
   let W = 480;            // 논리 너비 — 화면 비율에 맞춰 유동
   let items = [], particles = [], floats = [], clouds = [];
   const cv = document.getElementById("cv");
-  /* alpha:false → 캔버스 뒤를 비추지 않아 합성이 가볍고,
-     desynchronized:true → 화면 갱신 대기를 줄여 입력이 덜 밀린다. */
-  const ctx = cv.getContext("2d", { alpha: false, desynchronized: true });
+  const ctx = cv.getContext("2d");
   const stage = document.getElementById("stage");
 
   const startScreen = document.getElementById("startScreen");
@@ -756,7 +754,7 @@
   const elFinal = document.getElementById("finalScore");
   const elTitle = document.getElementById("overTitle");
 
-  const GAME_VERSION = "v1.3.70";   // 코드를 고칠 때마다 뒤 두 자리를 올린다
+  const GAME_VERSION = "v1.3.71";   // 코드를 고칠 때마다 뒤 두 자리를 올린다
   document.getElementById("ver").textContent = GAME_VERSION;
 
   const LS_NAME = "epjpddongpi_name";
@@ -4755,12 +4753,6 @@
     return 30;                                                 // 인트로·게임오버 화면
   }
 
-  /* 계산은 항상 같은 크기의 걸음(1/120초)으로 나눠서 돌린다.
-     프레임 간격이 흔들려도 움직임이 고르게 보이고, 한 프레임이 길어졌을 때
-     물체가 껑충 뛰지 않는다 (최대 6걸음까지만 따라잡는다). */
-  const STEP = 1 / 120;
-  let acc = 0;
-
   function frame(now) {
     const cap = frameCap();
     if (cap && now - lastPaint < 1000 / cap - 1) { requestAnimationFrame(frame); return; }
@@ -4769,11 +4761,7 @@
     const dt = Math.min(0.05, (now - last) / 1000);
     last = now;
 
-    acc += dt;
-    let steps = 0;
-    while (acc >= STEP && steps < 6) { update(STEP, now); acc -= STEP; steps++; }
-    if (acc >= STEP) acc = 0;              // 너무 밀렸으면 따라잡기를 포기한다
-    if (!steps) update(0, now);            // 아주 짧은 프레임에서도 화면 상태는 갱신
+    update(dt, now);
 
     ctx.setTransform(baseScale, 0, 0, baseScale, 0, 0);
     ctx.clearRect(0, 0, W, H);
