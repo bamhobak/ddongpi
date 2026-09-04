@@ -754,7 +754,7 @@
   const elFinal = document.getElementById("finalScore");
   const elTitle = document.getElementById("overTitle");
 
-  const GAME_VERSION = "v1.3.91";   // 코드를 고칠 때마다 뒤 두 자리를 올린다
+  const GAME_VERSION = "v1.3.92";   // 코드를 고칠 때마다 뒤 두 자리를 올린다
   document.getElementById("ver").textContent = GAME_VERSION;
 
   const LS_NAME = "epjpddongpi_name";
@@ -2597,7 +2597,13 @@
       const dx2 = tx2 - c.x, dy2 = ty2 - c.y, d2 = Math.hypot(dx2, dy2) || 1;
       c.x += dx2 / d2 * 300 * dt;
       c.y += dy2 / d2 * 300 * dt;
-      if ((alive && d2 < (c.t.r || 20) + 14) || c.y < -40) {
+      /* 표적이 아니어도 가는 길에 닿은 똥이 있으면 그 자리에서 터진다 */
+      let bump = false;
+      for (const q of items) {
+        if (q.type !== "poop" || q.blast || q === c.t) continue;
+        if (Math.hypot(q.x - c.x, q.y - c.y) < q.r + 14) { bump = true; break; }
+      }
+      if (bump || (alive && d2 < (c.t.r || 20) + 14) || c.y < -40) {
         smashPoopsAround(c.x, c.y, 50, true);           // 폭발 반경 50px
         burst(c.x, c.y, "#eaf6ff", 18);
         shake = Math.max(shake, 6);
