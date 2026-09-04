@@ -754,7 +754,7 @@
   const elFinal = document.getElementById("finalScore");
   const elTitle = document.getElementById("overTitle");
 
-  const GAME_VERSION = "v1.3.75";   // 코드를 고칠 때마다 뒤 두 자리를 올린다
+  const GAME_VERSION = "v1.3.76";   // 코드를 고칠 때마다 뒤 두 자리를 올린다
   document.getElementById("ver").textContent = GAME_VERSION;
 
   const LS_NAME = "epjpddongpi_name";
@@ -1961,7 +1961,7 @@
      laser  = 1초간 떨어질 자리를 깜빡여 알려준 뒤 번개처럼 내리꽂힌다
      huge   = 초대형 뚜니핑의 1.4배쯤 되는 거대한 똥, 느리게 굴러떨어진다 */
   const SPECIAL_KINDS = ["split", "zigzag", "laser", "huge"];
-  const HUGE_R = 66;           // 반지름 — 초대형(52~62)의 약 1.26배
+  const HUGE_R = 53;           // 반지름 — 예전 66 에서 20% 축소
   /* 까다로운 똥이 나올 확률 — 레벨 7에서 SPEC_BASE 로 시작해 레벨마다 SPEC_STEP 씩 오른다.
      상한 SPEC_CAP — 절반까지만. 나머지 절반은 언제나 평범한 똥이다. */
   const SPEC_FROM = 7, SPEC_BASE = 0.023, SPEC_STEP = 0.04, SPEC_CAP = 0.5;
@@ -1991,7 +1991,7 @@
     // 뚜니핑 낙하물은 크기가 곧 점수라서 '작아진 똥'의 영향을 받지 않는다
     let r = cls ? cls.min + Math.random() * (cls.max - cls.min)
                 : (12.6 + Math.random() * 11.7) * aug.poopMul;   // 기본 크기 10% 축소
-    if (special === "huge") r = (HUGE_R + Math.random() * 13) * aug.poopMul;   // 초거대 똥
+    if (special === "huge") r = (HUGE_R + Math.random() * 10) * aug.poopMul;   // 초거대 똥
     r = Math.min(r, (W - 24) / 2);        // 화면보다 커지지 않게
     // 일반 똥은 레벨이 오를수록 빨라지지만, 뚜니핑 낙하물은 처음이나 나중이나 같은 속도로 떨어진다
     const baseVy = inFever ? FEVER_VY + Math.random() * 110
