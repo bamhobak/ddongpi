@@ -754,7 +754,7 @@
   const elFinal = document.getElementById("finalScore");
   const elTitle = document.getElementById("overTitle");
 
-  const GAME_VERSION = "v1.3.83";   // 코드를 고칠 때마다 뒤 두 자리를 올린다
+  const GAME_VERSION = "v1.3.84";   // 코드를 고칠 때마다 뒤 두 자리를 올린다
   document.getElementById("ver").textContent = GAME_VERSION;
 
   const LS_NAME = "epjpddongpi_name";
@@ -775,7 +775,7 @@
   const LS_JOB = "epjpddongpi_job";
   const JOBS = {
     none:    { nm: "백수",   ic: "🏃", ds: "시작할 때 증강 1개를 고른다" },
-    gambler: { nm: "도박사", ic: "🎰", ds: "목숨 1개 + 우산 1개 시작 · 100m 달릴 때마다 비둘기 출격 · 하트 안 나옴 · 모든 점수 5배" },
+    gambler: { nm: "도박사", ic: "🎰", ds: "목숨 1개 + 우산 1개 시작 · 50m 달릴 때마다 비둘기 출격 · 하트 안 나옴 · 모든 점수 5배" },
     levitator: { nm: "부양사", ic: "🎈", ds: "하늘 어디든 날 수 있다 · 높이 있을수록 점수 UP" },
     fit: { nm: "헬스걸", ic: "💪", ds: "목숨 5개로 시작 · 벌크업 좀 된 상태" },
     powerj: { nm: "파워J", ic: "📋", ds: "달이 잘 나온다 · 대신 증강은 계획대로 1개만" },
@@ -1615,11 +1615,11 @@
   let subsTimer = 0;               // 휴지 정기구독: 마지막 휴지 이후 지난 시간
   let noHitSec = 0;                // 마지막 피격 이후 버틴 시간 (무소유 배율용)
   let clones = [], cloneTimer = 0; // 벼랑 끝 분신술: 날아가는 작은 이재들
-  /* 도박사 — 100m 움직일 때마다 품에서 비둘기가 날아간다.
+  /* 도박사 — 50m 움직일 때마다 품에서 비둘기가 날아간다.
      게임 안의 1m = 논리 좌표 12px 로 본다 (캐릭터 키가 대략 1.5m 쯤 되는 비율). */
   let doves = [], moveDist = 0;
   let bullets = [], shipTimer = 0;   // 갤러그: 날아가는 총알과 다음 발사까지 남은 시간
-  const M_PX = 12, DOVE_EVERY = 100 * M_PX;
+  const M_PX = 12, DOVE_EVERY = 50 * M_PX;
   let inputHoldUntil = 0;          // 이 시각까지는 화면 터치를 조작으로 받지 않는다
   let ghostTimer = 3;              // 유령화: 다음 무적까지 남은 시간
   let roidT = 0;                   // 스테로이드 과다 복용: 남은 약발 시간(초)
@@ -2327,7 +2327,7 @@
           const d = Math.hypot(dx, dy) + dx * 1.4;
           if (d < bd) { bd = d; best = q; }
         }
-        doves.push({ x: player.x, y: py, t: best, life: 3, ph: Math.random() * 6.28 });
+        doves.push({ x: player.x, y: py, t: best, ph: Math.random() * 6.28 });
         beep(1500, .06, "sine", .035);
         beep(1900, .07, "sine", .03);
       }
@@ -2484,14 +2484,27 @@
     // ---- 도박사의 비둘기 — 목표에 부딪히면 반경 50px 로 터진다 ----
     for (let k = doves.length - 1; k >= 0; k--) {
       const c = doves[k];
-      c.life -= dt;
       c.ph += dt * 14;                                  // 날갯짓
-      const alive = items.indexOf(c.t) >= 0;
+      /* 표적이 사라지면 위쪽에서 새 표적을 찾는다. 없으면 계속 위로 난다 —
+         부딪힐 때까지는 스스로 터지지 않는다. */
+      if (items.indexOf(c.t) < 0) {
+        let best = null, bd = 1e9;
+        for (const q of items) {
+          if (q.type !== "poop" || q.blast) continue;
+          const dy = c.y - q.y, dx = Math.abs(q.x - c.x);
+          if (dy < 0) continue;                         // 이미 지나친 똥은 무시
+          if (dx > 70 + dy * 0.55) continue;
+          const d = Math.hypot(dx, dy) + dx * 1.4;
+          if (d < bd) { bd = d; best = q; }
+        }
+        c.t = best;
+      }
+      const alive = !!c.t;
       const tx2 = alive ? c.t.x : c.x, ty2 = alive ? c.t.y : c.y - 160;
       const dx2 = tx2 - c.x, dy2 = ty2 - c.y, d2 = Math.hypot(dx2, dy2) || 1;
       c.x += dx2 / d2 * 300 * dt;
       c.y += dy2 / d2 * 300 * dt;
-      if ((alive && d2 < (c.t.r || 20) + 14) || c.life <= 0) {
+      if ((alive && d2 < (c.t.r || 20) + 14) || c.y < -40) {
         smashPoopsAround(c.x, c.y, 50, true);           // 폭발 반경 50px
         burst(c.x, c.y, "#eaf6ff", 18);
         shake = Math.max(shake, 6);
