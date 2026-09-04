@@ -754,7 +754,7 @@
   const elFinal = document.getElementById("finalScore");
   const elTitle = document.getElementById("overTitle");
 
-  const GAME_VERSION = "v1.3.81";   // 코드를 고칠 때마다 뒤 두 자리를 올린다
+  const GAME_VERSION = "v1.3.82";   // 코드를 고칠 때마다 뒤 두 자리를 올린다
   document.getElementById("ver").textContent = GAME_VERSION;
 
   const LS_NAME = "epjpddongpi_name";
@@ -1391,7 +1391,8 @@
         if (job === "fit") lives = Math.min(aug.maxLives, lives + 3);   // 우산 대신 하트
         else shields = Math.min(shields + 3, 10);                       // 증강으로는 최대 10개까지
       } },
-    { id: "galaga",     ic: "🚀", nm: "갤러그", ds: "우주선이 땅에서 1초마다 총알을 쏘아 올린다",
+    { id: "galaga",     ic: "🚀", nm: "갤러그", ds: "우주선이 1초마다 총알을 쏘아 올린다",
+      cond: () => inSpace(),   // 우주복으로 갈아입은 뒤부터 나온다
       go: () => { aug.galaga++; } },
     { id: "helper",     ic: "🦸", nm: "도와줘 정연핑", ds: "정연핑이 지나가는 자리의 똥을 부순다",
       go: () => { aug.helper++; helperTimer = Math.min(helperTimer, 0.6); } },
