@@ -754,7 +754,7 @@
   const elFinal = document.getElementById("finalScore");
   const elTitle = document.getElementById("overTitle");
 
-  const GAME_VERSION = "v1.3.74";   // 코드를 고칠 때마다 뒤 두 자리를 올린다
+  const GAME_VERSION = "v1.3.75";   // 코드를 고칠 때마다 뒤 두 자리를 올린다
   document.getElementById("ver").textContent = GAME_VERSION;
 
   const LS_NAME = "epjpddongpi_name";
@@ -2231,7 +2231,12 @@
         let best = null, bd = 1e9;
         for (const q of items) {
           if (q.type !== "poop") continue;
-          const d = Math.hypot(q.x - player.x, q.y - py);
+          if (q.y > player.y - 40) continue;          // 이미 지나친 똥은 무시
+          /* 분신술과 같은 규칙 — 머리 위 좁은 부채꼴 안에서만 고른다.
+             옆으로 날아가면 비둘기가 새는 것처럼 보인다. */
+          const dy = py - q.y, dx = Math.abs(q.x - player.x);
+          if (dx > 70 + dy * 0.55) continue;
+          const d = Math.hypot(dx, dy) + dx * 1.4;
           if (d < bd) { bd = d; best = q; }
         }
         doves.push({ x: player.x, y: py, t: best, life: 3, ph: Math.random() * 6.28 });
