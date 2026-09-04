@@ -754,7 +754,7 @@
   const elFinal = document.getElementById("finalScore");
   const elTitle = document.getElementById("overTitle");
 
-  const GAME_VERSION = "v1.3.72";   // 코드를 고칠 때마다 뒤 두 자리를 올린다
+  const GAME_VERSION = "v1.3.73";   // 코드를 고칠 때마다 뒤 두 자리를 올린다
   document.getElementById("ver").textContent = GAME_VERSION;
 
   const LS_NAME = "epjpddongpi_name";
@@ -1352,9 +1352,9 @@
       go: () => { aug.goldChance += (augCount["gold"] ? 0.05 : 0.10) * dim("gold"); } },
     { id: "dopa",       ic: "📱", nm: "도파민 중독",  ds: "똥이 빨라지고, 생존 점수가 크게 오른다",
       go: () => { aug.fallMul *= 1 + 0.10 * dim("dopa"); aug.timeMul *= 1 + 0.5 * dim("dopa"); } },
-    { id: "carrot",     ic: "🥕", nm: "하트 당근거래", ds: "목숨 1개를 팔고, 앞으로 얻는 모든 점수 +20%",
+    { id: "carrot",     ic: "🥕", nm: "하트 당근거래", ds: "목숨 1개를 팔고, 앞으로 얻는 모든 점수 +30%",
       max: 5, cond: () => lives >= 2,
-      go: () => { lives = Math.max(1, lives - 1); aug.scoreMul *= 1.2; } },
+      go: () => { lives = Math.max(1, lives - 1); aug.scoreMul *= 1.3; } },
     { id: "goldLord",   ic: "🦄", nm: "무지개 수집가", ds: "무지개똥이 두 배 멀리서 세게 끌려오고, 점수 3배",
       hidden: true, once: true, cond: () => (augCount["gold"] || 0) >= 1,
       go: () => { aug.goldLord = true; } },
