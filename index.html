@@ -754,7 +754,7 @@
   const elFinal = document.getElementById("finalScore");
   const elTitle = document.getElementById("overTitle");
 
-  const GAME_VERSION = "v1.3.86";   // 코드를 고칠 때마다 뒤 두 자리를 올린다
+  const GAME_VERSION = "v1.3.87";   // 코드를 고칠 때마다 뒤 두 자리를 올린다
   document.getElementById("ver").textContent = GAME_VERSION;
 
   const LS_NAME = "epjpddongpi_name";
@@ -794,6 +794,13 @@
     ctx.translate(x, y);
     const ang = target ? Math.atan2(target.y - y, target.x - x) + Math.PI / 2 : 0;
     ctx.rotate(ang);
+    if (doveImg) {                                   // 그림이 있으면 그걸 쓴다
+      const h = S * 2.6, w = h * (doveImg.width / doveImg.height);
+      ctx.scale(1, 1 - Math.abs(flap) * 0.14);       // 날갯짓처럼 살짝 눌린다
+      ctx.drawImage(doveImg, -w / 2, -h * 0.52, w, h);
+      ctx.restore();
+      return;
+    }
     ctx.fillStyle = "#ffffff";
     ctx.shadowColor = "rgba(0,0,0,.25)";
     ctx.shadowBlur = 4;
@@ -1169,6 +1176,9 @@
     im.src = "assets/item_" + file + ".png";
   }
   const ITEM_IMG_SCALE = 1.18;
+  // 도박사의 비둘기 그림 (없으면 아래 도안으로 그린다)
+  let doveImg = null;
+  { const di = new Image(); di.onload = () => { doveImg = di; }; di.src = "assets/dove.png"; }
 
   /* 무지개똥은 일반 똥과 헷갈리지 않게 무지갯빛으로 돌면서 번쩍인다.
      seed 를 섞어 서로 다른 색으로 떨어진다. */
