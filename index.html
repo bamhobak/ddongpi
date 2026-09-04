@@ -754,7 +754,7 @@
   const elFinal = document.getElementById("finalScore");
   const elTitle = document.getElementById("overTitle");
 
-  const GAME_VERSION = "v1.3.84";   // 코드를 고칠 때마다 뒤 두 자리를 올린다
+  const GAME_VERSION = "v1.3.85";   // 코드를 고칠 때마다 뒤 두 자리를 올린다
   document.getElementById("ver").textContent = GAME_VERSION;
 
   const LS_NAME = "epjpddongpi_name";
@@ -785,6 +785,58 @@
   const JOB_IMG = { none: "player", gambler: "gambler", levitator: "levitator",
                     fit: "fit", powerj: "powerj", powerp: "monk" };
   function spdMul() { return job === "levitator" ? 2.2 : 1; }   // 이동 속도 배율 (부양사 2.2배)
+  /* 비둘기 — 위에서 내려다본 모습으로 직접 그린다 (이모지는 너무 작고 흐릿하다) */
+  function drawDove(x, y, ph, target) {
+    const S = 13;                                   // 몸 반길이
+    const flap = Math.sin(ph);                      // -1(아래) ~ 1(위)
+    ctx.save();
+    ctx.translate(x, y);
+    // 나아가는 쪽이 위가 되도록 돌린다
+    const ang = target ? Math.atan2(target.y - y, target.x - x) + Math.PI / 2 : 0;
+    ctx.rotate(ang);
+
+    // 날개 — 위아래로 퍼덕인다
+    const spread = 0.55 + 0.45 * (flap * 0.5 + 0.5);   // 0.55 ~ 1.0
+    for (const sx of [-1, 1]) {
+      ctx.fillStyle = sx > 0 ? "#ffffff" : "#e8eefb";  // 한쪽을 살짝 어둡게 해 입체감
+      ctx.beginPath();
+      ctx.moveTo(sx * S * 0.16, -S * 0.20);
+      ctx.quadraticCurveTo(sx * S * 1.35 * spread, -S * (0.35 + 0.45 * flap),
+                           sx * S * 1.55 * spread, S * (0.30 - 0.30 * flap));
+      ctx.quadraticCurveTo(sx * S * 0.90 * spread, S * 0.34,
+                           sx * S * 0.16, S * 0.32);
+      ctx.closePath(); ctx.fill();
+    }
+
+    // 몸통
+    ctx.fillStyle = "#fdfdff";
+    ctx.beginPath();
+    ctx.ellipse(0, S * 0.05, S * 0.24, S * 0.62, 0, 0, 6.283);
+    ctx.fill();
+    // 꼬리
+    ctx.beginPath();
+    ctx.moveTo(-S * 0.22, S * 0.52);
+    ctx.lineTo(0, S * 1.02);
+    ctx.lineTo(S * 0.22, S * 0.52);
+    ctx.closePath(); ctx.fill();
+    // 머리
+    ctx.beginPath();
+    ctx.arc(0, -S * 0.62, S * 0.24, 0, 6.283);
+    ctx.fill();
+    // 부리
+    ctx.fillStyle = "#ffb03a";
+    ctx.beginPath();
+    ctx.moveTo(-S * 0.09, -S * 0.80);
+    ctx.lineTo(0, -S * 1.10);
+    ctx.lineTo(S * 0.09, -S * 0.80);
+    ctx.closePath(); ctx.fill();
+    // 눈
+    ctx.fillStyle = "#2b2f3a";
+    ctx.beginPath(); ctx.arc(-S * 0.10, -S * 0.66, S * 0.055, 0, 6.283); ctx.fill();
+    ctx.beginPath(); ctx.arc(S * 0.10, -S * 0.66, S * 0.055, 0, 6.283); ctx.fill();
+    ctx.restore();
+  }
+
   /* 갤러그 전투기 — 원작처럼 흰 몸통에 빨간 무늬, 파란 속날개, 뾰족한 기수 */
   function drawShip(x, y, t) {
     const S = 15;                                   // 반높이
@@ -2316,16 +2368,16 @@
         moveDist -= DOVE_EVERY;
         // 머리 위쪽에서 가장 가까운 똥을 노린다 (없으면 그냥 위로 날아간다)
         const py = player.y + player.hy;
-        let best = null, bd = 1e9;
+        let best = null, bd = -1e9;
         for (const q of items) {
-          if (q.type !== "poop") continue;
+          if (q.type !== "poop" || q.blast) continue;
           if (q.y > player.y - 40) continue;          // 이미 지나친 똥은 무시
-          /* 분신술과 같은 규칙 — 머리 위 좁은 부채꼴 안에서만 고른다.
-             옆으로 날아가면 비둘기가 새는 것처럼 보인다. */
+          /* 머리 위 부채꼴 안에서 '가장 멀리 있는' 똥을 노린다.
+             바로 앞 똥만 잡으면 금방 터져 버려서 날아가는 맛이 없다. */
           const dy = py - q.y, dx = Math.abs(q.x - player.x);
-          if (dx > 70 + dy * 0.55) continue;
-          const d = Math.hypot(dx, dy) + dx * 1.4;
-          if (d < bd) { bd = d; best = q; }
+          if (dx > 90 + dy * 0.75) continue;
+          const d = dy - dx * 0.35;                   // 높이 있을수록, 옆으로 덜 치우칠수록
+          if (d > bd) { bd = d; best = q; }
         }
         doves.push({ x: player.x, y: py, t: best, ph: Math.random() * 6.28 });
         beep(1500, .06, "sine", .035);
@@ -2488,14 +2540,14 @@
       /* 표적이 사라지면 위쪽에서 새 표적을 찾는다. 없으면 계속 위로 난다 —
          부딪힐 때까지는 스스로 터지지 않는다. */
       if (items.indexOf(c.t) < 0) {
-        let best = null, bd = 1e9;
+        let best = null, bd = -1e9;
         for (const q of items) {
           if (q.type !== "poop" || q.blast) continue;
           const dy = c.y - q.y, dx = Math.abs(q.x - c.x);
           if (dy < 0) continue;                         // 이미 지나친 똥은 무시
-          if (dx > 70 + dy * 0.55) continue;
-          const d = Math.hypot(dx, dy) + dx * 1.4;
-          if (d < bd) { bd = d; best = q; }
+          if (dx > 90 + dy * 0.75) continue;
+          const d = dy - dx * 0.35;                     // 멀리(위쪽) 있는 똥을 우선
+          if (d > bd) { bd = d; best = q; }
         }
         c.t = best;
       }
@@ -4925,18 +4977,7 @@
       for (let k = 0; k < aug.galaga; k++) drawShip(shipX(k), sy, tn + k * 137);
     }
     // 도박사의 비둘기
-    for (const c of doves) {
-      const flap = Math.sin(c.ph);
-      ctx.save();
-      ctx.translate(c.x, c.y);
-      ctx.rotate(Math.atan2(c.y - (c.t ? c.t.y : c.y - 1), c.x - (c.t ? c.t.x : c.x)) + Math.PI);
-      ctx.scale(1, 1 - Math.abs(flap) * 0.25);          // 날갯짓에 맞춰 살짝 눌린다
-      ctx.font = "34px serif";
-      ctx.textAlign = "center"; ctx.textBaseline = "middle";
-      ctx.fillStyle = "#fff";
-      ctx.fillText("🕊️", 0, 0);
-      ctx.restore();
-    }
+    for (const c of doves) drawDove(c.x, c.y, c.ph, c.t);
     for (const p of particles) {
       ctx.globalAlpha = Math.max(0, 1 - p.t / p.life);
       ctx.fillStyle = p.c;
