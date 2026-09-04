@@ -754,7 +754,7 @@
   const elFinal = document.getElementById("finalScore");
   const elTitle = document.getElementById("overTitle");
 
-  const GAME_VERSION = "v1.3.71";   // 코드를 고칠 때마다 뒤 두 자리를 올린다
+  const GAME_VERSION = "v1.3.72";   // 코드를 고칠 때마다 뒤 두 자리를 올린다
   document.getElementById("ver").textContent = GAME_VERSION;
 
   const LS_NAME = "epjpddongpi_name";
@@ -2531,7 +2531,7 @@
         it.swayP += dt * tsc * it.swayW;
         it.rot = (it.rot0 === undefined ? (it.rot0 = it.rot) : it.rot0) + Math.sin(it.swayP) * it.swayA;
       } else it.rot += it.vr * dt * tsc;
-      if (it.special !== "laser") {          // 레이저는 예고한 선을 그대로 지나간다
+      if (it.special !== "laser" && !it.bounced) {   // 레이저·튕긴 똥은 벽에 막히지 않는다
         if (it.x < it.r) { it.x = it.r; it.vx = Math.abs(it.vx); }
         if (it.x > W - it.r) { it.x = W - it.r; it.vx = -Math.abs(it.vx); }
       }
@@ -2648,12 +2648,20 @@
                 const bR = Math.sqrt(4 * W * H / (3 * Math.PI)) * 1.15;
                 for (let k = items.length - 1; k >= 0; k--) {
                   const q = items[k];
-                  if (q.type !== "poop" || k === i) continue;
-                  if (Math.hypot(q.x - bx, q.y - by) > bR + q.r) continue;   // 폭발 밖은 살아남는다
-                  burst(q.x, q.y, "#9fd4ff", 7);
-                  score += 3 * scoreMul();
-                  items.splice(k, 1);
-                  if (k < i) i--;            // 앞쪽이 지워지면 내 자리도 한 칸 당겨진다
+                  if (q.type !== "poop" || k === i || q.blast) continue;
+                  const dx = q.x - bx, dy = q.y - by, d = Math.hypot(dx, dy);
+                  if (d > bR + q.r) continue;                 // 폭발 밖은 그대로 떨어진다
+                  /* 부수지 않고 바깥으로 날려 보낸다. 날아가는 똥은 사람을 해치지 않고,
+                     내려오던 다른 똥과 부딪히면 둘 다 터진다. */
+                  const sp = 620 + (1 - Math.min(1, d / bR)) * 520;
+                  const ux = d > 1 ? dx / d : (Math.random() - .5), uy = d > 1 ? dy / d : -1;
+                  q.vx = ux * sp;
+                  q.vy = uy * sp - 260;                       // 조금 위로 뜨면서 퍼진다
+                  q.vr = (Math.random() - .5) * 10;
+                  q.swayA = 0;                                // 살랑임 대신 실제로 회전
+                  q.special = null;
+                  q.bounced = true; q.blast = true;
+                  burst(q.x, q.y, "#9fd4ff", 5);
                 }
                 warns = [];
                 umbBlast = { x: bx, y: by, r: bR, t: 0.42 };
@@ -2683,13 +2691,33 @@
         }
       }
 
-      if (it.bounced && it.y + it.r < -40) { items.splice(i, 1); continue; }   // 튕겨 나간 똥은 하늘로 퇴장
+      // 튕겨 나간 똥은 화면 밖으로 나가면 사라진다 (위·좌우 어디로든)
+      if (it.bounced && (it.y + it.r < -40 || it.x < -70 || it.x > W + 70)) { items.splice(i, 1); continue; }
       if (it.y - it.r > H + 20) {
         // 뚜니핑 타임 낙하물은 워낙 많이 쏟아져서, 안 먹고 흘려보낸 것에 점수를 주면
         // 가만히 있어도 점수가 폭등한다. 뚜니핑 타임 것은 0점 — 직접 받아야만 점수가 오른다.
         if (it.type === "poop" && it.skin !== "fever") score += 3 * scoreMul();
         items.splice(i, 1);
       }
+    }
+
+    /* 성난 우산에 날아간 똥이 내려오던 똥과 부딪히면 둘 다 터진다 (연쇄 청소). */
+    let boom = false;
+    for (const a of items) {
+      if (!a.blast || a.dead) continue;
+      for (const q of items) {
+        if (q === a || q.dead || q.blast || q.type !== "poop") continue;
+        if (Math.hypot(a.x - q.x, a.y - q.y) > a.r + q.r) continue;
+        q.dead = a.dead = boom = true;
+        score += 3 * scoreMul();
+        burst((a.x + q.x) / 2, (a.y + q.y) / 2, "#9fd4ff", 16);
+        break;
+      }
+    }
+    if (boom) {
+      items = items.filter(q => !q.dead);
+      shake = Math.max(shake, 8);
+      beep(300, .07, "square", .04);
     }
   }
 
