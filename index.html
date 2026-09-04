@@ -16,7 +16,7 @@
   * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
   html, body {
     width: 100%; height: 100%;
-    background: #05060d;
+    background: #07070f;
     color: #fff;
     font-family: "Do Hyeon", "Pretendard", "Apple SD Gothic Neo", "Malgun Gothic", "맑은 고딕", system-ui, sans-serif;
     overflow: hidden;
@@ -28,6 +28,13 @@
   #app {
     height: 100%;
     display: flex; align-items: center; justify-content: center;
+    /* 놀이판 밖(비율 여백·노치·상태표시줄 자리)을 네온 격자와 빛으로 채운다 */
+    background:
+      radial-gradient(120% 55% at 50% 0%, rgba(255,62,165,.20), transparent 62%),
+      radial-gradient(90% 45% at 50% 100%, rgba(53,240,255,.16), transparent 66%),
+      repeating-linear-gradient(90deg, rgba(53,240,255,.08) 0 1px, transparent 1px 26px),
+      repeating-linear-gradient(0deg,  rgba(53,240,255,.06) 0 1px, transparent 1px 26px),
+      #07070f;
     /* 노치·둥근 모서리·홈바에 화면이 잘리지 않도록 */
     padding: env(safe-area-inset-top) env(safe-area-inset-right)
              env(safe-area-inset-bottom) env(safe-area-inset-left);
@@ -38,13 +45,6 @@
     height: 100%;
     overflow: hidden;
     box-shadow: 0 20px 60px rgba(0,0,0,.6);
-    /* 비율을 맞추느라 남는 자리 — 네온 격자와 은은한 빛으로 채운다 */
-    background:
-      radial-gradient(120% 55% at 50% 0%, rgba(255,62,165,.20), transparent 62%),
-      radial-gradient(90% 45% at 50% 100%, rgba(53,240,255,.16), transparent 66%),
-      repeating-linear-gradient(90deg, rgba(53,240,255,.08) 0 1px, transparent 1px 26px),
-      repeating-linear-gradient(0deg,  rgba(53,240,255,.06) 0 1px, transparent 1px 26px),
-      #07070f;
   }
   /* 놀이판 가장자리는 아케이드 화면처럼 네온으로 두른다 */
   canvas {
@@ -754,7 +754,7 @@
   const elFinal = document.getElementById("finalScore");
   const elTitle = document.getElementById("overTitle");
 
-  const GAME_VERSION = "v1.3.68";   // 코드를 고칠 때마다 뒤 두 자리를 올린다
+  const GAME_VERSION = "v1.3.69";   // 코드를 고칠 때마다 뒤 두 자리를 올린다
   document.getElementById("ver").textContent = GAME_VERSION;
 
   const LS_NAME = "epjpddongpi_name";
