@@ -754,7 +754,7 @@
   const elFinal = document.getElementById("finalScore");
   const elTitle = document.getElementById("overTitle");
 
-  const GAME_VERSION = "v1.3.67";   // 코드를 고칠 때마다 뒤 두 자리를 올린다
+  const GAME_VERSION = "v1.3.68";   // 코드를 고칠 때마다 뒤 두 자리를 올린다
   document.getElementById("ver").textContent = GAME_VERSION;
 
   const LS_NAME = "epjpddongpi_name";
@@ -3670,7 +3670,7 @@
   const LAST_Z = ZONES.length - 1;
   const BH_Z = LAST_Z;                 // 블랙홀 안 — 여기부터 모든 조건이 두 배
   function inBlackhole() { return zoneIdx() >= BH_Z; }
-  function bhMul() { return inBlackhole() ? 1.5 : 1; }   // 블랙홀 안 점수 배율
+  function bhMul() { return inBlackhole() ? 2 : 1; }   // 블랙홀 안 점수 배율
   // 블랙홀 안의 '난이도' 배율 — 점수·아이템 배율(2배)과 달리 낙하 속도·똥 수량에만 쓴다
   function bhDiff() { return inBlackhole() ? 1.5 : 1; }
   /* 부양사 — 높이 날수록 모든 점수가 커진다. 바닥 +0%, 중간 +50%, 꼭대기 +100%. */
