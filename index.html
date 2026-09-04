@@ -754,7 +754,7 @@
   const elFinal = document.getElementById("finalScore");
   const elTitle = document.getElementById("overTitle");
 
-  const GAME_VERSION = "v1.3.76";   // 코드를 고칠 때마다 뒤 두 자리를 올린다
+  const GAME_VERSION = "v1.3.77";   // 코드를 고칠 때마다 뒤 두 자리를 올린다
   document.getElementById("ver").textContent = GAME_VERSION;
 
   const LS_NAME = "epjpddongpi_name";
@@ -4791,7 +4791,7 @@
       ctx.translate(c.x, c.y);
       ctx.rotate(Math.atan2(c.y - (c.t ? c.t.y : c.y - 1), c.x - (c.t ? c.t.x : c.x)) + Math.PI);
       ctx.scale(1, 1 - Math.abs(flap) * 0.25);          // 날갯짓에 맞춰 살짝 눌린다
-      ctx.font = "26px serif";
+      ctx.font = "34px serif";
       ctx.textAlign = "center"; ctx.textBaseline = "middle";
       ctx.fillStyle = "#fff";
       ctx.fillText("🕊️", 0, 0);
