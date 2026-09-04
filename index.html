@@ -754,7 +754,7 @@
   const elFinal = document.getElementById("finalScore");
   const elTitle = document.getElementById("overTitle");
 
-  const GAME_VERSION = "v1.3.89";   // 코드를 고칠 때마다 뒤 두 자리를 올린다
+  const GAME_VERSION = "v1.3.90";   // 코드를 고칠 때마다 뒤 두 자리를 올린다
   document.getElementById("ver").textContent = GAME_VERSION;
 
   const LS_NAME = "epjpddongpi_name";
@@ -794,9 +794,11 @@
     ctx.translate(x, y);
     const ang = target ? Math.atan2(target.y - y, target.x - x) + Math.PI / 2 : 0;
     ctx.rotate(ang);
+    // 오른쪽으로 날아갈 때는 좌우를 뒤집어 준다
+    const mirror = target && target.x > x ? -1 : 1;
     if (doveImg) {                                   // 그림이 있으면 그걸 쓴다
       const h = S * 3.12, w = h * (doveImg.width / doveImg.height);   // 예전 2.6 에서 1.2배
-      ctx.scale(1, 1 - Math.abs(flap) * 0.14);       // 날갯짓처럼 살짝 눌린다
+      ctx.scale(mirror, 1 - Math.abs(flap) * 0.14);  // 날갯짓처럼 살짝 눌린다
       ctx.drawImage(doveImg, -w / 2, -h * 0.52, w, h);
       ctx.restore();
       return;
