@@ -757,7 +757,7 @@
   const elFinal = document.getElementById("finalScore");
   const elTitle = document.getElementById("overTitle");
 
-  const GAME_VERSION = "v1.4.00";   // 코드를 고칠 때마다 뒤 두 자리를 올린다
+  const GAME_VERSION = "v1.4.02";   // 코드를 고칠 때마다 뒤 두 자리를 올린다
   document.getElementById("ver").textContent = GAME_VERSION;
 
   const LS_NAME = "epjpddongpi_name";
@@ -1583,7 +1583,7 @@
     starCount++;
     const gain = Math.round(1000 * Math.pow(1.5, starCount - 1) * aug.starMul * scoreMul());
     score += gain;
-    popText(x, y, "⭐×" + starCount + "  +" + gain.toLocaleString(), "#ffd23f");
+    popGain(x, y, gain, "⭐×" + starCount + "  +" + gain.toLocaleString(), "#ffd23f");
     beep(1400, .1, "square", .05);
     beep(1750, .12, "square", .04);
     return gain;
@@ -1734,6 +1734,11 @@
   let hurtUntil = 0;               // 똥에 맞은 직후 (아픈 그림 표시)
   let zoneShown = -1;              // 도착 안내를 이미 띄운 단계
   let shake = 0, flash = 0, feverFlash = 0;
+  /* 점수판은 실제 점수를 곧바로 따라가지 않고 뒤에서 굴러 오른다.
+     크게 먹은 순간에만 튀어야 해서, 생존 점수처럼 조금씩 새는 건 흘려보낸다. */
+  let scoreShown = 0, scorePunch = 0, prevScore = 0;
+  let hudGains = [];                 // 점수판 옆에 떠올랐다 사라지는 +N
+  let rings = [];                    // 큰 점수가 터질 때 퍼지는 고리
   let fever = false, feverT = 0, feverDur = 10000;
   let feverBanner = 0;               // 뚜니핑 타임 시작 알림 (1 → 0, 1.1초)
   let last = 0;
@@ -2013,6 +2018,7 @@
     resetBonusTimers();
     invUntil = 0; powerUntil = 0; hurtUntil = 0; shields = 0;
     shake = 0; flash = 0; feverFlash = 0; fever = false; feverT = 0; feverBanner = 0;
+    scoreShown = 0; scorePunch = 0; prevScore = 0; hudGains = []; rings = [];
     zoneShown = -1;
     augCount = {};
     aug.feverBonus = 0; aug.starMul = 1; aug.timeMul = 1;
@@ -2321,6 +2327,21 @@
   function popText(x, y, text, color, size) {
     floats.push({ x, y, text, color, t: 0, life: 1, size: size || 22 });
   }
+  /* 점수를 딴 순간은 액수만큼 크게 말한다.
+     푼돈은 조용히 떠오르고, 큰돈은 고리가 퍼지면서 화면이 흔들린다. */
+  function popGain(x, y, gain, text, color) {
+    const tier = gain >= 20000 ? 2 : gain >= 3000 ? 1 : 0;
+    floats.push({
+      x, y, text, color: color || "#ffd23f", t: 0,
+      life: [1, 1.15, 1.35][tier], size: [22, 28, 36][tier], tier, pop: 1,
+      vx: (Math.random() - Math.random()) * 14
+    });
+    if (tier >= 1) {
+      rings.push({ x, y, t: 0, life: 0.46 + tier * 0.14,
+                   r1: 74 + tier * 62, color: color || "#ffd23f" });
+      shake = Math.max(shake, 6 + tier * 6);
+    }
+  }
 
   /* ---------- 업데이트 ---------- */
   function update(dt, now) {
@@ -2344,8 +2365,30 @@
     }
     for (let i = floats.length - 1; i >= 0; i--) {
       const f = floats[i];
-      f.t += dt; f.y -= 40 * dt;
+      f.t += dt; f.y -= 40 * dt; f.x += (f.vx || 0) * dt;
       if (f.t > f.life) floats.splice(i, 1);
+    }
+    for (let i = rings.length - 1; i >= 0; i--) {
+      const rg = rings[i];
+      rg.t += dt;
+      if (rg.t > rg.life) rings.splice(i, 1);
+    }
+
+    /* 점수판 — 한 프레임에 눈에 띄게 오른 때만 튄다.
+       생존 점수는 매 프레임 조금씩 붙으므로 문턱을 넘지 못한다. */
+    const dScore = score - prevScore;
+    if (dScore >= Math.max(30, score * 0.004)) {
+      scorePunch = Math.min(1, scorePunch + 0.42 + Math.min(0.58, Math.log10(1 + dScore) / 8));
+      hudGains.push({ v: dScore, t: 0 });
+      if (hudGains.length > 4) hudGains.shift();
+    }
+    prevScore = score;
+    if (scorePunch > 0) scorePunch = Math.max(0, scorePunch - dt * 2.6);
+    scoreShown += (score - scoreShown) * Math.min(1, dt * 6);
+    if (score - scoreShown < 1) scoreShown = score;      // 마지막 한 자리는 붙여 놓는다
+    for (let i = hudGains.length - 1; i >= 0; i--) {
+      hudGains[i].t += dt;
+      if (hudGains[i].t > 1.1) hudGains.splice(i, 1);
     }
     if (shake > 0) shake = Math.max(0, shake - dt * 40);
     if (flash > 0) flash = Math.max(0, flash - dt * 3);
@@ -2870,7 +2913,7 @@
             const g = Math.round(120 * (aug.goldLord ? 3 : 1) * scoreMul() * Math.pow(1.3, level - 1));
             score += g;
             burst(it.x, it.y, "hsl(" + Math.round(goldFx(now, it.x).hue) + ",100%,62%)", 20);
-            popText(it.x, it.y, "🌈 +" + g.toLocaleString(), "#ffe07a");
+            popGain(it.x, it.y, g, "🌈 +" + g.toLocaleString(), "#ffe07a");
             beep(1250, .1, "square", .05);
             items.splice(i, 1);
             continue;
@@ -3052,8 +3095,8 @@
           spawnHold = Math.max(spawnHold, 1);   // 쓸어낸 뒤 1초는 새 똥이 없다
           shake = Math.max(shake, 18);
           feverFlash = Math.max(feverFlash, 0.7);
-          popText(player.x, player.y - 110,
-                  "🌠 " + cnt + "개 쓸어버림 +" + Math.round(bonus).toLocaleString(), "#ffe9a8", 26);
+          popGain(player.x, player.y - 110, bonus,
+                  "🌠 " + cnt + "개 쓸어버림 +" + Math.round(bonus).toLocaleString(), "#ffe9a8");
           beep(2000, .18, "square", .05);
         }
       }
@@ -4954,10 +4997,39 @@
     ctx.textAlign = "left";
     ctx.textBaseline = "top";
     ctx.font = "700 26px system-ui, sans-serif";
+    const stxt = Math.floor(scoreShown).toLocaleString();
+    const pk = scorePunch;
+    const sw = ctx.measureText(stxt).width;
+    ctx.save();
+    ctx.translate(16, top);
+    if (pk > 0.01) {
+      ctx.scale(1 + pk * 0.15, 1 + pk * 0.15);   // 더 키우면 아래 지대 이름을 덮는다
+      ctx.shadowColor = "rgba(255,196,60," + (0.9 * pk).toFixed(2) + ")";
+      ctx.shadowBlur = 6 + pk * 18;
+    }
     ctx.fillStyle = "rgba(0,0,0,.35)";
-    ctx.fillText(Math.floor(score).toLocaleString(), 17, top + 1);
-    ctx.fillStyle = "#fff";
-    ctx.fillText(Math.floor(score).toLocaleString(), 16, top);
+    ctx.fillText(stxt, 1, 1);
+    ctx.fillStyle = "rgb(255," + Math.round(255 - 45 * pk) + ","
+                              + Math.round(255 - 192 * pk) + ")";
+    ctx.fillText(stxt, 0, 0);
+    ctx.restore();
+
+    // 방금 딴 액수가 점수판 옆에서 떠올랐다 사라진다
+    if (hudGains.length) {
+      ctx.font = "800 13px system-ui, sans-serif";
+      ctx.lineWidth = 3; ctx.lineJoin = "round";
+      for (const hg of hudGains) {
+        const k = hg.t / 1.1;
+        ctx.globalAlpha = Math.max(0, 1 - k * k);
+        const gx = 16 + sw * (1 + pk * 0.15) + 9, gy = top + 5 - k * 24;
+        const gt = "+" + Math.round(hg.v).toLocaleString();
+        ctx.strokeStyle = "rgba(0,0,0,.42)";
+        ctx.strokeText(gt, gx, gy);
+        ctx.fillStyle = "#ffd23f";
+        ctx.fillText(gt, gx, gy);
+      }
+      ctx.globalAlpha = 1;
+    }
 
     ctx.font = "600 13px system-ui, sans-serif";
     ctx.fillStyle = "rgba(255,255,255,.9)";
@@ -5162,13 +5234,43 @@
 
     ctx.textAlign = "center";
     ctx.textBaseline = "middle";
+    // 퍼지는 고리 — 큰 점수가 터진 자리
+    for (const rg of rings) {
+      const k = rg.t / rg.life;
+      const rr = rg.r1 * (0.14 + 0.86 * (1 - Math.pow(1 - k, 2)));
+      ctx.globalAlpha = (1 - k) * 0.7;
+      ctx.strokeStyle = rg.color;
+      ctx.lineWidth = 1 + 5 * (1 - k);
+      ctx.beginPath(); ctx.arc(rg.x, rg.y, rr, 0, 6.283); ctx.stroke();
+    }
+    ctx.globalAlpha = 1;
+
     for (const f of floats) {
-      ctx.globalAlpha = Math.max(0, 1 - f.t / f.life);
+      ctx.globalAlpha = Math.max(0, 1 - Math.pow(f.t / f.life, 2));
+      /* 튀어나왔다가 제자리로 — 눈이 먼저 글자를 잡게 만든다 */
+      let sc = 1;
+      if (f.pop) {
+        if (f.t < 0.16) sc = 0.5 + 1.75 * f.t;                    // 0.50 → 1.28
+        else if (f.t < 0.34) sc = 1.28 - 1.556 * (f.t - 0.16);    // 1.28 → 1.00
+      }
+      ctx.save();
+      ctx.translate(f.x, f.y);
+      if (sc !== 1) ctx.scale(sc, sc);
       ctx.font = "800 " + (f.size || 22) + "px system-ui, sans-serif";
-      ctx.lineWidth = 4; ctx.strokeStyle = "rgba(0,0,0,.35)";
-      ctx.strokeText(f.text, f.x, f.y);
-      ctx.fillStyle = f.color;
-      ctx.fillText(f.text, f.x, f.y);
+      ctx.lineWidth = f.tier >= 1 ? 6 : 4;
+      ctx.lineJoin = "round";
+      ctx.strokeStyle = "rgba(0,0,0,.42)";
+      ctx.strokeText(f.text, 0, 0);
+      if (f.tier >= 1) {                       // 큰 것만 금빛이 흐른다
+        const tg = ctx.createLinearGradient(0, -f.size * 0.6, 0, f.size * 0.6);
+        tg.addColorStop(0, "#fffdf0");
+        tg.addColorStop(1, f.color);
+        ctx.fillStyle = tg;
+      } else {
+        ctx.fillStyle = f.color;
+      }
+      ctx.fillText(f.text, 0, 0);
+      ctx.restore();
     }
     ctx.globalAlpha = 1;
 
