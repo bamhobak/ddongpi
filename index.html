@@ -757,7 +757,7 @@
   const elFinal = document.getElementById("finalScore");
   const elTitle = document.getElementById("overTitle");
 
-  const GAME_VERSION = "v1.3.98";   // 코드를 고칠 때마다 뒤 두 자리를 올린다
+  const GAME_VERSION = "v1.3.99";   // 코드를 고칠 때마다 뒤 두 자리를 올린다
   document.getElementById("ver").textContent = GAME_VERSION;
 
   const LS_NAME = "epjpddongpi_name";
@@ -1189,6 +1189,11 @@
     bi.onload = () => { ZONE_IMG[k] = bi; };
     bi.src = "assets/bg/zone" + (zi + 1 < 10 ? "0" : "") + (zi + 1) + ".webp";
   }
+  // 뚜니핑 타임 하늘 — 땅 위에서는 황금빛, 우주에서는 보랏빛 워프
+  let feverSky = null, feverSkySpace = null;
+  { const fi = new Image(); fi.onload = () => { feverSky = fi; }; fi.src = "assets/bg/fever.webp"; }
+  { const fs = new Image(); fs.onload = () => { feverSkySpace = fs; };
+    fs.src = "assets/bg/fever_space.webp"; }
   // 도박사의 비둘기 그림 (없으면 아래 도안으로 그린다)
   let doveImg = null;
   { const di = new Image(); di.onload = () => { doveImg = di; }; di.src = "assets/dove.png"; }
@@ -1730,6 +1735,7 @@
   let zoneShown = -1;              // 도착 안내를 이미 띄운 단계
   let shake = 0, flash = 0, feverFlash = 0;
   let fever = false, feverT = 0, feverDur = 10000;
+  let feverBanner = 0;               // 뚜니핑 타임 시작 알림 (1 → 0, 1.1초)
   let last = 0;
 
   const keys = {};
@@ -2006,7 +2012,7 @@
     spawnTimer = 0;
     resetBonusTimers();
     invUntil = 0; powerUntil = 0; hurtUntil = 0; shields = 0;
-    shake = 0; flash = 0; feverFlash = 0; fever = false; feverT = 0;
+    shake = 0; flash = 0; feverFlash = 0; fever = false; feverT = 0; feverBanner = 0;
     zoneShown = -1;
     augCount = {};
     aug.feverBonus = 0; aug.starMul = 1; aug.timeMul = 1;
@@ -2344,9 +2350,11 @@
     if (shake > 0) shake = Math.max(0, shake - dt * 40);
     if (flash > 0) flash = Math.max(0, flash - dt * 3);
     if (feverFlash > 0) feverFlash = Math.max(0, feverFlash - dt * 2.5);
+    if (feverBanner > 0) feverBanner = Math.max(0, feverBanner - dt / 1.1);
 
     const wasFever = fever;
     fever = state === STATE.PLAY && now < powerUntil;
+    if (!wasFever && fever) feverBanner = 1;      // 막 시작했다
     // 겹쳐 먹어 남은 시간이 한 번 분량을 넘으면 게이지가 넘치므로 1로 묶는다
     feverT = fever ? Math.min(1, (powerUntil - now) / feverDur) : 0;
     // 뚜니핑 타임 끝나는 순간엔 화면이 똥으로 가득 차 있으니 1초 무적으로 숨 돌릴 틈을 준다
@@ -4074,7 +4082,11 @@
        색만 이어지던 때처럼 끊김 없이 바뀐다.
        (뚜니핑 타임에는 불꽃 하늘이 주인공이라 그림을 걷는다) */
     let bgShown = false;
-    if (!fever) {
+    if (fever) {
+      const fsky = spaceFever ? feverSkySpace : feverSky;
+      drawZoneImg(fsky, 1);
+      bgShown = !!fsky;
+    } else {
       const i0 = zoneIdx(), i1 = Math.min(LAST_Z, i0 + 1);
       drawZoneImg(ZONE_IMG[i0], 1);
       if (i1 !== i0) drawZoneImg(ZONE_IMG[i1], zoneFrac());
@@ -4116,8 +4128,9 @@
     }
 
     // 구름 — 올라갈수록 옅어지다 사라진다
-    const cl = fever ? (spaceFever ? 0 : 0.75)
-                     : (bgShown ? 0 : Math.min(0.80, zv("cl") * 0.62));
+    const cl = bgShown ? 0
+             : fever ? (spaceFever ? 0 : 0.75)
+                     : Math.min(0.80, zv("cl") * 0.62);
     if (cl > 0.02) {
       ctx.fillStyle = "rgba(255,255,255," + cl.toFixed(2) + ")";
       for (const c of clouds) {
@@ -4998,22 +5011,77 @@
       ctx.fill();
     }
 
-    // 🔥 뚜니핑 타임 게이지
+    /* 뚜니핑 타임 — 예전엔 한가운데에 글자와 막대를 놓아서 정작 똥이
+       쏟아지는 자리를 가렸다. 남은 시간은 위쪽 알약 하나로 줄이고,
+       크게 알리는 일은 시작하는 순간 한 번만 한다. */
+    const tn = performance.now();
     if (fever) {
-      // 점수·레벨과 겹치지 않도록 화면 한가운데에 표시
-      const bw = Math.min(260, W - 60), bx = (W - bw) / 2, by = H / 2 + 8;
-      const ty = H / 2 - 24;
-      ctx.textAlign = "center";
-      ctx.font = "800 22px system-ui, sans-serif";
-      ctx.lineWidth = 5; ctx.strokeStyle = "rgba(120,30,0,.55)";
-      ctx.strokeText("🔥 뚜니핑 타임 🔥", W / 2, ty);
-      ctx.fillStyle = "#fff";
-      ctx.fillText("🔥 뚜니핑 타임 🔥", W / 2, ty);
+      const sp = inSpace();
+      const bw = Math.min(190, W - 130), bx = (W - bw) / 2, by = top + 58, bh = 24, br = bh / 2;
+      const pulse = 0.5 + 0.5 * Math.sin(tn / 150);
 
-      ctx.fillStyle = "rgba(0,0,0,.28)";
-      ctx.beginPath(); ctx.roundRect(bx, by, bw, 10, 5); ctx.fill();
-      ctx.fillStyle = "#fff36b";
-      ctx.beginPath(); ctx.roundRect(bx, by, bw * feverT, 10, 5); ctx.fill();
+      ctx.save();                                  // 바깥 번짐
+      ctx.shadowColor = sp ? "rgba(226,110,255,.9)" : "rgba(255,168,42,.9)";
+      ctx.shadowBlur = 12 + pulse * 10;
+      ctx.fillStyle = "rgba(28,12,4,.52)";
+      ctx.beginPath(); ctx.roundRect(bx, by, bw, bh, br); ctx.fill();
+      ctx.restore();
+
+      ctx.save();                                  // 남은 시간이 줄어드는 속
+      ctx.beginPath(); ctx.roundRect(bx, by, bw, bh, br); ctx.clip();
+      const fg = ctx.createLinearGradient(bx, by, bx + bw, by);
+      if (sp) { fg.addColorStop(0, "#ff5ae0"); fg.addColorStop(.5, "#c65cff");
+                fg.addColorStop(1, "#7ad4ff"); }
+      else    { fg.addColorStop(0, "#ff6a2e"); fg.addColorStop(.5, "#ffb32e");
+                fg.addColorStop(1, "#ffe98a"); }
+      ctx.fillStyle = fg;
+      ctx.fillRect(bx, by, bw * feverT, bh);
+      ctx.fillStyle = "rgba(255,255,255,.20)";     // 위쪽 광택
+      ctx.fillRect(bx, by, bw, bh * 0.42);
+      ctx.restore();
+
+      ctx.lineWidth = 1.5;                         // 테두리
+      ctx.strokeStyle = "rgba(255,255,255,.55)";
+      ctx.beginPath(); ctx.roundRect(bx + .75, by + .75, bw - 1.5, bh - 1.5, br); ctx.stroke();
+
+      ctx.textAlign = "center"; ctx.textBaseline = "middle";
+      ctx.font = "800 13px system-ui, sans-serif";
+      ctx.lineWidth = 3.5; ctx.strokeStyle = "rgba(52,14,0,.62)";
+      ctx.strokeText("뚜니핑 타임", W / 2, by + bh / 2 + 0.5);
+      ctx.fillStyle = "#fff";
+      ctx.fillText("뚜니핑 타임", W / 2, by + bh / 2 + 0.5);
+      ctx.textBaseline = "top";
+    }
+
+    // 시작하는 순간에만 크게 터진다 — 튀어나왔다가 사라진다
+    if (feverBanner > 0) {
+      const pr = 1 - feverBanner;                          // 0 → 1
+      const pop = Math.min(1, pr / 0.22);
+      const sc = 0.62 + 0.55 * (1 - Math.pow(1 - pop, 3)); // 0.62 → 1.17
+      const al = Math.min(1, feverBanner / 0.32);          // 끝에서 스르르 사라진다
+      const by = H * 0.34;
+      ctx.save();
+      ctx.globalAlpha = al;
+      ctx.translate(W / 2, by);
+      ctx.scale(sc, sc);
+      const gl = ctx.createRadialGradient(0, 0, 0, 0, 0, 160);
+      gl.addColorStop(0, inSpace() ? "rgba(210,110,255,.45)" : "rgba(255,190,70,.45)");
+      gl.addColorStop(1, "rgba(255,190,70,0)");
+      ctx.fillStyle = gl;
+      ctx.beginPath(); ctx.arc(0, 0, 160, 0, 6.283); ctx.fill();
+
+      ctx.textAlign = "center"; ctx.textBaseline = "middle";
+      ctx.font = "900 34px system-ui, sans-serif";
+      ctx.lineWidth = 8; ctx.lineJoin = "round";
+      ctx.strokeStyle = "rgba(52,14,0,.7)";
+      ctx.strokeText("뚜니핑 타임!", 0, 0);
+      const tg = ctx.createLinearGradient(0, -20, 0, 20);
+      tg.addColorStop(0, "#fffdf0");
+      tg.addColorStop(1, inSpace() ? "#ffb0f4" : "#ffd23f");
+      ctx.fillStyle = tg;
+      ctx.fillText("뚜니핑 타임!", 0, 0);
+      ctx.restore();
+      ctx.textBaseline = "top";
     }
     ctx.restore();
   }
