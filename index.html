@@ -757,7 +757,7 @@
   const elFinal = document.getElementById("finalScore");
   const elTitle = document.getElementById("overTitle");
 
-  const GAME_VERSION = "v1.3.97";   // 코드를 고칠 때마다 뒤 두 자리를 올린다
+  const GAME_VERSION = "v1.3.98";   // 코드를 고칠 때마다 뒤 두 자리를 올린다
   document.getElementById("ver").textContent = GAME_VERSION;
 
   const LS_NAME = "epjpddongpi_name";
@@ -1181,6 +1181,14 @@
     im.src = "assets/item_" + file + ".png";
   }
   const ITEM_IMG_SCALE = 1.18;
+  /* 지대 배경 그림 — 잔디밭부터 블랙홀 안까지 18장.
+     전부 합쳐 140KB 남짓이라 처음에 다 받아 둔다. */
+  const ZONE_IMG = [];
+  for (let zi = 0; zi < 18; zi++) {
+    const bi = new Image(), k = zi;
+    bi.onload = () => { ZONE_IMG[k] = bi; };
+    bi.src = "assets/bg/zone" + (zi + 1 < 10 ? "0" : "") + (zi + 1) + ".webp";
+  }
   // 도박사의 비둘기 그림 (없으면 아래 도안으로 그린다)
   let doveImg = null;
   { const di = new Image(); di.onload = () => { doveImg = di; }; di.src = "assets/dove.png"; }
@@ -4029,6 +4037,18 @@
       kind: (i % 24 === 0) ? 2 : (i % 5 === 0) ? 1 : 0
     });
   }
+  /* 배경 그림 한 장 — 비율을 지킨 채 화면을 덮도록 키워서 가운데 맞춘다.
+     기기마다 세로 비율이 달라서, 남는 쪽은 잘려 나간다. */
+  function drawZoneImg(im, a) {
+    if (!im || a <= 0.004) return;
+    const sc = Math.max(W / im.width, H / im.height);
+    const dw = im.width * sc, dh = im.height * sc;
+    ctx.save();
+    ctx.globalAlpha = Math.min(1, a);
+    ctx.drawImage(im, (W - dw) / 2, (H - dh) / 2, dw, dh);
+    ctx.restore();
+  }
+
   function drawBackground(now) {
     const g = ctx.createLinearGradient(0, 0, 0, H);
     const spaceFever = fever && inSpace();
@@ -4050,6 +4070,17 @@
     ctx.fillStyle = g;
     ctx.fillRect(0, 0, W, H);
 
+    /* 지대 배경 그림. 다음 지대로 넘어가는 동안 두 장을 겹쳐 녹여서
+       색만 이어지던 때처럼 끊김 없이 바뀐다.
+       (뚜니핑 타임에는 불꽃 하늘이 주인공이라 그림을 걷는다) */
+    let bgShown = false;
+    if (!fever) {
+      const i0 = zoneIdx(), i1 = Math.min(LAST_Z, i0 + 1);
+      drawZoneImg(ZONE_IMG[i0], 1);
+      if (i1 !== i0) drawZoneImg(ZONE_IMG[i1], zoneFrac());
+      bgShown = !!ZONE_IMG[i0];
+    }
+
     // 뚜니핑 타임 속도선 — 우주에서는 길게 늘어진 별빛으로
     if (fever) {
       const n = spaceFever ? 26 : 14, len = spaceFever ? 170 : 70;
@@ -4067,20 +4098,26 @@
     if (!fever) {
       const nb = zv("nb"), st = zv("st"), mo = zv("mo"), au = zv("au"),
             ea = zv("ea"), rk = zv("rk"), mt = zv("mt");
-      if (nb > 0.01) drawNebula(nb, now);
-      if (st > 0.01) drawStars(st, now);
-      const bh = zv("bh"), sw = zv("sw");
-      if (sw > 0.01) drawSwirl(sw, now);
-      if (bh > 0.01) drawBlackhole(bh, now);
-      if (mo > 0.01) drawMoon(mo);
-      if (au > 0.01) drawAurora(au, now);
-      if (rk > 0.01) drawRocks(rk, now);
+      /* 별·성운·달·지구·오로라·소행성·블랙홀은 배경 그림 안에 이미 있다.
+         그림이 올라와 있으면 겹쳐 그리지 않는다.
+         운석만 남긴다 — 그림은 멈춰 있어서 움직이는 것이 하나는 있어야 한다. */
+      if (!bgShown) {
+        if (nb > 0.01) drawNebula(nb, now);
+        if (st > 0.01) drawStars(st, now);
+        const bh = zv("bh"), sw = zv("sw");
+        if (sw > 0.01) drawSwirl(sw, now);
+        if (bh > 0.01) drawBlackhole(bh, now);
+        if (mo > 0.01) drawMoon(mo);
+        if (au > 0.01) drawAurora(au, now);
+        if (rk > 0.01) drawRocks(rk, now);
+        if (ea > 0.01) drawEarth(ea);
+      }
       if (mt > 0.01) drawMeteors(mt, now);
-      if (ea > 0.01) drawEarth(ea);
     }
 
     // 구름 — 올라갈수록 옅어지다 사라진다
-    const cl = fever ? (spaceFever ? 0 : 0.75) : Math.min(0.80, zv("cl") * 0.62);
+    const cl = fever ? (spaceFever ? 0 : 0.75)
+                     : (bgShown ? 0 : Math.min(0.80, zv("cl") * 0.62));
     if (cl > 0.02) {
       ctx.fillStyle = "rgba(255,255,255," + cl.toFixed(2) + ")";
       for (const c of clouds) {
