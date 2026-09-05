@@ -757,7 +757,7 @@
   const elFinal = document.getElementById("finalScore");
   const elTitle = document.getElementById("overTitle");
 
-  const GAME_VERSION = "v1.3.99";   // 코드를 고칠 때마다 뒤 두 자리를 올린다
+  const GAME_VERSION = "v1.4.00";   // 코드를 고칠 때마다 뒤 두 자리를 올린다
   document.getElementById("ver").textContent = GAME_VERSION;
 
   const LS_NAME = "epjpddongpi_name";
@@ -4047,13 +4047,19 @@
   }
   /* 배경 그림 한 장 — 비율을 지킨 채 화면을 덮도록 키워서 가운데 맞춘다.
      기기마다 세로 비율이 달라서, 남는 쪽은 잘려 나간다. */
-  function drawZoneImg(im, a) {
+  function drawZoneImg(im, a, now) {
     if (!im || a <= 0.004) return;
     const sc = Math.max(W / im.width, H / im.height);
     const dw = im.width * sc, dh = im.height * sc;
+    /* 잘려 나간 여유분 안에서 아주 느리게 오르내린다 (한 바퀴 69초).
+       두 지대가 겹쳐 녹는 동안에도 같은 만큼 밀려야 어긋나 보이지 않으므로,
+       그림마다 따로 세지 않고 시계 하나로 함께 움직인다. */
+    const slack = Math.max(0, dh - H);
+    const amp = Math.min(slack * 0.42, 150);
+    const dy = (H - dh) / 2 + Math.sin((now || 0) / 11000) * amp;
     ctx.save();
     ctx.globalAlpha = Math.min(1, a);
-    ctx.drawImage(im, (W - dw) / 2, (H - dh) / 2, dw, dh);
+    ctx.drawImage(im, (W - dw) / 2, dy, dw, dh);
     ctx.restore();
   }
 
@@ -4084,12 +4090,12 @@
     let bgShown = false;
     if (fever) {
       const fsky = spaceFever ? feverSkySpace : feverSky;
-      drawZoneImg(fsky, 1);
+      drawZoneImg(fsky, 1, now);
       bgShown = !!fsky;
     } else {
       const i0 = zoneIdx(), i1 = Math.min(LAST_Z, i0 + 1);
-      drawZoneImg(ZONE_IMG[i0], 1);
-      if (i1 !== i0) drawZoneImg(ZONE_IMG[i1], zoneFrac());
+      drawZoneImg(ZONE_IMG[i0], 1, now);
+      if (i1 !== i0) drawZoneImg(ZONE_IMG[i1], zoneFrac(), now);
       bgShown = !!ZONE_IMG[i0];
     }
 
@@ -5016,37 +5022,51 @@
        크게 알리는 일은 시작하는 순간 한 번만 한다. */
     const tn = performance.now();
     if (fever) {
+      /* 화면 한가운데. 예전처럼 글자와 막대를 따로 두지 않고 하나로 합쳐,
+         가로로 길고 세로로 얇게 눕혀서 가리는 넓이를 줄였다.
+         남은 시간은 양쪽에서 가운데로 좁혀 들어온다 — 끝이 다가오는 게 보인다. */
       const sp = inSpace();
-      const bw = Math.min(190, W - 130), bx = (W - bw) / 2, by = top + 58, bh = 24, br = bh / 2;
+      const bh = 20, br = bh / 2;
+      const bw = Math.min(304, W - 56), bx = (W - bw) / 2;
+      const by = Math.round(H / 2 - bh / 2);
       const pulse = 0.5 + 0.5 * Math.sin(tn / 150);
+      const lw = bw * feverT, lx = W / 2 - lw / 2;   // 가운데를 기준으로 좁혀진다
 
-      ctx.save();                                  // 바깥 번짐
-      ctx.shadowColor = sp ? "rgba(226,110,255,.9)" : "rgba(255,168,42,.9)";
-      ctx.shadowBlur = 12 + pulse * 10;
-      ctx.fillStyle = "rgba(28,12,4,.52)";
+      ctx.save();                                    // 바깥 번짐
+      ctx.shadowColor = sp ? "rgba(226,110,255,.85)" : "rgba(255,168,42,.85)";
+      ctx.shadowBlur = 10 + pulse * 12;
+      ctx.fillStyle = "rgba(20,9,3,.42)";
       ctx.beginPath(); ctx.roundRect(bx, by, bw, bh, br); ctx.fill();
       ctx.restore();
 
-      ctx.save();                                  // 남은 시간이 줄어드는 속
+      ctx.save();
       ctx.beginPath(); ctx.roundRect(bx, by, bw, bh, br); ctx.clip();
       const fg = ctx.createLinearGradient(bx, by, bx + bw, by);
-      if (sp) { fg.addColorStop(0, "#ff5ae0"); fg.addColorStop(.5, "#c65cff");
-                fg.addColorStop(1, "#7ad4ff"); }
-      else    { fg.addColorStop(0, "#ff6a2e"); fg.addColorStop(.5, "#ffb32e");
-                fg.addColorStop(1, "#ffe98a"); }
+      if (sp) { fg.addColorStop(0, "#7ad4ff"); fg.addColorStop(.5, "#c65cff");
+                fg.addColorStop(1, "#ff5ae0"); }
+      else    { fg.addColorStop(0, "#ffe98a"); fg.addColorStop(.5, "#ffb32e");
+                fg.addColorStop(1, "#ff6a2e"); }
       ctx.fillStyle = fg;
-      ctx.fillRect(bx, by, bw * feverT, bh);
-      ctx.fillStyle = "rgba(255,255,255,.20)";     // 위쪽 광택
-      ctx.fillRect(bx, by, bw, bh * 0.42);
+      ctx.fillRect(lx, by, lw, bh);
+      // 훑고 지나가는 빛 — 멈춰 있지 않다는 표시
+      const shx = ((tn / 5) % (bw + 120)) - 60;
+      const sg = ctx.createLinearGradient(bx + shx - 40, 0, bx + shx + 40, 0);
+      sg.addColorStop(0, "rgba(255,255,255,0)");
+      sg.addColorStop(.5, "rgba(255,255,255,.42)");
+      sg.addColorStop(1, "rgba(255,255,255,0)");
+      ctx.fillStyle = sg;
+      ctx.fillRect(lx, by, lw, bh);
+      ctx.fillStyle = "rgba(255,255,255,.18)";       // 위쪽 광택
+      ctx.fillRect(bx, by, bw, bh * 0.44);
       ctx.restore();
 
-      ctx.lineWidth = 1.5;                         // 테두리
-      ctx.strokeStyle = "rgba(255,255,255,.55)";
-      ctx.beginPath(); ctx.roundRect(bx + .75, by + .75, bw - 1.5, bh - 1.5, br); ctx.stroke();
+      ctx.lineWidth = 1.4;
+      ctx.strokeStyle = "rgba(255,255,255,.5)";
+      ctx.beginPath(); ctx.roundRect(bx + .7, by + .7, bw - 1.4, bh - 1.4, br); ctx.stroke();
 
       ctx.textAlign = "center"; ctx.textBaseline = "middle";
-      ctx.font = "800 13px system-ui, sans-serif";
-      ctx.lineWidth = 3.5; ctx.strokeStyle = "rgba(52,14,0,.62)";
+      ctx.font = "800 12px system-ui, sans-serif";
+      ctx.lineWidth = 3.5; ctx.strokeStyle = "rgba(46,12,0,.66)";
       ctx.strokeText("뚜니핑 타임", W / 2, by + bh / 2 + 0.5);
       ctx.fillStyle = "#fff";
       ctx.fillText("뚜니핑 타임", W / 2, by + bh / 2 + 0.5);
@@ -5059,7 +5079,7 @@
       const pop = Math.min(1, pr / 0.22);
       const sc = 0.62 + 0.55 * (1 - Math.pow(1 - pop, 3)); // 0.62 → 1.17
       const al = Math.min(1, feverBanner / 0.32);          // 끝에서 스르르 사라진다
-      const by = H * 0.34;
+      const by = H * 0.30;
       ctx.save();
       ctx.globalAlpha = al;
       ctx.translate(W / 2, by);
