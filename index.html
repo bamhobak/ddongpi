@@ -754,7 +754,7 @@
   const elFinal = document.getElementById("finalScore");
   const elTitle = document.getElementById("overTitle");
 
-  const GAME_VERSION = "v1.3.92";   // 코드를 고칠 때마다 뒤 두 자리를 올린다
+  const GAME_VERSION = "v1.3.93";   // 코드를 고칠 때마다 뒤 두 자리를 올린다
   document.getElementById("ver").textContent = GAME_VERSION;
 
   const LS_NAME = "epjpddongpi_name";
@@ -1707,11 +1707,11 @@
   let subsTimer = 0;               // 휴지 정기구독: 마지막 휴지 이후 지난 시간
   let noHitSec = 0;                // 마지막 피격 이후 버틴 시간 (무소유 배율용)
   let clones = [], cloneTimer = 0; // 벼랑 끝 분신술: 날아가는 작은 이재들
-  /* 도박사 — 100m 움직일 때마다 머리 위에서 비둘기가 날아오른다.
+  /* 도박사 — 80m 움직일 때마다 머리 위에서 비둘기가 날아오른다.
      게임 안의 1m = 논리 좌표 12px 로 본다 (캐릭터 키가 대략 1.5m 쯤 되는 비율). */
   let doves = [], moveDist = 0;
   let bullets = [], shipTimer = 0;   // 갤러그: 날아가는 총알과 다음 발사까지 남은 시간
-  const M_PX = 12, DOVE_EVERY = 100 * M_PX;
+  const M_PX = 12, DOVE_EVERY = 80 * M_PX;   // 100m 에서 20% 줄여 80m 마다
   let inputHoldUntil = 0;          // 이 시각까지는 화면 터치를 조작으로 받지 않는다
   let ghostTimer = 3;              // 유령화: 다음 무적까지 남은 시간
   let roidT = 0;                   // 스테로이드 과다 복용: 남은 약발 시간(초)
@@ -2538,7 +2538,7 @@
       c.x += dx2 / d2 * 1200 * dt;
       c.y += dy2 / d2 * 1200 * dt;
       if ((alive && d2 < (c.t.r || 20) + 16) || c.life <= 0) {
-        smashPoopsAround(c.x, c.y, 100, true);        // 폭발 반경 100px (특수똥까지 부순다)
+        smashPoopsAround(c.x, c.y, 115, true);        // 폭발 반경 115px (특수똥까지 부순다)
         burst(c.x, c.y, "#ffd23f", 26);
         shake = Math.max(shake, 8);
         beep(240, .12, "square", .05);
