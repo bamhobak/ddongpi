@@ -757,7 +757,7 @@
   const elFinal = document.getElementById("finalScore");
   const elTitle = document.getElementById("overTitle");
 
-  const GAME_VERSION = "v1.4.02";   // 코드를 고칠 때마다 뒤 두 자리를 올린다
+  const GAME_VERSION = "v1.4.03";   // 코드를 고칠 때마다 뒤 두 자리를 올린다
   document.getElementById("ver").textContent = GAME_VERSION;
 
   const LS_NAME = "epjpddongpi_name";
@@ -4090,16 +4090,17 @@
   }
   /* 배경 그림 한 장 — 비율을 지킨 채 화면을 덮도록 키워서 가운데 맞춘다.
      기기마다 세로 비율이 달라서, 남는 쪽은 잘려 나간다. */
-  function drawZoneImg(im, a, now) {
+  /* 배경은 위에서 아래로만 흐른다 — 그래야 주인공이 계속 올라가는 것처럼 보인다.
+     그림은 화면보다 세로로 길어 위아래가 잘려 있고, prog 0 일 때 그 여유분의
+     맨 위(그림의 아래쪽이 보이는 자리)에서 시작해 1 일 때 맨 아래까지 내려온다.
+     되돌아가는 지점은 지대가 바뀌며 두 그림이 겹쳐 녹는 순간이라 보이지 않는다. */
+  function drawZoneImg(im, a, prog) {
     if (!im || a <= 0.004) return;
     const sc = Math.max(W / im.width, H / im.height);
     const dw = im.width * sc, dh = im.height * sc;
-    /* 잘려 나간 여유분 안에서 아주 느리게 오르내린다 (한 바퀴 69초).
-       두 지대가 겹쳐 녹는 동안에도 같은 만큼 밀려야 어긋나 보이지 않으므로,
-       그림마다 따로 세지 않고 시계 하나로 함께 움직인다. */
-    const slack = Math.max(0, dh - H);
-    const amp = Math.min(slack * 0.42, 150);
-    const dy = (H - dh) / 2 + Math.sin((now || 0) / 11000) * amp;
+    const amp = Math.min(Math.max(0, dh - H) / 2, 130);
+    const pg = Math.max(0, Math.min(1, prog || 0));
+    const dy = (H - dh) / 2 - amp + 2 * amp * pg;
     ctx.save();
     ctx.globalAlpha = Math.min(1, a);
     ctx.drawImage(im, (W - dw) / 2, dy, dw, dh);
@@ -4132,13 +4133,18 @@
        (뚜니핑 타임에는 불꽃 하늘이 주인공이라 그림을 걷는다) */
     let bgShown = false;
     if (fever) {
+      // 뚜니핑 하늘은 겹쳐 먹으면 시간이 늘어나므로 남은 시간 대신 시계로 흘린다.
+      // 빛줄기뿐인 그림이라 12초마다 되돌아가도 눈에 띄지 않는다.
       const fsky = spaceFever ? feverSkySpace : feverSky;
-      drawZoneImg(fsky, 1, now);
+      drawZoneImg(fsky, 1, ((now || 0) / 12000) % 1);
       bgShown = !!fsky;
     } else {
       const i0 = zoneIdx(), i1 = Math.min(LAST_Z, i0 + 1);
-      drawZoneImg(ZONE_IMG[i0], 1, now);
-      if (i1 !== i0) drawZoneImg(ZONE_IMG[i1], zoneFrac(), now);
+      /* 그 지대 안에서의 진행도가 곧 배경이 내려온 정도다.
+         마지막 지대는 끝이 없어 12초마다 되돌리는데, 거의 새까매서 티가 안 난다. */
+      const zp = i0 >= LAST_Z ? ((levelTime / 12) % 1) : zoneFrac();
+      drawZoneImg(ZONE_IMG[i0], 1, zp);
+      if (i1 !== i0) drawZoneImg(ZONE_IMG[i1], zoneFrac(), 0);
       bgShown = !!ZONE_IMG[i0];
     }
 
