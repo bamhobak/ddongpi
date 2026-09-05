@@ -757,7 +757,7 @@
   const elFinal = document.getElementById("finalScore");
   const elTitle = document.getElementById("overTitle");
 
-  const GAME_VERSION = "v1.4.04";   // 코드를 고칠 때마다 뒤 두 자리를 올린다
+  const GAME_VERSION = "v1.4.05";   // 코드를 고칠 때마다 뒤 두 자리를 올린다
   document.getElementById("ver").textContent = GAME_VERSION;
 
   const LS_NAME = "epjpddongpi_name";
@@ -2925,17 +2925,20 @@
             // 뚜니핑 타임 전에 떨어지던 일반 똥은 크기로 환산한다.
             const gain = feverGain(it);
             /* 터지는 색은 점수와 무관하게 매번 무작위 — 무지갯빛 폭죽처럼 보이게 한다.
-               입자 수·소리만 점수(크기)에 따라 커진다. */
+               입자 수·소리는 크기를 따른다. 점수로 나누면 레벨당 1.3배씩 부풀어
+               후반엔 작은 것 하나에도 80개씩 터졌다 (화면이 덮이고 발열도 심했다). */
             const tone = FEVER_TONES[Math.floor(Math.random() * FEVER_TONES.length)];
+            const sz = it.sz;
             let burstN, note;
-            if (gain >= 110)     { burstN = 80; note = 2200; }
-            else if (gain >= 40) { burstN = 54; note = 2000; }
-            else if (gain >= 25) { burstN = 42; note = 1800; }
-            else if (gain >= 15) { burstN = 34; note = 1650; }
-            else if (gain >= 10) { burstN = 26; note = 1500; }
-            else if (gain >= 8)  { burstN = 18; note = 1350; }
-            else if (gain >= 5)  { burstN = 12; note = 1150; }
-            else                 { burstN = 8;  note = 900;  }
+            if (it.giant)     { burstN = 80; note = 2200; }
+            else if (sz >= 52) { burstN = 66; note = 2100; }
+            else if (sz >= 44) { burstN = 54; note = 2000; }
+            else if (sz >= 37) { burstN = 42; note = 1800; }
+            else if (sz >= 31) { burstN = 34; note = 1650; }
+            else if (sz >= 26) { burstN = 26; note = 1500; }
+            else if (sz >= 22) { burstN = 18; note = 1350; }
+            else if (sz >= 18) { burstN = 12; note = 1150; }
+            else               { burstN = 8;  note = 900;  }
             score += gain;
             if (aug.refill && powered && refillLeft > 0) {   // 무한리필 — 먹은 만큼 길어진다
               const add = Math.min(150, refillLeft);
@@ -2952,7 +2955,8 @@
               : Math.max(0, (it.sz - 26) / 36) * 14;
             if (sh >= 1) shake = Math.max(shake, sh);
             items.splice(i, 1);
-            if (gain >= 25 || Math.random() < .5) beep(note + Math.random() * 200, .06, "square", .04);
+            // 큰 것은 늘 소리가 나고, 작은 것은 절반만 — 안 그러면 소리가 뭉개진다
+            if (sz >= 44 || Math.random() < .5) beep(note + Math.random() * 200, .06, "square", .04);
             continue;
           }
           if (roidT > 0) {
