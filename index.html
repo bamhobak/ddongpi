@@ -747,6 +747,9 @@
   let items = [], particles = [], floats = [], clouds = [];
   const cv = document.getElementById("cv");
   const ctx = cv.getContext("2d");
+  // 그림을 줄여 그릴 때 가장자리가 자글거리지 않도록 보간 품질을 올린다
+  ctx.imageSmoothingEnabled = true;
+  ctx.imageSmoothingQuality = "high";
   const stage = document.getElementById("stage");
 
   const startScreen = document.getElementById("startScreen");
@@ -754,7 +757,7 @@
   const elFinal = document.getElementById("finalScore");
   const elTitle = document.getElementById("overTitle");
 
-  const GAME_VERSION = "v1.3.95";   // 코드를 고칠 때마다 뒤 두 자리를 올린다
+  const GAME_VERSION = "v1.3.96";   // 코드를 고칠 때마다 뒤 두 자리를 올린다
   document.getElementById("ver").textContent = GAME_VERSION;
 
   const LS_NAME = "epjpddongpi_name";
@@ -4529,10 +4532,10 @@
   /* 눈·입 변형 — 그림의 흰자가 순백이라 눈동자를 흰색으로 덮고 다시 그리면 이음매가 없다.
      (좌표는 assets/item_poop.png 를 픽셀 단위로 재어 넣은 값)
      입은 자홍색 영역 안에 이빨·혀를 얹기만 하므로 지울 필요가 없다. (모두 실측 좌표) */
-  const SCL_R = 0.137;                  // 흰자 반지름 / 그림 크기 (새 그림 실측)
-  const PUP_R = 0.089;                  // 원래 눈동자 반지름
+  const SCL_R = 0.122;                  // 흰자 반지름 / 그림 크기 (새 그림 실측)
+  const PUP_R = 0.078;                  // 원래 눈동자 반지름
   const PUP_C = "#141414";              // 원래 눈동자 색
-  const MOU_TOP = 0.332, MOU_BOT = 0.396, MOU_HW = 0.067;   // 입 범위
+  const MOU_TOP = 0.327, MOU_BOT = 0.383, MOU_HW = 0.060;   // 입 범위
 
   function eyeBase(S) {                 // 흰자만 남기고 눈동자를 지운다
     ctx.fillStyle = "#fff";
@@ -4613,7 +4616,7 @@
 
   /* 똥 꾸밈. 3D 그림의 눈은 가운데보다 조금 아래(y +0.124S), 좌우 ±0.221S 에 있고
      눈 반지름은 0.13S 쯤 된다 — 아래 좌표는 전부 그 실측값에 맞춰 두었다. */
-  const EYE_X = 0.207, EYE_Y = 0.108, EYE_R = 0.130;
+  const EYE_X = 0.185, EYE_Y = 0.126, EYE_R = 0.116;
   function drawPoopFace(kind, S) {
     ctx.save();
     ctx.lineCap = "round";
