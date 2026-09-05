@@ -757,7 +757,7 @@
   const elFinal = document.getElementById("finalScore");
   const elTitle = document.getElementById("overTitle");
 
-  const GAME_VERSION = "v1.4.03";   // 코드를 고칠 때마다 뒤 두 자리를 올린다
+  const GAME_VERSION = "v1.4.04";   // 코드를 고칠 때마다 뒤 두 자리를 올린다
   document.getElementById("ver").textContent = GAME_VERSION;
 
   const LS_NAME = "epjpddongpi_name";
@@ -2943,9 +2943,14 @@
             }
             burst(it.x, it.y, tone, burstN);
             // 낙하물은 개당 점수를 띄우지 않는다 (한꺼번에 쏟아져서 화면이 지저분해진다)
-            if (gain >= 15) {
-              shake = Math.max(shake, gain >= 110 ? 32 : (gain >= 40 ? 22 : (gain >= 25 ? 16 : 10)));
-            }
+            /* 흔들림은 점수가 아니라 크기로 정한다.
+               점수는 레벨당 1.3배씩 부풀어서, 후반엔 제일 작은 뚜니핑 하나에도
+               화면이 최대로 흔들렸다. 대왕 뚜니핑(반지름 104~124)이 기준이고,
+               작은 것들은 거의 흔들리지 않는다 — 터지는 입자와 소리로 충분하다. */
+            const sh = it.giant
+              ? 26 + Math.min(1, (it.sz - GIANT.min) / (GIANT.max - GIANT.min)) * 6
+              : Math.max(0, (it.sz - 26) / 36) * 14;
+            if (sh >= 1) shake = Math.max(shake, sh);
             items.splice(i, 1);
             if (gain >= 25 || Math.random() < .5) beep(note + Math.random() * 200, .06, "square", .04);
             continue;
