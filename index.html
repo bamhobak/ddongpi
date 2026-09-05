@@ -757,7 +757,7 @@
   const elFinal = document.getElementById("finalScore");
   const elTitle = document.getElementById("overTitle");
 
-  const GAME_VERSION = "v1.4.05";   // 코드를 고칠 때마다 뒤 두 자리를 올린다
+  const GAME_VERSION = "v1.4.06";   // 코드를 고칠 때마다 뒤 두 자리를 올린다
   document.getElementById("ver").textContent = GAME_VERSION;
 
   const LS_NAME = "epjpddongpi_name";
@@ -1223,8 +1223,8 @@
     }
     /* 26초 동안 잔디밭 → 우주 → 블랙홀 안까지 훑고,
        남은 6초는 블랙홀 안에서 잔디밭으로 이어지는 웜홀을 통과한다. */
-    levelTime = Math.min(introT / INTRO_TRIP, 1) * (12 * ZONES.length);
-    level = 1 + Math.floor(levelTime / 12);
+    levelTime = Math.min(introT / INTRO_TRIP, 1) * (LEVEL_SEC * ZONES.length);
+    level = 1 + Math.floor(levelTime / LEVEL_SEC);
 
     const suit = inSpace();
     if (suit && !introSuit) { feverFlash = Math.max(feverFlash, .55); introBoom = 1; }
@@ -1711,6 +1711,7 @@
 
   let score = 0, lives = 3, level = 1, elapsed = 0, starCount = 0;
   let levelTime = 0;               // 레벨이 오르는 시계 — 뚜니핑 타임에는 멈춰 있다
+  const LEVEL_SEC = 13;            // 레벨 한 칸의 길이(초). 지대 하나의 길이이기도 하다
   let spawnTimer = 0;
   let invUntil = 0, powerUntil = 0;
   let shields = 0;                 // 남은 방패 수 — 우산 아이템은 최대 1, 증강으로만 여러 개
@@ -2421,7 +2422,7 @@
     /* 레벨 시계는 뚜니핑 타임 동안 멈춘다. 무적으로 낙하물을 줍는 시간까지
        레벨에 포함되면, 정작 실력으로 버틴 시간이 아닌데도 난이도가 올라간다. */
     if (!fever) levelTime += dt;
-    level = 1 + Math.floor(levelTime / 12);   // 레벨 하나당 12초
+    level = 1 + Math.floor(levelTime / LEVEL_SEC);
     score += dt * Math.pow(1.8, level - 1) * aug.timeMul * scoreMul();  // 생존 점수: 레벨마다 1.8배
 
     // 한 단계 올라설 때마다 어디에 도착했는지 알려준다
@@ -4065,7 +4066,7 @@
   function zoneFrac() {
     const i = level - 1;
     if (i >= LAST_Z) return 0;
-    return Math.max(0, Math.min(1, levelTime / 12 - i));
+    return Math.max(0, Math.min(1, levelTime / LEVEL_SEC - i));
   }
   // 두 단계 사이를 이어 구한 값 (색이면 rgb 문자열, 숫자면 숫자)
   function zv(key, i) {
@@ -4151,7 +4152,7 @@
       const i0 = zoneIdx(), i1 = Math.min(LAST_Z, i0 + 1);
       /* 그 지대 안에서의 진행도가 곧 배경이 내려온 정도다.
          마지막 지대는 끝이 없어 12초마다 되돌리는데, 거의 새까매서 티가 안 난다. */
-      const zp = i0 >= LAST_Z ? ((levelTime / 12) % 1) : zoneFrac();
+      const zp = i0 >= LAST_Z ? ((levelTime / LEVEL_SEC) % 1) : zoneFrac();
       drawZoneImg(ZONE_IMG[i0], 1, zp);
       if (i1 !== i0) drawZoneImg(ZONE_IMG[i1], zoneFrac(), 0);
       bgShown = !!ZONE_IMG[i0];
