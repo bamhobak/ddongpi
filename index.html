@@ -754,7 +754,7 @@
   const elFinal = document.getElementById("finalScore");
   const elTitle = document.getElementById("overTitle");
 
-  const GAME_VERSION = "v1.3.93";   // 코드를 고칠 때마다 뒤 두 자리를 올린다
+  const GAME_VERSION = "v1.3.94";   // 코드를 고칠 때마다 뒤 두 자리를 올린다
   document.getElementById("ver").textContent = GAME_VERSION;
 
   const LS_NAME = "epjpddongpi_name";
@@ -2975,17 +2975,16 @@
       }
     }
 
-    /* 성난 우산에 날아간 똥이 내려오던 똥과 부딪히면 둘 다 터진다 (연쇄 청소). */
+    /* 성난 우산에 날아간 똥은 부딪히는 똥을 관통하며 계속 부순다 (연쇄 청소). */
     let boom = false;
     for (const a of items) {
       if (!a.blast || a.dead) continue;
       for (const q of items) {
         if (q === a || q.dead || q.blast || q.type !== "poop") continue;
         if (Math.hypot(a.x - q.x, a.y - q.y) > a.r + q.r) continue;
-        q.dead = a.dead = boom = true;
+        q.dead = true; boom = true;               // 날아가는 똥은 살아서 계속 나아간다
         score += 3 * scoreMul();
-        burst((a.x + q.x) / 2, (a.y + q.y) / 2, "#9fd4ff", 16);
-        break;
+        burst(q.x, q.y, "#9fd4ff", 16);
       }
     }
     if (boom) {
