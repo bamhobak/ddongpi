@@ -766,7 +766,7 @@
   const elFinal = document.getElementById("finalScore");
   const elTitle = document.getElementById("overTitle");
 
-  const GAME_VERSION = "v1.4.28";   // 코드를 고칠 때마다 뒤 두 자리를 올린다
+  const GAME_VERSION = "v1.4.29";   // 코드를 고칠 때마다 뒤 두 자리를 올린다
   document.getElementById("ver").textContent = GAME_VERSION;
 
   const LS_NAME = "epjpddongpi_name";
@@ -2804,7 +2804,8 @@
         if (Math.hypot(q.x - c.x, q.y - c.y) < q.r + 14 * dm) { bump = true; break; }
       }
       if (bump || (alive && d2 < (c.t.r || 20) + 14 * dm) || c.y < -40) {
-        smashPoopsAround(c.x, c.y, 50 * dm, true);      // 폭발 반경 50px
+        // 비둘기가 부순 똥은 똥점수 5배
+        smashPoopsAround(c.x, c.y, 50 * dm, true, 5);   // 폭발 반경 50px
         burst(c.x, c.y, "#eaf6ff", 18);
         shake = Math.max(shake, 6);
         beep(300, .1, "square", .045);
@@ -3297,8 +3298,10 @@
     return Math.max(1, Math.round(base * aug.feverScoreMul * scoreMul() * Math.pow(1.3, level - 1)));
   }
 
-  // 정연핑이 지나간 자리의 똥을 부순다 (뚜니핑 낙하물은 제 점수를 그대로 준다)
-  function smashPoopsAround(x, y, radius, force) {
+  /* 정연핑이 지나간 자리의 똥을 부순다 (뚜니핑 낙하물은 제 점수를 그대로 준다)
+     gainMul — 부순 똥의 점수 배율. 비둘기는 5배를 준다. */
+  function smashPoopsAround(x, y, radius, force, gainMul) {
+    const gm = gainMul || 1;
     for (let i = items.length - 1; i >= 0; i--) {
       const it = items[i];
       if (it.type !== "poop") continue;
@@ -3312,7 +3315,7 @@
         continue;
       }
       if (it.special && force) {              // 분신 폭발은 까다로운 똥도 부순다
-        score += 3 * scoreMul();
+        score += 3 * scoreMul() * gm;
         burst(it.x, it.y, "#ffd23f", 16);
         items.splice(i, 1);
         continue;
@@ -3357,7 +3360,7 @@
         score += g;
         burst(it.x, it.y, FEVER_TONES[Math.floor(Math.random() * FEVER_TONES.length)], g >= 25 ? 30 : 16);
       } else {
-        score += 3 * scoreMul();
+        score += 3 * scoreMul() * gm;
         burst(it.x, it.y, "#ffd23f", 14);
       }
       items.splice(i, 1);
