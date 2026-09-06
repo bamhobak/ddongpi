@@ -766,7 +766,7 @@
   const elFinal = document.getElementById("finalScore");
   const elTitle = document.getElementById("overTitle");
 
-  const GAME_VERSION = "v1.4.22";   // 코드를 고칠 때마다 뒤 두 자리를 올린다
+  const GAME_VERSION = "v1.4.23";   // 코드를 고칠 때마다 뒤 두 자리를 올린다
   document.getElementById("ver").textContent = GAME_VERSION;
 
   const LS_NAME = "epjpddongpi_name";
@@ -997,7 +997,10 @@
     const base = S.right.img ? S.right : (SPR.right.img ? SPR.right : null);
     return base ? withFrames(base, now) : null;
   }
-  function sprFlipped(now) { return facing === "left" && !(now < hurtUntil); }
+  /* 왼쪽을 볼 때는 그림을 뒤집는다. 맞은 그림도 마찬가지 —
+     예전엔 맞은 동안 뒤집지 않아서, 몸이 기울어진 그림(방울이 우주복 등)은
+     어느 쪽으로 가다 맞든 늘 한쪽만 보였다. */
+  function sprFlipped(now) { return facing === "left"; }
   /* 비누방울이 놓일 자리와 크기 (화면 좌표).
      그림마다 몸이 놓인 자리가 달라서 판정원이 아니라 그림에서 구한다.
      왼쪽을 볼 때는 그림을 뒤집으므로 가로 치우침도 함께 뒤집는다. */
