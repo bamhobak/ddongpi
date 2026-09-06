@@ -757,7 +757,7 @@
   const elFinal = document.getElementById("finalScore");
   const elTitle = document.getElementById("overTitle");
 
-  const GAME_VERSION = "v1.4.07";   // 코드를 고칠 때마다 뒤 두 자리를 올린다
+  const GAME_VERSION = "v1.4.09";   // 코드를 고칠 때마다 뒤 두 자리를 올린다
   document.getElementById("ver").textContent = GAME_VERSION;
 
   const LS_NAME = "epjpddongpi_name";
@@ -972,6 +972,18 @@
     return S.right.img ? S.right : (SPR.right.img ? SPR.right : null);
   }
   function sprFlipped(now) { return facing === "left" && !(now < hurtUntil); }
+  /* 비누방울이 놓일 자리와 크기 (화면 좌표).
+     그림마다 몸이 놓인 자리가 달라서 판정원이 아니라 그림에서 구한다.
+     왼쪽을 볼 때는 그림을 뒤집으므로 가로 치우침도 함께 뒤집는다. */
+  function bubbleGeom(now) {
+    const spr = currentSprite(now);
+    if (!spr || spr.brr === undefined) {
+      return { x: player.x, y: player.y + player.hy, r: player.r * hitMul() + 14 };
+    }
+    const sh = spriteHeight(spr), sw = sh * spr.aspect;
+    const off = sw * (spr.bcx - spr.cx) * (sprFlipped(now) ? -1 : 1);
+    return { x: player.x + off, y: player.y + FOOT - sh + sh * spr.bcy, r: sh * spr.brr };
+  }
   // 판정·그림 크기 배율 — 스테로이드 약발 중에는 두 배
   function hitMul() { return aug.hitboxMul * (roidT > 0 ? 2 : 1); }
   function spriteHeight(spr) { return (player.r * 2 * hitMul()) / spr.head * spr.adj; }
@@ -1082,15 +1094,21 @@
   /* 방울이 — 옆 프로젝트에서 가져온 강아지. 사람과 몸 비율이 달라
      (가로가 넓다) 높이를 그대로 맞추면 훨씬 커 보인다. adj 는 보이는 넓이가
      백수와 비슷해지도록 잡았다: 높이 = 판정지름 × 1.30 (피격 1.13). */
+  /* bcx·bcy·brr = 비누방울의 중심과 반지름. 몸이 실제로 차지한 칸을 재서 넣었다
+     (bcx 는 그림 가로, bcy·brr 은 그림 세로에 대한 비율). */
   const SPR_BANGUL = {
-    left:  { img: null, aspect: 0.847, head: 0.380, cx: 0.660, cy: 0.400, adj: 0.4940 },
-    right: { img: null, aspect: 0.847, head: 0.380, cx: 0.660, cy: 0.400, adj: 0.4940 },
+    left:  { img: null, aspect: 0.847, head: 0.380, cx: 0.660, cy: 0.400, adj: 0.4940,
+             bcx: 0.500, bcy: 0.526, brr: 0.492 },
+    right: { img: null, aspect: 0.847, head: 0.380, cx: 0.660, cy: 0.400, adj: 0.4940,
+             bcx: 0.500, bcy: 0.526, brr: 0.492 },
     hurt:  { img: null, aspect: 0.959, head: 0.480, cx: 0.500, cy: 0.340, adj: 0.5424 }
   };
   // 방울이는 제 우주복이 따로 있다 (다른 직업은 공용 우주복을 입는다)
   const SPR_BANGUL_SPACE = {
-    left:  { img: null, aspect: 0.834, head: 0.550, cx: 0.620, cy: 0.330, adj: 0.7315 },
-    right: { img: null, aspect: 0.834, head: 0.550, cx: 0.620, cy: 0.330, adj: 0.7315 },
+    left:  { img: null, aspect: 0.834, head: 0.550, cx: 0.620, cy: 0.330, adj: 0.7315,
+             bcx: 0.498, bcy: 0.491, brr: 0.552 },
+    right: { img: null, aspect: 0.834, head: 0.550, cx: 0.620, cy: 0.330, adj: 0.7315,
+             bcx: 0.498, bcy: 0.491, brr: 0.552 },
     hurt:  { img: null, aspect: 0.828, head: 0.520, cx: 0.520, cy: 0.320, adj: 0.6552 }
   };
   const SPACE_Z = 6;                 // 오로라 지대 — 여기부터 우주복 차림
@@ -1775,6 +1793,8 @@
   let scoreShown = 0, scorePunch = 0, prevScore = 0;
   let hudGains = [];                 // 점수판 옆에 떠올랐다 사라지는 +N
   let rings = [];                    // 큰 점수가 터질 때 퍼지는 고리
+  let bubPops = [];                  // 터진 비누방울 — 테두리가 퍼지고 물방울이 튄다
+  const BUB_TONES = ["#ffffff", "#cfefff", "#ffd2f2", "#d6fff2", "#e6dcff"];
   let fever = false, feverT = 0, feverDur = 10000;
   let feverBanner = 0;               // 뚜니핑 타임 시작 알림 (1 → 0, 1.1초)
   let last = 0;
@@ -2054,7 +2074,7 @@
     resetBonusTimers();
     invUntil = 0; powerUntil = 0; hurtUntil = 0; shields = 0;
     shake = 0; flash = 0; feverFlash = 0; fever = false; feverT = 0; feverBanner = 0;
-    scoreShown = 0; scorePunch = 0; prevScore = 0; hudGains = []; rings = [];
+    scoreShown = 0; scorePunch = 0; prevScore = 0; hudGains = []; rings = []; bubPops = [];
     bubbleOn = (job === "bangul"); bubbleT = 0;   // 방울이는 방울을 두르고 시작한다
     zoneShown = -1;
     augCount = {};
@@ -2409,6 +2429,11 @@
       const rg = rings[i];
       rg.t += dt;
       if (rg.t > rg.life) rings.splice(i, 1);
+    }
+    for (let i = bubPops.length - 1; i >= 0; i--) {
+      const bp = bubPops[i];
+      bp.t += dt;
+      if (bp.t > bp.life) bubPops.splice(i, 1);
     }
 
     /* 점수판 — 한 프레임에 눈에 띄게 오른 때만 튄다.
@@ -3029,7 +3054,19 @@
               bubbleOn = false; bubbleT = 0;
               invUntil = now + 900;          // 터진 직후 잠깐은 안 맞는다
               shake = Math.max(shake, 10);
-              burst(it.x, it.y, "#bfe9ff", 18);
+              /* 방울이 터지는 자리에서 테두리가 확 퍼지고 물방울이 사방으로 튄다.
+                 (똥이 닿은 자리가 아니라 방울 자리에서 터져야 방울이 터진 것처럼 보인다) */
+              const bg2 = bubbleGeom(now);
+              const dots = [];
+              for (let k = 0; k < 14; k++) {
+                dots.push({
+                  a: (k / 14) * 6.283 + Math.random() * 0.4,
+                  sp: 90 + Math.random() * 190,
+                  rr: 1.6 + Math.random() * 3.2,
+                  c: BUB_TONES[Math.floor(Math.random() * BUB_TONES.length)]
+                });
+              }
+              bubPops.push({ x: bg2.x, y: bg2.y, r: bg2.r, t: 0, life: 0.5, dots: dots });
               popText(player.x, player.y - 60, "🫧 방울 팡!", "#bfe9ff");
               beep(760, .12, "sine", .05);
               if (navigator.vibrate) navigator.vibrate(40);
@@ -4571,11 +4608,14 @@
         ctx.strokeStyle = "rgba(255,90,90,.9)"; ctx.lineWidth = 4;
         ctx.beginPath(); ctx.arc(0, player.hy, player.r * hitMul() + 18, 0, 6.283); ctx.stroke();
       }
-      if (bubbleOn) {                       // 비누방울 보호막
-        const br = player.r * hitMul() + 20;
+      if (bubbleOn) {                       // 비누방울 보호막 — 몸에 딱 맞춘다
+        const hasB = spr.brr !== undefined;
+        const br = hasB ? sh * spr.brr : player.r * hitMul() + 20;
+        const bcx2 = hasB ? sw * (spr.bcx - spr.cx) * (flip ? -1 : 1) : 0;
+        const bcy2 = hasB ? (FOOT - sh + sh * spr.bcy) : player.hy;
         const wob = Math.sin(now / 260) * 0.04;       // 말랑하게 숨 쉰다
         ctx.save();
-        ctx.translate(0, player.hy);
+        ctx.translate(bcx2, bcy2);
         ctx.scale(1 + wob, 1 - wob);
         const bgd = ctx.createRadialGradient(-br * .3, -br * .35, br * .1, 0, 0, br);
         bgd.addColorStop(0, "rgba(255,255,255,.30)");
@@ -4583,12 +4623,12 @@
         bgd.addColorStop(1, "rgba(255,190,240,.22)");
         ctx.fillStyle = bgd;
         ctx.beginPath(); ctx.arc(0, 0, br, 0, 6.283); ctx.fill();
-        ctx.lineWidth = 2; ctx.strokeStyle = "rgba(255,255,255,.75)";
+        ctx.lineWidth = 2.4; ctx.strokeStyle = "rgba(255,255,255,.9)";
         ctx.beginPath(); ctx.arc(0, 0, br, 0, 6.283); ctx.stroke();
-        ctx.lineWidth = 3;                            // 무지갯빛이 도는 테두리 조각
-        ctx.strokeStyle = "rgba(180,235,255,.85)";
+        ctx.lineWidth = 3.4;                          // 무지갯빛이 도는 테두리 조각
+        ctx.strokeStyle = "rgba(150,225,255,.95)";
         ctx.beginPath(); ctx.arc(0, 0, br - 1, -2.5, -1.1); ctx.stroke();
-        ctx.strokeStyle = "rgba(255,190,240,.7)";
+        ctx.strokeStyle = "rgba(255,175,235,.85)";
         ctx.beginPath(); ctx.arc(0, 0, br - 1, 0.5, 1.7); ctx.stroke();
         ctx.fillStyle = "rgba(255,255,255,.9)";       // 반짝이는 점
         ctx.beginPath();
@@ -5333,6 +5373,30 @@
 
     ctx.textAlign = "center";
     ctx.textBaseline = "middle";
+    // 터진 비누방울 — 테두리가 얇아지며 퍼지고, 물방울이 사방으로 튄다
+    for (const bp of bubPops) {
+      const k = bp.t / bp.life;
+      const rr = bp.r * (1 + 0.52 * k);
+      ctx.globalAlpha = (1 - k) * 0.9;
+      ctx.lineWidth = 3.2 * (1 - k) + 0.4;
+      ctx.strokeStyle = "rgba(255,255,255,.92)";
+      ctx.beginPath(); ctx.arc(bp.x, bp.y, rr, 0, 6.283); ctx.stroke();
+      ctx.strokeStyle = "rgba(170,232,255,.85)";      // 무지갯빛이 남는 조각
+      ctx.beginPath(); ctx.arc(bp.x, bp.y, rr, -2.5, -1.1); ctx.stroke();
+      ctx.strokeStyle = "rgba(255,186,238,.8)";
+      ctx.beginPath(); ctx.arc(bp.x, bp.y, rr, 0.5, 1.7); ctx.stroke();
+      for (const dt2 of bp.dots) {                    // 튀는 물방울
+        const d = bp.r * 0.92 + dt2.sp * bp.t;
+        const px = bp.x + Math.cos(dt2.a) * d;
+        const py = bp.y + Math.sin(dt2.a) * d + 460 * bp.t * bp.t;
+        ctx.fillStyle = dt2.c;
+        ctx.beginPath();
+        ctx.arc(px, py, dt2.rr * (1 - k * 0.55), 0, 6.283);
+        ctx.fill();
+      }
+    }
+    ctx.globalAlpha = 1;
+
     // 퍼지는 고리 — 큰 점수가 터진 자리
     for (const rg of rings) {
       const k = rg.t / rg.life;
