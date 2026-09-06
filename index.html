@@ -757,7 +757,7 @@
   const elFinal = document.getElementById("finalScore");
   const elTitle = document.getElementById("overTitle");
 
-  const GAME_VERSION = "v1.4.14";   // 코드를 고칠 때마다 뒤 두 자리를 올린다
+  const GAME_VERSION = "v1.4.15";   // 코드를 고칠 때마다 뒤 두 자리를 올린다
   document.getElementById("ver").textContent = GAME_VERSION;
 
   const LS_NAME = "epjpddongpi_name";
@@ -783,7 +783,7 @@
     fit: { nm: "헬스걸", ic: "💪", ds: "목숨 5개로 시작 · 벌크업 좀 된 상태" },
     powerj: { nm: "파워J", ic: "📋", ds: "달이 잘 나온다 · 대신 증강은 계획대로 1개만" },
     powerp: { nm: "무소유", ic: "🙏", ds: "달이 아예 안 나온다 · 별이 조금 잘 나온다 · 안 맞을수록 점수가 치솟는다" },
-    bangul: { nm: "방울이", ic: "🫧", ds: "비누방울이 한 대를 대신 맞고 터진다 · 9초 뒤 다시 맺힌다" }
+    bangul: { nm: "방울이", ic: "🫧", ds: "비누방울이 한 대를 대신 맞고 터진다 · 12초 뒤 다시 맺힌다" }
   };
   // 직업별 캐릭터 그림(오른쪽 이동 모습) — 직업 카드와 순위표에서 함께 쓴다
   const JOB_IMG = { none: "player", gambler: "gambler", levitator: "levitator",
@@ -1817,7 +1817,7 @@
   let shake = 0, flash = 0, feverFlash = 0;
   /* 방울이의 비누방울 — 한 대를 대신 맞고 터진다. 하트처럼 쌓이지 않고 늘 한 겹뿐이라,
      연달아 맞는 자리에서는 지켜 주지 못한다. */
-  const BUBBLE_SEC = 9;              // 터진 뒤 다시 맺히기까지
+  const BUBBLE_SEC = 12;             // 터진 뒤 다시 맺히기까지
   let bubbleOn = false, bubbleT = 0;
   /* 점수판은 실제 점수를 곧바로 따라가지 않고 뒤에서 굴러 오른다.
      크게 먹은 순간에만 튀어야 해서, 생존 점수처럼 조금씩 새는 건 흘려보낸다. */
