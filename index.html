@@ -766,7 +766,7 @@
   const elFinal = document.getElementById("finalScore");
   const elTitle = document.getElementById("overTitle");
 
-  const GAME_VERSION = "v1.4.25";   // 코드를 고칠 때마다 뒤 두 자리를 올린다
+  const GAME_VERSION = "v1.4.26";   // 코드를 고칠 때마다 뒤 두 자리를 올린다
   document.getElementById("ver").textContent = GAME_VERSION;
 
   const LS_NAME = "epjpddongpi_name";
@@ -4933,6 +4933,41 @@
     ctx.restore();
   }
 
+  /* 어두운 우주에서는 똥이 배경에 묻힌다. 그림의 흰 실루엣을 한 번 만들어 두고,
+     그릴 때 조금 크게 뒤에 깔아 테두리처럼 보이게 한다.
+     (그림자 흐림은 폰이 뜨거워져서 쓰지 않는다 — 이 방식은 그리기 한 번이면 된다) */
+  const RIM_CACHE = new Map();
+  function rimOf(img) {
+    let c = RIM_CACHE.get(img);
+    if (c) return c;
+    c = document.createElement("canvas");
+    c.width = img.width; c.height = img.height;
+    const g = c.getContext("2d");
+    g.drawImage(img, 0, 0);
+    g.globalCompositeOperation = "source-in";   // 그림이 있는 자리만 흰색으로
+    g.fillStyle = "#ffffff";
+    g.fillRect(0, 0, c.width, c.height);
+    RIM_CACHE.set(img, c);
+    return c;
+  }
+  /* 지대별 배경 밝기 — 배경 그림 18장에서 실제로 잰 값.
+     잔디밭 0.67 … 소행성대 0.18 … 블랙홀 안 0.20 */
+  const ZONE_LUM = [0.67, 0.83, 0.83, 0.51, 0.69, 0.74, 0.61, 0.31, 0.40,
+                    0.33, 0.31, 0.18, 0.46, 0.32, 0.18, 0.39, 0.41, 0.20];
+  function rimPower() {                    // 0 = 테두리 없음, 1 = 가장 세게
+    if (fever) return 0;                   // 뚜니핑 하늘은 눈부시게 밝다
+    const a = ZONE_LUM[zoneIdx()], b = ZONE_LUM[Math.min(LAST_Z, zoneIdx() + 1)];
+    const l = a + (b - a) * zoneFrac();
+    return Math.max(0, Math.min(1, (0.52 - l) / 0.28));
+  }
+  function drawRim(img, d, rp) {
+    const k = Math.max(2, d * 0.05);
+    ctx.save();
+    ctx.globalAlpha *= rp * 0.85;
+    ctx.drawImage(rimOf(img), -d / 2 - k, -d / 2 - k, d + k * 2, d + k * 2);
+    ctx.restore();
+  }
+
   /* 똥 꾸밈. 3D 그림의 눈은 가운데보다 조금 아래(y +0.124S), 좌우 ±0.221S 에 있고
      눈 반지름은 0.13S 쯤 된다 — 아래 좌표는 전부 그 실측값에 맞춰 두었다. */
   const EYE_X = 0.185, EYE_Y = 0.126, EYE_R = 0.116;
@@ -5161,8 +5196,10 @@
         ctx.arc(0, 0, it.size * 0.60, 0, 6.283);
         ctx.fill();
       }
+      const rp = rimPower();
       const fp = (it.space && feverPoopSpace) ? feverPoopSpace : feverPoop;
       if (it.skin === "fever" && fp) {
+        if (rp > 0.03) drawRim(fp, it.size, rp);
         ctx.drawImage(fp, -it.size / 2, -it.size / 2, it.size, it.size);
       } else {
         /* 색 이모지도 fillStyle 의 투명도를 그대로 따라간다.
@@ -5181,6 +5218,8 @@
         const ii = ITEM_IMG[it.type];      // 똥도 같은 3D 그림 (무지개똥 필터는 그림에도 먹는다)
         if (ii) {
           const d = it.size * ITEM_IMG_SCALE;
+          // 무지개똥은 저 혼자 번쩍여서 테두리가 필요 없다
+          if (rp > 0.03 && !it.gold) drawRim(ii, d, rp);
           ctx.drawImage(ii, -d / 2, -d / 2, d, d);
         } else {
           ctx.fillStyle = "#fff";
