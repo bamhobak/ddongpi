@@ -757,7 +757,7 @@
   const elFinal = document.getElementById("finalScore");
   const elTitle = document.getElementById("overTitle");
 
-  const GAME_VERSION = "v1.4.12";   // 코드를 고칠 때마다 뒤 두 자리를 올린다
+  const GAME_VERSION = "v1.4.13";   // 코드를 고칠 때마다 뒤 두 자리를 올린다
   document.getElementById("ver").textContent = GAME_VERSION;
 
   const LS_NAME = "epjpddongpi_name";
@@ -1121,11 +1121,11 @@
   };
   // 방울이는 제 우주복이 따로 있다 (다른 직업은 공용 우주복을 입는다)
   const SPR_BANGUL_SPACE = {
-    left:  { img: null, aspect: 0.834, head: 0.550, cx: 0.620, cy: 0.330, adj: 0.7315,
-             bcx: 0.498, bcy: 0.491, brr: 0.552 },
-    right: { img: null, aspect: 0.834, head: 0.550, cx: 0.620, cy: 0.330, adj: 0.7315,
-             bcx: 0.498, bcy: 0.491, brr: 0.552 },
-    hurt:  { img: null, aspect: 0.828, head: 0.520, cx: 0.520, cy: 0.320, adj: 0.6552 }
+    left:  { img: null, aspect: 0.8125, head: 0.570, cx: 0.600, cy: 0.310, adj: 0.7701,
+             bcx: 0.500, bcy: 0.509, brr: 0.525 },
+    right: { img: null, aspect: 0.8125, head: 0.570, cx: 0.600, cy: 0.310, adj: 0.7701,
+             bcx: 0.500, bcy: 0.509, brr: 0.525 },
+    hurt:  { img: null, aspect: 0.8313, head: 0.520, cx: 0.500, cy: 0.330, adj: 0.6521 }
   };
   const SPACE_Z = 6;                 // 오로라 지대 — 여기부터 우주복 차림
   /* 우주에 올라서면 체감 난이도를 이 배율만큼 올린다.
