@@ -766,7 +766,7 @@
   const elFinal = document.getElementById("finalScore");
   const elTitle = document.getElementById("overTitle");
 
-  const GAME_VERSION = "v1.4.27";   // 코드를 고칠 때마다 뒤 두 자리를 올린다
+  const GAME_VERSION = "v1.4.28";   // 코드를 고칠 때마다 뒤 두 자리를 올린다
   document.getElementById("ver").textContent = GAME_VERSION;
 
   const LS_NAME = "epjpddongpi_name";
@@ -3330,7 +3330,7 @@
           burst(it.x, it.y, "#46d7ff", 14);
           beep(520, .07, "square", .04);
         } else if (it.special === "huge") {
-          const r2 = it.sz * 0.42;           // 셋으로 쪼개진다 (조각은 평범한 똥)
+          const r2 = it.sz * 0.33;           // 셋으로 쪼개진다 (조각은 평범한 똥)
           for (const dir of [-1, 0, 1]) {
             items.push({
               type: "poop", emoji: "💩",
