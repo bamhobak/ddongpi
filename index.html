@@ -759,7 +759,7 @@
   const elFinal = document.getElementById("finalScore");
   const elTitle = document.getElementById("overTitle");
 
-  const GAME_VERSION = "v1.4.20";   // 코드를 고칠 때마다 뒤 두 자리를 올린다
+  const GAME_VERSION = "v1.4.21";   // 코드를 고칠 때마다 뒤 두 자리를 올린다
   document.getElementById("ver").textContent = GAME_VERSION;
 
   const LS_NAME = "epjpddongpi_name";
@@ -2706,7 +2706,7 @@
       c.x += dx2 / d2 * 1200 * dt;
       c.y += dy2 / d2 * 1200 * dt;
       if ((alive && d2 < (c.t.r || 20) + 16) || c.life <= 0) {
-        smashPoopsAround(c.x, c.y, 115, true);        // 폭발 반경 115px (특수똥까지 부순다)
+        smashPoopsAround(c.x, c.y, 135, true);        // 폭발 반경 135px (특수똥까지 부순다)
         burst(c.x, c.y, "#ffd23f", 26);
         shake = Math.max(shake, 8);
         beep(240, .12, "square", .05);
