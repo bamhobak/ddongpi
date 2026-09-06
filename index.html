@@ -757,7 +757,7 @@
   const elFinal = document.getElementById("finalScore");
   const elTitle = document.getElementById("overTitle");
 
-  const GAME_VERSION = "v1.4.09";   // 코드를 고칠 때마다 뒤 두 자리를 올린다
+  const GAME_VERSION = "v1.4.10";   // 코드를 고칠 때마다 뒤 두 자리를 올린다
   document.getElementById("ver").textContent = GAME_VERSION;
 
   const LS_NAME = "epjpddongpi_name";
@@ -966,10 +966,26 @@
   // 그림마다 머리·다리 비율이 달라서 이 값으로 보정해야 그림자 높이와 판정이 어긋나지 않는다.
   /* 좌우 그림이 서로 머리 크기·자세가 달라 어색해서, 오른쪽 그림 하나만 쓰고
      왼쪽으로 갈 때는 그걸 좌우로 뒤집어 그린다. */
+  /* 달리는 그림이 있으면 움직이는 동안 순환시킨다.
+     서 있을 때 발을 구르면 어색해서, 멈추면 첫 장으로 돌아간다.
+     (그림 규격은 그대로 두고 그림만 갈아 끼우려고 한 덩이를 돌려 쓴다) */
+  const RUN_FRAME_MS = 60;
+  const runSpr = {};
+  function withFrames(base, now) {
+    const fr = base.frames;
+    if (!fr || !fr.length) return base;
+    const moving = Math.abs(player.tx - player.x) > 1.5;
+    const img = moving ? fr[Math.floor(now / RUN_FRAME_MS) % fr.length] : fr[0];
+    if (!img || img === base.img) return base;
+    Object.assign(runSpr, base);
+    runSpr.img = img;
+    return runSpr;
+  }
   function currentSprite(now) {
     const S = sprSet();
     if (now < hurtUntil && S.hurt.img) return S.hurt;
-    return S.right.img ? S.right : (SPR.right.img ? SPR.right : null);
+    const base = S.right.img ? S.right : (SPR.right.img ? SPR.right : null);
+    return base ? withFrames(base, now) : null;
   }
   function sprFlipped(now) { return facing === "left" && !(now < hurtUntil); }
   /* 비누방울이 놓일 자리와 크기 (화면 좌표).
@@ -1098,9 +1114,9 @@
      (bcx 는 그림 가로, bcy·brr 은 그림 세로에 대한 비율). */
   const SPR_BANGUL = {
     left:  { img: null, aspect: 0.847, head: 0.380, cx: 0.660, cy: 0.400, adj: 0.4940,
-             bcx: 0.500, bcy: 0.526, brr: 0.492 },
+             bcx: 0.500, bcy: 0.500, brr: 0.500 },
     right: { img: null, aspect: 0.847, head: 0.380, cx: 0.660, cy: 0.400, adj: 0.4940,
-             bcx: 0.500, bcy: 0.526, brr: 0.492 },
+             bcx: 0.500, bcy: 0.500, brr: 0.500 },
     hurt:  { img: null, aspect: 0.959, head: 0.480, cx: 0.500, cy: 0.340, adj: 0.5424 }
   };
   // 방울이는 제 우주복이 따로 있다 (다른 직업은 공용 우주복을 입는다)
@@ -1173,6 +1189,21 @@
     bs.onload = () => { SPR_BANGUL_SPACE[key].img = bs; };
     bs.src = "assets/bangul_space_" + key + ".png";
   }
+  /* 방울이만 달리는 그림이 16장 따로 있다.
+     차례대로 받아야 순서가 섞이지 않으므로 한 장씩 이어 받는다. */
+  function loadRunFrames(set, prefix) {
+    const frames = [];
+    const next = (i) => {
+      if (i > 16) return;
+      const f = new Image();
+      f.onload = () => { frames.push(f); set.right.frames = frames; next(i + 1); };
+      f.onerror = () => {};              // 없으면 조용히 그만둔다
+      f.src = "assets/" + prefix + i + ".webp";
+    };
+    next(1);
+  }
+  loadRunFrames(SPR_BANGUL, "bangul_run");
+  loadRunFrames(SPR_BANGUL_SPACE, "bangul_space_run");
 
   // 도와줘 정연핑 — 아래에서 위로 날아가며 지나간 자리의 똥을 부순다
   let helperImg = null, helperSpaceImg = null;
