@@ -757,7 +757,7 @@
   const elFinal = document.getElementById("finalScore");
   const elTitle = document.getElementById("overTitle");
 
-  const GAME_VERSION = "v1.4.13";   // 코드를 고칠 때마다 뒤 두 자리를 올린다
+  const GAME_VERSION = "v1.4.14";   // 코드를 고칠 때마다 뒤 두 자리를 올린다
   document.getElementById("ver").textContent = GAME_VERSION;
 
   const LS_NAME = "epjpddongpi_name";
@@ -4338,6 +4338,21 @@
       }
     }
 
+    /* 발밑에서 튀어 오르는 빛 — 잔디밭이면 초록, 바위면 갈색, 달이면 잿빛.
+       배경이 하늘 그림뿐이라 지금 무엇 위에 서 있는지 읽히지 않는다.
+       바닥 바로 위에 그 지대의 바닥색을 얇게 깔아 두면 공기가 이어져 보인다. */
+    if (bgShown && state !== STATE.READY) {
+      const gt2 = GROUND_TINT[ZONES[zoneIdx()].gr];
+      if (gt2) {
+        const gh = 190, gy = H - GROUND_H - gh;
+        const gg = ctx.createLinearGradient(0, gy, 0, H - GROUND_H);
+        gg.addColorStop(0, "rgba(" + gt2 + ",0)");
+        gg.addColorStop(1, "rgba(" + gt2 + ",.26)");
+        ctx.fillStyle = gg;
+        ctx.fillRect(0, gy, W, gh);
+      }
+    }
+
     // 발밑 — 단계가 바뀌는 동안 다음 지형이 겹쳐 올라온다
     if (state !== STATE.READY) {          // 인트로에서는 발판 없이 날아간다
       const za = ZONES[zoneIdx()], zb = ZONES[Math.min(LAST_Z, zoneIdx() + 1)], zf = zoneFrac();
@@ -4542,6 +4557,11 @@
   }
 
   /* ---- 발밑 지형 ---- */
+  // 바닥에서 튀어 오르는 빛의 색 (drawGround 의 바닥색에서 뽑았다)
+  const GROUND_TINT = {
+    grass: "126,200,90", rock: "170,120,70", cloud: "214,230,250",
+    metal: "120,150,200", moon: "200,192,175", dark: "80,86,120", void: "120,150,255"
+  };
   function drawGround(kind, a) {
     const y = H - GROUND_H;
     ctx.save();
