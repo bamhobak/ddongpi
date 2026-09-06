@@ -766,7 +766,7 @@
   const elFinal = document.getElementById("finalScore");
   const elTitle = document.getElementById("overTitle");
 
-  const GAME_VERSION = "v1.4.33";   // 코드를 고칠 때마다 뒤 두 자리를 올린다
+  const GAME_VERSION = "v1.4.34";   // 코드를 고칠 때마다 뒤 두 자리를 올린다
   document.getElementById("ver").textContent = GAME_VERSION;
 
   const LS_NAME = "epjpddongpi_name";
@@ -1840,7 +1840,7 @@
   let shake = 0, flash = 0, feverFlash = 0;
   /* 방울이의 비누방울 — 한 대를 대신 맞고 터진다. 하트처럼 쌓이지 않고 늘 한 겹뿐이라,
      연달아 맞는 자리에서는 지켜 주지 못한다. */
-  const BUBBLE_SEC = 12;             // 터진 뒤 다시 맺히기까지
+  const BUBBLE_SEC = 13;             // 터진 뒤 다시 맺히기까지
   let bubbleOn = false, bubbleT = 0;
   /* 점수판은 실제 점수를 곧바로 따라가지 않고 뒤에서 굴러 오른다.
      크게 먹은 순간에만 튀어야 해서, 생존 점수처럼 조금씩 새는 건 흘려보낸다. */
