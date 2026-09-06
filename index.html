@@ -209,6 +209,12 @@
   #jobScreen h2 { color: #ffd23f; }
   #jobList { display: flex; flex-direction: column; gap: 10px; width: 100%; max-width: 340px; }
   #jobList img.ic { width: 44px; height: 56px; object-fit: contain; flex: none; }
+  /* 고르지 않고 나가는 길 — 직업 카드보다 눈에 덜 띄게 */
+  #btnJobBack {
+    margin-top: 6px; font-size: 12.5px; padding: 9px 20px;
+    background: rgba(255,255,255,.08); color: #b8bdcc;
+    border: 1px solid rgba(255,255,255,.12); box-shadow: none;
+  }
   /* 순위표 직업 탭 — 전체 + 직업별 */
   /* 순위판 왼쪽 세로 레일 — 제목은 위에 가로로, 그 아래는 [탭 | 목록] */
   .board.withTabs {
@@ -681,6 +687,7 @@
     <div id="jobScreen" class="screen hidden">
       <h2>직업 선택</h2>
       <div id="jobList"></div>
+      <button id="btnJobBack">← 메인으로 돌아가기</button>
     </div>
 
     <div id="testScreen" class="screen hidden">
@@ -759,7 +766,7 @@
   const elFinal = document.getElementById("finalScore");
   const elTitle = document.getElementById("overTitle");
 
-  const GAME_VERSION = "v1.4.21";   // 코드를 고칠 때마다 뒤 두 자리를 올린다
+  const GAME_VERSION = "v1.4.22";   // 코드를 고칠 때마다 뒤 두 자리를 올린다
   document.getElementById("ver").textContent = GAME_VERSION;
 
   const LS_NAME = "epjpddongpi_name";
@@ -2090,6 +2097,15 @@
     overScreen.classList.add("hidden");
     jobScreen.classList.remove("hidden");
   }
+
+  // 직업을 고르지 않고 시작화면으로 되돌아간다 (테스트 종료와 같은 길)
+  document.getElementById("btnJobBack").addEventListener("click", () => {
+    beep(520, .06, "square", .04);
+    jobScreen.classList.add("hidden");
+    overScreen.classList.add("hidden");
+    startScreen.classList.remove("hidden");
+    state = STATE.READY;                 // 시작화면 데모가 다시 돌게
+  });
 
   document.getElementById("btnStart").addEventListener("click", () => {
     if (!savedName()) { startEditName(); return; }   // 이름부터 정하고 시작
