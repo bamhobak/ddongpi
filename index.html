@@ -757,7 +757,7 @@
   const elFinal = document.getElementById("finalScore");
   const elTitle = document.getElementById("overTitle");
 
-  const GAME_VERSION = "v1.4.06";   // 코드를 고칠 때마다 뒤 두 자리를 올린다
+  const GAME_VERSION = "v1.4.07";   // 코드를 고칠 때마다 뒤 두 자리를 올린다
   document.getElementById("ver").textContent = GAME_VERSION;
 
   const LS_NAME = "epjpddongpi_name";
@@ -782,11 +782,12 @@
     levitator: { nm: "부양사", ic: "🎈", ds: "하늘 어디든 날 수 있다 · 높이 있을수록 점수 UP" },
     fit: { nm: "헬스걸", ic: "💪", ds: "목숨 5개로 시작 · 벌크업 좀 된 상태" },
     powerj: { nm: "파워J", ic: "📋", ds: "달이 잘 나온다 · 대신 증강은 계획대로 1개만" },
-    powerp: { nm: "무소유", ic: "🙏", ds: "달이 아예 안 나온다 · 별이 조금 잘 나온다 · 안 맞을수록 점수가 치솟는다" }
+    powerp: { nm: "무소유", ic: "🙏", ds: "달이 아예 안 나온다 · 별이 조금 잘 나온다 · 안 맞을수록 점수가 치솟는다" },
+    bangul: { nm: "방울이", ic: "🫧", ds: "비누방울이 한 대를 대신 맞고 터진다 · 9초 뒤 다시 맺힌다" }
   };
   // 직업별 캐릭터 그림(오른쪽 이동 모습) — 직업 카드와 순위표에서 함께 쓴다
   const JOB_IMG = { none: "player", gambler: "gambler", levitator: "levitator",
-                    fit: "fit", powerj: "powerj", powerp: "monk" };
+                    fit: "fit", powerj: "powerj", powerp: "monk", bangul: "bangul" };
   function spdMul() { return job === "levitator" ? 2.2 : 1; }   // 이동 속도 배율 (부양사 2.2배)
   /* 평화의 비둘기 — 활짝 펼친 날개에 깃 모양이 물결치고, 꼬리는 부채처럼 갈라진다.
      (흰 실루엣 한 덩어리로 그려야 작게 그려도 비둘기로 읽힌다) */
@@ -1078,13 +1079,29 @@
     right: { img: null, aspect: 0.619, head: 0.306, cx: 0.552, cy: 0.181, adj: 0.4514 },
     hurt:  { img: null, aspect: 0.472, head: 0.291, cx: 0.512, cy: 0.231, adj: 0.4667 }
   };
+  /* 방울이 — 옆 프로젝트에서 가져온 강아지. 사람과 몸 비율이 달라
+     (가로가 넓다) 높이를 그대로 맞추면 훨씬 커 보인다. adj 는 보이는 넓이가
+     백수와 비슷해지도록 잡았다: 높이 = 판정지름 × 1.30 (피격 1.13). */
+  const SPR_BANGUL = {
+    left:  { img: null, aspect: 0.847, head: 0.380, cx: 0.660, cy: 0.400, adj: 0.4940 },
+    right: { img: null, aspect: 0.847, head: 0.380, cx: 0.660, cy: 0.400, adj: 0.4940 },
+    hurt:  { img: null, aspect: 0.959, head: 0.480, cx: 0.500, cy: 0.340, adj: 0.5424 }
+  };
+  // 방울이는 제 우주복이 따로 있다 (다른 직업은 공용 우주복을 입는다)
+  const SPR_BANGUL_SPACE = {
+    left:  { img: null, aspect: 0.834, head: 0.550, cx: 0.620, cy: 0.330, adj: 0.7315 },
+    right: { img: null, aspect: 0.834, head: 0.550, cx: 0.620, cy: 0.330, adj: 0.7315 },
+    hurt:  { img: null, aspect: 0.828, head: 0.520, cx: 0.520, cy: 0.320, adj: 0.6552 }
+  };
   const SPACE_Z = 6;                 // 오로라 지대 — 여기부터 우주복 차림
   /* 우주에 올라서면 체감 난이도를 이 배율만큼 올린다.
      낙하 속도와 낙하 빈도에 각각 제곱근을 나눠 걸어 둘을 합친 체감이 정확히 이 값이 된다. */
   const SPACE_DIFF = 1.18;
   function spaceF() { return inSpace() ? Math.sqrt(SPACE_DIFF) : 1; }
   function inSpace() { return zoneIdx() >= SPACE_Z; }
-  const JOB_SPRS = { gambler: SPR_GAMBLER, levitator: SPR_LEV, fit: SPR_FIT, powerj: SPR_PJ, powerp: SPR_MONK };
+  const JOB_SPRS = { gambler: SPR_GAMBLER, levitator: SPR_LEV, fit: SPR_FIT, powerj: SPR_PJ,
+                     powerp: SPR_MONK, bangul: SPR_BANGUL };
+  const JOB_SPRS_SPACE = { bangul: SPR_BANGUL_SPACE };   // 제 우주복이 있는 직업만
   // 인트로의 이재는 매 루프마다 아무 직업이나 입고 나온다 (직업은 판마다 고르는 방식이라)
   let introJob = "none";
   function rollIntroJob() {
@@ -1093,8 +1110,13 @@
   }
   rollIntroJob();                        // 첫 바퀴부터 무작위
   function sprSet() {
-    if (inSpace() && SPR_SPACE.right.img) return SPR_SPACE;   // 우주에선 직업과 무관하게 우주복
-    const S = JOB_SPRS[state === STATE.READY ? introJob : job];
+    const jb = state === STATE.READY ? introJob : job;
+    if (inSpace()) {                       // 우주에서는 우주복 차림
+      const SS = JOB_SPRS_SPACE[jb];       // 제 우주복이 있으면 그걸로
+      if (SS && SS.right.img) return SS;
+      if (SPR_SPACE.right.img) return SPR_SPACE;
+    }
+    const S = JOB_SPRS[jb];
     if (S && S.right.img) return S;
     return SPR;
   }
@@ -1123,6 +1145,15 @@
     const mk = new Image();
     mk.onload = () => { SPR_MONK[key].img = mk; };
     mk.src = "assets/monk_" + key + ".png";
+  }
+  // 방울이는 왼쪽 그림이 따로 없다 — 오른쪽을 뒤집어 쓴다
+  for (const key of ["right", "hurt"]) {
+    const bg = new Image();
+    bg.onload = () => { SPR_BANGUL[key].img = bg; };
+    bg.src = "assets/bangul_" + key + ".png";
+    const bs = new Image();
+    bs.onload = () => { SPR_BANGUL_SPACE[key].img = bs; };
+    bs.src = "assets/bangul_space_" + key + ".png";
   }
 
   // 도와줘 정연핑 — 아래에서 위로 날아가며 지나간 자리의 똥을 부순다
@@ -1735,6 +1766,10 @@
   let hurtUntil = 0;               // 똥에 맞은 직후 (아픈 그림 표시)
   let zoneShown = -1;              // 도착 안내를 이미 띄운 단계
   let shake = 0, flash = 0, feverFlash = 0;
+  /* 방울이의 비누방울 — 한 대를 대신 맞고 터진다. 하트처럼 쌓이지 않고 늘 한 겹뿐이라,
+     연달아 맞는 자리에서는 지켜 주지 못한다. */
+  const BUBBLE_SEC = 9;              // 터진 뒤 다시 맺히기까지
+  let bubbleOn = false, bubbleT = 0;
   /* 점수판은 실제 점수를 곧바로 따라가지 않고 뒤에서 굴러 오른다.
      크게 먹은 순간에만 튀어야 해서, 생존 점수처럼 조금씩 새는 건 흘려보낸다. */
   let scoreShown = 0, scorePunch = 0, prevScore = 0;
@@ -2020,6 +2055,7 @@
     invUntil = 0; powerUntil = 0; hurtUntil = 0; shields = 0;
     shake = 0; flash = 0; feverFlash = 0; fever = false; feverT = 0; feverBanner = 0;
     scoreShown = 0; scorePunch = 0; prevScore = 0; hudGains = []; rings = [];
+    bubbleOn = (job === "bangul"); bubbleT = 0;   // 방울이는 방울을 두르고 시작한다
     zoneShown = -1;
     augCount = {};
     aug.feverBonus = 0; aug.starMul = 1; aug.timeMul = 1;
@@ -2395,6 +2431,15 @@
     if (flash > 0) flash = Math.max(0, flash - dt * 3);
     if (feverFlash > 0) feverFlash = Math.max(0, feverFlash - dt * 2.5);
     if (feverBanner > 0) feverBanner = Math.max(0, feverBanner - dt / 1.1);
+    // 방울이 — 터진 방울이 다시 맺힌다
+    if (job === "bangul" && state === STATE.PLAY && !bubbleOn) {
+      bubbleT += dt;
+      if (bubbleT >= BUBBLE_SEC) {
+        bubbleT = 0; bubbleOn = true;
+        burst(player.x, player.y + player.hy, "#bfe9ff", 10);
+        beep(1180, .09, "sine", .04);
+      }
+    }
 
     const wasFever = fever;
     fever = state === STATE.PLAY && now < powerUntil;
@@ -2978,6 +3023,19 @@
              프레임 앞에서 한 번만 재어 두면, 같은 프레임에 똥 두 개가 겹쳐 닿았을 때
              첫 번째로 무적이 걸렸는데도 두 번째가 그대로 들어와 방패가 두 개 깨진다. */
           if (now >= invUntil) {
+            /* 방울이 우산보다 먼저 터진다 — 방울은 저절로 다시 차지만
+               우산은 주워야 생기니, 공짜인 쪽을 먼저 쓰는 게 이롭다. */
+            if (bubbleOn) {
+              bubbleOn = false; bubbleT = 0;
+              invUntil = now + 900;          // 터진 직후 잠깐은 안 맞는다
+              shake = Math.max(shake, 10);
+              burst(it.x, it.y, "#bfe9ff", 18);
+              popText(player.x, player.y - 60, "🫧 방울 팡!", "#bfe9ff");
+              beep(760, .12, "sine", .05);
+              if (navigator.vibrate) navigator.vibrate(40);
+              items.splice(i, 1);
+              continue;
+            }
             if (shields > 0) {
               shields--;                     // 우산이 막아준 건 '맞은 것'으로 치지 않는다
               invUntil = now + 1000;        // 목숨을 잃었을 때와 같은 무적 시간
@@ -4512,6 +4570,31 @@
         ctx.globalAlpha = 1;
         ctx.strokeStyle = "rgba(255,90,90,.9)"; ctx.lineWidth = 4;
         ctx.beginPath(); ctx.arc(0, player.hy, player.r * hitMul() + 18, 0, 6.283); ctx.stroke();
+      }
+      if (bubbleOn) {                       // 비누방울 보호막
+        const br = player.r * hitMul() + 20;
+        const wob = Math.sin(now / 260) * 0.04;       // 말랑하게 숨 쉰다
+        ctx.save();
+        ctx.translate(0, player.hy);
+        ctx.scale(1 + wob, 1 - wob);
+        const bgd = ctx.createRadialGradient(-br * .3, -br * .35, br * .1, 0, 0, br);
+        bgd.addColorStop(0, "rgba(255,255,255,.30)");
+        bgd.addColorStop(.62, "rgba(190,230,255,.10)");
+        bgd.addColorStop(1, "rgba(255,190,240,.22)");
+        ctx.fillStyle = bgd;
+        ctx.beginPath(); ctx.arc(0, 0, br, 0, 6.283); ctx.fill();
+        ctx.lineWidth = 2; ctx.strokeStyle = "rgba(255,255,255,.75)";
+        ctx.beginPath(); ctx.arc(0, 0, br, 0, 6.283); ctx.stroke();
+        ctx.lineWidth = 3;                            // 무지갯빛이 도는 테두리 조각
+        ctx.strokeStyle = "rgba(180,235,255,.85)";
+        ctx.beginPath(); ctx.arc(0, 0, br - 1, -2.5, -1.1); ctx.stroke();
+        ctx.strokeStyle = "rgba(255,190,240,.7)";
+        ctx.beginPath(); ctx.arc(0, 0, br - 1, 0.5, 1.7); ctx.stroke();
+        ctx.fillStyle = "rgba(255,255,255,.9)";       // 반짝이는 점
+        ctx.beginPath();
+        ctx.ellipse(-br * .42, -br * .46, br * .13, br * .08, -0.6, 0, 6.283);
+        ctx.fill();
+        ctx.restore();
       }
       if (now < powerUntil) {
         ctx.beginPath();
