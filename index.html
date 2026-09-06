@@ -766,7 +766,7 @@
   const elFinal = document.getElementById("finalScore");
   const elTitle = document.getElementById("overTitle");
 
-  const GAME_VERSION = "v1.4.23";   // 코드를 고칠 때마다 뒤 두 자리를 올린다
+  const GAME_VERSION = "v1.4.24";   // 코드를 고칠 때마다 뒤 두 자리를 올린다
   document.getElementById("ver").textContent = GAME_VERSION;
 
   const LS_NAME = "epjpddongpi_name";
@@ -4305,9 +4305,12 @@
       const i0 = zoneIdx(), i1 = Math.min(LAST_Z, i0 + 1);
       /* 그 지대 안에서의 진행도가 곧 배경이 내려온 정도다.
          마지막 지대는 진행도가 늘 0 이라 다 내려온 자리에서 멈춘다 —
-         되감으면 뚜니핑 하늘과 같은 이유로 튄다. */
-      drawZoneImg(ZONE_IMG[i0], 1, zoneFrac());
-      if (i1 !== i0) drawZoneImg(ZONE_IMG[i1], zoneFrac(), 0);
+         되감으면 뚜니핑 하늘과 같은 이유로 튄다.
+         시작화면에서는 아예 흐르지 않는다. 아무것도 안 하고 보고 있는데
+         배경만 계속 내려오면 어지럽다. 지대가 겹쳐 녹는 것은 그대로 둔다. */
+      const idle = state === STATE.READY;
+      drawZoneImg(ZONE_IMG[i0], 1, idle ? 0.5 : zoneFrac());
+      if (i1 !== i0) drawZoneImg(ZONE_IMG[i1], zoneFrac(), idle ? 0.5 : 0);
       bgShown = !!ZONE_IMG[i0];
     }
 
