@@ -759,7 +759,7 @@
   const elFinal = document.getElementById("finalScore");
   const elTitle = document.getElementById("overTitle");
 
-  const GAME_VERSION = "v1.4.19";   // 코드를 고칠 때마다 뒤 두 자리를 올린다
+  const GAME_VERSION = "v1.4.20";   // 코드를 고칠 때마다 뒤 두 자리를 올린다
   document.getElementById("ver").textContent = GAME_VERSION;
 
   const LS_NAME = "epjpddongpi_name";
@@ -1810,7 +1810,8 @@
   /* 도박사 — 80m 움직일 때마다 머리 위에서 비둘기가 날아오른다.
      게임 안의 1m = 논리 좌표 12px 로 본다 (캐릭터 키가 대략 1.5m 쯤 되는 비율). */
   let doves = [], moveDist = 0;
-  let bullets = [], shipTimer = 0;   // 갤러그: 날아가는 총알과 다음 발사까지 남은 시간
+  let bullets = [], shipClock = 0;   // 갤러그: 날아가는 총알과 편대 공용 시계
+  const SHIP_GAP = 0.4;              // 우주선 한 대가 다시 쏘기까지
   const M_PX = 12, DOVE_EVERY = 80 * M_PX;   // 100m 에서 20% 줄여 80m 마다
   let inputHoldUntil = 0;          // 이 시각까지는 화면 터치를 조작으로 받지 않는다
   let ghostTimer = 3;              // 유령화: 다음 무적까지 남은 시간
@@ -2126,7 +2127,7 @@
     noHitSec = 0;
     clones = []; cloneTimer = 0;
     doves = []; moveDist = 0;
-    bullets = []; shipTimer = 0; aug.galaga = 0;
+    bullets = []; shipClock = 0; aug.galaga = 0;
     shieldTimer = UMB_SEC;
     aug.itemRateMul = 1; aug.feverRateMul = 1; aug.giant = 0; aug.magnet = 0;
     aug.helper = 0; aug.helperRush = false; aug.hungry = false; aug.galaga = 0;
@@ -2713,16 +2714,19 @@
       }
     }
 
-      // ---- 갤러그 — 땅에 늘어선 우주선이 0.4초마다 총알을 쏘아 올린다 ----
+      // ---- 갤러그 — 땅에 늘어선 우주선이 저마다 0.4초마다 총알을 쏘아 올린다 ----
     if (aug.galaga > 0) {
-      shipTimer -= dt;
-      if (shipTimer <= 0) {
-        shipTimer = 0.4;
-        for (let k = 0; k < aug.galaga; k++) {
-          const sx = shipX(k, aug.galaga);
-          bullets.push({ x: sx, y: H - GROUND_H * 0.55 - 14, vy: -760 });
-        }
-        beep(1250, .05, "square", .03);
+      /* 우주선마다 제 박자가 있다 — 다 같이 쏘면 여러 대라도 한 발처럼 보인다.
+         한 대는 0.4초마다 쏘되, k 번째는 그 주기를 n 등분한 만큼 늦게 쏜다.
+         시계 하나로 재기 때문에 대수가 바뀌어도 박자가 저절로 다시 갈린다. */
+      const n = aug.galaga, was = shipClock;
+      shipClock += dt;
+      for (let k = 0; k < n; k++) {
+        const ph = SHIP_GAP * k / n;
+        if (Math.floor((shipClock - ph) / SHIP_GAP) === Math.floor((was - ph) / SHIP_GAP)) continue;
+        bullets.push({ x: shipX(k, n), y: H - GROUND_H * 0.55 - 14, vy: -760 });
+        // 소리는 한 바퀴에 한 번만 — 대수만큼 울리면 귀가 아프다
+        if (k === 0) beep(1250, .05, "square", .03);
       }
     }
     for (let k = bullets.length - 1; k >= 0; k--) {
