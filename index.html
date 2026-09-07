@@ -776,7 +776,7 @@
   const elFinal = document.getElementById("finalScore");
   const elTitle = document.getElementById("overTitle");
 
-  const GAME_VERSION = "v1.4.67";   // 코드를 고칠 때마다 뒤 두 자리를 올린다
+  const GAME_VERSION = "v1.4.68";   // 코드를 고칠 때마다 뒤 두 자리를 올린다
   document.getElementById("ver").textContent = GAME_VERSION;
 
   const LS_NAME = "epjpddongpi_name";
@@ -4354,7 +4354,7 @@
   }
   /* 점수 눈금 — 모든 점수가 여기를 지나므로, 이 값만 바꾸면
      항목 사이의 균형은 그대로 두고 자릿수만 키우거나 줄일 수 있다. */
-  const SCORE_SCALE = 5;
+  const SCORE_SCALE = 1;
   function scoreMul() { return SCORE_SCALE * aug.scoreMul * bhMul() * levMul() * monkMul(); }
 
   function zoneIdx() { return Math.min(LAST_Z, level - 1); }
