@@ -776,7 +776,7 @@
   const elFinal = document.getElementById("finalScore");
   const elTitle = document.getElementById("overTitle");
 
-  const GAME_VERSION = "v1.4.66";   // 코드를 고칠 때마다 뒤 두 자리를 올린다
+  const GAME_VERSION = "v1.4.67";   // 코드를 고칠 때마다 뒤 두 자리를 올린다
   document.getElementById("ver").textContent = GAME_VERSION;
 
   const LS_NAME = "epjpddongpi_name";
@@ -5400,7 +5400,8 @@
     ctx.textAlign = "left";
     ctx.textBaseline = "top";
     ctx.font = "700 21px NanumBarunGothic, system-ui, sans-serif";
-    const stxt = Math.floor(scoreShown).toLocaleString();
+    // 100점 단위로만 바뀐다 — 생존 점수 때문에 뒷자리가 계속 떨리는 것을 막는다
+    const stxt = (Math.floor(scoreShown / 100) * 100).toLocaleString();
     const pk = scorePunch;
     ctx.save();
     ctx.translate(16, top);
