@@ -766,7 +766,7 @@
   const elFinal = document.getElementById("finalScore");
   const elTitle = document.getElementById("overTitle");
 
-  const GAME_VERSION = "v1.4.46";   // 코드를 고칠 때마다 뒤 두 자리를 올린다
+  const GAME_VERSION = "v1.4.47";   // 코드를 고칠 때마다 뒤 두 자리를 올린다
   document.getElementById("ver").textContent = GAME_VERSION;
 
   const LS_NAME = "epjpddongpi_name";
@@ -1678,9 +1678,9 @@
   /* 별을 먹은 것과 똑같은 점수 처리 — 별 아이템과,
      고를 증강이 다 떨어졌을 때의 달 보상 대체에 함께 쓴다. */
   function eatStar(x, y) {
-    // 먹은 개수에 비례: 1번째 2,000 → 2번째 4,000 → 3번째 6,000 …
+    // 먹은 개수에 비례: 1번째 1,500 → 2번째 3,000 → 3번째 4,500 …
     starCount++;
-    const gain = Math.round(2000 * starCount * aug.starMul * scoreMul());
+    const gain = Math.round(1500 * starCount * aug.starMul * scoreMul());
     score += sc("별", gain);
     popGain(x, y, gain, "⭐×" + starCount + "  +" + gain.toLocaleString(), "#ffd23f");
     beep(1400, .1, "square", .05);
@@ -3052,7 +3052,7 @@
       if (hit) {
         if (it.type === "poop") {
           if (it.gold) {                    // 무지개똥 — 먹으면 점수 (레벨이 오를수록 값지다)
-            const g = Math.round(150 * (aug.goldLord ? 2 : 1) * scoreMul() * level);
+            const g = Math.round(100 * (aug.goldLord ? 2 : 1) * scoreMul() * level);
             score += sc("무지개똥", g);
             burst(it.x, it.y, "hsl(" + Math.round(goldFx(now, it.x).hue) + ",100%,62%)", 20);
             popGain(it.x, it.y, g, "🌈 +" + g.toLocaleString(), "#ffe07a");
@@ -3293,19 +3293,22 @@
     return false;
   }
 
-  /* 뚜니핑 낙하물 점수 — 크기 등급 점수 × 0.6 × 레벨.
+  /* 뚜니핑 낙하물 점수 — 크기 등급 점수 × 0.7 × 레벨.
      초당 수십 개가 쏟아지므로 한 개의 몫은 다른 것보다 작게 잡았다. */
   function feverGain(it) {
     const base = it.gain || (it.sz < 16.2 ? 2 : (it.sz < 20.7 ? 5 : 10));
-    return Math.max(1, Math.round(base * 0.6 * aug.feverScoreMul * scoreMul() * level));
+    return Math.max(1, Math.round(base * 0.7 * aug.feverScoreMul * scoreMul() * level));
   }
 
-  /* 테스트 모드에서만 점수를 항목별로 모은다.
-     실제 플레이에서는 if 한 번만 지나가므로 부담이 없다. */
+  /* 점수를 항목별로도 모은다. 테스트 모드에서는 화면에 띄우고,
+     실제 플레이에서는 판이 끝날 때 비중만 익명으로 남겨 통계에 쓴다. */
   const SRC_KEYS = ["별", "별핑별", "뚜니핑", "무지개똥", "똥", "생존"];
+  // 서버에는 한글 대신 짧은 영문 키로 보낸다 (칸 이름이 지저분해지지 않게)
+  const SRC_CODE = { "별": "star", "별핑별": "burst", "뚜니핑": "fever",
+                     "무지개똥": "gold", "똥": "poop", "생존": "time" };
   let scoreSrc = {};
   function sc(key, v) {
-    if (testMode) scoreSrc[key] = (scoreSrc[key] || 0) + v;
+    scoreSrc[key] = (scoreSrc[key] || 0) + v;
     return v;
   }
 
@@ -3323,7 +3326,7 @@
       if (it.type !== "poop") continue;
       if (Math.hypot(it.x - x, it.y - y) >= radius + it.r) continue;
       if (it.gold) {                         // 무지개똥 — 부수면 직접 먹은 것과 같은 점수
-        const g = Math.round(150 * (aug.goldLord ? 2 : 1) * scoreMul() * level * gm);
+        const g = Math.round(100 * (aug.goldLord ? 2 : 1) * scoreMul() * level * gm);
         score += sc("무지개똥", g);
         burst(it.x, it.y, "#ffd23f", 18);
         popText(it.x, it.y, "✨ +" + g.toLocaleString(), "#ffe07a");
@@ -3778,13 +3781,23 @@
       augs: augCount,
       ver: GAME_VERSION        // 어느 버전에서 나온 기록인지
     };
+    /* 오브젝트별 점수 비중(%) — 액수가 아니라 비중이라 판 길이와 무관하게 견줄 수 있다.
+       칸이 없는 서버에서도 기록은 남아야 하므로 아래에서 이 칸부터 떼어 낸다. */
+    const srcTot = SRC_KEYS.reduce((t, k) => t + (scoreSrc[k] || 0), 0);
+    const srcPct = {};
+    if (srcTot > 0) {
+      for (const k of SRC_KEYS) {
+        if (scoreSrc[k] > 0) srcPct[SRC_CODE[k]] = Math.round(scoreSrc[k] / srcTot * 1000) / 10;
+      }
+    }
     const nm = savedName();
     /* 직업·이름 칸이 아직 없는 서버에서도 기록은 남아야 하므로,
        400 이 오면 칸을 하나씩 빼며 다시 보낸다. */
     const withName = o => (nm ? Object.assign({ name: nm }, o) : o);
     const tries = [
-      withName(Object.assign({ job: job }, base)),   // 직업 + 이름
-      withName(base)                                  // 직업 칸이 없는 서버
+      withName(Object.assign({ job: job, src: srcPct }, base)),   // 직업 + 이름 + 점수 비중
+      withName(Object.assign({ job: job }, base)),   // src 칸이 없는 서버
+      withName(base)                                  // 직업 칸도 없는 서버
     ];
     if (nm) tries.push(base);                         // 이름 칸도 없는 서버
     const send = body => fetch(SB_URL + "/rest/v1/" + SB_RUNS, {
@@ -3855,6 +3868,21 @@
       ["평균 생존", { t: (su.avg_secs || 0) + "초", c: "num" }],
       ["평균 별 개수", { t: su.avg_stars || 0, c: "num" }]
     ]));
+
+    /* 오브젝트별 점수 비중 — 판마다의 비중을 평균 낸 값이라
+       점수가 큰 한두 판에 끌려가지 않는다. */
+    const srcRows = data.src || [];
+    if (srcRows.length) {
+      const SRC_LABEL = { star: "별", burst: "별핑별", fever: "뚜니핑",
+                          gold: "무지개똥", poop: "똥", time: "생존" };
+      P.sum.appendChild(devSection("오브젝트별 점수 비중 (판마다의 평균)",
+        ["오브젝트", "평균 비중", "판수"],
+        srcRows.map(r => [
+          SRC_LABEL[r.k] || r.k,
+          { t: (r.pct || 0) + "%", c: "num" },
+          { t: r.runs, c: "num" }
+        ])));
+    }
 
     const augs = data.augs || [];
     P.aug.appendChild(devSection("증강별 채택 (판수 순)",
