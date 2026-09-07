@@ -766,7 +766,7 @@
   const elFinal = document.getElementById("finalScore");
   const elTitle = document.getElementById("overTitle");
 
-  const GAME_VERSION = "v1.4.53";   // 코드를 고칠 때마다 뒤 두 자리를 올린다
+  const GAME_VERSION = "v1.4.54";   // 코드를 고칠 때마다 뒤 두 자리를 올린다
   document.getElementById("ver").textContent = GAME_VERSION;
 
   const LS_NAME = "epjpddongpi_name";
@@ -1140,6 +1140,13 @@
              bcx: 0.500, bcy: 0.509, brr: 0.525 },
     hurt:  { img: null, aspect: 0.8313, head: 0.520, cx: 0.500, cy: 0.330, adj: 0.6521 }
   };
+  /* 무소유 전용 우주복 — 왼쪽 그림은 따로 없이 오른쪽을 뒤집어 쓴다.
+     헬멧이 판정원이라 지름·중심을 재어 넣었다 (몸 높이는 다른 직업과 같은 1.475D). */
+  const SPR_MONK_SPACE = {
+    left:  { img: null, aspect: 0.6139, head: 0.388, cx: 0.550, cy: 0.230, adj: 0.5723 },
+    right: { img: null, aspect: 0.6139, head: 0.388, cx: 0.550, cy: 0.230, adj: 0.5723 },
+    hurt:  { img: null, aspect: 0.4583, head: 0.357, cx: 0.545, cy: 0.265, adj: 0.5726 }
+  };
   const SPACE_Z = 6;                 // 오로라 지대 — 여기부터 우주복 차림
   /* 우주에 올라서면 체감 난이도를 이 배율만큼 올린다.
      낙하 속도와 낙하 빈도에 각각 제곱근을 나눠 걸어 둘을 합친 체감이 정확히 이 값이 된다. */
@@ -1148,7 +1155,7 @@
   function inSpace() { return zoneIdx() >= SPACE_Z; }
   const JOB_SPRS = { gambler: SPR_GAMBLER, levitator: SPR_LEV, fit: SPR_FIT, powerj: SPR_PJ,
                      powerp: SPR_MONK, bangul: SPR_BANGUL };
-  const JOB_SPRS_SPACE = { bangul: SPR_BANGUL_SPACE };   // 제 우주복이 있는 직업만
+  const JOB_SPRS_SPACE = { bangul: SPR_BANGUL_SPACE, powerp: SPR_MONK_SPACE };   // 제 우주복이 있는 직업만
   // 인트로의 이재는 매 루프마다 아무 직업이나 입고 나온다 (직업은 판마다 고르는 방식이라)
   let introJob = "none";
   function rollIntroJob() {
@@ -1193,7 +1200,7 @@
     mk.onload = () => { SPR_MONK[key].img = mk; };
     mk.src = "assets/monk_" + key + ".png";
   }
-  // 방울이는 왼쪽 그림이 따로 없다 — 오른쪽을 뒤집어 쓴다
+  // 방울이·무소유 우주복은 왼쪽 그림이 따로 없다 — 오른쪽을 뒤집어 쓴다
   for (const key of ["right", "hurt"]) {
     const bg = new Image();
     bg.onload = () => { SPR_BANGUL[key].img = bg; };
@@ -1201,6 +1208,9 @@
     const bs = new Image();
     bs.onload = () => { SPR_BANGUL_SPACE[key].img = bs; };
     bs.src = "assets/bangul_space_" + key + ".png";
+    const ms = new Image();
+    ms.onload = () => { SPR_MONK_SPACE[key].img = ms; };
+    ms.src = "assets/monk_space_" + key + ".png";
   }
   /* 방울이만 달리는 그림이 16장 따로 있다.
      차례대로 받아야 순서가 섞이지 않으므로 한 장씩 이어 받는다. */
