@@ -766,7 +766,7 @@
   const elFinal = document.getElementById("finalScore");
   const elTitle = document.getElementById("overTitle");
 
-  const GAME_VERSION = "v1.4.63";   // 코드를 고칠 때마다 뒤 두 자리를 올린다
+  const GAME_VERSION = "v1.4.64";   // 코드를 고칠 때마다 뒤 두 자리를 올린다
   document.getElementById("ver").textContent = GAME_VERSION;
 
   const LS_NAME = "epjpddongpi_name";
@@ -1693,7 +1693,7 @@
     starCount++;
     const gain = Math.round(1500 * starCount * aug.starMul * scoreMul());
     score += sc("별", gain);
-    popGain(x, y, gain, "⭐×" + starCount + "  +" + gain.toLocaleString(), "#ffd23f");
+    popGain(x, y, gain, "⭐×" + starCount, "#ffd23f");
     beep(1400, .1, "square", .05);
     beep(1750, .12, "square", .04);
     return gain;
@@ -2478,8 +2478,11 @@
   }
   /* 점수를 딴 순간은 액수만큼 크게 말한다.
      푼돈은 조용히 떠오르고, 큰돈은 고리가 퍼지면서 화면이 흔들린다. */
+  /* gain 은 이제 화면에 적지 않는다 — 글씨 크기·고리·화면 흔들림으로만 크기를 전한다.
+     문턱은 똥 한 개 값을 기준으로 잡아 레벨이 올라도 등급이 밀리지 않는다. */
   function popGain(x, y, gain, text, color) {
-    const tier = gain >= 20000 ? 2 : gain >= 3000 ? 1 : 0;
+    const w = gain / Math.max(1, poopGain());
+    const tier = w >= 60 ? 2 : w >= 8 ? 1 : 0;
     floats.push({
       x, y, text, color: color || "#ffd23f", t: 0,
       life: [1, 1.15, 1.35][tier], size: [22, 28, 36][tier], tier, pop: 1,
@@ -2528,11 +2531,15 @@
       if (bp.t > bp.life) bubPops.splice(i, 1);
     }
 
-    /* 점수판 — 한 프레임에 눈에 띄게 오른 때만 튄다.
-       생존 점수는 매 프레임 조금씩 붙으므로 문턱을 넘지 못한다. */
+    /* 점수판 — 한 번에 '똥 몇 개어치'를 벌었는지로 잰다.
+       레벨·직업·증강 배율이 똥 한 개 값에도 똑같이 들어가 있으므로,
+       판 초반이든 후반이든 같은 크기의 사건에 같은 세기로 튄다.
+         똥 하나 = 1 · 무지개똥 ≈ 10 · 별 ≈ 136 · 별핑별 = 부순 개수 x4
+       생존 점수는 한 프레임에 0.07 개어치라 문턱을 넘지 못한다. */
     const dScore = score - prevScore;
-    if (dScore >= Math.max(30, score * 0.004)) {
-      scorePunch = Math.min(1, scorePunch + 0.42 + Math.min(0.58, Math.log10(1 + dScore) / 8));
+    const worth = dScore / Math.max(1, poopGain());
+    if (worth >= 4) {
+      scorePunch = Math.min(1, scorePunch + 0.30 + Math.min(0.70, Math.log10(worth / 4) * 0.62));
     }
     prevScore = score;
     if (scorePunch > 0) scorePunch = Math.max(0, scorePunch - dt * 2.6);
@@ -3073,10 +3080,10 @@
       if (hit) {
         if (it.type === "poop") {
           if (it.gold) {                    // 무지개똥 — 먹으면 점수 (레벨이 오를수록 값지다)
-            const g = Math.round(100 * (aug.goldLord ? 2 : 1) * scoreMul() * level);
+            const g = Math.round(110 * (aug.goldLord ? 2 : 1) * scoreMul() * level);
             score += sc("무지개똥", g);
             burst(it.x, it.y, "hsl(" + Math.round(goldFx(now, it.x).hue) + ",100%,62%)", 20);
-            popGain(it.x, it.y, g, "🌈 +" + g.toLocaleString(), "#ffe07a");
+            popGain(it.x, it.y, g, "🌈", "#ffe07a");
             beep(1250, .1, "square", .05);
             items.splice(i, 1);
             continue;
@@ -3281,7 +3288,7 @@
         for (let k = items.length - 1; k >= 0; k--) {
           const q = items[k];
           if (q.type !== "poop") continue;
-          bonus += poopGain() * 2;
+          bonus += poopGain() * 4;
           burst(q.x, q.y, "#ffe9a8", 10);
           items.splice(k, 1);
           cnt++;
@@ -3293,7 +3300,7 @@
           shake = Math.max(shake, 18);
           feverFlash = Math.max(feverFlash, 0.7);
           popGain(player.x, player.y - 110, bonus,
-                  "🌠 " + cnt + "개 쓸어버림 +" + Math.round(bonus).toLocaleString(), "#ffe9a8");
+                  "🌠 " + cnt + "개 쓸어버림", "#ffe9a8");
           beep(2000, .18, "square", .05);
         }
       }
@@ -3318,7 +3325,7 @@
      초당 수십 개가 쏟아지므로 한 개의 몫은 다른 것보다 작게 잡았다. */
   function feverGain(it) {
     const base = it.gain || (it.sz < 16.2 ? 2 : (it.sz < 20.7 ? 5 : 10));
-    return Math.max(1, Math.round(base * 0.7 * aug.feverScoreMul * scoreMul() * level));
+    return Math.max(1, Math.round(base * 0.77 * aug.feverScoreMul * scoreMul() * level));
   }
 
   /* 점수를 항목별로도 모은다. 테스트 모드에서는 화면에 띄우고,
@@ -3335,7 +3342,7 @@
 
   /* 똥 한 개의 점수 — 10 × 레벨.
      흘려보낸 것, 스테로이드로 튕겨낸 것, 부순 것이 모두 같은 값을 받는다. */
-  function poopGain() { return 10 * scoreMul() * level; }
+  function poopGain() { return 11 * scoreMul() * level; }
 
   /* 정연핑이 지나간 자리의 똥을 부순다 (뚜니핑 낙하물은 제 점수를 그대로 준다)
      gainMul — 부순 것의 점수 배율. 비둘기는 5배를 준다
@@ -3347,7 +3354,7 @@
       if (it.type !== "poop") continue;
       if (Math.hypot(it.x - x, it.y - y) >= radius + it.r) continue;
       if (it.gold) {                         // 무지개똥 — 부수면 직접 먹은 것과 같은 점수
-        const g = Math.round(100 * (aug.goldLord ? 2 : 1) * scoreMul() * level * gm);
+        const g = Math.round(110 * (aug.goldLord ? 2 : 1) * scoreMul() * level * gm);
         score += sc("무지개똥", g);
         burst(it.x, it.y, "#ffd23f", 18);
         popText(it.x, it.y, "✨ +" + g.toLocaleString(), "#ffe07a");
