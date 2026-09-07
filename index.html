@@ -113,10 +113,10 @@
     font-size: 10.5px; color: #dfe3ee;
   }
   .board .mini .mn b { color: #7f93b5; font-weight: 700; margin-right: 2px; }
-  .board .mini .ms { font-size: 11px; font-weight: 700; color: #ffd23f; font-variant-numeric: tabular-nums; }
+  .board .mini .ms { font-size: 13px; font-weight: 700; color: #ffd23f; font-variant-numeric: tabular-nums; }
   .board li.five .mini { background: rgba(255,255,255,.04); border-color: rgba(255,255,255,.10); }
   .board li.five .mini .mn { font-size: 10px; }
-  .board li.five .mini .ms { font-size: 10.5px; }
+  .board li.five .mini .ms { font-size: 12px; }
   .board .mini.me { outline: 1.5px solid rgba(255,210,63,.75); background: rgba(255,210,63,.12); }
 
   /* 1~3위는 금·은·동으로 따로 */
@@ -131,7 +131,7 @@
     box-shadow: 0 0 14px rgba(255,210,63,.22);
   }
   .board li.p1 .nm { color: #fff6cf; font-weight: 800; text-shadow: 0 0 10px rgba(255,210,63,.45); }
-  .board li.p1 .sc { color: #ffd23f; font-size: 1.18em; font-weight: 800; text-shadow: 0 0 10px rgba(255,210,63,.6); }
+  .board li.p1 .sc { color: #ffd23f; font-size: 1.42em; font-weight: 800; text-shadow: 0 0 10px rgba(255,210,63,.6); }
   .board li.p1 .sc img.jic { width: 27px; height: 34px; vertical-align: -11px; }
   .board li.p2 .sc img.jic, .board li.p3 .sc img.jic { width: 24px; height: 30px; vertical-align: -9px; }
 
@@ -141,14 +141,14 @@
     box-shadow: 0 0 12px rgba(223,230,239,.14);
   }
   .board li.p2 .nm { color: #f4f7fc; font-weight: 700; text-shadow: 0 0 10px rgba(223,230,239,.35); }
-  .board li.p2 .sc { color: #e8eef7; font-size: 1.13em; font-weight: 700; }
+  .board li.p2 .sc { color: #e8eef7; font-size: 1.34em; font-weight: 700; }
 
   .board li.p3 {
     border-left-color: #cd7f32;
     background: linear-gradient(90deg, rgba(205,127,50,.20), rgba(205,127,50,.02));
   }
   .board li.p3 .nm { color: #efc79b; font-weight: 700; }
-  .board li.p3 .sc { color: #d99257; font-size: 1.10em; font-weight: 700; }
+  .board li.p3 .sc { color: #d99257; font-size: 1.30em; font-weight: 700; }
 
   .board li.p1 .rk, .board li.p2 .rk, .board li.p3 .rk { font-size: 1.15em; }
   /* 내 기록 강조 — 금·은·동 색을 덮지 않도록 테두리로만 표시 */
@@ -228,10 +228,10 @@
   /* 자릿수가 많은 점수는 글자를 줄여 오른쪽이 잘리지 않게 */
   .board .sc.long  { font-size: .88em; }
   .board .sc.xlong { font-size: .74em; }
-  .board li.p1 .sc.long  { font-size: 1.02em; }
-  .board li.p1 .sc.xlong { font-size: .86em; }
-  .board li.p2 .sc.long, .board li.p3 .sc.long   { font-size: .98em; }
-  .board li.p2 .sc.xlong, .board li.p3 .sc.xlong { font-size: .82em; }
+  .board li.p1 .sc.long  { font-size: 1.18em; }
+  .board li.p1 .sc.xlong { font-size: .96em; }
+  .board li.p2 .sc.long, .board li.p3 .sc.long   { font-size: 1.12em; }
+  .board li.p2 .sc.xlong, .board li.p3 .sc.xlong { font-size: .92em; }
   /* 초기화 안내는 제목 줄 오른쪽 끝에 작게 */
   .board.withTabs .note {
     position: absolute; top: 9px; right: 12px; margin: 0;
@@ -766,7 +766,7 @@
   const elFinal = document.getElementById("finalScore");
   const elTitle = document.getElementById("overTitle");
 
-  const GAME_VERSION = "v1.4.42";   // 코드를 고칠 때마다 뒤 두 자리를 올린다
+  const GAME_VERSION = "v1.4.43";   // 코드를 고칠 때마다 뒤 두 자리를 올린다
   document.getElementById("ver").textContent = GAME_VERSION;
 
   const LS_NAME = "epjpddongpi_name";
@@ -3647,7 +3647,7 @@
       nm.textContent = row.name;               // textContent → HTML 삽입 불가
       const sc = document.createElement("span");
       const digits = String(Math.round(Number(row.score) || 0)).length;
-      sc.className = "sc" + (digits >= 13 ? " xlong" : digits >= 10 ? " long" : "");
+      sc.className = "sc" + (digits >= 11 ? " xlong" : digits >= 9 ? " long" : "");
       if (row.job && JOBS[row.job]) {
         const im = document.createElement("img");
         im.className = "jic";
