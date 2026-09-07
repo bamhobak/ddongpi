@@ -766,7 +766,7 @@
   const elFinal = document.getElementById("finalScore");
   const elTitle = document.getElementById("overTitle");
 
-  const GAME_VERSION = "v1.4.59";   // 코드를 고칠 때마다 뒤 두 자리를 올린다
+  const GAME_VERSION = "v1.4.60";   // 코드를 고칠 때마다 뒤 두 자리를 올린다
   document.getElementById("ver").textContent = GAME_VERSION;
 
   const LS_NAME = "epjpddongpi_name";
@@ -4306,11 +4306,11 @@
   function bhMul() { return inBlackhole() ? 2 : 1; }   // 블랙홀 안 점수 배율
   // 블랙홀 안의 '난이도' 배율 — 점수·아이템 배율(2배)과 달리 낙하 속도·똥 수량에만 쓴다
   function bhDiff() { return inBlackhole() ? 1.5 : 1; }
-  /* 부양사 — 높이 날수록 모든 점수가 커진다. 바닥 +0%, 중간 +25%, 꼭대기 +50%. */
+  /* 부양사 — 높이 날수록 모든 점수가 커진다. 바닥 +0%, 중간 +50%, 꼭대기 +100%. */
   function levMul() {
     if (job !== "levitator" || !flyOn) return 1;
     const air = Math.max(0, Math.min(1, (groundY - player.y) / Math.max(1, groundY - H * FLY_TOP)));
-    return 1 + 0.5 * air;
+    return 1 + 1.0 * air;
   }
   /* 무소유 — 증강이 없는 대신, 안 맞고 버틴 시간만큼 배율이 오른다 (초당 +10.5%, 상한 없음).
      레벨 배수는 곱하지 않는다 — 점수 자체가 이미 레벨에 비례하므로 두 번 세는 셈이 된다.
