@@ -1,0 +1,99 @@
+-- Fix the per-object score share so the numbers can be compared with each other.
+--
+-- Before: each object averaged only over the runs where that object scored
+--         above zero, so every row had a different denominator and the shares
+--         added up to about 111%. A rare source looked far bigger than it is.
+-- After:  every object averages over the same set - all runs that carry a
+--         share at all (the "no possessions" job still excluded). A run that
+--         never touched an object counts as 0 for it, so the shares add to 100%.
+--         The "runs" number still says how many runs actually scored from it.
+--
+-- Paste the whole file into Supabase -> SQL Editor and Run. Safe to run twice.
+-- (No Korean literals here on purpose - the clipboard mangles them.)
+
+create or replace function public.ddongpi_stats(pw text)
+returns jsonb
+language plpgsql
+security definer
+set search_path = public
+as $$
+declare result jsonb;
+begin
+  if pw is distinct from '2424' then
+    raise exception 'wrong password';
+  end if;
+
+  select jsonb_build_object(
+    'summary', (
+      select jsonb_build_object(
+        'runs',      count(*),
+        'avg_score', coalesce(round(avg(score)), 0),
+        'max_score', coalesce(max(score), 0),
+        'avg_secs',  coalesce(round(avg(secs)), 0),
+        'avg_stars', coalesce(round(avg(stars), 2), 0)
+      ) from ddongpi_runs
+    ),
+    -- share of each object, averaged over every run that has a share at all
+    'src', coalesce((
+      select jsonb_agg(jsonb_build_object('k', k, 'pct', pct, 'runs', n)
+                       order by pct desc)
+        from (
+          select t.k as k,
+                 round(sum((t.v)::numeric) / greatest(1, (
+                   select count(*) from ddongpi_runs r2
+                    where r2.src is not null
+                      and coalesce(nullif(btrim(r2.job), ''), '') <> 'powerp'
+                 )), 1) as pct,
+                 count(*) as n
+            from ddongpi_runs r, lateral jsonb_each_text(r.src) t(k, v)
+           where r.src is not null
+             and coalesce(nullif(btrim(r.job), ''), '') <> 'powerp'
+           group by t.k
+        ) q
+    ), '[]'::jsonb),
+    'augs', coalesce((
+      select jsonb_agg(
+               jsonb_build_object('id', k, 'picks', n, 'stack', st, 'score', sc)
+               order by n desc)
+        from (
+          select t.k as k, count(*) as n,
+                 round(avg(t.v::int), 2) as st, round(avg(r.score)) as sc
+            from ddongpi_runs r, lateral jsonb_each_text(r.augs) t(k, v)
+           group by t.k
+        ) s
+    ), '[]'::jsonb),
+    'vers', coalesce((
+      select jsonb_agg(jsonb_build_object('ver', v, 'runs', n, 'score', sc, 'secs', se)
+                       order by v desc)
+        from (
+          select coalesce(ver, '(none)') as v, count(*) as n,
+                 round(avg(score)) as sc, round(avg(secs)) as se
+            from ddongpi_runs group by coalesce(ver, '(none)')
+        ) q
+    ), '[]'::jsonb),
+    'jobs', coalesce((
+      select jsonb_agg(jsonb_build_object('job', v, 'runs', n, 'avg', av, 'best', bs, 'secs', se)
+                       order by n desc)
+        from (
+          select coalesce(nullif(btrim(job), ''), '(none)') as v,
+                 count(*) as n, round(avg(score)) as av, max(score) as bs,
+                 round(avg(secs)) as se
+            from ddongpi_runs
+           group by coalesce(nullif(btrim(job), ''), '(none)')
+        ) q
+    ), '[]'::jsonb),
+    'recent', coalesce((
+      select jsonb_agg(jsonb_build_object(
+               'name', q.name, 'job', q.job, 'score', q.score, 'secs', q.secs,
+               'level', q.level, 'ver', q.ver, 'augs', q.augs))
+        from (select * from ddongpi_runs order by created_at desc limit 20) q
+    ), '[]'::jsonb)
+  ) into result;
+
+  return result;
+end $$;
+
+revoke all on function public.ddongpi_stats(text) from public;
+grant execute on function public.ddongpi_stats(text) to anon, authenticated;
+
+notify pgrst, 'reload schema';
