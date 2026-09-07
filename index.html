@@ -9,16 +9,26 @@
 <link rel="manifest" href="manifest.json">
 <link rel="apple-touch-icon" href="icon-192.png">
 <title>이피재피똥피</title>
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Do+Hyeon&display=swap">
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ctext x='50' y='52' font-size='84' text-anchor='middle' dominant-baseline='central'%3E%F0%9F%92%A9%3C/text%3E%3C/svg%3E">
 <style>
+  /* 나눔바른고딕 — 흔히 쓰는 한글 5,362자만 남겨 받아 둔 것(둘이 합쳐 426KB).
+     빠진 글자는 아래 대체 글꼴이 받아 준다. 파일을 함께 올려 두어 오프라인에서도 나온다. */
+  @font-face {
+    font-family: "NanumBarunGothic";
+    src: url("assets/fonts/nbg-400.woff2") format("woff2");
+    font-weight: 400; font-style: normal; font-display: swap;
+  }
+  @font-face {
+    font-family: "NanumBarunGothic";
+    src: url("assets/fonts/nbg-700.woff2") format("woff2");
+    font-weight: 600 900; font-style: normal; font-display: swap;
+  }
   * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
   html, body {
     width: 100%; height: 100%;
     background: #07070f;
     color: #fff;
-    font-family: "Do Hyeon", "Pretendard", "Apple SD Gothic Neo", "Malgun Gothic", "맑은 고딕", system-ui, sans-serif;
+    font-family: "NanumBarunGothic", "Apple SD Gothic Neo", "Malgun Gothic", "맑은 고딕", system-ui, sans-serif;
     overflow: hidden;
     overscroll-behavior: none;
     -webkit-user-select: none; user-select: none;
@@ -766,7 +776,7 @@
   const elFinal = document.getElementById("finalScore");
   const elTitle = document.getElementById("overTitle");
 
-  const GAME_VERSION = "v1.4.64";   // 코드를 고칠 때마다 뒤 두 자리를 올린다
+  const GAME_VERSION = "v1.4.65";   // 코드를 고칠 때마다 뒤 두 자리를 올린다
   document.getElementById("ver").textContent = GAME_VERSION;
 
   const LS_NAME = "epjpddongpi_name";
@@ -4342,7 +4352,10 @@
     if (job !== "powerp") return 1;
     return 1 + 0.105 * noHitSec;
   }
-  function scoreMul() { return aug.scoreMul * bhMul() * levMul() * monkMul(); }
+  /* 점수 눈금 — 모든 점수가 여기를 지나므로, 이 값만 바꾸면
+     항목 사이의 균형은 그대로 두고 자릿수만 키우거나 줄일 수 있다. */
+  const SCORE_SCALE = 5;
+  function scoreMul() { return SCORE_SCALE * aug.scoreMul * bhMul() * levMul() * monkMul(); }
 
   function zoneIdx() { return Math.min(LAST_Z, level - 1); }
   // 지금 단계와 다음 단계 사이의 진행도 — 색이 뚝 끊기지 않고 이어지도록
@@ -5285,7 +5298,7 @@
       ctx.rotate(wn.ang || 0);
       ctx.globalAlpha = on ? 1 : 0.35;
       ctx.fillStyle = "#ff5d5d";
-      ctx.font = "700 46px system-ui, sans-serif";
+      ctx.font = "700 46px NanumBarunGothic, system-ui, sans-serif";
       ctx.textAlign = "center";
       ctx.textBaseline = "middle";
       ctx.beginPath();                       // 어두운 배경에서도 눈에 띄게 뒤에 원을 깐다
@@ -5386,7 +5399,7 @@
     const top = 14;
     ctx.textAlign = "left";
     ctx.textBaseline = "top";
-    ctx.font = "700 26px system-ui, sans-serif";
+    ctx.font = "700 26px NanumBarunGothic, system-ui, sans-serif";
     const stxt = Math.floor(scoreShown).toLocaleString();
     const pk = scorePunch;
     ctx.save();
@@ -5404,7 +5417,7 @@
     ctx.restore();
 
 
-    ctx.font = "600 13px system-ui, sans-serif";
+    ctx.font = "600 13px NanumBarunGothic, system-ui, sans-serif";
     ctx.fillStyle = "rgba(255,255,255,.9)";
     ctx.fillText(ZONES[zoneIdx()].ic + " " + ZONES[zoneIdx()].nm, 17, top + 32);
 
@@ -5412,14 +5425,14 @@
     // 목숨은 이모지 대신 직접 그린다.
     // iOS 이모지는 지정한 상단선보다 위로 튀어나와서 화면 밖으로 잘리는 문제가 있었다.
     if (testMode) {
-      ctx.font = "700 12px system-ui, sans-serif";
+      ctx.font = "700 12px NanumBarunGothic, system-ui, sans-serif";
       ctx.fillStyle = "#ff7b7b";
       ctx.fillText("TEST  목숨 ∞", 17, top + 54);
       /* 점수가 어디서 왔는지 — 많이 준 것부터. 어느 축이 세고 약한지 바로 보인다. */
       const rows = SRC_KEYS.filter(k => scoreSrc[k] > 0)
                            .sort((a, b) => scoreSrc[b] - scoreSrc[a]);
       const sum = rows.reduce((t, k) => t + scoreSrc[k], 0) || 1;
-      ctx.font = "700 11px system-ui, sans-serif";
+      ctx.font = "700 11px NanumBarunGothic, system-ui, sans-serif";
       if (rows.length) {                     // 낙하물이 지나가도 읽히도록 받침을 깐다
         let wide = 0;
         for (const k of rows) {
@@ -5457,7 +5470,7 @@
         ctx.fillStyle = "#fff";
         ctx.fillText(a.ic, x, ay);
         if (n > 1) {
-          ctx.font = "700 10px system-ui, sans-serif";
+          ctx.font = "700 10px NanumBarunGothic, system-ui, sans-serif";
           ctx.fillStyle = "#ffd23f";
           ctx.fillText("x" + n, x + 16, ay + 4);
         }
@@ -5467,7 +5480,7 @@
     // 하트가 많으면 작게 그리고 10개 단위로 줄을 바꾼다 (헬스걸은 최대 20개)
     if (job === "powerp") {                 // 무소유 — 무피격으로 버틴 시간
       ctx.textAlign = "right";
-      ctx.font = "700 13px system-ui, sans-serif";
+      ctx.font = "700 13px NanumBarunGothic, system-ui, sans-serif";
       ctx.fillStyle = "#ffe08a";
       ctx.fillText("🧘 " + Math.floor(noHitSec) + "초", W - 16, top + 44);
       ctx.textAlign = "left";
@@ -5536,7 +5549,7 @@
       ctx.beginPath(); ctx.roundRect(bx + .7, by + .7, bw - 1.4, bh - 1.4, br); ctx.stroke();
 
       ctx.textAlign = "center"; ctx.textBaseline = "middle";
-      ctx.font = "800 12px system-ui, sans-serif";
+      ctx.font = "800 12px NanumBarunGothic, system-ui, sans-serif";
       ctx.lineWidth = 3.5; ctx.strokeStyle = "rgba(46,12,0,.66)";
       ctx.strokeText("뚜니핑 타임", W / 2, by + bh / 2 + 0.5);
       ctx.fillStyle = "#fff";
@@ -5562,7 +5575,7 @@
       ctx.beginPath(); ctx.arc(0, 0, 160, 0, 6.283); ctx.fill();
 
       ctx.textAlign = "center"; ctx.textBaseline = "middle";
-      ctx.font = "900 34px system-ui, sans-serif";
+      ctx.font = "900 34px NanumBarunGothic, system-ui, sans-serif";
       ctx.lineWidth = 8; ctx.lineJoin = "round";
       ctx.strokeStyle = "rgba(52,14,0,.7)";
       ctx.strokeText("뚜니핑 타임!", 0, 0);
@@ -5679,7 +5692,7 @@
       ctx.save();
       ctx.translate(f.x, f.y);
       if (sc !== 1) ctx.scale(sc, sc);
-      ctx.font = "800 " + (f.size || 22) + "px system-ui, sans-serif";
+      ctx.font = "800 " + (f.size || 22) + "px NanumBarunGothic, system-ui, sans-serif";
       ctx.lineWidth = f.tier >= 1 ? 6 : 4;
       ctx.lineJoin = "round";
       ctx.strokeStyle = "rgba(0,0,0,.42)";
@@ -5763,7 +5776,7 @@
         ctx.fillRect(0, 0, W, H);
         ctx.globalAlpha = 1 - frac * 0.6;
         ctx.fillStyle = "#ffd23f";
-        ctx.font = "800 " + Math.round(90 + frac * 40) + "px system-ui, sans-serif";
+        ctx.font = "800 " + Math.round(90 + frac * 40) + "px NanumBarunGothic, system-ui, sans-serif";
         ctx.textAlign = "center"; ctx.textBaseline = "middle";
         ctx.fillText(n, W / 2, H * 0.45);
         ctx.restore();
