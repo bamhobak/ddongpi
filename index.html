@@ -766,7 +766,7 @@
   const elFinal = document.getElementById("finalScore");
   const elTitle = document.getElementById("overTitle");
 
-  const GAME_VERSION = "v1.4.36";   // 코드를 고칠 때마다 뒤 두 자리를 올린다
+  const GAME_VERSION = "v1.4.37";   // 코드를 고칠 때마다 뒤 두 자리를 올린다
   document.getElementById("ver").textContent = GAME_VERSION;
 
   const LS_NAME = "epjpddongpi_name";
@@ -1643,9 +1643,9 @@
       go: () => { aug.goldChance += (augCount["gold"] ? 0.05 : 0.10) * dim("gold"); } },
     { id: "dopa",       ic: "📱", nm: "도파민 중독",  ds: "똥이 빨라지고, 생존 점수가 크게 오른다",
       go: () => { aug.fallMul *= 1 + 0.10 * dim("dopa"); aug.timeMul *= 1 + 0.5 * dim("dopa"); } },
-    { id: "carrot",     ic: "🥕", nm: "하트 당근거래", ds: "목숨 1개를 팔고, 앞으로 얻는 모든 점수 +30%",
+    { id: "carrot",     ic: "🥕", nm: "하트 당근거래", ds: "목숨 1개를 팔고, 앞으로 얻는 모든 점수 +25%",
       max: 5, cond: () => lives >= 2,
-      go: () => { lives = Math.max(1, lives - 1); aug.scoreMul *= 1.3; } },
+      go: () => { lives = Math.max(1, lives - 1); aug.scoreMul *= 1.25; } },
     { id: "goldLord",   ic: "🦄", nm: "무지개 수집가", ds: "무지개똥이 두 배 멀리서 세게 끌려오고, 점수 3배",
       // 무지개똥 연금술 + 자석 — 무지개똥을 만들 수 있고, 끌어올 수 있어야 뜻이 산다
       hidden: true, once: true,
@@ -1678,9 +1678,9 @@
   /* 별을 먹은 것과 똑같은 점수 처리 — 별 아이템과,
      고를 증강이 다 떨어졌을 때의 달 보상 대체에 함께 쓴다. */
   function eatStar(x, y) {
-    // 먹을 때마다 1.55배: 1번째 1,000 → 2번째 1,550 → 3번째 2,403 → 4번째 3,724 …
+    // 먹은 개수에 비례: 1번째 2,000 → 2번째 4,000 → 3번째 6,000 …
     starCount++;
-    const gain = Math.round(1000 * Math.pow(1.55, starCount - 1) * aug.starMul * scoreMul());
+    const gain = Math.round(2000 * starCount * aug.starMul * scoreMul());
     score += gain;
     popGain(x, y, gain, "⭐×" + starCount + "  +" + gain.toLocaleString(), "#ffd23f");
     beep(1400, .1, "square", .05);
@@ -2557,7 +2557,7 @@
        레벨에 포함되면, 정작 실력으로 버틴 시간이 아닌데도 난이도가 올라간다. */
     if (!fever) levelTime += dt;
     level = 1 + Math.floor(levelTime / LEVEL_SEC);
-    score += dt * Math.pow(1.8, level - 1) * aug.timeMul * scoreMul();  // 생존 점수: 레벨마다 1.8배
+    score += dt * 75 * level * aug.timeMul * scoreMul();   // 생존 점수: 초당 75 × 레벨
 
     // 한 단계 올라설 때마다 어디에 도착했는지 알려준다
     const zi = zoneIdx();
@@ -3051,7 +3051,7 @@
       if (hit) {
         if (it.type === "poop") {
           if (it.gold) {                    // 무지개똥 — 먹으면 점수 (레벨이 오를수록 값지다)
-            const g = Math.round(120 * (aug.goldLord ? 3 : 1) * scoreMul() * Math.pow(1.3, level - 1));
+            const g = Math.round(300 * (aug.goldLord ? 3 : 1) * scoreMul() * level);
             score += g;
             burst(it.x, it.y, "hsl(" + Math.round(goldFx(now, it.x).hue) + ",100%,62%)", 20);
             popGain(it.x, it.y, g, "🌈 +" + g.toLocaleString(), "#ffe07a");
@@ -3292,18 +3292,16 @@
     return false;
   }
 
-  /* 뚜니핑 낙하물 점수. 크기 등급 점수에 레벨 보정을 곱한다.
-     레벨이 하나 오를 때마다 10%씩 (레벨1 기준, 레벨10이면 약 2.4배). */
+  /* 뚜니핑 낙하물 점수 — 크기 등급 점수 × 0.5 × 레벨.
+     초당 수십 개가 쏟아지므로 한 개의 몫은 다른 것보다 작게 잡았다. */
   function feverGain(it) {
     const base = it.gain || (it.sz < 16.2 ? 2 : (it.sz < 20.7 ? 5 : 10));
-    // 레벨이 오를수록 낙하물 값이 커진다 (레벨당 1.3배). 끝의 0.9 는 전체 10% 하향.
-    return Math.max(1, Math.round(base * aug.feverScoreMul * scoreMul()
-                                  * Math.pow(1.3, level - 1) * 0.9));
+    return Math.max(1, Math.round(base * 0.5 * aug.feverScoreMul * scoreMul() * level));
   }
 
-  /* 똥 한 개의 점수 — 기본 3점에 레벨당 1.2배.
+  /* 똥 한 개의 점수 — 6 × 레벨.
      흘려보낸 것, 스테로이드로 튕겨낸 것, 부순 것이 모두 같은 값을 받는다. */
-  function poopGain() { return 3 * scoreMul() * Math.pow(1.2, level - 1); }
+  function poopGain() { return 6 * scoreMul() * level; }
 
   /* 정연핑이 지나간 자리의 똥을 부순다 (뚜니핑 낙하물은 제 점수를 그대로 준다)
      gainMul — 부순 것의 점수 배율. 비둘기는 5배를 준다
@@ -3315,8 +3313,7 @@
       if (it.type !== "poop") continue;
       if (Math.hypot(it.x - x, it.y - y) >= radius + it.r) continue;
       if (it.gold) {                         // 무지개똥 — 부수면 직접 먹은 것과 같은 점수
-        const g = Math.round(120 * (aug.goldLord ? 3 : 1) * scoreMul()
-                             * Math.pow(1.3, level - 1) * gm);
+        const g = Math.round(300 * (aug.goldLord ? 3 : 1) * scoreMul() * level * gm);
         score += g;
         burst(it.x, it.y, "#ffd23f", 18);
         popText(it.x, it.y, "✨ +" + g.toLocaleString(), "#ffe07a");
