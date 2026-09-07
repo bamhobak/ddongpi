@@ -776,7 +776,7 @@
   const elFinal = document.getElementById("finalScore");
   const elTitle = document.getElementById("overTitle");
 
-  const GAME_VERSION = "v1.4.77";   // 코드를 고칠 때마다 뒤 두 자리를 올린다
+  const GAME_VERSION = "v1.4.79";   // 코드를 고칠 때마다 뒤 두 자리를 올린다
   document.getElementById("ver").textContent = GAME_VERSION;
 
   const LS_NAME = "epjpddongpi_name";
@@ -1590,7 +1590,7 @@
 
   const AUGMENTS = [
     { id: "fever_time", ic: "🔥", nm: "뚜니핑 연장", ds: "뚜니핑 타임 증가",
-      go: () => { aug.feverBonus += 2500; } },   // 먹을 때마다 +25%(2.5초), 감쇠 없음
+      go: () => { aug.feverBonus += 1500; } },   // 먹을 때마다 +1.5초, 감쇠 없음
     { id: "star50",     ic: "⭐", nm: "별빛 증폭",   ds: "별 점수 증가",
       go: () => { aug.starMul += 0.25 * dim("star50"); } },
     { id: "time2x",     ic: "⏱️", nm: "시간 가속",   ds: "생존 점수 증가",
@@ -1668,7 +1668,7 @@
     { id: "inter",      ic: "🕰️", nm: "인터스텔라", ds: "이따금 세상만 느려진다. 점수 시계는 그대로",
       hidden: true, once: true, cond: () => augCount["slow"] >= 2,
       go: () => { aug.inter = true; interTimer = 8; bulletT = 2; } },
-    { id: "subs",       ic: "📦", nm: "휴지 정기구독", ds: "휴지가 더 자주, 안 오면 강제 배송된다",
+    { id: "subs",       ic: "📦", nm: "뚜니핑 정기구독", ds: "휴지가 더 자주, 안 오면 강제 배송된다",
       hidden: true, once: true,
       cond: () => augCount["lucky"] >= 1 && augCount["fever_time"] >= 1 && augCount["downpour"] >= 1,
       go: () => { aug.subs = true; subsTimer = 0; } },
@@ -2235,7 +2235,6 @@
   /* ---------- 스폰 ---------- */
   /* 뚜니핑 타임 낙하물 크기 등급 — 클수록 드물고 점수가 크다 */
   const FEVER_SIZES = [
-    { min: 14, max: 18, score: 2,  w: 22 },
     { min: 18, max: 22, score: 3,  w: 22 },
     { min: 22, max: 26, score: 5,  w: 18 },
     { min: 26, max: 31, score: 8,  w: 14 },
@@ -2398,7 +2397,7 @@
     /* 레벨은 아이템 등장에 전혀 관여하지 않는다 — 처음부터 끝까지 같은 확률.
        예전에는 레벨이 오를수록 잦아지고(최대 2배), 대신 Lv15부터 달만 뜸해졌다. */
     let mean = BONUS_BASE / (b.w / BONUS_W_TOTAL) * aug.itemRateMul;
-    if (b.type === "paper" && aug.subs) mean /= 1.6;  // 정기구독 — 휴지만 1.6배 빈도
+    if (b.type === "paper" && aug.subs) mean /= 1.4;  // 정기구독 — 휴지만 1.4배 빈도
     if (b.type === "heart" && job === "fit") mean /= 4;  // 헬스걸 — 하트 4배
     if (b.type === "umbrella" && job === "gambler") mean /= 1.5;  // 도박사 — 우산 1.5배
     if ((b.type === "moon" || b.type === "fullmoon") && job === "powerj") mean /= 2.5;  // 파워J — 달 2.5배
@@ -2714,7 +2713,7 @@
       if (fever) subsTimer = 0;
       else {
         subsTimer += dt * tsc;
-        if (subsTimer >= 33) {
+        if (subsTimer >= 30) {
           subsTimer = 0;
           spawnBonus(BONUS.find(b => b.type === "paper"));
           popText(W / 2, H * 0.3, "📦 구독 배송 도착!", "#ffd23f", 24);
@@ -2937,7 +2936,12 @@
         if (items.length < cap) {
           for (let k = 0; k < n; k++) spawnPoop(2.09 + Math.random() * 0.855);
         }
-        spawnTimer = (0.14 / 1.43) * aug.feverRateMul * widthFactor;   // 간격 ÷1.43 → 낙하량 +43%
+        /* 한 번에 평균 4.5개 → 초당 55개.
+           59 로 나누는 것은 아래 widthFactor(480/W) 때문이다 — 실제 캔버스가 446 언저리라
+           480 기준으로 계산하면 초당 51개까지 내려간다. 실측으로 맞춘 값.
+           '=' 가 아니라 '+=' 인 이유: 넘긴 만큼을 다음 차례로 넘겨야 한 프레임(1/60초)
+           단위로 올림되며 새지 않는다. 예전에는 이 손실로 초당 45개까지 내려갔다. */
+        spawnTimer += (4.5 / 59) * aug.feverRateMul * widthFactor;
       } else {
         spawnPoop();
         if (level >= 3 && Math.random() < .35) spawnPoop();
@@ -3248,7 +3252,7 @@
      달을 먹으면 게임이 멈추므로 true 를 돌려주고, 부른 쪽은 그 프레임 처리를 중단한다. */
   function collectItem(it, now) {
     if (it.type === "paper") {
-      feverDur = 10000 + aug.feverBonus;
+      feverDur = 7000 + aug.feverBonus;
       // 이미 뚜니핑 중이면 남은 시간에 이어붙인다 (초기화하면 남은 시간이 버려진다)
       powerUntil = Math.max(powerUntil, now) + feverDur;
       refillLeft = 5000;               // 무한리필 — 이번 뚜니핑에서 늘릴 수 있는 한도
@@ -3308,7 +3312,7 @@
   /* 뚜니핑 낙하물 점수 — 크기 등급 점수 × 0.7 × 레벨.
      초당 수십 개가 쏟아지므로 한 개의 몫은 다른 것보다 작게 잡았다. */
   function feverGain(it) {
-    const base = it.gain || (it.sz < 16.2 ? 2 : (it.sz < 20.7 ? 5 : 10));
+    const base = it.gain || (it.sz < 20.7 ? 3 : (it.sz < 26 ? 5 : 10));
     return Math.max(1, Math.round(base * aug.feverScoreMul * scoreMul() * level));
   }
 
