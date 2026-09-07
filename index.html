@@ -766,7 +766,7 @@
   const elFinal = document.getElementById("finalScore");
   const elTitle = document.getElementById("overTitle");
 
-  const GAME_VERSION = "v1.4.60";   // 코드를 고칠 때마다 뒤 두 자리를 올린다
+  const GAME_VERSION = "v1.4.61";   // 코드를 고칠 때마다 뒤 두 자리를 올린다
   document.getElementById("ver").textContent = GAME_VERSION;
 
   const LS_NAME = "epjpddongpi_name";
@@ -778,7 +778,8 @@
   const FOOT = 62;                   // player.y 에서 '발이 닿는 선'까지의 거리 (화면 고정)
   const PLAYER_MAX_SPEED = 780;      // 좌우 이동 최고 속도 (논리 px/초)
   const PLAYER_UP = GROUND_H + 54;   // 화면 바닥에서 캐릭터 머리 중심까지
-  const player = { x: 240, y: H - 139, r: 32, tx: 240, ty: 0, tilt: 0, hy: 0 };
+  // r = 판정 반지름. 그림 크기도 여기서 나오므로 줄이면 몸과 판정이 함께 작아진다.
+  const player = { x: 240, y: H - 139, r: 30.4, tx: 240, ty: 0, tilt: 0, hy: 0 };
   const FLY_TOP = 0.07;              // 나는 직업이 올라갈 수 있는 최고 높이 (그림이 안 잘리는 선)
   let groundY = 0;                   // 발이 땅에 닿는 기준 높이
   let flyOn = false;                 // 초전도 이재 — 위아래로도 날 수 있는 상태
