@@ -776,7 +776,7 @@
   const elFinal = document.getElementById("finalScore");
   const elTitle = document.getElementById("overTitle");
 
-  const GAME_VERSION = "v1.4.72";   // 코드를 고칠 때마다 뒤 두 자리를 올린다
+  const GAME_VERSION = "v1.4.74";   // 코드를 고칠 때마다 뒤 두 자리를 올린다
   document.getElementById("ver").textContent = GAME_VERSION;
 
   const LS_NAME = "epjpddongpi_name";
@@ -2504,10 +2504,12 @@
 
   /* ---------- 업데이트 ---------- */
   function update(dt, now) {
-    // 인터스텔라 불릿타임 — 세상(똥·예고)만 이 배율로 느려진다. 점수 시계는 dt 그대로.
+    /* 인터스텔라 불릿타임 — 캐릭터를 뺀 세상 전부가 이 배율로 느려진다.
+       똥·아이템·정연핑·비둘기·분신·미사일·구름과 그것들이 나오는 시계까지 모두 포함.
+       점수·레벨 시계와 캐릭터 조작은 dt 그대로라 나만 제 속도로 움직인다. */
     const tsc = (bulletT > 0 && !fever) ? 0.4 : 1;   // 불릿타임 — 세상이 60% 느려진다
     for (const c of clouds) {
-      c.x += c.v * dt;
+      c.x += c.v * dt * tsc;
       if (c.x - c.s > W) {
         c.x = -c.s * 1.6;
         c.y = Math.random() * H * .7;
@@ -2709,8 +2711,8 @@
       }
     }
 
-    if (spawnHold > 0) spawnHold -= dt;
-    if (umbBlast) { umbBlast.t -= dt; if (umbBlast.t <= 0) umbBlast = null; }
+    if (spawnHold > 0) spawnHold -= dt * tsc;
+    if (umbBlast) { umbBlast.t -= dt * tsc; if (umbBlast.t <= 0) umbBlast = null; }
 
     // ---- 인터스텔라: 10초마다 2초씩 세상만 느려진다 (점수 시계는 그대로) ----
     if (aug.inter) {
@@ -2730,7 +2732,7 @@
     if (aug.subs) {
       if (fever) subsTimer = 0;
       else {
-        subsTimer += dt;
+        subsTimer += dt * tsc;
         if (subsTimer >= 33) {
           subsTimer = 0;
           spawnBonus(BONUS.find(b => b.type === "paper"));
@@ -2742,7 +2744,7 @@
 
     // ---- 벼랑 끝 분신술: 작은 이재가 가장 가까운 똥에게 날아가 자폭한다 ----
     if (aug.clone) {
-      cloneTimer -= dt;
+      cloneTimer -= dt * tsc;
       if (cloneTimer <= 0) {
         let best = null, bd = 1e9;
         const py = player.y + player.hy;
@@ -2765,12 +2767,12 @@
     }
     for (let k = clones.length - 1; k >= 0; k--) {
       const c = clones[k];
-      c.life -= dt;
+      c.life -= dt * tsc;
       const alive = items.indexOf(c.t) >= 0;
       const tx2 = alive ? c.t.x : c.x, ty2 = alive ? c.t.y : c.y - 120;
       const dx2 = tx2 - c.x, dy2 = ty2 - c.y, d2 = Math.hypot(dx2, dy2) || 1;
-      c.x += dx2 / d2 * 1200 * dt;
-      c.y += dy2 / d2 * 1200 * dt;
+      c.x += dx2 / d2 * 1200 * dt * tsc;
+      c.y += dy2 / d2 * 1200 * dt * tsc;
       if ((alive && d2 < (c.t.r || 20) + 16) || c.life <= 0) {
         smashPoopsAround(c.x, c.y, 110, true);        // 폭발 반경 110px (특수똥까지 부순다)
         burst(c.x, c.y, "#ffd23f", 26);
@@ -2786,7 +2788,7 @@
          한 대는 0.4초마다 쏘되, k 번째는 그 주기를 n 등분한 만큼 늦게 쏜다.
          시계 하나로 재기 때문에 대수가 바뀌어도 박자가 저절로 다시 갈린다. */
       const n = aug.galaga, was = shipClock;
-      shipClock += dt;
+      shipClock += dt * tsc;
       for (let k = 0; k < n; k++) {
         const ph = SHIP_GAP * k / n;
         if (Math.floor((shipClock - ph) / SHIP_GAP) === Math.floor((was - ph) / SHIP_GAP)) continue;
@@ -2814,7 +2816,7 @@
     // ---- 도박사의 비둘기 — 목표에 부딪히면 반경 50px 로 터진다 ----
     for (let k = doves.length - 1; k >= 0; k--) {
       const c = doves[k];
-      c.ph += dt * 14;                                  // 날갯짓
+      c.ph += dt * tsc * 14;                            // 날갯짓
       /* 표적이 사라지면 위쪽에서 새 표적을 찾는다. 없으면 계속 위로 난다 —
          부딪힐 때까지는 스스로 터지지 않는다. */
       if (items.indexOf(c.t) < 0) {
@@ -2833,8 +2835,8 @@
       const tx2 = alive ? c.t.x : c.x, ty2 = alive ? c.t.y : c.y - 160;
       const dx2 = tx2 - c.x, dy2 = ty2 - c.y, d2 = Math.hypot(dx2, dy2) || 1;
       const dm = doveMul();
-      c.x += dx2 / d2 * 300 * dm * dt;
-      c.y += dy2 / d2 * 300 * dm * dt;
+      c.x += dx2 / d2 * 300 * dm * dt * tsc;
+      c.y += dy2 / d2 * 300 * dm * dt * tsc;
       /* 표적이 아니어도 가는 길에 닿은 똥이 있으면 그 자리에서 터진다 */
       let bump = false;
       for (const q of items) {
@@ -2854,7 +2856,7 @@
     // ---- 우산 로켓배송: 방패가 하나도 없을 때만 시간을 재서 하나 배송한다 ----
     if (aug.steelUmb) {
       if (shields <= 0) {
-        shieldTimer -= dt;
+        shieldTimer -= dt * tsc;
         if (shieldTimer <= 0) {
           shieldTimer = UMB_SEC;
           shields = 1;
@@ -2870,14 +2872,14 @@
     if (aug.helper > 0) {
       // 1명이면 4.5초, 2명이면 5.5초, 3명이면 6.5초… 인원이 늘수록 주기가 1초씩 길어진다
       const cycle = 3.5 + 1.0 * aug.helper;
-      helperTimer -= dt;
+      helperTimer -= dt * tsc;
       if (helperTimer <= 0 && helperQueue <= 0) {
         helperTimer = cycle;
         helperQueue = aug.helper;                 // 이번 차례 출격 인원
         helperGap = 0;                            // 첫 명은 바로
       }
       if (helperQueue > 0) {
-        helperGap -= dt;
+        helperGap -= dt * tsc;
         if (helperGap <= 0) {
           // 한 차례 안에서 인원을 고르게 나눠 내보낸다 (2명 = 4초에 2명, 3명 = 5초에 3명)
           helperGap = cycle / aug.helper;
@@ -2900,8 +2902,8 @@
     }
     for (let k = helpers.length - 1; k >= 0; k--) {
       const hp = helpers[k];
-      hp.x += hp.vx * dt;
-      hp.y += hp.vy * dt;
+      hp.x += hp.vx * dt * tsc;
+      hp.y += hp.vy * dt * tsc;
       smashPoopsAround(hp.x, hp.y, HELPER_R * helperScale());   // 지나가는 자리의 똥
       if (hp.y < -HELPER_H - 40 || hp.x < -160 || hp.x > W + 160) helpers.splice(k, 1);
     }
@@ -2926,8 +2928,8 @@
       const d = Math.hypot(dx, dy) || 1;
       f.vx = dx / d * FETCH_SPEED;
       f.vy = dy / d * FETCH_SPEED;
-      f.x += f.vx * dt;
-      f.y += f.vy * dt;
+      f.x += f.vx * dt * tsc;
+      f.y += f.vy * dt * tsc;
       smashPoopsAround(f.x, f.y, HELPER_R * helperScale());   // 가는 길의 똥도 부순다
       if (alive && Math.hypot(f.t.x - f.x, f.t.y - f.y) < HELPER_R * 0.9) {
         const idx = items.indexOf(f.t);
@@ -2986,7 +2988,7 @@
     }
     if (!powered) {
       for (const b of BONUS) {           // 종류별로 따로 세다가 각자 때가 되면 떨어진다
-        b.t -= dt;
+        b.t -= dt * tsc;
         if (b.t <= 0) {
           spawnBonus(Math.random() < BONUS_SWAP ? pickBonus() : b);
           b.t = bonusInterval(b);
@@ -2999,7 +3001,7 @@
       /* 별핑별·성난 우산처럼 순회 도중 목록을 무더기로 지우는 일이 있으면
          인덱스가 새 길이를 넘어설 수 있다 — 그 칸은 건너뛴다 (없으면 게임이 멈춘다) */
       if (!it) continue;
-      if (it.bumpCd > 0) it.bumpCd -= dt;
+      if (it.bumpCd > 0) it.bumpCd -= dt * tsc;
       if (it.special === "split") {
         // 정해진 높이까지 내려오면 둘로 쪼개진다. 조각은 평범한 똥이라 정연핑이 부술 수 있다.
         if (it.y > it.splitAt) {
@@ -3042,7 +3044,7 @@
         if (it.x < it.r) { it.x = it.r; it.vx = Math.abs(it.vx); }
         if (it.x > W - it.r) { it.x = W - it.r; it.vx = -Math.abs(it.vx); }
       }
-      if (it.bob !== undefined) it.bob += dt * 4;
+      if (it.bob !== undefined) it.bob += dt * tsc * 4;
 
       const cy = player.y + player.hy;
       const dx = it.x - player.x, dy = it.y - cy;
