@@ -766,7 +766,7 @@
   const elFinal = document.getElementById("finalScore");
   const elTitle = document.getElementById("overTitle");
 
-  const GAME_VERSION = "v1.4.44";   // 코드를 고칠 때마다 뒤 두 자리를 올린다
+  const GAME_VERSION = "v1.4.45";   // 코드를 고칠 때마다 뒤 두 자리를 올린다
   document.getElementById("ver").textContent = GAME_VERSION;
 
   const LS_NAME = "epjpddongpi_name";
@@ -1572,7 +1572,7 @@
     { id: "fever_time", ic: "🔥", nm: "뚜니핑 연장", ds: "뚜니핑 타임 증가",
       go: () => { aug.feverBonus += 2500; } },   // 먹을 때마다 +25%(2.5초), 감쇠 없음
     { id: "star50",     ic: "⭐", nm: "별빛 증폭",   ds: "별 점수 증가",
-      go: () => { aug.starMul += 0.4 * dim("star50"); } },
+      go: () => { aug.starMul += 0.25 * dim("star50"); } },
     { id: "time2x",     ic: "⏱️", nm: "시간 가속",   ds: "생존 점수 증가",
       go: () => { aug.timeMul *= 1 + 0.5 * dim("time2x"); } },
     { id: "fever50",    ic: "🌙", nm: "뚜니핑 대박", ds: "뚜니핑 낙하물 점수 증가",
@@ -1646,7 +1646,7 @@
     { id: "carrot",     ic: "🥕", nm: "하트 당근거래", ds: "목숨 1개를 팔고, 앞으로 얻는 모든 점수 +20%",
       max: 5, cond: () => lives >= 2,
       go: () => { lives = Math.max(1, lives - 1); aug.scoreMul *= 1.2; } },
-    { id: "goldLord",   ic: "🦄", nm: "무지개 수집가", ds: "무지개똥이 두 배 멀리서 세게 끌려오고, 점수 3배",
+    { id: "goldLord",   ic: "🦄", nm: "무지개 수집가", ds: "무지개똥이 두 배 멀리서 세게 끌려오고, 점수 2배",
       // 무지개똥 연금술 + 자석 — 무지개똥을 만들 수 있고, 끌어올 수 있어야 뜻이 산다
       hidden: true, once: true,
       cond: () => (augCount["gold"] || 0) >= 1 && aug.magnet > 0,
@@ -1678,9 +1678,9 @@
   /* 별을 먹은 것과 똑같은 점수 처리 — 별 아이템과,
      고를 증강이 다 떨어졌을 때의 달 보상 대체에 함께 쓴다. */
   function eatStar(x, y) {
-    // 먹은 개수에 비례: 1번째 2,000 → 2번째 4,000 → 3번째 6,000 …
+    // 먹은 개수에 비례: 1번째 1,300 → 2번째 2,600 → 3번째 3,900 …
     starCount++;
-    const gain = Math.round(2000 * starCount * aug.starMul * scoreMul());
+    const gain = Math.round(1300 * starCount * aug.starMul * scoreMul());
     score += sc("별", gain);
     popGain(x, y, gain, "⭐×" + starCount + "  +" + gain.toLocaleString(), "#ffd23f");
     beep(1400, .1, "square", .05);
@@ -3052,7 +3052,7 @@
       if (hit) {
         if (it.type === "poop") {
           if (it.gold) {                    // 무지개똥 — 먹으면 점수 (레벨이 오를수록 값지다)
-            const g = Math.round(300 * (aug.goldLord ? 3 : 1) * scoreMul() * level);
+            const g = Math.round(90 * (aug.goldLord ? 2 : 1) * scoreMul() * level);
             score += sc("무지개똥", g);
             burst(it.x, it.y, "hsl(" + Math.round(goldFx(now, it.x).hue) + ",100%,62%)", 20);
             popGain(it.x, it.y, g, "🌈 +" + g.toLocaleString(), "#ffe07a");
@@ -3260,7 +3260,7 @@
         for (let k = items.length - 1; k >= 0; k--) {
           const q = items[k];
           if (q.type !== "poop") continue;
-          bonus += gain * 0.01;
+          bonus += poopGain() * 1.5;
           burst(q.x, q.y, "#ffe9a8", 10);
           items.splice(k, 1);
           cnt++;
@@ -3293,11 +3293,11 @@
     return false;
   }
 
-  /* 뚜니핑 낙하물 점수 — 크기 등급 점수 × 0.6 × 레벨.
+  /* 뚜니핑 낙하물 점수 — 크기 등급 점수 × 0.75 × 레벨.
      초당 수십 개가 쏟아지므로 한 개의 몫은 다른 것보다 작게 잡았다. */
   function feverGain(it) {
     const base = it.gain || (it.sz < 16.2 ? 2 : (it.sz < 20.7 ? 5 : 10));
-    return Math.max(1, Math.round(base * 0.6 * aug.feverScoreMul * scoreMul() * level));
+    return Math.max(1, Math.round(base * 0.75 * aug.feverScoreMul * scoreMul() * level));
   }
 
   /* 테스트 모드에서만 점수를 항목별로 모은다.
@@ -3323,7 +3323,7 @@
       if (it.type !== "poop") continue;
       if (Math.hypot(it.x - x, it.y - y) >= radius + it.r) continue;
       if (it.gold) {                         // 무지개똥 — 부수면 직접 먹은 것과 같은 점수
-        const g = Math.round(300 * (aug.goldLord ? 3 : 1) * scoreMul() * level * gm);
+        const g = Math.round(90 * (aug.goldLord ? 2 : 1) * scoreMul() * level * gm);
         score += sc("무지개똥", g);
         burst(it.x, it.y, "#ffd23f", 18);
         popText(it.x, it.y, "✨ +" + g.toLocaleString(), "#ffe07a");
