@@ -776,7 +776,7 @@
   const elFinal = document.getElementById("finalScore");
   const elTitle = document.getElementById("overTitle");
 
-  const GAME_VERSION = "v1.4.74";   // 코드를 고칠 때마다 뒤 두 자리를 올린다
+  const GAME_VERSION = "v1.4.75";   // 코드를 고칠 때마다 뒤 두 자리를 올린다
   document.getElementById("ver").textContent = GAME_VERSION;
 
   const LS_NAME = "epjpddongpi_name";
@@ -1570,7 +1570,6 @@
     steelUmb: false,    // 히든: 강철 우산 (방패가 없으면 6.5초마다 하나 생긴다)
     starburst: false,   // 히든: 별똥별 (별을 먹으면 화면의 똥이 전부 사라진다)
     gamble: false,      // 히든: 도박꾼 (점수 2배, 목숨 1 고정)
-    ghost: false,       // 히든: 유령화 (주기적으로 잠깐 무적)
     blackhole: false,   // 히든: 블랙홀 (자석 강화 + 뚜니핑 낙하물도 조금 끌어당김)
     legion: false,      // 히든: 대왕 뚜니핑 군단 (대왕 등장·점수 강화)
     doveWhat: false,    // 히든: 비둘기 무엇? (도박사 — 비둘기가 세지고 자주 나온다)
@@ -1635,9 +1634,6 @@
     { id: "starburst",  ic: "🌠", nm: "별핑별",     ds: "별이 하늘의 똥을 쓸어버린다",
       hidden: true, once: true, cond: () => augCount["star50"] > 0,
       go: () => { aug.starburst = true; } },
-    { id: "ghost",      ic: "👻", nm: "유령화",     ds: "이따금 몸이 잠깐 사라진다",
-      hidden: true, once: true, cond: () => augCount["small"] >= 2,
-      go: () => { aug.ghost = true; ghostTimer = 3; } },
     { id: "blackhole",  ic: "🕳️", nm: "블랙홀",     ds: "끌어당기는 힘이 더 세지며, 뚜니핑도 약간의 영향을 받는다",
       hidden: true, once: true, cond: () => aug.magnet > 0,
       go: () => { aug.blackhole = true; aug.magnet = 390; } },   // 자석 220 → 390 으로 확장
@@ -1851,7 +1847,6 @@
   function doveMul()   { return aug.doveWhat ? 1.5 : 1; }
   function doveEvery() { return DOVE_EVERY * (aug.doveWhat ? 0.75 : 1); }
   let inputHoldUntil = 0;          // 이 시각까지는 화면 터치를 조작으로 받지 않는다
-  let ghostTimer = 3;              // 유령화: 다음 무적까지 남은 시간
   let roidT = 0;                   // 스테로이드 과다 복용: 남은 약발 시간(초)
   let hurtUntil = 0;               // 똥에 맞은 직후 (아픈 그림 표시)
   let zoneShown = -1;              // 도착 안내를 이미 띄운 단계
@@ -2161,7 +2156,7 @@
     aug.feverBonus = 0; aug.starMul = 1; aug.timeMul = 1;
     aug.feverScoreMul = 1; aug.fallMul = 1; aug.hitboxMul = 1; aug.poopMul = 1;
     aug.steelUmb = false; aug.starburst = false; aug.gamble = false; aug.scoreMul = 1;
-    aug.ghost = false; aug.blackhole = false; aug.legion = false; ghostTimer = 3; roidT = 0;
+    aug.blackhole = false; aug.legion = false; roidT = 0;
     aug.doveWhat = false;
     flyOn = false;
     aug.angryUmb = false; aug.goldChance = 0; aug.inter = false; aug.goldLord = false;
@@ -2696,18 +2691,6 @@
         roidT = 0;
         popText(player.x, player.y - 70, "💉 약발 끝", "#ff8f8f", 22);
         beep(300, .12, "sine", .04);
-      }
-    }
-
-    // ---- 유령화: 3초마다 1초씩 몸이 사라진다 ----
-    if (aug.ghost) {
-      ghostTimer -= dt;
-      if (ghostTimer <= 0) {
-        ghostTimer = 3;
-        invUntil = Math.max(invUntil, now + 1000);
-        popText(player.x, player.y - 60, "👻 유령화", "#cfe4ff");
-        beep(520, .1, "sine", .04);
-        beep(700, .12, "sine", .03);
       }
     }
 
@@ -3853,6 +3836,7 @@
   AUG_NAMES.gamble = "도박꾼(삭제됨)";   // 옛 기록 표시용
   AUG_NAMES.fly = "초전도 이재(삭제됨)";
   AUG_NAMES.refill = "뚜니핑 무한리필(삭제됨)";
+  AUG_NAMES.ghost = "유령화(삭제됨)";
   const JOB_NAMES = { none: "백수", gambler: "도박사", levitator: "부양사", fit: "헬스걸", powerj: "파워J", powerp: "무소유", bangul: "방울이", "(none)": "(기록 없음)" };
   const devScreen = document.getElementById("devScreen");
   const devPw     = document.getElementById("devPw");
