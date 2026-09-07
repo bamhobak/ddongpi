@@ -766,7 +766,7 @@
   const elFinal = document.getElementById("finalScore");
   const elTitle = document.getElementById("overTitle");
 
-  const GAME_VERSION = "v1.4.58";   // 코드를 고칠 때마다 뒤 두 자리를 올린다
+  const GAME_VERSION = "v1.4.59";   // 코드를 고칠 때마다 뒤 두 자리를 올린다
   document.getElementById("ver").textContent = GAME_VERSION;
 
   const LS_NAME = "epjpddongpi_name";
@@ -4306,7 +4306,7 @@
   function bhMul() { return inBlackhole() ? 2 : 1; }   // 블랙홀 안 점수 배율
   // 블랙홀 안의 '난이도' 배율 — 점수·아이템 배율(2배)과 달리 낙하 속도·똥 수량에만 쓴다
   function bhDiff() { return inBlackhole() ? 1.5 : 1; }
-  /* 부양사 — 높이 날수록 모든 점수가 커진다. 바닥 +0%, 중간 +50%, 꼭대기 +100%. */
+  /* 부양사 — 높이 날수록 모든 점수가 커진다. 바닥 +0%, 중간 +25%, 꼭대기 +50%. */
   function levMul() {
     if (job !== "levitator" || !flyOn) return 1;
     const air = Math.max(0, Math.min(1, (groundY - player.y) / Math.max(1, groundY - H * FLY_TOP)));
