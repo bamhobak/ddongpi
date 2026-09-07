@@ -776,7 +776,7 @@
   const elFinal = document.getElementById("finalScore");
   const elTitle = document.getElementById("overTitle");
 
-  const GAME_VERSION = "v1.4.76";   // 코드를 고칠 때마다 뒤 두 자리를 올린다
+  const GAME_VERSION = "v1.4.77";   // 코드를 고칠 때마다 뒤 두 자리를 올린다
   document.getElementById("ver").textContent = GAME_VERSION;
 
   const LS_NAME = "epjpddongpi_name";
@@ -2395,16 +2395,14 @@
 
   // 이 아이템이 지금 평균 몇 초마다 나오는지 (흔들림을 뺀 값)
   function bonusMean(b) {
-    // 레벨이 올라도 아이템은 같은 빈도로 나온다 — 예전에는 레벨 34에서 두 배까지 잦아졌다
+    /* 레벨은 아이템 등장에 전혀 관여하지 않는다 — 처음부터 끝까지 같은 확률.
+       예전에는 레벨이 오를수록 잦아지고(최대 2배), 대신 Lv15부터 달만 뜸해졌다. */
     let mean = BONUS_BASE / (b.w / BONUS_W_TOTAL) * aug.itemRateMul;
     if (b.type === "paper" && aug.subs) mean /= 1.6;  // 정기구독 — 휴지만 1.6배 빈도
     if (b.type === "heart" && job === "fit") mean /= 4;  // 헬스걸 — 하트 4배
     if (b.type === "umbrella" && job === "gambler") mean /= 1.5;  // 도박사 — 우산 1.5배
     if ((b.type === "moon" || b.type === "fullmoon") && job === "powerj") mean /= 2.5;  // 파워J — 달 2.5배
     if (b.type === "star" && job === "powerp") mean /= 1.25;  // 무소유 — 별 1.25배
-    // 후반 견제 — Lv15부터 달이 레벨마다 7%씩 뜸해진다 (뚜니핑 타임 가동률을 떨어뜨린다)
-    if ((b.type === "moon" || b.type === "fullmoon") && level > 15)
-      mean *= Math.pow(1.07, level - 15);
     return mean;
   }
   /* 다음 하나까지의 시간 — 평균의 55~145% 안에서 크게 흔들린다.
