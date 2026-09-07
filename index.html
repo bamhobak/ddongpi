@@ -776,7 +776,7 @@
   const elFinal = document.getElementById("finalScore");
   const elTitle = document.getElementById("overTitle");
 
-  const GAME_VERSION = "v1.4.68";   // 코드를 고칠 때마다 뒤 두 자리를 올린다
+  const GAME_VERSION = "v1.4.69";   // 코드를 고칠 때마다 뒤 두 자리를 올린다
   document.getElementById("ver").textContent = GAME_VERSION;
 
   const LS_NAME = "epjpddongpi_name";
@@ -1610,10 +1610,7 @@
       max: 99,                    // 조건이 막아주므로 보유 상한은 사실상 없음
       cond: () => job !== "fit" && shields < 10,   // 헬스걸은 방패가 없는 직업 — 미등장
       noCount: true,              // 방패 수는 화면에 우산으로 보이니 보유 뱃지는 생략
-      go: () => {
-        if (job === "fit") lives = Math.min(aug.maxLives, lives + 3);   // 우산 대신 하트
-        else shields = Math.min(shields + 3, 10);                       // 증강으로는 최대 10개까지
-      } },
+      go: () => { shields = Math.min(shields + 3, 10); } },   // 증강으로는 최대 10개까지
     { id: "galaga",     ic: "🚀", nm: "갤러그", ds: "우주선이 0.5초마다 총알을 쏘아 올린다",
       cond: () => inSpace(),   // 우주복으로 갈아입은 뒤부터 나온다
       go: () => { aug.galaga++; } },
@@ -2856,18 +2853,12 @@
 
     // ---- 우산 로켓배송: 방패가 하나도 없을 때만 시간을 재서 하나 배송한다 ----
     if (aug.steelUmb) {
-      const canTake = job === "fit" ? lives < aug.maxLives : shields <= 0;
-      if (canTake) {
+      if (shields <= 0) {
         shieldTimer -= dt;
         if (shieldTimer <= 0) {
           shieldTimer = UMB_SEC;
-          if (job === "fit") {                       // 헬스걸 — 우산 대신 하트 배송
-            lives = Math.min(aug.maxLives, lives + 1);
-            popText(player.x, player.y - 60, "❤️ 하트 도착!", "#ff8fb0");
-          } else {
-            shields = 1;
-            popText(player.x, player.y - 60, "☔ 우산 도착!", "#7ec8ff");
-          }
+          shields = 1;
+          popText(player.x, player.y - 60, "☔ 우산 도착!", "#7ec8ff");
           beep(880, .12, "triangle", .05);
         }
       } else {
