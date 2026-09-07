@@ -766,7 +766,7 @@
   const elFinal = document.getElementById("finalScore");
   const elTitle = document.getElementById("overTitle");
 
-  const GAME_VERSION = "v1.4.47";   // 코드를 고칠 때마다 뒤 두 자리를 올린다
+  const GAME_VERSION = "v1.4.50";   // 코드를 고칠 때마다 뒤 두 자리를 올린다
   document.getElementById("ver").textContent = GAME_VERSION;
 
   const LS_NAME = "epjpddongpi_name";
@@ -1546,7 +1546,7 @@
     helper: 0,          // 도와줘 정연핑 인원 (증강을 겹칠수록 1명씩 증가)
     helperRush: false,  // 히든: 정연핑 대폭주 (크기 확대)
     hungry: false,      // 히든: 배고픈 정연핑 (아이템을 대신 먹어준다)
-    steelUmb: false,    // 히든: 강철 우산 (방패가 없으면 7초마다 하나 생긴다)
+    steelUmb: false,    // 히든: 강철 우산 (방패가 없으면 6.5초마다 하나 생긴다)
     starburst: false,   // 히든: 별똥별 (별을 먹으면 화면의 똥이 전부 사라진다)
     gamble: false,      // 히든: 도박꾼 (점수 2배, 목숨 1 고정)
     ghost: false,       // 히든: 유령화 (주기적으로 잠깐 무적)
@@ -1814,7 +1814,7 @@
   let spawnTimer = 0;
   let invUntil = 0, powerUntil = 0;
   let shields = 0;                 // 남은 방패 수 — 우산 아이템은 최대 1, 증강으로만 여러 개
-  const UMB_SEC = 5.5;             // 우산 로켓배송: 방패가 없을 때 몇 초마다 하나씩 오는지
+  const UMB_SEC = 6.5;             // 우산 로켓배송: 방패가 없을 때 몇 초마다 하나씩 오는지
   let shieldTimer = UMB_SEC;       // 다음 하나까지 남은 시간
   let spawnHold = 0;               // 별핑별·성난 우산: 똥 생성이 멈춰 있는 남은 시간
   let umbBlast = null;             // 성난 우산 폭발 파동 {x, y, r, t}
@@ -1827,7 +1827,7 @@
      게임 안의 1m = 논리 좌표 12px 로 본다 (캐릭터 키가 대략 1.5m 쯤 되는 비율). */
   let doves = [], moveDist = 0;
   let bullets = [], shipClock = 0;   // 갤러그: 날아가는 총알과 편대 공용 시계
-  const SHIP_GAP = 0.4;              // 우주선 한 대가 다시 쏘기까지
+  const SHIP_GAP = 0.5;              // 우주선 한 대가 다시 쏘기까지
   const M_PX = 12, DOVE_EVERY = 80 * M_PX;   // 100m 에서 20% 줄여 80m 마다
   // 히든 '비둘기 무엇?' — 속도·크기·폭발은 1.5배, 출격은 3/4 거리마다
   function doveMul()   { return aug.doveWhat ? 1.5 : 1; }
@@ -1845,7 +1845,6 @@
   /* 점수판은 실제 점수를 곧바로 따라가지 않고 뒤에서 굴러 오른다.
      크게 먹은 순간에만 튀어야 해서, 생존 점수처럼 조금씩 새는 건 흘려보낸다. */
   let scoreShown = 0, scorePunch = 0, prevScore = 0;
-  let hudGains = [];                 // 점수판 옆에 떠올랐다 사라지는 +N
   let rings = [];                    // 큰 점수가 터질 때 퍼지는 고리
   let bubPops = [];                  // 터진 비누방울 — 테두리가 퍼지고 물방울이 튄다
   const BUB_TONES = ["#ffffff", "#cfefff", "#ffd2f2", "#d6fff2", "#e6dcff"];
@@ -2137,7 +2136,7 @@
     resetBonusTimers();
     invUntil = 0; powerUntil = 0; hurtUntil = 0; shields = 0;
     shake = 0; flash = 0; feverFlash = 0; fever = false; feverT = 0; feverBanner = 0;
-    scoreShown = 0; scorePunch = 0; prevScore = 0; hudGains = []; rings = []; bubPops = [];
+    scoreShown = 0; scorePunch = 0; prevScore = 0; rings = []; bubPops = [];
     scoreSrc = {};
     bubbleOn = (job === "bangul"); bubbleT = 0;   // 방울이는 방울을 두르고 시작한다
     zoneShown = -1;
@@ -2506,17 +2505,11 @@
     const dScore = score - prevScore;
     if (dScore >= Math.max(30, score * 0.004)) {
       scorePunch = Math.min(1, scorePunch + 0.42 + Math.min(0.58, Math.log10(1 + dScore) / 8));
-      hudGains.push({ v: dScore, t: 0 });
-      if (hudGains.length > 4) hudGains.shift();
     }
     prevScore = score;
     if (scorePunch > 0) scorePunch = Math.max(0, scorePunch - dt * 2.6);
     scoreShown += (score - scoreShown) * Math.min(1, dt * 6);
     if (score - scoreShown < 1) scoreShown = score;      // 마지막 한 자리는 붙여 놓는다
-    for (let i = hudGains.length - 1; i >= 0; i--) {
-      hudGains[i].t += dt;
-      if (hudGains[i].t > 1.1) hudGains.splice(i, 1);
-    }
     if (shake > 0) shake = Math.max(0, shake - dt * 40);
     if (flash > 0) flash = Math.max(0, flash - dt * 3);
     if (feverFlash > 0) feverFlash = Math.max(0, feverFlash - dt * 2.5);
@@ -2723,7 +2716,7 @@
         }
         if (best) {
           clones.push({ x: player.x, y: player.y + player.hy, t: best, life: 3 });
-          cloneTimer = 1;                             // 1초마다 한 명 출격
+          cloneTimer = 1.5;                           // 1.5초마다 한 명 출격
           beep(740, .08, "square", .04);
         } else cloneTimer = 0.5;
       }
@@ -2737,7 +2730,7 @@
       c.x += dx2 / d2 * 1200 * dt;
       c.y += dy2 / d2 * 1200 * dt;
       if ((alive && d2 < (c.t.r || 20) + 16) || c.life <= 0) {
-        smashPoopsAround(c.x, c.y, 135, true);        // 폭발 반경 135px (특수똥까지 부순다)
+        smashPoopsAround(c.x, c.y, 110, true);        // 폭발 반경 110px (특수똥까지 부순다)
         burst(c.x, c.y, "#ffd23f", 26);
         shake = Math.max(shake, 8);
         beep(240, .12, "square", .05);
@@ -3894,7 +3887,53 @@
         { t: Number(a.score || 0).toLocaleString(), c: "num" }
       ]) : [["기록 없음", "", "", ""]]));
 
-    const vers = data.vers || [];
+  // 버전별 표를 '지금 쓰는 마이너 버전만 자세히, 이전 마이너는 하나로' 묶는다.
+  //  예) 현재가 v1.4.xx 면  v1.4.47 · v1.4.46 … 은 그대로 두고,
+  //      v1.3.01~99 는 'v1.3' 한 줄로, v1.2.01~99 는 'v1.2' 한 줄로 합친다.
+  //  v1.5 가 나오면 v1.4 가 자동으로 묶인다(따로 고칠 필요 없음).
+  //  평균생존은 판수로 가중평균해서 합친다(단순 평균은 판수 1판짜리가 과대반영됨).
+  function groupVers(list) {
+    const parse = (t) => {
+      const m = /^v?(\d+)\.(\d+)\.(\d+)/.exec(String(t || ""));
+      return m ? { maj: +m[1], min: +m[2], pat: +m[3] } : null;
+    };
+    let top = null;                       // 가장 높은 마이너 버전(= 현재 버전대)
+    for (const v of list) {
+      const p = parse(v.ver);
+      if (!p) continue;
+      if (!top || p.maj > top.maj || (p.maj === top.maj && p.min > top.min)) top = p;
+    }
+    if (!top) return list;
+    const keep = [], bucket = new Map();
+    for (const v of list) {
+      const p = parse(v.ver);
+      if (!p) { keep.push(v); continue; }               // '(없음)' 같은 건 그대로
+      if (p.maj === top.maj && p.min === top.min) { keep.push(v); continue; }
+      const key = "v" + p.maj + "." + p.min;
+      const b = bucket.get(key) || { ver: key, runs: 0, secs: 0, score: 0, _w: 0 };
+      const runs = Number(v.runs) || 0;
+      b.runs += runs;
+      b._w += runs;
+      b.secs += (Number(v.secs) || 0) * runs;           // 가중합
+      b.score += (Number(v.score) || 0) * runs;
+      bucket.set(key, b);
+    }
+    for (const b of bucket.values()) {
+      b.secs = b._w ? Math.round(b.secs / b._w) : 0;
+      b.score = b._w ? Math.round(b.score / b._w) : 0;
+      delete b._w;
+      keep.push(b);
+    }
+    const rank = (v) => {
+      const p = parse(v.ver);
+      if (p) return p.maj * 1e6 + p.min * 1e3 + p.pat;
+      const m2 = /^v?(\d+)\.(\d+)$/.exec(String(v.ver || ""));
+      return m2 ? +m2[1] * 1e6 + +m2[2] * 1e3 + 999 : -1;   // 묶음은 그 마이너의 맨 위
+    };
+    return keep.sort((a, b) => rank(b) - rank(a));
+  }
+
+    const vers = groupVers(data.vers || []);
     if (vers.length) {
       P.sum.appendChild(devSection("버전별",
         ["버전", "판수", "평균생존"],
@@ -5315,7 +5354,6 @@
     ctx.font = "700 26px system-ui, sans-serif";
     const stxt = Math.floor(scoreShown).toLocaleString();
     const pk = scorePunch;
-    const sw = ctx.measureText(stxt).width;
     ctx.save();
     ctx.translate(16, top);
     if (pk > 0.01) {
@@ -5330,22 +5368,6 @@
     ctx.fillText(stxt, 0, 0);
     ctx.restore();
 
-    // 방금 딴 액수가 점수판 옆에서 떠올랐다 사라진다
-    if (hudGains.length) {
-      ctx.font = "800 13px system-ui, sans-serif";
-      ctx.lineWidth = 3; ctx.lineJoin = "round";
-      for (const hg of hudGains) {
-        const k = hg.t / 1.1;
-        ctx.globalAlpha = Math.max(0, 1 - k * k);
-        const gx = 16 + sw * (1 + pk * 0.15) + 9, gy = top + 5 - k * 24;
-        const gt = "+" + Math.round(hg.v).toLocaleString();
-        ctx.strokeStyle = "rgba(0,0,0,.42)";
-        ctx.strokeText(gt, gx, gy);
-        ctx.fillStyle = "#ffd23f";
-        ctx.fillText(gt, gx, gy);
-      }
-      ctx.globalAlpha = 1;
-    }
 
     ctx.font = "600 13px system-ui, sans-serif";
     ctx.fillStyle = "rgba(255,255,255,.9)";
