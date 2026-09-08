@@ -809,7 +809,7 @@
   const elFinal = document.getElementById("finalScore");
   const elTitle = document.getElementById("overTitle");
 
-  const GAME_VERSION = "v1.5.13";   // 코드를 고칠 때마다 뒤 두 자리를 올린다
+  const GAME_VERSION = "v1.5.14";   // 코드를 고칠 때마다 뒤 두 자리를 올린다
   document.getElementById("ver").textContent = GAME_VERSION;
 
   const LS_NAME = "epjpddongpi_name";
@@ -2644,9 +2644,9 @@
   }
   /* 다음 하나까지의 시간 — 레벨 1에서 평균의 80~120%, 레벨마다 2%p 씩 벌어진다.
      뒤로 갈수록 언제 올지 읽기 어려워진다. 평균 간격은 그대로라 개수는 변하지 않는다.
-     95%에서 멈추는 것은 간격이 0 이하가 되지 않게 하려는 것뿐이다 (레벨 39).
+     50%에서 멈춘다 (레벨 16). 그 뒤로는 더 벌어지지 않는다.
      (0.4초 하한은 완전히 겹쳐 떨어지는 것만 막는 장치) */
-  function bonusSpread() { return Math.min(0.95, 0.20 + 0.02 * (level - 1)); }
+  function bonusSpread() { return Math.min(0.50, 0.20 + 0.02 * (level - 1)); }
   function bonusInterval(b) {
     const w = bonusSpread();
     return Math.max(0.4, bonusMean(b) * (1 - w + Math.random() * 2 * w));
@@ -2666,8 +2666,8 @@
   }
   /* 타이머가 가리킨 것 대신 새로 뽑을 확률 — 레벨 1에서 10%, 레벨마다 1.5%p 씩.
      드물게 나오는 종류는 한 번 건너뛰면 간격이 두 배가 되어, 이 값이 곧 들쭉날쭉함이다.
-     비율대로 다시 뽑는 것이라 100%가 되어도 종류별 등장 비율은 그대로다 (레벨 61). */
-  function bonusSwap() { return Math.min(1, 0.10 + 0.015 * (level - 1)); }
+     비율대로 다시 뽑는 것이라 종류별 등장 비율은 그대로다. 50%에서 멈춘다 (레벨 28). */
+  function bonusSwap() { return Math.min(0.50, 0.10 + 0.015 * (level - 1)); }
   function resetBonusTimers() {
     /* 첫 등장까지의 시간. 예전에는 편차가 큰 지수분포라 어떤 판은 별이 한참 안 나왔다.
        평균의 25~85% 사이로만 잡아 매판 초반 흐름이 비슷하게 흘러가도록 했다. */
