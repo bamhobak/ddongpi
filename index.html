@@ -812,7 +812,7 @@
   const elFinal = document.getElementById("finalScore");
   const elTitle = document.getElementById("overTitle");
 
-  const GAME_VERSION = "v1.5.26";   // 코드를 고칠 때마다 뒤 두 자리를 올린다
+  const GAME_VERSION = "v1.5.27";   // 코드를 고칠 때마다 뒤 두 자리를 올린다
   document.getElementById("ver").textContent = GAME_VERSION;
 
   const LS_NAME = "epjpddongpi_name";
@@ -2828,7 +2828,13 @@
       beep(520, .12, "triangle", .04);
     }
 
-    if (state === STATE.READY) { introUpdate(dt, now); return; }
+    if (state === STATE.READY) {
+      /* 타이틀 그림을 쓰는 동안에는 인트로를 돌리지 않는다.
+         인트로가 우주복으로 갈아입는 순간 feverFlash 를 켜서 화면이 하얗게 번쩍였다. */
+      if (titleArt) { flash = 0; feverFlash = 0; }
+      else introUpdate(dt, now);
+      return;
+    }
     if (state !== STATE.PLAY) return;
 
     elapsed += dt;
@@ -4676,8 +4682,27 @@
     const dw = titleArt.width * sc, dh = titleArt.height * sc;
     ctx.drawImage(titleArt, (W - dw) / 2 - 9 + Math.sin(t * 0.11) * 4, -dh * 0.012, dw, dh);
 
+    /* 벚꽃잎 — 뱅글 돌며 좌우로 크게 흔들려 떨어진다.
+       가로로 눌린 타원을 기울여 그리면 뒤집힐 때마다 도톰해 보인다. */
+    for (let i = 0; i < 20; i++) {
+      const sp = 22 + (i % 6) * 6;
+      const y = ((i * 167 + t * sp) % (H + 90)) - 45;
+      const x = ((i * 211 + 43) % W) + Math.sin(t * 0.55 + i * 0.9) * 34;
+      const r = 4.6 + (i % 4) * 1.3;
+      const spin = t * (0.9 + (i % 5) * 0.3) + i;
+      ctx.save();
+      ctx.translate(x, y);
+      ctx.rotate(spin);
+      ctx.globalAlpha = 0.72;
+      ctx.fillStyle = i % 3 === 0 ? "#fff0f5" : (i % 3 === 1 ? "#ffd0e0" : "#ffb7d2");
+      ctx.beginPath();
+      ctx.ellipse(0, 0, r, r * Math.abs(Math.cos(spin * 0.7)) * 0.62 + r * 0.18, 0, 0, 6.2832);
+      ctx.fill();
+      ctx.restore();
+    }
+
     // 색종이 — 좌우로 살랑이며 천천히 내려온다
-    for (let i = 0; i < 22; i++) {
+    for (let i = 0; i < 28; i++) {
       const sp = 17 + (i % 5) * 7;
       const y = ((i * 149 + t * sp) % (H + 80)) - 40;
       const x = ((i * 173) % W) + Math.sin(t * 0.7 + i * 1.3) * 16;
@@ -4692,7 +4717,7 @@
     }
 
     // 반짝임 — 제자리에서 커졌다 작아지는 네 갈래 별
-    for (let i = 0; i < 14; i++) {
+    for (let i = 0; i < 20; i++) {
       const ph = (t * 0.55 + i * 0.41) % 1;
       const k = Math.sin(ph * Math.PI);            // 0 에서 1 로 떴다가 다시 0
       if (k <= 0.02) continue;
