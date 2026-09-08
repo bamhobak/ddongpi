@@ -371,7 +371,6 @@
     padding: 4px 6px 4px 12px; border-radius: 4px;
     background: rgba(53,240,255,.06); border: 1px solid rgba(53,240,255,.28);
   }
-  #ctrlBox .lbl, #sndBox .lbl { font-size: 12px; color: #9fb4d0; margin-right: 4px; }
   /* 조작과 소리를 한 줄에 나란히 — 좁으면 저절로 두 줄로 접힌다 */
   #optRow { display: flex; gap: 7px; align-items: stretch; justify-content: center; flex-wrap: wrap; }
   #sndBox { padding: 4px 6px; }
@@ -650,11 +649,6 @@
 
   .big { font-size: clamp(38px, 11vw, 48px); font-weight: 800; color: #ffd23f; }
   .sub { font-size: 14px; color: #9aa0ae; }
-  .hint {
-    position: absolute; left: 0; right: 0;
-    bottom: max(12px, env(safe-area-inset-bottom));
-    font-size: 12px; color: #6d7383; text-align: center; padding: 0 16px;
-  }
 </style>
 </head>
 <body>
@@ -812,7 +806,7 @@
   const elFinal = document.getElementById("finalScore");
   const elTitle = document.getElementById("overTitle");
 
-  const GAME_VERSION = "v1.5.34";   // 코드를 고칠 때마다 뒤 두 자리를 올린다
+  const GAME_VERSION = "v1.5.35";   // 코드를 고칠 때마다 뒤 두 자리를 올린다
   document.getElementById("ver").textContent = GAME_VERSION;
 
   const LS_NAME = "epjpddongpi_name";
@@ -1120,13 +1114,13 @@
   layout();
 
   /* ---------- 주인공 스프라이트 ----------
-     왼쪽으로 갈 때 player_left.png, 오른쪽으로 갈 때 player_right.png.
+     오른쪽을 보는 그림 한 장(player_right.png)과 맞은 그림(player_hurt.png)만 있으면 된다.
+     왼쪽을 볼 때는 오른쪽 그림을 좌우로 뒤집어 그린다 (sprFlipped 참고).
      cx/cy 는 이미지 안에서 '머리 중심' 위치(비율) — 판정 원과 머리를 맞추는 기준점.
      headRatio 는 머리 지름 / 이미지 높이. 실제 이미지를 측정해 넣은 값이다.
      이미지가 없으면 코드로 그린 기본 캐릭터로 넘어간다. */
   const SPR = {
     // adj = 전체 크기 보정 — 몸 높이가 판정지름의 1.475배(피격은 1.604배)가 되게 맞춘다.
-    left:  { img: null, aspect: 0.631, head: 0.550, cx: 0.506, cy: 0.287, adj: 0.8113 },
     right: { img: null, aspect: 0.639, head: 0.564, cx: 0.501, cy: 0.283, adj: 0.8317 },
     hurt:  { img: null, aspect: 0.472, head: 0.464, cx: 0.499, cy: 0.324, adj: 0.7441 }
   };
@@ -1142,28 +1136,23 @@
      head/cx/cy/adj 는 실측값 — 헬멧 대신 얼굴이 판정 기준이다. */
   const SPR_GAMBLER = {
     // 모자·머리숱이 커서 같은 몸높이면 작아 보인다 — 백수와 같은 크기(1.0배)로 맞췄다
-    left:  { img: null, aspect: 0.586, head: 0.404, cx: 0.464, cy: 0.328, adj: 0.5957 },
     right: { img: null, aspect: 0.522, head: 0.369, cx: 0.590, cy: 0.319, adj: 0.5446 },
     hurt:  { img: null, aspect: 0.439, head: 0.415, cx: 0.487, cy: 0.347, adj: 0.6653 }
   };
   const SPR_LEV = {
-    left:  { img: null, aspect: 0.578, head: 0.440, cx: 0.433, cy: 0.264, adj: 0.6493 },
     right: { img: null, aspect: 0.606, head: 0.417, cx: 0.541, cy: 0.258, adj: 0.6157 },
     hurt:  { img: null, aspect: 0.542, head: 0.438, cx: 0.544, cy: 0.258, adj: 0.7019 }
   };
   const SPR_FIT = {
-    left:  { img: null, aspect: 0.719, head: 0.625, cx: 0.502, cy: 0.296, adj: 0.9219 },
     right: { img: null, aspect: 0.717, head: 0.589, cx: 0.480, cy: 0.310, adj: 0.8686 },
     hurt:  { img: null, aspect: 0.531, head: 0.445, cx: 0.492, cy: 0.314, adj: 0.7145 }
   };
   const SPR_PJ = {
-    left:  { img: null, aspect: 0.675, head: 0.452, cx: 0.535, cy: 0.378, adj: 0.6660 },
     right: { img: null, aspect: 0.647, head: 0.406, cx: 0.485, cy: 0.289, adj: 0.5993 },
     hurt:  { img: null, aspect: 0.506, head: 0.414, cx: 0.500, cy: 0.264, adj: 0.6641 }
   };
   const SPR_MONK = {
     // 백수와 같은 크기(1.0배)
-    left:  { img: null, aspect: 0.642, head: 0.308, cx: 0.468, cy: 0.183, adj: 0.4543 },
     right: { img: null, aspect: 0.619, head: 0.306, cx: 0.552, cy: 0.181, adj: 0.4514 },
     hurt:  { img: null, aspect: 0.472, head: 0.291, cx: 0.512, cy: 0.231, adj: 0.4667 }
   };
@@ -1173,24 +1162,19 @@
   /* bcx·bcy·brr = 비누방울의 중심과 반지름. 몸이 실제로 차지한 칸을 재서 넣었다
      (bcx 는 그림 가로, bcy·brr 은 그림 세로에 대한 비율). */
   const SPR_BANGUL = {
-    left:  { img: null, aspect: 0.847, head: 0.380, cx: 0.660, cy: 0.400, adj: 0.4940,
-             bcx: 0.500, bcy: 0.500, brr: 0.500 },
     right: { img: null, aspect: 0.847, head: 0.380, cx: 0.660, cy: 0.400, adj: 0.4940,
              bcx: 0.500, bcy: 0.500, brr: 0.500 },
     hurt:  { img: null, aspect: 0.959, head: 0.480, cx: 0.500, cy: 0.340, adj: 0.5424 }
   };
   // 방울이는 제 우주복이 따로 있다 (다른 직업은 공용 우주복을 입는다)
   const SPR_BANGUL_SPACE = {
-    left:  { img: null, aspect: 0.8125, head: 0.570, cx: 0.600, cy: 0.310, adj: 0.7701,
-             bcx: 0.500, bcy: 0.509, brr: 0.525 },
     right: { img: null, aspect: 0.8125, head: 0.570, cx: 0.600, cy: 0.310, adj: 0.7701,
              bcx: 0.500, bcy: 0.509, brr: 0.525 },
     hurt:  { img: null, aspect: 0.8313, head: 0.520, cx: 0.500, cy: 0.330, adj: 0.6521 }
   };
-  /* 무소유 전용 우주복 — 왼쪽 그림은 따로 없이 오른쪽을 뒤집어 쓴다.
+  /* 무소유 전용 우주복 —
      헬멧이 판정원이라 지름·중심을 재어 넣었다 (몸 높이는 다른 직업과 같은 1.475D). */
   const SPR_MONK_SPACE = {
-    left:  { img: null, aspect: 0.6139, head: 0.388, cx: 0.550, cy: 0.230, adj: 0.5723 },
     right: { img: null, aspect: 0.6139, head: 0.388, cx: 0.550, cy: 0.230, adj: 0.5723 },
     hurt:  { img: null, aspect: 0.4583, head: 0.357, cx: 0.545, cy: 0.265, adj: 0.5726 }
   };
@@ -1224,7 +1208,7 @@
 
   let facing = "right";
 
-  for (const key of ["left", "right", "hurt"]) {
+  for (const key of ["right", "hurt"]) {
     const img = new Image();
     img.onload = () => { SPR[key].img = img; };
     img.src = "assets/player_" + key + ".png";
@@ -1247,7 +1231,6 @@
     mk.onload = () => { SPR_MONK[key].img = mk; };
     mk.src = "assets/monk_" + key + ".png";
   }
-  // 방울이·무소유 우주복은 왼쪽 그림이 따로 없다 — 오른쪽을 뒤집어 쓴다
   for (const key of ["right", "hurt"]) {
     const bg = new Image();
     bg.onload = () => { SPR_BANGUL[key].img = bg; };
@@ -1805,7 +1788,6 @@
     hungry: false,      // 히든: 배고픈 정연핑 (아이템을 대신 먹어준다)
     steelUmb: false,    // 히든: 강철 우산 (방패가 없으면 6.5초마다 하나 생긴다)
     starburst: false,   // 히든: 별똥별 (별을 먹으면 화면의 똥이 전부 사라진다)
-    gamble: false,      // 히든: 도박꾼 (점수 2배, 목숨 1 고정)
     blackhole: false,   // 히든: 블랙홀 (자석 강화 + 뚜니핑 낙하물도 조금 끌어당김)
     legion: false,      // 히든: 대왕 뚜니핑 군단 (대왕 등장·점수 강화)
     doveWhat: false,    // 히든: 비둘기 무엇? (도박사 — 비둘기가 세지고 자주 나온다)
@@ -2068,7 +2050,6 @@
   let spawnHold = 0;               // 별핑별·성난 우산: 똥 생성이 멈춰 있는 남은 시간
   let umbBlast = null;             // 성난 우산 폭발 파동 {x, y, r, t}
   let bulletT = 0, interTimer = 8;// 인터스텔라: 불릿타임 남은 시간 / 다음 발동까지
-  let refillLeft = 0;              // 뚜니핑 무한리필: 이번 뚜니핑에서 더 늘릴 수 있는 양(ms)
   let subsTimer = 0;               // 휴지 정기구독: 마지막 휴지 이후 지난 시간
   let noHitSec = 0;                // 마지막 피격 이후 버틴 시간 (무소유 배율용)
   let clones = [], cloneTimer = 0; // 벼랑 끝 분신술: 날아가는 작은 이재들
@@ -2401,7 +2382,7 @@
     augCount = {};
     aug.feverBonus = 0; aug.starMul = 1; aug.timeMul = 1;
     aug.feverScoreMul = 1; aug.fallMul = 1; aug.hitboxMul = 1; aug.poopMul = 1;
-    aug.steelUmb = false; aug.starburst = false; aug.gamble = false; aug.scoreMul = 1;
+    aug.steelUmb = false; aug.starburst = false; aug.scoreMul = 1;
     aug.blackhole = false; aug.legion = false; roidT = 0;
     aug.doveWhat = false;
     flyOn = false;
@@ -2409,8 +2390,8 @@
     augRound = 0;
     for (const k in augSeen) delete augSeen[k];
     for (const k in augTook) delete augTook[k];
-    aug.refill = false; aug.subs = false; aug.clone = false;
-    spawnHold = 0; umbBlast = null; bulletT = 0; interTimer = 8; refillLeft = 0; subsTimer = 0;
+    aug.subs = false; aug.clone = false;
+    spawnHold = 0; umbBlast = null; bulletT = 0; interTimer = 8; subsTimer = 0;
     noHitSec = 0;
     clones = []; cloneTimer = 0;
     doves = []; moveDist = 0;
@@ -3364,10 +3345,6 @@
             else if (sz >= 18) { burstN = 12; note = 1150; }
             else               { burstN = 8;  note = 900;  }
             score += sc("뚜니핑", gain);
-            if (aug.refill && powered && refillLeft > 0) {   // 무한리필 — 먹은 만큼 길어진다
-              const add = Math.min(150, refillLeft);
-              powerUntil += add; refillLeft -= add;
-            }
             burst(it.x, it.y, tone, burstN);
             // 낙하물은 개당 점수를 띄우지 않는다 (한꺼번에 쏟아져서 화면이 지저분해진다)
             /* 흔들림은 점수가 아니라 크기로 정한다.
@@ -3525,7 +3502,6 @@
       feverDur = 7000 + aug.feverBonus;
       // 이미 뚜니핑 중이면 남은 시간에 이어붙인다 (초기화하면 남은 시간이 버려진다)
       powerUntil = Math.max(powerUntil, now) + feverDur;
-      refillLeft = 5000;               // 무한리필 — 이번 뚜니핑에서 늘릴 수 있는 한도
       feverFlash = 1;
       popText(player.x, player.y - 70, "🔥 뚜니핑 타임!", "#ffd23f", 26);
       if (!sfx("fever")) {
@@ -3800,10 +3776,6 @@
     const kstMidnight = Date.UTC(k.getUTCFullYear(), k.getUTCMonth(),
                                  k.getUTCDate() - mondayIndex - (weeksAgo || 0) * 7);
     return kstMidnight - KST;                             // 실제 UTC 시각
-  }
-  function kstDateLabel(ms) {                             // "8.10" 형태
-    const k = new Date(ms + KST);
-    return (k.getUTCMonth() + 1) + "." + k.getUTCDate();
   }
   function resetNote() {
     const left = weekStartMs(0) + 7 * 24 * 3600 * 1000 - Date.now();
@@ -4268,13 +4240,6 @@
     recSec.querySelector("table").classList.add("tbRecent");
     P.rec.appendChild(recSec);
 
-  }
-
-  function kstStamp(iso) {                      // "8.19 14:03" 형태 (한국시간)
-    const k = new Date(new Date(iso).getTime() + KST);
-    const p2 = n => (n < 10 ? "0" + n : "" + n);
-    return (k.getUTCMonth() + 1) + "." + k.getUTCDate() + " " +
-           p2(k.getUTCHours()) + ":" + p2(k.getUTCMinutes());
   }
 
   let devPwOK = "";          // 인증에 성공한 비밀번호 (삭제할 때 다시 쓴다)
