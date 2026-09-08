@@ -364,18 +364,18 @@
     border: 1px solid rgba(255,255,255,.12); box-shadow: none;
   }
   /* 조작 방식 토글 — 이름 알약 아래 */
-  #ctrlBox {
+  #ctrlBox, #sndBox {
     display: flex; align-items: center; gap: 5px;
     padding: 4px 6px 4px 12px; border-radius: 4px;
     background: rgba(53,240,255,.06); border: 1px solid rgba(53,240,255,.28);
   }
-  #ctrlBox .lbl { font-size: 12px; color: #9fb4d0; margin-right: 4px; }
-  #ctrlBox .ctrlBtn {
+  #ctrlBox .lbl, #sndBox .lbl { font-size: 12px; color: #9fb4d0; margin-right: 4px; }
+  #ctrlBox .ctrlBtn, #sndBox .ctrlBtn {
     padding: 5px 11px; font-size: 12px; border-radius: 3px;
     background: rgba(255,255,255,.06); color: #9fb4d0; box-shadow: none;
     border: 1px solid rgba(255,255,255,.2);
   }
-  #ctrlBox .ctrlBtn.on {
+  #ctrlBox .ctrlBtn.on, #sndBox .ctrlBtn.on {
     color: #05060d; background: #35f0ff; border-color: #35f0ff;
     box-shadow: 0 0 12px rgba(53,240,255,.55);
   }
@@ -669,6 +669,11 @@
         <button class="ctrlBtn" data-ctrl="touch">👆 터치</button>
         <button class="ctrlBtn" data-ctrl="pad">🎮 십자패드</button>
       </div>
+      <div id="sndBox">
+        <span class="lbl">소리</span>
+        <button class="ctrlBtn sndBtn" data-snd="on">🔊 켜기</button>
+        <button class="ctrlBtn sndBtn" data-snd="off">🔇 끄기</button>
+      </div>
 
       <button id="btnStart">시작하기</button>
     </div>
@@ -691,6 +696,7 @@
     <div id="pauseScreen" class="screen hidden">
       <h2>일시정지</h2>
       <button id="btnResume">▶ 계속하기</button>
+      <button id="btnPauseSound">🔊 소리 끄기</button>
       <button id="btnPauseRetry">↻ 다시하기</button>
     </div>
 
@@ -776,7 +782,7 @@
   const elFinal = document.getElementById("finalScore");
   const elTitle = document.getElementById("overTitle");
 
-  const GAME_VERSION = "v1.4.84";   // 코드를 고칠 때마다 뒤 두 자리를 올린다
+  const GAME_VERSION = "v1.4.86";   // 코드를 고칠 때마다 뒤 두 자리를 올린다
   document.getElementById("ver").textContent = GAME_VERSION;
 
   const LS_NAME = "epjpddongpi_name";
@@ -1532,7 +1538,12 @@
 
   /* ---------- 사운드 ---------- */
   let ac = null;
+  /* 소리 끄기 — 효과음·배경음악·삐 소리를 모두 덮는다. 브라우저에 기억시킨다. */
+  const LS_MUTE = "epjpddongpi_mute";
+  let muted = false;
+  try { muted = localStorage.getItem(LS_MUTE) === "1"; } catch (e) {}
   function beep(freq, dur, type, vol) {
+    if (muted) return;
     try {
       if (!ac) ac = new (window.AudioContext || window.webkitAudioContext)();
       if (ac.state === "suspended") ac.resume();
@@ -1567,6 +1578,7 @@
     }
   }
   function sfx(name, vol) {
+    if (muted) return true;          // 껐으면 삐 소리로도 대신하지 않는다
     try {
       if (!ac) ac = new (window.AudioContext || window.webkitAudioContext)();
       if (ac.state === "suspended") ac.resume();
@@ -1580,6 +1592,72 @@
       src.start();
       return true;
     } catch (e) { return false; }
+  }
+
+  /* ---------- 배경음악 ----------
+     곡 하나가 수백KB라 필요할 때 한 곡씩 받는다 (음소거면 아예 받지 않는다).
+     대기화면·게임오버는 menu, 게임 중은 play, 뚜니핑 타임에는 fever 로 바뀐다.
+     바뀔 때는 0.4초에 걸쳐 이전 곡을 줄이고 새 곡을 올린다. */
+  const BGM_VOL = { menu: 0.42, play: 0.34, fever: 0.42 };
+  const bgmEl = {};
+  let bgmName = null, bgmFade = null, bgmRetryAt = 0;
+  function bgmGet(name) {
+    if (!bgmEl[name]) {
+      const a = new Audio("assets/bgm/" + name + ".mp3");
+      a.loop = true; a.preload = "auto"; a.volume = 0;
+      a.__nm = name;
+      bgmEl[name] = a;
+    }
+    return bgmEl[name];
+  }
+  function playBgm(name) {
+    const from = bgmName ? bgmEl[bgmName] : null;
+    bgmName = name;
+    if (muted || !name) { if (from) from.pause(); return; }
+    const to = bgmGet(name);
+    try { to.currentTime = 0; } catch (e) {}
+    to.volume = 0;
+    const pr = to.play();
+    /* 브라우저는 사용자가 화면을 한 번 만지기 전에는 소리를 막는다.
+       막히면 이름을 비워 두고 잠시 뒤 다시 시도한다. */
+    if (pr && pr.catch) pr.catch(() => { bgmName = null; bgmRetryAt = Date.now() + 800; });
+    if (bgmFade) clearInterval(bgmFade);
+    let k = 0;
+    bgmFade = setInterval(() => {
+      k = Math.min(1, k + 0.08);
+      if (from && from !== to) from.volume = (BGM_VOL[from.__nm] || 0.4) * (1 - k);
+      to.volume = (BGM_VOL[name] || 0.4) * k;
+      if (k >= 1) {
+        clearInterval(bgmFade); bgmFade = null;
+        if (from && from !== to) from.pause();
+      }
+    }, 32);
+  }
+  function syncBgm() {
+    const inGame = state === STATE.PLAY || state === STATE.AUG || state === STATE.PAUSE;
+    const want = inGame ? (fever ? "fever" : "play") : "menu";
+    if (want === bgmName || muted) return;
+    if (bgmName === null && Date.now() < bgmRetryAt) return;   // 막힌 직후에는 잠깐 쉰다
+    playBgm(want);
+  }
+  function setMute(on) {
+    muted = !!on;
+    try { localStorage.setItem(LS_MUTE, muted ? "1" : "0"); } catch (e) {}
+    if (muted) {
+      if (bgmFade) { clearInterval(bgmFade); bgmFade = null; }
+      for (const k in bgmEl) bgmEl[k].pause();
+      bgmName = null;
+    } else {
+      bgmRetryAt = 0;
+      syncBgm();
+    }
+    syncSoundUI();
+  }
+  function syncSoundUI() {
+    for (const b of document.querySelectorAll(".sndBtn"))
+      b.classList.toggle("on", (b.dataset.snd === "off") === muted);
+    const pb = document.getElementById("btnPauseSound");
+    if (pb) pb.textContent = muted ? "🔇 소리 켜기" : "🔊 소리 끄기";
   }
 
   /* ---------- 게임 상태 ---------- */
@@ -2097,6 +2175,11 @@
     beep(500, .08, "sine", .04);
   }
   btnPause.addEventListener("click", doPause);
+  for (const b of document.querySelectorAll(".sndBtn"))
+    b.addEventListener("click", () => setMute(b.dataset.snd === "off"));
+  document.getElementById("btnPauseSound")
+    .addEventListener("click", () => setMute(!muted));
+  syncSoundUI();
 
   document.getElementById("btnResume").addEventListener("click", () => {
     pauseScreen.classList.add("hidden");
@@ -5761,6 +5844,7 @@
     last = now;
 
     update(dt, now);
+    syncBgm();                 // 화면이 바뀌면 배경음악도 따라 바뀐다
 
     ctx.setTransform(baseScale, 0, 0, baseScale, 0, 0);
     ctx.clearRect(0, 0, W, H);
