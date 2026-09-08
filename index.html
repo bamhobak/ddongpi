@@ -800,7 +800,7 @@
   const elFinal = document.getElementById("finalScore");
   const elTitle = document.getElementById("overTitle");
 
-  const GAME_VERSION = "v1.4.90";   // 코드를 고칠 때마다 뒤 두 자리를 올린다
+  const GAME_VERSION = "v1.4.91";   // 코드를 고칠 때마다 뒤 두 자리를 올린다
   document.getElementById("ver").textContent = GAME_VERSION;
 
   const LS_NAME = "epjpddongpi_name";
@@ -1588,7 +1588,7 @@
      false 를 돌려주어 부르는 쪽이 예전 삐 소리로 대신하게 한다. */
   const SFX_GAIN = { star: 1.0, aug: 0.9, fever: 0.8, hurt: 0.8,
                      over: 0.8, gold: 1.2, heart: 6.0, shield: 0.8,
-                     moon: 4.0, bubble: 0.8, break: 0.6, helper: 0.45 };
+                     moon: 4.0, bubble: 0.8, break: 0.6, helper: 0.45, fetch: 0.5 };
   const SFX_VOL = 0.55;              // 전체 크기
   const sfxBuf = {};
   let sfxAsked = false;
@@ -3050,8 +3050,10 @@
         if (elapsed - it.born >= FETCH_DELAY) {
           it.claimed = true;
           fetchers.push({ x: W / 2, y: H + 50, vx: 0, vy: -FETCH_SPEED, t: it });
-          beep(660, .1, "sine", .05);
-          beep(990, .12, "sine", .04);
+          if (!sfx("fetch")) {
+            beep(660, .1, "sine", .05);
+            beep(990, .12, "sine", .04);
+          }
         }
       }
     }
