@@ -537,11 +537,18 @@
   }
   #startScreen > * { position: relative; }
 
+  /* 화면 아래쪽을 비워 타이틀 그림의 두 캐릭터가 보이게 한다.
+     위로 붙이고(flex-start) 줄간격과 순위 줄의 여백을 조금씩 줄여 자리를 만든다. */
   #startScreen {
-    gap: clamp(6px, 1.4vh, 10px);
+    justify-content: flex-start;
+    gap: clamp(4px, 1.0vh, 7px);
+    padding-top: calc(max(10px, env(safe-area-inset-top)) + var(--lby, 0px));
     padding-left: calc(10px + var(--lbx, 0px));
     padding-right: calc(10px + var(--lbx, 0px));
   }
+  #startScreen .board li { padding: 2px 0; }
+  #startScreen .board li.duo, #startScreen .board li.five { padding: 3px 0; }
+  #startScreen .board .mini { padding: 5px 3px; }
   #startScreen h1 {
     font-size: clamp(24px, 6.5vw, 32px);
     letter-spacing: -1.5px; line-height: 1.15;
@@ -803,7 +810,7 @@
   const elFinal = document.getElementById("finalScore");
   const elTitle = document.getElementById("overTitle");
 
-  const GAME_VERSION = "v1.5.00";   // 코드를 고칠 때마다 뒤 두 자리를 올린다
+  const GAME_VERSION = "v1.5.01";   // 코드를 고칠 때마다 뒤 두 자리를 올린다
   document.getElementById("ver").textContent = GAME_VERSION;
 
   const LS_NAME = "epjpddongpi_name";
