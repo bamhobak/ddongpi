@@ -516,7 +516,7 @@
   /* ─────────── 시작 화면 ─────────── */
   #startScreen {
     gap: clamp(8px, 1.8vh, 14px);
-    background: rgba(10,11,16,.60);            /* 뒤 인트로가 비쳐 보이게 */
+    background: rgba(10,11,16,.38);            /* 뒤 타이틀 그림이 비쳐 보이게 */
   }
   /* 화면 위쪽에 은은한 빛을 깔아 패널이 떠 보이게 한다 */
   #startScreen::before {
@@ -810,7 +810,7 @@
   const elFinal = document.getElementById("finalScore");
   const elTitle = document.getElementById("overTitle");
 
-  const GAME_VERSION = "v1.5.19";   // 코드를 고칠 때마다 뒤 두 자리를 올린다
+  const GAME_VERSION = "v1.5.20";   // 코드를 고칠 때마다 뒤 두 자리를 올린다
   document.getElementById("ver").textContent = GAME_VERSION;
 
   const LS_NAME = "epjpddongpi_name";
