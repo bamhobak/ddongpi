@@ -809,7 +809,7 @@
   const elFinal = document.getElementById("finalScore");
   const elTitle = document.getElementById("overTitle");
 
-  const GAME_VERSION = "v1.5.05";   // 코드를 고칠 때마다 뒤 두 자리를 올린다
+  const GAME_VERSION = "v1.5.06";   // 코드를 고칠 때마다 뒤 두 자리를 올린다
   document.getElementById("ver").textContent = GAME_VERSION;
 
   const LS_NAME = "epjpddongpi_name";
@@ -1854,8 +1854,8 @@
       cond: () => job !== "fit" && shields >= 5,   // 헬스걸은 방패가 없어 의미가 없다
       go: () => { aug.angryUmb = true; } },
     { id: "gold",       ic: "🌈", nm: "무지개똥 연금술", ds: "똥이 가끔 무지개똥으로 변한다. 먹으면 점수!",
-      // 1개째는 10%, 그 뒤로는 절반(5%)씩만 — 첫 픽의 맛은 지키고 몰빵만 눌렀다
-      go: () => { aug.goldChance += (augCount["gold"] ? 0.05 : 0.10) * dim("gold"); } },
+      // 1개째는 8%, 그 뒤로는 7%p 씩 (감쇠 없음) — 쌓을수록 값을 한다
+      go: () => { aug.goldChance += augCount["gold"] ? 0.07 : 0.08; } },
     { id: "dopa",       ic: "📱", nm: "도파민 중독",  ds: "똥이 빨라지고, 생존 점수가 크게 오른다",
       go: () => { aug.fallMul *= 1 + 0.10 * dim("dopa"); aug.timeMul *= 1 + 0.5 * dim("dopa"); } },
     { id: "carrot",     ic: "🥕", nm: "하트 당근거래", ds: "목숨 1개를 팔고, 앞으로 얻는 모든 점수 +20%",
@@ -3280,7 +3280,7 @@
       if (hit) {
         if (it.type === "poop") {
           if (it.gold) {                    // 무지개똥 — 먹으면 점수 (레벨이 오를수록 값지다)
-            const g = Math.round(150 * (aug.goldLord ? 2 : 1) * scoreMul() * level);
+            const g = Math.round(120 * (aug.goldLord ? 2 : 1) * scoreMul() * level);
             score += sc("무지개똥", g);
             burst(it.x, it.y, "hsl(" + Math.round(goldFx(now, it.x).hue) + ",100%,62%)", 20);
             popGain(it.x, it.y, g, "🌈", "#ffe07a");
@@ -3562,7 +3562,7 @@
       if (it.type !== "poop") continue;
       if (Math.hypot(it.x - x, it.y - y) >= radius + it.r) continue;
       if (it.gold) {                         // 무지개똥 — 부수면 직접 먹은 것과 같은 점수
-        const g = Math.round(150 * (aug.goldLord ? 2 : 1) * scoreMul() * level * gm);
+        const g = Math.round(120 * (aug.goldLord ? 2 : 1) * scoreMul() * level * gm);
         score += sc("무지개똥", g);
         burst(it.x, it.y, "#ffd23f", 18);
         popText(it.x, it.y, "🌈", "#ffe07a");   // 액수는 적지 않는다
