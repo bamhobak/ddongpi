@@ -809,7 +809,7 @@
   const elFinal = document.getElementById("finalScore");
   const elTitle = document.getElementById("overTitle");
 
-  const GAME_VERSION = "v1.5.11";   // 코드를 고칠 때마다 뒤 두 자리를 올린다
+  const GAME_VERSION = "v1.5.12";   // 코드를 고칠 때마다 뒤 두 자리를 올린다
   document.getElementById("ver").textContent = GAME_VERSION;
 
   const LS_NAME = "epjpddongpi_name";
@@ -2664,7 +2664,7 @@
   }
   /* 타이머가 가리킨 것 대신 새로 뽑을 확률.
      드물게 나오는 종류는 한 번 건너뛰면 간격이 두 배가 되어, 이 값이 곧 들쭉날쭉함이다. */
-  const BONUS_SWAP = 0.10;
+  const BONUS_SWAP = 0.15;
   function resetBonusTimers() {
     /* 첫 등장까지의 시간. 예전에는 편차가 큰 지수분포라 어떤 판은 별이 한참 안 나왔다.
        평균의 25~85% 사이로만 잡아 매판 초반 흐름이 비슷하게 흘러가도록 했다. */
