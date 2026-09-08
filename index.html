@@ -800,7 +800,7 @@
   const elFinal = document.getElementById("finalScore");
   const elTitle = document.getElementById("overTitle");
 
-  const GAME_VERSION = "v1.4.95";   // 코드를 고칠 때마다 뒤 두 자리를 올린다
+  const GAME_VERSION = "v1.4.96";   // 코드를 고칠 때마다 뒤 두 자리를 올린다
   document.getElementById("ver").textContent = GAME_VERSION;
 
   const LS_NAME = "epjpddongpi_name";
@@ -1624,42 +1624,76 @@
 
   /* ---------- 배경음악 ----------
      곡 하나가 수백KB라 필요할 때 한 곡씩 받는다 (음소거면 아예 받지 않는다).
-     대기화면·게임오버는 menu, 게임 중은 play, 뚜니핑 타임에는 fever 로 바뀐다.
-     바뀔 때는 0.4초에 걸쳐 이전 곡을 줄이고 새 곡을 올린다. */
+     대기화면·게임오버는 menu, 게임 중은 play, 우주는 space, 블랙홀은 blackhole,
+     뚜니핑 타임에는 fever.
+
+     한 곡을 두 벌 만들어 두고, 끝나기 3.5초 전부터 다른 벌을 처음부터 겹쳐 튼다.
+     브라우저의 loop 로 그냥 되감으면 mp3 앞뒤 여백만큼 소리가 비고 마디도 뚝 끊기는데,
+     겹쳐 넘기면 그 자리가 크로스페이드로 메워진다. */
   const BGM_VOL = { menu: 0.42, play: 0.34, space: 0.36, blackhole: 0.40, fever: 0.42 };
-  const bgmEl = {};
-  let bgmName = null, bgmFade = null, bgmRetryAt = 0;
+  const BGM_LOOP_X = 3.5;            // 곡 끝과 처음을 겹치는 시간(초)
+  const BGM_SWAP_X = 0.45;           // 다른 곡으로 갈아탈 때 겹치는 시간(초)
+  const bgmPair = {};                // 이름 -> 같은 곡 두 벌
+  let bgmName = null;                // 지금 울려야 할 곡 이름
+  let bgmCur = null;                 // 그 곡에서 실제로 재생 중인 쪽
+  let bgmOut = [];                   // 물러나는 중인 것들
+  let bgmRetryAt = 0;
   function bgmGet(name) {
-    if (!bgmEl[name]) {
-      const a = new Audio("assets/bgm/" + name + ".mp3");
-      a.loop = true; a.preload = "auto"; a.volume = 0;
-      a.__nm = name;
-      bgmEl[name] = a;
+    if (!bgmPair[name]) {
+      bgmPair[name] = [0, 1].map(() => {
+        const a = new Audio("assets/bgm/" + name + ".mp3");
+        a.loop = false;              // 되감기는 우리가 직접 한다
+        a.preload = "auto"; a.volume = 0; a.__nm = name;
+        return a;
+      });
     }
-    return bgmEl[name];
+    return bgmPair[name];
   }
-  function playBgm(name) {
-    const from = bgmName ? bgmEl[bgmName] : null;
-    bgmName = name;
-    if (bgmOff || !name) { if (from) from.pause(); return; }
-    const to = bgmGet(name);
-    try { to.currentTime = 0; } catch (e) {}
-    to.volume = 0;
-    const pr = to.play();
+  function bgmStart(a) {
+    try { a.currentTime = 0; } catch (e) {}
+    a.volume = 0;
+    const pr = a.play();
     /* 브라우저는 사용자가 화면을 한 번 만지기 전에는 소리를 막는다.
        막히면 이름을 비워 두고 잠시 뒤 다시 시도한다. */
     if (pr && pr.catch) pr.catch(() => { bgmName = null; bgmRetryAt = Date.now() + 800; });
-    if (bgmFade) clearInterval(bgmFade);
-    let k = 0;
-    bgmFade = setInterval(() => {
-      k = Math.min(1, k + 0.08);
-      if (from && from !== to) from.volume = (BGM_VOL[from.__nm] || 0.4) * (1 - k);
-      to.volume = (BGM_VOL[name] || 0.4) * k;
-      if (k >= 1) {
-        clearInterval(bgmFade); bgmFade = null;
-        if (from && from !== to) from.pause();
-      }
-    }, 32);
+  }
+  function bgmFadeOut(el, len) {
+    if (!el) return;
+    bgmOut.push({ el: el, t: len, len: len, v0: el.volume });
+  }
+  function playBgm(name) {
+    bgmFadeOut(bgmCur, BGM_SWAP_X);
+    bgmCur = null;
+    bgmName = name;
+    if (bgmOff || !name) return;
+    const el = bgmGet(name)[0];
+    bgmStart(el);
+    bgmCur = el;
+  }
+  /* 매 프레임 — 물러나는 곡을 줄이고, 지금 곡은 키우거나 다음 바퀴로 넘긴다 */
+  function bgmTick(dt) {
+    for (let i = bgmOut.length - 1; i >= 0; i--) {
+      const f = bgmOut[i];
+      f.t -= dt;
+      if (f.t <= 0) { f.el.pause(); f.el.volume = 0; bgmOut.splice(i, 1); }
+      else f.el.volume = f.v0 * (f.t / f.len);
+    }
+    if (bgmOff || !bgmCur || !bgmName) return;
+    const V = BGM_VOL[bgmName] || 0.4;
+    const d = bgmCur.duration;
+    if (!d || !isFinite(d)) { bgmCur.volume = V; return; }   // 아직 길이를 모른다
+    const left = d - bgmCur.currentTime;
+    if (left > BGM_LOOP_X) {
+      bgmCur.volume = Math.min(V, bgmCur.volume + dt / BGM_SWAP_X * V);
+      return;
+    }
+    const pair = bgmPair[bgmName];
+    const other = pair[0] === bgmCur ? pair[1] : pair[0];
+    if (other.paused) bgmStart(other);
+    const k = Math.max(0, left / BGM_LOOP_X);      // 1 에서 0 으로
+    bgmCur.volume = V * k;
+    other.volume = V * (1 - k);
+    if (left <= 0.06) { bgmFadeOut(bgmCur, 0.15); bgmCur = other; }
   }
   function syncBgm() {
     const inGame = state === STATE.PLAY || state === STATE.AUG || state === STATE.PAUSE;
@@ -1680,8 +1714,9 @@
       bgmOff = !!off;
       try { localStorage.setItem(LS_BGM, bgmOff ? "1" : "0"); } catch (e) {}
       if (bgmOff) {
-        if (bgmFade) { clearInterval(bgmFade); bgmFade = null; }
-        for (const k in bgmEl) bgmEl[k].pause();
+        for (const k in bgmPair) for (const a of bgmPair[k]) { a.pause(); a.volume = 0; }
+        bgmOut = [];
+        bgmCur = null;
         bgmName = null;
       } else {
         bgmRetryAt = 0;
@@ -3442,7 +3477,8 @@
         let cnt = 0, bonus = 0;
         for (let k = items.length - 1; k >= 0; k--) {
           const q = items[k];
-          if (q.type !== "poop" || q.skin === "fever") continue;
+          // 무지개똥은 주우면 훨씬 값지므로 쓸어버리지 않고 남긴다
+          if (q.type !== "poop" || q.skin === "fever" || q.gold) continue;
           bonus += poopGain() * 6;
           burst(q.x, q.y, "#ffe9a8", 10);
           items.splice(k, 1);
@@ -5891,6 +5927,7 @@
 
     update(dt, now);
     syncBgm();                 // 화면이 바뀌면 배경음악도 따라 바뀐다
+    bgmTick(dt);               // 곡이 끝나갈 때 처음과 겹쳐 이어 붙인다
 
     ctx.setTransform(baseScale, 0, 0, baseScale, 0, 0);
     ctx.clearRect(0, 0, W, H);
