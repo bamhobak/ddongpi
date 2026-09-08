@@ -776,7 +776,7 @@
   const elFinal = document.getElementById("finalScore");
   const elTitle = document.getElementById("overTitle");
 
-  const GAME_VERSION = "v1.4.80";   // 코드를 고칠 때마다 뒤 두 자리를 올린다
+  const GAME_VERSION = "v1.4.81";   // 코드를 고칠 때마다 뒤 두 자리를 올린다
   document.getElementById("ver").textContent = GAME_VERSION;
 
   const LS_NAME = "epjpddongpi_name";
@@ -1259,7 +1259,7 @@
   let helpers = [];
   let helperTimer = 0;
   let fetchers = [];        // 배고픈 정연핑 — 아이템을 대신 먹으러 가는 정연핑
-  const FETCH_DELAY = 1.5;  // 아이템이 보이고 몇 초 뒤에 출발하는지
+  const FETCH_DELAY = 1.2;  // 아이템이 보이고 몇 초 뒤에 출발하는지
   const FETCH_SPEED = 714;   // 840 에서 15% 감속
   let helperQueue = 0;      // 이번 차례에 아직 안 나온 인원
   let helperGap = 0;        // 다음 한 명까지 남은 시간
@@ -2375,13 +2375,15 @@
       giant: !!(cls && cls.giant)
     });
   }
+  /* w 는 등장 빈도에 그대로 비례한다 (간격 = 기준값 ÷ (w / 204)).
+     아래는 전체를 10% 올리고, 하트·우산만 20% 올린 값이다. */
   const BONUS = [
-    { type: "moon",     emoji: "🌙", w: 84 },   // 증강 선택 — 가장 자주 나온다
-    { type: "fullmoon", emoji: "🌕", w: 6  },   // 보름달 — 증강 3연속. 초승달의 10%
-    { type: "paper",    emoji: "🧻", w: 26 },
-    { type: "umbrella", emoji: "☂️", w: 22 },
-    { type: "star",     emoji: "⭐", w: 69.4 },  // 73 에서 5% 하향
-    { type: "heart",    emoji: "❤️", w: 24 }   // 너무 안 나와서 상향
+    { type: "moon",     emoji: "🌙", w: 92.4 },  // 84 x1.1 — 증강 선택, 가장 자주 나온다
+    { type: "fullmoon", emoji: "🌕", w: 6.6 },   // 6 x1.1 — 증강 3연속. 초승달의 10%
+    { type: "paper",    emoji: "🧻", w: 28.6 },  // 26 x1.1
+    { type: "umbrella", emoji: "☂️", w: 26.4 },  // 22 x1.2
+    { type: "star",     emoji: "⭐", w: 76.34 }, // 69.4 x1.1
+    { type: "heart",    emoji: "❤️", w: 28.8 }   // 24 x1.2
   ];
   /* 아이템은 종류마다 자기 타이머로 따로 굴러간다.
      각자의 평균 간격 = 기본 10초 ÷ 그 아이템의 비중 → 전체 등장 빈도는 예전과 같지만
@@ -4333,7 +4335,7 @@
   }
   /* 점수 눈금 — 모든 점수가 여기를 지나므로, 이 값만 바꾸면
      항목 사이의 균형은 그대로 두고 자릿수만 키우거나 줄일 수 있다. */
-  const SCORE_SCALE = 1;
+  const SCORE_SCALE = 3;
   function scoreMul() { return SCORE_SCALE * aug.scoreMul * bhMul() * levMul() * monkMul(); }
 
   function zoneIdx() { return Math.min(LAST_Z, level - 1); }
