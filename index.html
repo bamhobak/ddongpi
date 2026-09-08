@@ -813,7 +813,7 @@
   const elFinal = document.getElementById("finalScore");
   const elTitle = document.getElementById("overTitle");
 
-  const GAME_VERSION = "v1.5.31";   // 코드를 고칠 때마다 뒤 두 자리를 올린다
+  const GAME_VERSION = "v1.5.32";   // 코드를 고칠 때마다 뒤 두 자리를 올린다
   document.getElementById("ver").textContent = GAME_VERSION;
 
   const LS_NAME = "epjpddongpi_name";
@@ -4668,15 +4668,14 @@
   }
 
   /* ---------- 제작사 스플래시 ----------
-     대기화면 앞에 2.8초. 루도로 만든 영문 로고가 통 튀어 오르고,
-     그 아래에 한글 이름이 따라 붙는다 (한글은 그림으로 만들면 뭉개져서 여기서 그린다).
+     대기화면 앞에 2.8초. 루도로 만든 로고가 통 튀어 오른다.
      화면을 누르면 바로 건너뛴다. 이 동안에는 게임도 배경음악도 시작하지 않는다. */
   const SPLASH_SEC = 2.8;
   let splashT = 0, splashOn = true, studioImg = null;
   {
     const t = new Image();
     t.onload = () => { studioImg = t; };
-    t.onerror = () => {};          // 못 받으면 한글 이름만 나온다
+    t.onerror = () => { splashOn = false; };   // 못 받으면 그냥 건너뛴다
     t.src = "assets/studio.webp";
   }
   function endSplash() {
@@ -4705,22 +4704,11 @@
     ctx.textAlign = "center";
     ctx.textBaseline = "middle";
 
-    let bh = 0;
     if (studioImg) {
       const bw = Math.min(W * 0.86, 360) * pop;
-      bh = studioImg.height / studioImg.width * bw;
+      const bh = studioImg.height / studioImg.width * bw;
       const bob = Math.sin(splashT * 2.0) * 3;   // 살랑이는 숨결
       ctx.drawImage(studioImg, W / 2 - bw / 2, cy - bh / 2 + rise + bob, bw, bh);
-    }
-
-    // 한글 이름 — 로고가 자리를 잡은 뒤 아래에서 떠오른다
-    const nameK = Math.max(0, Math.min(1, (splashT - 0.5) / 0.5));
-    if (nameK > 0) {
-      ctx.globalAlpha = Math.max(0, fade) * nameK;
-      ctx.font = "800 20px NanumBarunGothic, system-ui, sans-serif";
-      ctx.fillStyle = "#ffe9a8";
-      ctx.fillText("밤호박 프렌즈", W / 2,
-                   cy + bh / 2 + 26 + rise * 0.3 + (1 - nameK) * 10);
     }
     ctx.restore();
     ctx.textAlign = "left";
