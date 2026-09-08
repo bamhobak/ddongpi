@@ -578,7 +578,7 @@
      게임오버 순위판은 글씨가 잘 읽혀야 해서 그대로 둔다. */
   /* 화면 전체는 밝게 두고(.38), 글씨가 얹히는 순위판만 조금 어둡게.
      배경 그림은 표 바깥에서 충분히 보인다. */
-  #startScreen .board { background: rgba(6,8,20,.40); }
+  #startScreen .board { background: rgba(6,8,20,.32); }
   #startScreen .board h3, #overScreen .board h3 {
     display: flex; align-items: center; justify-content: center; gap: 6px;
     padding-bottom: 6px; margin-bottom: 4px;
@@ -812,7 +812,7 @@
   const elFinal = document.getElementById("finalScore");
   const elTitle = document.getElementById("overTitle");
 
-  const GAME_VERSION = "v1.5.25";   // 코드를 고칠 때마다 뒤 두 자리를 올린다
+  const GAME_VERSION = "v1.5.26";   // 코드를 고칠 때마다 뒤 두 자리를 올린다
   document.getElementById("ver").textContent = GAME_VERSION;
 
   const LS_NAME = "epjpddongpi_name";
@@ -4659,7 +4659,8 @@
 
   /* 대기화면 전용 그림 — 이핑이와 방울이가 함께 있는 한 장.
      이 그림은 무지개가 위, 두 캐릭터가 3분의 2 지점, 꽃밭이 아래를 채운다.
-     1.02배는 좌우로 흔들릴 자리(±4px)를 만드는 데 필요한 최소치이고,
+     두 캐릭터가 조금 오른쪽에 있어 9px 왼쪽으로 옮긴다.
+     1.07배는 그만큼 옮기고도 좌우로 흔들릴(±4px) 자리를 남기는 데 필요한 값이고,
      위를 1.2%만 덜어 무지개를 살리면서 방울이가 시작 버튼 위에 오게 했다.
 
      그림 한 장이지만 가만히 있지는 않는다. 26초에 걸쳐 아주 천천히 다가갔다 물러나고,
@@ -4671,9 +4672,9 @@
     const t = now / 1000;
     // 0 에서 1 사이를 왕복하는 아주 느린 물결 — 26초에 한 바퀴
     const breathe = 0.5 - 0.5 * Math.cos(t * (6.2832 / 26));
-    const sc = Math.max(W / titleArt.width, H / titleArt.height) * 1.02 * (1 + 0.015 * breathe);
+    const sc = Math.max(W / titleArt.width, H / titleArt.height) * 1.07 * (1 + 0.015 * breathe);
     const dw = titleArt.width * sc, dh = titleArt.height * sc;
-    ctx.drawImage(titleArt, (W - dw) / 2 + Math.sin(t * 0.11) * 4, -dh * 0.012, dw, dh);
+    ctx.drawImage(titleArt, (W - dw) / 2 - 9 + Math.sin(t * 0.11) * 4, -dh * 0.012, dw, dh);
 
     // 색종이 — 좌우로 살랑이며 천천히 내려온다
     for (let i = 0; i < 22; i++) {
