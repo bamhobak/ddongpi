@@ -800,7 +800,7 @@
   const elFinal = document.getElementById("finalScore");
   const elTitle = document.getElementById("overTitle");
 
-  const GAME_VERSION = "v1.4.96";   // 코드를 고칠 때마다 뒤 두 자리를 올린다
+  const GAME_VERSION = "v1.4.97";   // 코드를 고칠 때마다 뒤 두 자리를 올린다
   document.getElementById("ver").textContent = GAME_VERSION;
 
   const LS_NAME = "epjpddongpi_name";
@@ -1259,6 +1259,12 @@
       f.src = "assets/" + prefix + i + ".webp";
     };
     next(1);
+  }
+  let titleArt = null;
+  {
+    const t = new Image();
+    t.onload = () => { titleArt = t; };
+    t.src = "assets/bg/title.webp";
   }
   loadRunFrames(SPR_BANGUL, "bangul_run");
   loadRunFrames(SPR_BANGUL_SPACE, "bangul_space_run");
@@ -4595,7 +4601,16 @@
     ctx.restore();
   }
 
+  /* 대기화면 전용 그림 — 이핑이와 방울이가 함께 있는 한 장.
+     화면을 덮되 아래를 맞춰 자른다. 위를 자르면 하늘만 없어지지만
+     아래를 자르면 두 캐릭터의 발이 잘려 나간다. */
+  function drawTitleArt() {
+    const sc = Math.max(W / titleArt.width, H / titleArt.height);
+    const dw = titleArt.width * sc, dh = titleArt.height * sc;
+    ctx.drawImage(titleArt, (W - dw) / 2, H - dh, dw, dh);
+  }
   function drawBackground(now) {
+    if (state === STATE.READY && titleArt) { drawTitleArt(); return; }
     const g = ctx.createLinearGradient(0, 0, 0, H);
     const spaceFever = fever && inSpace();
     if (spaceFever) {                      // 우주에서는 불꽃 대신 워프하는 하늘
@@ -5935,7 +5950,7 @@
     if (shake > 0) ctx.translate((Math.random() - .5) * shake, (Math.random() - .5) * shake);
     drawBackground(now);
     if (state === STATE.READY) {
-      drawIntro(now);
+      if (!titleArt) drawIntro(now);   // 그림을 아직 못 받았으면 예전 인트로로
     } else {
       drawWarnings(now);
       drawItems(now);
