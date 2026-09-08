@@ -806,7 +806,7 @@
   const elFinal = document.getElementById("finalScore");
   const elTitle = document.getElementById("overTitle");
 
-  const GAME_VERSION = "v1.5.36";   // 코드를 고칠 때마다 뒤 두 자리를 올린다
+  const GAME_VERSION = "v1.5.37";   // 코드를 고칠 때마다 뒤 두 자리를 올린다
   document.getElementById("ver").textContent = GAME_VERSION;
 
   const LS_NAME = "epjpddongpi_name";
@@ -838,7 +838,7 @@
   // 직업별 캐릭터 그림(오른쪽 이동 모습) — 직업 카드와 순위표에서 함께 쓴다
   const JOB_IMG = { none: "player", gambler: "gambler", levitator: "levitator",
                     fit: "fit", powerj: "powerj", powerp: "monk", bangul: "bangul" };
-  function spdMul() { return job === "levitator" ? 2.2 : 1; }   // 이동 속도 배율 (부양사 2.2배)
+  function spdMul() { return job === "levitator" ? 2.5 : 1; }   // 이동 속도 배율 (부양사 2.5배)
   /* 평화의 비둘기 — 활짝 펼친 날개에 깃 모양이 물결치고, 꼬리는 부채처럼 갈라진다.
      (흰 실루엣 한 덩어리로 그려야 작게 그려도 비둘기로 읽힌다) */
   function drawDove(x, y, ph, target) {
