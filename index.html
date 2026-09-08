@@ -809,7 +809,7 @@
   const elFinal = document.getElementById("finalScore");
   const elTitle = document.getElementById("overTitle");
 
-  const GAME_VERSION = "v1.5.03";   // 코드를 고칠 때마다 뒤 두 자리를 올린다
+  const GAME_VERSION = "v1.5.04";   // 코드를 고칠 때마다 뒤 두 자리를 올린다
   document.getElementById("ver").textContent = GAME_VERSION;
 
   const LS_NAME = "epjpddongpi_name";
@@ -1606,7 +1606,7 @@
                      over: 0.8, gold: 1.4, heart: 6.0, shield: 0.8,
                      moon: 2.5, bubble: 0.8, break: 0.6, helper: 0.45, fetch: 0.5,
                      galaga: 0.7, dove: 0.3, clone: 1.6, burst: 0.8,
-                     angry: 0.8, laser: 0.9, fpick: 3.0 };
+                     angry: 0.8, laser: 0.9, fpick: 3.0, giant: 1.0 };
   const SFX_VOL = 0.55;              // 전체 크기
   const sfxBuf = {};
   let sfxAsked = false;
@@ -1797,7 +1797,7 @@
     { id: "time2x",     ic: "⏱️", nm: "시간 가속",   ds: "생존 점수 증가",
       go: () => { aug.timeMul *= 1 + 0.5 * dim("time2x"); } },
     { id: "fever50",    ic: "🌙", nm: "뚜니핑 대박", ds: "뚜니핑 낙하물 점수 증가",
-      go: () => { aug.feverScoreMul += 0.25; } },   // 먹을 때마다 +25%, 감쇠 없음
+      go: () => { aug.feverScoreMul += 0.20; } },   // 먹을 때마다 +20%, 감쇠 없음
     { id: "slow",       ic: "🐢", nm: "느린 하늘",   ds: "똥이 느리게 떨어진다",
       go: () => { aug.fallMul *= 1 - 0.15 * dim("slow"); } },
     { id: "small",      ic: "🎯", nm: "마운자로 이재", ds: "몸집이 작아진다",
@@ -1848,7 +1848,7 @@
     { id: "giant",      ic: "🌝", nm: "대왕 뚜니핑", ds: "대왕 뚜니핑 두둥등장",
       once: true, go: () => { aug.giant = 1; } },
     { id: "downpour",   ic: "🌧️", nm: "뚜니핑 폭우", ds: "뚜니핑이 더 많이 쏟아진다",
-      go: () => { aug.feverRateMul = 1 / (1 / aug.feverRateMul + 0.25); } },   // 먹을 때마다 양 +25%, 감쇠 없음
+      go: () => { aug.feverRateMul = 1 / (1 / aug.feverRateMul + 0.20); } },   // 먹을 때마다 양 +20%, 감쇠 없음
     { id: "angryUmb",   ic: "💢", nm: "성난 우산",   ds: "방패가 깨질 때 우산이 터져 주변을 크게 쓸어버린다",
       hidden: true, once: true,
       cond: () => job !== "fit" && shields >= 5,   // 헬스걸은 방패가 없어 의미가 없다
@@ -3328,7 +3328,8 @@
             /* 초당 수십 개가 쏟아지므로 소리를 아껴 쓴다.
                큰 것(44 이상)만 진짜 소리를 내고, 작은 것은 절반만 짧은 삐 소리로 둔다.
                작은 것까지 음원을 겹치면 뭉개져서 잡음처럼 들린다. */
-            if (sz >= 44) { if (!sfx("fpick")) beep(note + Math.random() * 200, .06, "square", .04); }
+            if (it.giant) { if (!sfx("giant")) beep(note, .14, "square", .05); }
+            else if (sz >= 44) { if (!sfx("fpick")) beep(note + Math.random() * 200, .06, "square", .04); }
             else if (Math.random() < .5) beep(note + Math.random() * 200, .06, "square", .04);
             continue;
           }
