@@ -809,7 +809,7 @@
   const elFinal = document.getElementById("finalScore");
   const elTitle = document.getElementById("overTitle");
 
-  const GAME_VERSION = "v1.5.08";   // 코드를 고칠 때마다 뒤 두 자리를 올린다
+  const GAME_VERSION = "v1.5.09";   // 코드를 고칠 때마다 뒤 두 자리를 올린다
   document.getElementById("ver").textContent = GAME_VERSION;
 
   const LS_NAME = "epjpddongpi_name";
@@ -2642,12 +2642,12 @@
     if (b.type === "star" && job === "powerp") mean /= 1.5;  // 무소유 — 별 1.5배
     return mean;
   }
-  /* 다음 하나까지의 시간 — 평균의 55~145% 안에서 크게 흔들린다.
-     예전엔 ±12% 뿐이라 아이템이 시계처럼 규칙적으로 떨어졌다.
-     평균 간격은 그대로라 나오는 개수도 예전과 같다 — 언제 올지만 읽기 어려워진다.
+  /* 다음 하나까지의 시간 — 평균의 70~130% 안에서 흔들린다.
+     ±12% 는 시계처럼 규칙적이었고 55~145% 는 너무 들쭉날쭉해서 그 사이로 잡았다.
+     평균 간격은 그대로라 나오는 개수도 같다 — 언제 올지만 조금 읽기 어려워진다.
      (0.4초 하한은 완전히 겹쳐 떨어지는 것만 막는 장치) */
   function bonusInterval(b) {
-    return Math.max(0.4, bonusMean(b) * (0.55 + Math.random() * 0.90));
+    return Math.max(0.4, bonusMean(b) * (0.70 + Math.random() * 0.60));
   }
   /* 무엇이 떨어질지 새로 뽑는다. 지금 이 순간의 등장 빈도(= 1 / 평균간격)에 비례하므로
      직업·증강이 걸어 둔 배율이 그대로 살아 있고, 긴 눈으로 본 종류별 비율도 변하지 않는다.
@@ -2662,7 +2662,7 @@
     }
     return BONUS[BONUS.length - 1];
   }
-  const BONUS_SWAP = 0.35;      // 타이머가 가리킨 것 대신 새로 뽑을 확률
+  const BONUS_SWAP = 0.22;      // 타이머가 가리킨 것 대신 새로 뽑을 확률
   function resetBonusTimers() {
     /* 첫 등장까지의 시간. 예전에는 편차가 큰 지수분포라 어떤 판은 별이 한참 안 나왔다.
        평균의 25~85% 사이로만 잡아 매판 초반 흐름이 비슷하게 흘러가도록 했다. */
