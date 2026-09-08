@@ -813,7 +813,7 @@
   const elFinal = document.getElementById("finalScore");
   const elTitle = document.getElementById("overTitle");
 
-  const GAME_VERSION = "v1.5.32";   // 코드를 고칠 때마다 뒤 두 자리를 올린다
+  const GAME_VERSION = "v1.5.33";   // 코드를 고칠 때마다 뒤 두 자리를 올린다
   document.getElementById("ver").textContent = GAME_VERSION;
 
   const LS_NAME = "epjpddongpi_name";
@@ -4671,7 +4671,13 @@
      대기화면 앞에 2.8초. 루도로 만든 로고가 통 튀어 오른다.
      화면을 누르면 바로 건너뛴다. 이 동안에는 게임도 배경음악도 시작하지 않는다. */
   const SPLASH_SEC = 2.8;
-  let splashT = 0, splashOn = true, studioImg = null;
+  let splashT = 0, splashOn = true, studioImg = null, splashRang = false;
+  /* 인트로 소리 — 효과음 꾸러미와 따로 두는 이유는 스플래시가 뜨는 순간
+     아직 그 꾸러미를 다 받지 못했기 때문이다. 오디오 요소는 바로 틀 수 있다.
+     브라우저는 화면을 한 번 만지기 전에는 소리를 막으므로, 막히면 조용히 넘어간다. */
+  const introSnd = new Audio("assets/sfx/intro.mp3");
+  introSnd.preload = "auto";
+  introSnd.volume = 0.5;
   {
     const t = new Image();
     t.onload = () => { studioImg = t; };
@@ -4681,9 +4687,14 @@
   function endSplash() {
     if (!splashOn) return;
     splashOn = false;
+    try { introSnd.pause(); } catch (e) {}   // 건너뛰면 소리도 함께 멈춘다
     startScreen.style.visibility = "";
   }
   function drawSplash(dt) {
+    if (!splashRang) {
+      splashRang = true;
+      if (!sfxOff) { const pr = introSnd.play(); if (pr && pr.catch) pr.catch(() => {}); }
+    }
     splashT += dt;
     const g = ctx.createLinearGradient(0, 0, 0, H);
     g.addColorStop(0, "#0b0f1c");
