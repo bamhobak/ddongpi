@@ -800,7 +800,7 @@
   const elFinal = document.getElementById("finalScore");
   const elTitle = document.getElementById("overTitle");
 
-  const GAME_VERSION = "v1.4.91";   // 코드를 고칠 때마다 뒤 두 자리를 올린다
+  const GAME_VERSION = "v1.4.92";   // 코드를 고칠 때마다 뒤 두 자리를 올린다
   document.getElementById("ver").textContent = GAME_VERSION;
 
   const LS_NAME = "epjpddongpi_name";
@@ -1587,8 +1587,10 @@
      오디오 문맥이 열린 뒤에 한 번만 받아 두고, 아직 안 받았거나 실패했으면
      false 를 돌려주어 부르는 쪽이 예전 삐 소리로 대신하게 한다. */
   const SFX_GAIN = { star: 1.0, aug: 0.9, fever: 0.8, hurt: 0.8,
-                     over: 0.8, gold: 1.2, heart: 6.0, shield: 0.8,
-                     moon: 4.0, bubble: 0.8, break: 0.6, helper: 0.45, fetch: 0.5 };
+                     over: 0.8, gold: 1.4, heart: 6.0, shield: 0.8,
+                     moon: 4.0, bubble: 0.8, break: 0.6, helper: 0.45, fetch: 0.5,
+                     galaga: 0.7, dove: 0.6, clone: 1.6, burst: 0.8,
+                     angry: 0.8, laser: 0.9, fpick: 3.0 };
   const SFX_VOL = 0.55;              // 전체 크기
   const sfxBuf = {};
   let sfxAsked = false;
@@ -1624,7 +1626,7 @@
      곡 하나가 수백KB라 필요할 때 한 곡씩 받는다 (음소거면 아예 받지 않는다).
      대기화면·게임오버는 menu, 게임 중은 play, 뚜니핑 타임에는 fever 로 바뀐다.
      바뀔 때는 0.4초에 걸쳐 이전 곡을 줄이고 새 곡을 올린다. */
-  const BGM_VOL = { menu: 0.42, play: 0.34, space: 0.36, fever: 0.42 };
+  const BGM_VOL = { menu: 0.42, play: 0.34, space: 0.36, blackhole: 0.40, fever: 0.42 };
   const bgmEl = {};
   let bgmName = null, bgmFade = null, bgmRetryAt = 0;
   function bgmGet(name) {
@@ -1661,7 +1663,10 @@
   }
   function syncBgm() {
     const inGame = state === STATE.PLAY || state === STATE.AUG || state === STATE.PAUSE;
-    const want = inGame ? (fever ? "fever" : (inSpace() ? "space" : "play")) : "menu";
+    const want = inGame
+      ? (fever ? "fever"
+               : (inBlackhole() ? "blackhole" : (inSpace() ? "space" : "play")))
+      : "menu";
     if (want === bgmName || bgmOff) return;
     if (bgmName === null && Date.now() < bgmRetryAt) return;   // 막힌 직후에는 잠깐 쉰다
     playBgm(want);
@@ -2802,8 +2807,7 @@
         }
         // 몸이 아니라 머리 위쪽에서 날아오른다
         doves.push({ x: player.x, y: py - player.r * hitMul() - 26, t: best, ph: Math.random() * 6.28 });
-        beep(1500, .06, "sine", .035);
-        beep(1900, .07, "sine", .03);
+        if (!sfx("dove")) { beep(1500, .06, "sine", .035); beep(1900, .07, "sine", .03); }
       }
     }
     if (player.x - prev < -0.25) facing = "left";
@@ -2910,7 +2914,7 @@
         smashPoopsAround(c.x, c.y, 110, true);        // 폭발 반경 110px (특수똥까지 부순다)
         burst(c.x, c.y, "#ffd23f", 26);
         shake = Math.max(shake, 8);
-        beep(240, .12, "square", .05);
+        if (!sfx("clone")) beep(240, .12, "square", .05);
         clones.splice(k, 1);
       }
     }
@@ -2927,7 +2931,7 @@
         if (Math.floor((shipClock - ph) / SHIP_GAP) === Math.floor((was - ph) / SHIP_GAP)) continue;
         bullets.push({ x: shipX(k, n), y: H - GROUND_H * 0.55 - 14, vy: -760 });
         // 소리는 한 바퀴에 한 번만 — 대수만큼 울리면 귀가 아프다
-        if (k === 0) beep(1250, .05, "square", .03);
+        if (k === 0 && !sfx("galaga")) beep(1250, .05, "square", .03);
       }
     }
     for (let k = bullets.length - 1; k >= 0; k--) {
@@ -3119,7 +3123,7 @@
               let ex = tx - Math.tan(ang) * L;
               ex = Math.max(-20, Math.min(W + 20, ex));
               warns.push({ x: ex, ang: Math.atan((tx - ex) / L), t: LASER_WARN });
-              beep(1500, .06, "sine", .03);
+              if (!sfx("laser")) beep(1500, .06, "sine", .03);
             }
           } else {
             spawnPoop(1, kind);
@@ -3270,8 +3274,11 @@
               : Math.max(0, (it.sz - 26) / 36) * 14;
             if (sh >= 1) shake = Math.max(shake, sh);
             items.splice(i, 1);
-            // 큰 것은 늘 소리가 나고, 작은 것은 절반만 — 안 그러면 소리가 뭉개진다
-            if (sz >= 44 || Math.random() < .5) beep(note + Math.random() * 200, .06, "square", .04);
+            /* 초당 수십 개가 쏟아지므로 소리를 아껴 쓴다.
+               큰 것(44 이상)만 진짜 소리를 내고, 작은 것은 절반만 짧은 삐 소리로 둔다.
+               작은 것까지 음원을 겹치면 뭉개져서 잡음처럼 들린다. */
+            if (sz >= 44) { if (!sfx("fpick")) beep(note + Math.random() * 200, .06, "square", .04); }
+            else if (Math.random() < .5) beep(note + Math.random() * 200, .06, "square", .04);
             continue;
           }
           if (roidT > 0) {
@@ -3353,7 +3360,7 @@
                 shake = Math.max(shake, 26);
                 feverFlash = Math.max(feverFlash, 0.4);
                 popText(player.x, player.y - 95, "💢 성난 우산!", "#7ec8ff", 26);
-                beep(190, .22, "square", .06);
+                if (!sfx("angry")) beep(190, .22, "square", .06);
               }
             } else {
               if (!testMode) lives--;      // 테스트 모드는 맞아도 목숨이 줄지 않는다
@@ -3448,7 +3455,7 @@
           feverFlash = Math.max(feverFlash, 0.7);
           popGain(player.x, player.y - 110, bonus,
                   "🌠 " + cnt + "개 쓸어버림", "#ffe9a8");
-          beep(2000, .18, "square", .05);
+          if (!sfx("burst")) beep(2000, .18, "square", .05);
         }
       }
     }
