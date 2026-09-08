@@ -800,7 +800,7 @@
   const elFinal = document.getElementById("finalScore");
   const elTitle = document.getElementById("overTitle");
 
-  const GAME_VERSION = "v1.4.94";   // 코드를 고칠 때마다 뒤 두 자리를 올린다
+  const GAME_VERSION = "v1.4.95";   // 코드를 고칠 때마다 뒤 두 자리를 올린다
   document.getElementById("ver").textContent = GAME_VERSION;
 
   const LS_NAME = "epjpddongpi_name";
@@ -3437,11 +3437,12 @@
     if (it.type === "star") {
       const gain = eatStar(it.x, it.y);
       if (aug.starburst) {
-        // 화면의 똥을 전부 없애고, 개당 방금 먹은 별 점수의 1%를 받는다 (까다로운 똥도 함께)
+        /* 화면의 똥을 전부 없애고 개당 똥 점수의 6배를 받는다 (까다로운 똥도 함께).
+           뚜니핑 낙하물은 주우라고 떨어지는 것이라 건드리지 않는다. */
         let cnt = 0, bonus = 0;
         for (let k = items.length - 1; k >= 0; k--) {
           const q = items[k];
-          if (q.type !== "poop") continue;
+          if (q.type !== "poop" || q.skin === "fever") continue;
           bonus += poopGain() * 6;
           burst(q.x, q.y, "#ffe9a8", 10);
           items.splice(k, 1);
