@@ -9,6 +9,7 @@
 <link rel="manifest" href="manifest.json">
 <link rel="apple-touch-icon" href="icon-192.png">
 <title>이피재피똥피</title>
+<link rel="preload" as="image" href="assets/bg/title.webp">
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ctext x='50' y='52' font-size='84' text-anchor='middle' dominant-baseline='central'%3E%F0%9F%92%A9%3C/text%3E%3C/svg%3E">
 <style>
   /* 나눔바른고딕 — 흔히 쓰는 한글 5,362자만 남겨 받아 둔 것(둘이 합쳐 426KB).
@@ -809,7 +810,7 @@
   const elFinal = document.getElementById("finalScore");
   const elTitle = document.getElementById("overTitle");
 
-  const GAME_VERSION = "v1.5.15";   // 코드를 고칠 때마다 뒤 두 자리를 올린다
+  const GAME_VERSION = "v1.5.17";   // 코드를 고칠 때마다 뒤 두 자리를 올린다
   document.getElementById("ver").textContent = GAME_VERSION;
 
   const LS_NAME = "epjpddongpi_name";
@@ -1270,10 +1271,14 @@
     next(1);
   }
   let titleArt = null;
+  let titleGaveUp = false;          // 정말 못 받았을 때만 예전 인트로로 되돌아간다
+  let titleAt = 0;                  // 그림이 도착한 시각 — 0.3초에 걸쳐 떠오르게 한다
   {
     const t = new Image();
-    t.onload = () => { titleArt = t; };
+    t.onload = () => { titleArt = t; titleAt = performance.now(); };
+    t.onerror = () => { titleGaveUp = true; };
     t.src = "assets/bg/title.webp";
+    setTimeout(() => { if (!titleArt) titleGaveUp = true; }, 2000);
   }
   loadRunFrames(SPR_BANGUL, "bangul_run");
   loadRunFrames(SPR_BANGUL_SPACE, "bangul_space_run");
@@ -4704,8 +4709,30 @@
     }
     ctx.globalAlpha = 1;
   }
+  /* 타이틀 그림이 오기 전 잠깐 깔아 두는 하늘 — 그림의 색에서 뽑았다.
+     이게 없으면 그 사이에 지대 배경과 달리는 인트로가 스쳐 지나간다. */
+  function drawTitleWait() {
+    const g = ctx.createLinearGradient(0, 0, 0, H);
+    g.addColorStop(0, "#4aa8e8");
+    g.addColorStop(0.62, "#bfe4f7");
+    g.addColorStop(1, "#a9d67e");
+    ctx.fillStyle = g;
+    ctx.fillRect(0, 0, W, H);
+  }
   function drawBackground(now) {
-    if (state === STATE.READY && titleArt) { drawTitleArt(now); return; }
+    if (state === STATE.READY) {
+      if (titleArt) {
+        /* 도착한 직후에는 기다림 하늘 위로 0.3초에 걸쳐 떠오른다 —
+           두 하늘의 파랑이 조금 달라 그냥 바꾸면 툭 튄다. */
+        const k = Math.min(1, (performance.now() - titleAt) / 300);
+        if (k < 1) drawTitleWait();
+        ctx.globalAlpha = k;
+        drawTitleArt(now);
+        ctx.globalAlpha = 1;
+        return;
+      }
+      if (!titleGaveUp) { drawTitleWait(); return; }
+    }
     const g = ctx.createLinearGradient(0, 0, 0, H);
     const spaceFever = fever && inSpace();
     if (spaceFever) {                      // 우주에서는 불꽃 대신 워프하는 하늘
@@ -6046,7 +6073,7 @@
     if (shake > 0) ctx.translate((Math.random() - .5) * shake, (Math.random() - .5) * shake);
     drawBackground(now);
     if (state === STATE.READY) {
-      if (!titleArt) drawIntro(now);   // 그림을 아직 못 받았으면 예전 인트로로
+      if (!titleArt && titleGaveUp) drawIntro(now);   // 정말 못 받았을 때만 예전 인트로로
     } else {
       drawWarnings(now);
       drawItems(now);
