@@ -809,7 +809,7 @@
   const elFinal = document.getElementById("finalScore");
   const elTitle = document.getElementById("overTitle");
 
-  const GAME_VERSION = "v1.5.12";   // 코드를 고칠 때마다 뒤 두 자리를 올린다
+  const GAME_VERSION = "v1.5.13";   // 코드를 고칠 때마다 뒤 두 자리를 올린다
   document.getElementById("ver").textContent = GAME_VERSION;
 
   const LS_NAME = "epjpddongpi_name";
@@ -2642,12 +2642,14 @@
     if (b.type === "star" && job === "powerp") mean /= 1.5;  // 무소유 — 별 1.5배
     return mean;
   }
-  /* 다음 하나까지의 시간 — 평균의 70~130% 안에서 흔들린다.
-     ±12% 는 시계처럼 규칙적이었고 ±45% 는 너무 들쭉날쭉해서 그 사이로 잡았다.
-     평균 간격은 그대로라 나오는 개수도 같다 — 언제 올지만 조금 읽기 어려워진다.
+  /* 다음 하나까지의 시간 — 레벨 1에서 평균의 80~120%, 레벨마다 2%p 씩 벌어진다.
+     뒤로 갈수록 언제 올지 읽기 어려워진다. 평균 간격은 그대로라 개수는 변하지 않는다.
+     95%에서 멈추는 것은 간격이 0 이하가 되지 않게 하려는 것뿐이다 (레벨 39).
      (0.4초 하한은 완전히 겹쳐 떨어지는 것만 막는 장치) */
+  function bonusSpread() { return Math.min(0.95, 0.20 + 0.02 * (level - 1)); }
   function bonusInterval(b) {
-    return Math.max(0.4, bonusMean(b) * (0.70 + Math.random() * 0.60));
+    const w = bonusSpread();
+    return Math.max(0.4, bonusMean(b) * (1 - w + Math.random() * 2 * w));
   }
   /* 무엇이 떨어질지 새로 뽑는다. 지금 이 순간의 등장 빈도(= 1 / 평균간격)에 비례하므로
      직업·증강이 걸어 둔 배율이 그대로 살아 있고, 긴 눈으로 본 종류별 비율도 변하지 않는다.
@@ -2662,9 +2664,10 @@
     }
     return BONUS[BONUS.length - 1];
   }
-  /* 타이머가 가리킨 것 대신 새로 뽑을 확률.
-     드물게 나오는 종류는 한 번 건너뛰면 간격이 두 배가 되어, 이 값이 곧 들쭉날쭉함이다. */
-  const BONUS_SWAP = 0.15;
+  /* 타이머가 가리킨 것 대신 새로 뽑을 확률 — 레벨 1에서 10%, 레벨마다 1.5%p 씩.
+     드물게 나오는 종류는 한 번 건너뛰면 간격이 두 배가 되어, 이 값이 곧 들쭉날쭉함이다.
+     비율대로 다시 뽑는 것이라 100%가 되어도 종류별 등장 비율은 그대로다 (레벨 61). */
+  function bonusSwap() { return Math.min(1, 0.10 + 0.015 * (level - 1)); }
   function resetBonusTimers() {
     /* 첫 등장까지의 시간. 예전에는 편차가 큰 지수분포라 어떤 판은 별이 한참 안 나왔다.
        평균의 25~85% 사이로만 잡아 매판 초반 흐름이 비슷하게 흘러가도록 했다. */
@@ -3219,7 +3222,7 @@
       for (const b of BONUS) {           // 종류별로 따로 세다가 각자 때가 되면 떨어진다
         b.t -= dt * tsc;
         if (b.t <= 0) {
-          spawnBonus(Math.random() < BONUS_SWAP ? pickBonus() : b);
+          spawnBonus(Math.random() < bonusSwap() ? pickBonus() : b);
           b.t = bonusInterval(b);
         }
       }
