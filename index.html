@@ -806,7 +806,7 @@
   const elFinal = document.getElementById("finalScore");
   const elTitle = document.getElementById("overTitle");
 
-  const GAME_VERSION = "v1.5.37";   // 코드를 고칠 때마다 뒤 두 자리를 올린다
+  const GAME_VERSION = "v1.5.38";   // 코드를 고칠 때마다 뒤 두 자리를 올린다
   document.getElementById("ver").textContent = GAME_VERSION;
 
   const LS_NAME = "epjpddongpi_name";
@@ -2822,7 +2822,7 @@
     if (state !== STATE.PLAY) return;
 
     elapsed += dt;
-    noHitSec += dt;                          // 안 맞고 버틴 시간 (피격 시 1/3 감소)
+    noHitSec += dt;                          // 안 맞고 버틴 시간 (피격 시 1/4 감소)
     /* 레벨 시계는 뚜니핑 타임 동안 멈춘다. 무적으로 낙하물을 줍는 시간까지
        레벨에 포함되면, 정작 실력으로 버틴 시간이 아닌데도 난이도가 올라간다. */
     if (!fever) levelTime += dt;
@@ -3447,7 +3447,7 @@
               }
             } else {
               if (!testMode) lives--;      // 테스트 모드는 맞아도 목숨이 줄지 않는다
-              noHitSec *= 2 / 3;           // 무소유 무피격 배율 — 맞으면 1/3 만 잃는다
+              noHitSec *= 3 / 4;           // 무소유 무피격 배율 — 맞으면 1/4 만 잃는다
               invUntil = now + 1000;
               hurtUntil = now + 1000;   // 무적 시간 동안 아픈 그림으로
               shake = 22; flash = 1;
