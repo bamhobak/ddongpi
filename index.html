@@ -813,7 +813,7 @@
   const elFinal = document.getElementById("finalScore");
   const elTitle = document.getElementById("overTitle");
 
-  const GAME_VERSION = "v1.5.30";   // 코드를 고칠 때마다 뒤 두 자리를 올린다
+  const GAME_VERSION = "v1.5.31";   // 코드를 고칠 때마다 뒤 두 자리를 올린다
   document.getElementById("ver").textContent = GAME_VERSION;
 
   const LS_NAME = "epjpddongpi_name";
@@ -4668,16 +4668,15 @@
   }
 
   /* ---------- 제작사 스플래시 ----------
-     대기화면 앞에 2.8초. 루도로 만든 엠블럼이 통 튀어 오르고,
-     그 안쪽 판에 이름이 떠오른 뒤 영문 이름이 따라 붙는다.
-     한글은 그림으로 만들면 글자가 뭉개져서, 판만 그림이고 글씨는 여기서 그린다.
+     대기화면 앞에 2.8초. 루도로 만든 영문 로고가 통 튀어 오르고,
+     그 아래에 한글 이름이 따라 붙는다 (한글은 그림으로 만들면 뭉개져서 여기서 그린다).
      화면을 누르면 바로 건너뛴다. 이 동안에는 게임도 배경음악도 시작하지 않는다. */
   const SPLASH_SEC = 2.8;
   let splashT = 0, splashOn = true, studioImg = null;
   {
     const t = new Image();
     t.onload = () => { studioImg = t; };
-    t.onerror = () => {};          // 못 받으면 글자만 나온다
+    t.onerror = () => {};          // 못 받으면 한글 이름만 나온다
     t.src = "assets/studio.webp";
   }
   function endSplash() {
@@ -4685,8 +4684,6 @@
     splashOn = false;
     startScreen.style.visibility = "";
   }
-  /* 안쪽 판에서 이름이 앉을 자리 (엠블럼 그림 크기 대비) */
-  const BADGE_CX = 0.50, BADGE_CY = 0.40, BADGE_TEXT_W = 0.64;
   function drawSplash(dt) {
     splashT += dt;
     const g = ctx.createLinearGradient(0, 0, 0, H);
@@ -4708,40 +4705,22 @@
     ctx.textAlign = "center";
     ctx.textBaseline = "middle";
 
-    let bw = Math.min(W * 0.82, 340), bh = bw * 0.632;
+    let bh = 0;
     if (studioImg) {
-      bw = Math.min(W * 0.82, 340) * pop;
+      const bw = Math.min(W * 0.86, 360) * pop;
       bh = studioImg.height / studioImg.width * bw;
-      // 살랑이는 숨결 — 가만히 떠 있지 않게
-      const bob = Math.sin(splashT * 2.0) * 3;
+      const bob = Math.sin(splashT * 2.0) * 3;   // 살랑이는 숨결
       ctx.drawImage(studioImg, W / 2 - bw / 2, cy - bh / 2 + rise + bob, bw, bh);
     }
 
-    // 이름 — 안쪽 판 너비에 맞춰 글자 크기를 줄여 넣는다
-    const nameK = Math.max(0, Math.min(1, (splashT - 0.3) / 0.45));
+    // 한글 이름 — 로고가 자리를 잡은 뒤 아래에서 떠오른다
+    const nameK = Math.max(0, Math.min(1, (splashT - 0.5) / 0.5));
     if (nameK > 0) {
-      const name = "밤호박 프렌즈";
-      let size = Math.round(bh * 0.20);
-      for (let i = 0; i < 12; i++) {
-        ctx.font = "800 " + size + "px NanumBarunGothic, system-ui, sans-serif";
-        if (ctx.measureText(name).width <= bw * BADGE_TEXT_W) break;
-        size -= 1;
-      }
       ctx.globalAlpha = Math.max(0, fade) * nameK;
-      const ny = cy - bh / 2 + bh * BADGE_CY + rise + (1 - nameK) * 8;
-      ctx.fillStyle = "#6b4b2a";
-      ctx.fillText(name, W / 2 + bw * (BADGE_CX - 0.5), ny + 1.5);
-      ctx.fillStyle = "#3f2a14";
-      ctx.fillText(name, W / 2 + bw * (BADGE_CX - 0.5), ny);
-    }
-
-    // 영문 이름 — 엠블럼 아래에 조용히 따라 붙는다
-    const subK = Math.max(0, Math.min(1, (splashT - 0.85) / 0.5));
-    if (subK > 0) {
-      ctx.globalAlpha = Math.max(0, fade) * subK;
-      ctx.font = "600 12px NanumBarunGothic, system-ui, sans-serif";
-      ctx.fillStyle = "rgba(200,214,236,.8)";
-      ctx.fillText("BAMHOBAK FRIENDS", W / 2, cy + bh / 2 + 26 + rise * 0.3);
+      ctx.font = "800 20px NanumBarunGothic, system-ui, sans-serif";
+      ctx.fillStyle = "#ffe9a8";
+      ctx.fillText("밤호박 프렌즈", W / 2,
+                   cy + bh / 2 + 26 + rise * 0.3 + (1 - nameK) * 10);
     }
     ctx.restore();
     ctx.textAlign = "left";
