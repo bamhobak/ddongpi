@@ -809,7 +809,7 @@
   const elFinal = document.getElementById("finalScore");
   const elTitle = document.getElementById("overTitle");
 
-  const GAME_VERSION = "v1.5.02";   // 코드를 고칠 때마다 뒤 두 자리를 올린다
+  const GAME_VERSION = "v1.5.03";   // 코드를 고칠 때마다 뒤 두 자리를 올린다
   document.getElementById("ver").textContent = GAME_VERSION;
 
   const LS_NAME = "epjpddongpi_name";
@@ -1587,6 +1587,7 @@
     try {
       if (!ac) ac = new (window.AudioContext || window.webkitAudioContext)();
       if (ac.state === "suspended") ac.resume();
+      loadSfx();   // 첫 소리가 나는 순간부터 받아 둔다 (첫 효과음이 삐 소리로 새지 않게)
       const o = ac.createOscillator(), g = ac.createGain();
       o.type = type || "square";
       o.frequency.setValueAtTime(freq, ac.currentTime);
@@ -1603,7 +1604,7 @@
      false 를 돌려주어 부르는 쪽이 예전 삐 소리로 대신하게 한다. */
   const SFX_GAIN = { star: 1.0, aug: 0.9, fever: 0.8, hurt: 0.8,
                      over: 0.8, gold: 1.4, heart: 6.0, shield: 0.8,
-                     moon: 1.5, bubble: 0.8, break: 0.6, helper: 0.45, fetch: 0.5,
+                     moon: 2.5, bubble: 0.8, break: 0.6, helper: 0.45, fetch: 0.5,
                      galaga: 0.7, dove: 0.3, clone: 1.6, burst: 0.8,
                      angry: 0.8, laser: 0.9, fpick: 3.0 };
   const SFX_VOL = 0.55;              // 전체 크기
