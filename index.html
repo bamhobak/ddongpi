@@ -776,7 +776,7 @@
   const elFinal = document.getElementById("finalScore");
   const elTitle = document.getElementById("overTitle");
 
-  const GAME_VERSION = "v1.4.79";   // 코드를 고칠 때마다 뒤 두 자리를 올린다
+  const GAME_VERSION = "v1.4.80";   // 코드를 고칠 때마다 뒤 두 자리를 올린다
   document.getElementById("ver").textContent = GAME_VERSION;
 
   const LS_NAME = "epjpddongpi_name";
@@ -1853,7 +1853,7 @@
   let shake = 0, flash = 0, feverFlash = 0;
   /* 방울이의 비누방울 — 한 대를 대신 맞고 터진다. 하트처럼 쌓이지 않고 늘 한 겹뿐이라,
      연달아 맞는 자리에서는 지켜 주지 못한다. */
-  const BUBBLE_SEC = 13;             // 터진 뒤 다시 맺히기까지
+  const BUBBLE_SEC = 15;             // 터진 뒤 다시 맺히기까지
   let bubbleOn = false, bubbleT = 0;
   /* 점수판은 실제 점수를 곧바로 따라가지 않고 뒤에서 굴러 오른다.
      크게 먹은 순간에만 튀어야 해서, 생존 점수처럼 조금씩 새는 건 흘려보낸다. */
@@ -2401,7 +2401,7 @@
     if (b.type === "heart" && job === "fit") mean /= 4;  // 헬스걸 — 하트 4배
     if (b.type === "umbrella" && job === "gambler") mean /= 1.5;  // 도박사 — 우산 1.5배
     if ((b.type === "moon" || b.type === "fullmoon") && job === "powerj") mean /= 2.5;  // 파워J — 달 2.5배
-    if (b.type === "star" && job === "powerp") mean /= 1.25;  // 무소유 — 별 1.25배
+    if (b.type === "star" && job === "powerp") mean /= 1.5;  // 무소유 — 별 1.5배
     return mean;
   }
   /* 다음 하나까지의 시간 — 평균의 55~145% 안에서 크게 흔들린다.
@@ -4324,12 +4324,12 @@
     const air = Math.max(0, Math.min(1, (groundY - player.y) / Math.max(1, groundY - H * FLY_TOP)));
     return 1 + 1.0 * air;
   }
-  /* 무소유 — 증강이 없는 대신, 안 맞고 버틴 시간만큼 배율이 오른다 (초당 +10.5%, 상한 없음).
+  /* 무소유 — 증강이 없는 대신, 안 맞고 버틴 시간만큼 배율이 오른다 (초당 +15%, 상한 없음).
      레벨 배수는 곱하지 않는다 — 점수 자체가 이미 레벨에 비례하므로 두 번 세는 셈이 된다.
      목숨을 잃으면 무피격 시간의 1/3 만 깎인다 (우산 방어는 무피격 유지). */
   function monkMul() {
     if (job !== "powerp") return 1;
-    return 1 + 0.105 * noHitSec;
+    return 1 + 0.15 * noHitSec;
   }
   /* 점수 눈금 — 모든 점수가 여기를 지나므로, 이 값만 바꾸면
      항목 사이의 균형은 그대로 두고 자릿수만 키우거나 줄일 수 있다. */
