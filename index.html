@@ -809,7 +809,7 @@
   const elFinal = document.getElementById("finalScore");
   const elTitle = document.getElementById("overTitle");
 
-  const GAME_VERSION = "v1.5.07";   // 코드를 고칠 때마다 뒤 두 자리를 올린다
+  const GAME_VERSION = "v1.5.08";   // 코드를 고칠 때마다 뒤 두 자리를 올린다
   document.getElementById("ver").textContent = GAME_VERSION;
 
   const LS_NAME = "epjpddongpi_name";
@@ -1606,7 +1606,7 @@
                      over: 0.8, gold: 1.4, heart: 6.0, shield: 0.8,
                      moon: 2.5, bubble: 0.8, break: 0.6, helper: 0.45, fetch: 0.5,
                      galaga: 0.35, dove: 0.3, clone: 1.6, burst: 0.8,
-                     angry: 0.8, laser: 0.9, fpick: 3.0, giant: 1.0 };
+                     angry: 0.8, laser: 0.9, fpick: 3.0, giant: 1.0, magnet: 0.55 };
   const SFX_VOL = 0.55;              // 전체 크기
   const sfxBuf = {};
   let sfxAsked = false;
@@ -1636,6 +1636,34 @@
       src.start();
       return true;
     } catch (e) { return false; }
+  }
+
+  /* 자석 소리 — 한 번 울리고 마는 다른 효과음과 달리 끌리는 내내 이어진다.
+     그래서 반복 재생을 켜 두고 음량만 바꾼다. 목표 음량으로 조금씩 다가가므로
+     아이템이 여러 개 드나들어도 소리가 툭툭 끊기지 않는다. */
+  let magSrc = null, magGain = null, magLvl = 0;
+  function magHum(target) {
+    if (sfxOff || !ac || !sfxBuf.magnet) {
+      if (magSrc) { try { magSrc.stop(); } catch (e) {} magSrc = null; magGain = null; magLvl = 0; }
+      return;
+    }
+    if (!magSrc) {
+      if (target <= 0.002) return;             // 끌리는 게 없으면 아예 켜지 않는다
+      magSrc = ac.createBufferSource();
+      magGain = ac.createGain();
+      magSrc.buffer = sfxBuf.magnet;
+      magSrc.loop = true;
+      magGain.gain.value = 0;
+      magSrc.connect(magGain); magGain.connect(ac.destination);
+      magSrc.start();
+      magLvl = 0;
+    }
+    magLvl += (target - magLvl) * 0.14;        // 목표로 부드럽게 따라간다
+    magGain.gain.value = SFX_VOL * (SFX_GAIN.magnet || 1) * magLvl;
+    if (target <= 0.002 && magLvl < 0.004) {   // 다 잦아들면 끈다
+      try { magSrc.stop(); } catch (e) {}
+      magSrc = null; magGain = null; magLvl = 0;
+    }
   }
 
   /* ---------- 배경음악 ----------
@@ -2026,6 +2054,7 @@
   const LEVEL_SEC = 13;            // 레벨 한 칸의 길이(초). 지대 하나의 길이이기도 하다
   let spawnTimer = 0;
   let invUntil = 0, powerUntil = 0;
+  let magNear = 0;                 // 자석에 끌리는 정도 (0~1) — 소리 크기에 쓴다
   let shields = 0;                 // 남은 방패 수 — 우산 아이템은 최대 1, 증강으로만 여러 개
   const UMB_SEC = 6.5;             // 우산 로켓배송: 방패가 없을 때 몇 초마다 하나씩 오는지
   let shieldTimer = UMB_SEC;       // 다음 하나까지 남은 시간
@@ -3134,6 +3163,7 @@
       if (f.y < -HELPER_H * 2 || f.x < -260 || f.x > W + 260) fetchers.splice(k, 1);
     }
 
+    magNear = 0;                          // 이번 프레임에 가장 세게 끌린 정도
     const powered = now < powerUntil;      // 🔥 뚜니핑 타임
 
     // 화면이 좁으면 그만큼 똥도 덜 떨어지게(체감 난이도 유지)
@@ -3265,9 +3295,12 @@
         const goldF = it.gold ? (aug.goldLord ? 1 : 0.5) : 1;
         const R = magR * goldF;
         if (d < R && d > 1) {
-          const pull = (676 * (1 - d / R) + 78) * dt * magF * goldF;
+          const near = 1 - d / R;              // 가장자리 0, 코앞 1
+          const pull = (676 * near + 78) * dt * magF * goldF;
           it.x -= dx / d * pull;
           it.y -= dy / d * pull * 0.55;
+          // 가장 가까이 끌려오는 것 하나가 소리 크기를 정한다
+          if (near > magNear) magNear = near;
         }
       }
       /* 맞는 판정은 줍는 판정보다 좁다. 아이템은 잘 잡히면서 똥은 살짝 스쳐도 넘어가도록
@@ -5998,6 +6031,7 @@
     last = now;
 
     update(dt, now);
+    magHum(state === STATE.PLAY ? magNear * magNear : 0);   // 가까울수록 가파르게 커진다
     syncBgm();                 // 화면이 바뀌면 배경음악도 따라 바뀐다
     bgmTick(dt);               // 곡이 끝나갈 때 처음과 겹쳐 이어 붙인다
 
