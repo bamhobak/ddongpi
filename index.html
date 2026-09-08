@@ -800,7 +800,7 @@
   const elFinal = document.getElementById("finalScore");
   const elTitle = document.getElementById("overTitle");
 
-  const GAME_VERSION = "v1.4.93";   // 코드를 고칠 때마다 뒤 두 자리를 올린다
+  const GAME_VERSION = "v1.4.94";   // 코드를 고칠 때마다 뒤 두 자리를 올린다
   document.getElementById("ver").textContent = GAME_VERSION;
 
   const LS_NAME = "epjpddongpi_name";
@@ -3511,7 +3511,7 @@
         const g = Math.round(150 * (aug.goldLord ? 2 : 1) * scoreMul() * level * gm);
         score += sc("무지개똥", g);
         burst(it.x, it.y, "#ffd23f", 18);
-        popText(it.x, it.y, "✨ +" + g.toLocaleString(), "#ffe07a");
+        popText(it.x, it.y, "🌈", "#ffe07a");   // 액수는 적지 않는다
         items.splice(i, 1);
         continue;
       }
