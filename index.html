@@ -776,7 +776,7 @@
   const elFinal = document.getElementById("finalScore");
   const elTitle = document.getElementById("overTitle");
 
-  const GAME_VERSION = "v1.4.83";   // 코드를 고칠 때마다 뒤 두 자리를 올린다
+  const GAME_VERSION = "v1.4.84";   // 코드를 고칠 때마다 뒤 두 자리를 올린다
   document.getElementById("ver").textContent = GAME_VERSION;
 
   const LS_NAME = "epjpddongpi_name";
@@ -1546,6 +1546,42 @@
     } catch (e) {}
   }
 
+  /* ---------- 효과음 ----------
+     소리마다 녹음 크기가 제각각이라 배율로 귀에 맞춰 뒀다 (하트는 원본이 유독 작다).
+     오디오 문맥이 열린 뒤에 한 번만 받아 두고, 아직 안 받았거나 실패했으면
+     false 를 돌려주어 부르는 쪽이 예전 삐 소리로 대신하게 한다. */
+  const SFX_GAIN = { star: 1.0, aug: 0.9, fever: 0.8, hurt: 0.8,
+                     over: 0.8, gold: 1.3, heart: 6.0, shield: 0.8 };
+  const SFX_VOL = 0.55;              // 전체 크기
+  const sfxBuf = {};
+  let sfxAsked = false;
+  function loadSfx() {
+    if (sfxAsked || !ac) return;
+    sfxAsked = true;
+    for (const k in SFX_GAIN) {
+      fetch("assets/sfx/" + k + ".mp3")
+        .then(r => r.arrayBuffer())
+        .then(b => ac.decodeAudioData(b))
+        .then(buf => { sfxBuf[k] = buf; })
+        .catch(() => {});
+    }
+  }
+  function sfx(name, vol) {
+    try {
+      if (!ac) ac = new (window.AudioContext || window.webkitAudioContext)();
+      if (ac.state === "suspended") ac.resume();
+      loadSfx();
+      const buf = sfxBuf[name];
+      if (!buf) return false;
+      const src = ac.createBufferSource(), g = ac.createGain();
+      src.buffer = buf;
+      g.gain.value = SFX_VOL * (SFX_GAIN[name] || 1) * (vol === undefined ? 1 : vol);
+      src.connect(g); g.connect(ac.destination);
+      src.start();
+      return true;
+    } catch (e) { return false; }
+  }
+
   /* ---------- 게임 상태 ---------- */
   const STATE = { READY: 0, PLAY: 1, OVER: 2, AUG: 3, PAUSE: 4 };
 
@@ -1697,8 +1733,7 @@
     const gain = Math.round(2000 * starCount * aug.starMul * scoreMul());
     score += sc("별", gain);
     popGain(x, y, gain, "⭐×" + starCount, "#ffd23f");
-    beep(1400, .1, "square", .05);
-    beep(1750, .12, "square", .04);
+    if (!sfx("star")) { beep(1400, .1, "square", .05); beep(1750, .12, "square", .04); }
     return gain;
   }
 
@@ -1804,8 +1839,7 @@
         augTook[a.id] = augRound;      // 고른 것은 더 오래 쉬어 간다
         a.go();
         augCount[a.id] = (augCount[a.id] || 0) + 1;
-        beep(900, .09, "square", .05);
-        beep(1350, .13, "square", .05);
+        if (!sfx("aug")) { beep(900, .09, "square", .05); beep(1350, .13, "square", .05); }
         augRemain--;
         if (augRemain > 0) {           // 보름달: 남은 횟수만큼 이어서 고른다
           showAugmentPick();
@@ -3074,7 +3108,7 @@
             score += sc("무지개똥", g);
             burst(it.x, it.y, "hsl(" + Math.round(goldFx(now, it.x).hue) + ",100%,62%)", 20);
             popGain(it.x, it.y, g, "🌈", "#ffe07a");
-            beep(1250, .1, "square", .05);
+            if (!sfx("gold")) beep(1250, .1, "square", .05);
             items.splice(i, 1);
             continue;
           }
@@ -3208,7 +3242,7 @@
               shake = 22; flash = 1;
               burst(it.x, it.y, "#8a5a2b", 22);
               popText(player.x, player.y - 60, "으악!", "#ff5d5d");
-              beep(140, .25, "sawtooth", .07);
+              if (!sfx("hurt")) beep(140, .25, "sawtooth", .07);
               if (lives <= 0) { items.splice(i, 1); return gameOver(); }
             }
             items.splice(i, 1);
@@ -3260,15 +3294,17 @@
       refillLeft = 5000;               // 무한리필 — 이번 뚜니핑에서 늘릴 수 있는 한도
       feverFlash = 1;
       popText(player.x, player.y - 70, "🔥 뚜니핑 타임!", "#ffd23f", 26);
-      beep(700, .1, "square", .05);
-      beep(1100, .12, "square", .05);
-      beep(1500, .18, "square", .05);
+      if (!sfx("fever")) {
+        beep(700, .1, "square", .05);
+        beep(1100, .12, "square", .05);
+        beep(1500, .18, "square", .05);
+      }
       if (navigator.vibrate) navigator.vibrate([40, 40, 80]);
     }
     if (it.type === "umbrella") {
       shields = Math.max(shields, Math.min(shields + 1, 5));   // 아이템으로도 5개까지 누적
       popText(player.x, player.y - 60, "☂️ 방패!", "#7ec8ff");
-      beep(900, .12, "triangle", .05);
+      if (!sfx("shield")) beep(900, .12, "triangle", .05);
     }
     if (it.type === "star") {
       const gain = eatStar(it.x, it.y);
@@ -3305,7 +3341,7 @@
     if (it.type === "heart") {
       lives = Math.min(aug.maxLives, lives + 1);
       popText(it.x, it.y, "❤️ +1", "#ff8fb0");
-      beep(1000, .15, "sine", .06);
+      if (!sfx("heart")) beep(1000, .15, "sine", .06);
     }
     burst(it.x, it.y, "#ffd23f", 16);
     return false;
@@ -3414,7 +3450,7 @@
     elFinal.textContent = s.toLocaleString();
     elTitle.textContent = "게임 오버!";
     overScreen.classList.remove("hidden");
-    beep(220, .4, "sawtooth", .06);
+    if (!sfx("over")) beep(220, .4, "sawtooth", .06);
     if (navigator.vibrate) navigator.vibrate(120);
 
     logRun(s);                 // 증강 통계 수집 (화면에는 아무것도 보이지 않는다)
