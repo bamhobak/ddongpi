@@ -266,11 +266,6 @@
     border-radius: 6px; padding: 6px 10px;
   }
   #jobTraits .tr .dot { flex: none; width: 5px; height: 5px; border-radius: 50%; background: #9fd8ff; }
-  /* 직업마다 붙는 한마디 — 능력이 아니라 성격 */
-  #jobTraits .flavor {
-    margin-top: 2px; text-align: center; font-size: 12px; color: #ffb7d2;
-    text-shadow: 0 0 10px rgba(255,183,210,.35);
-  }
   #btnJobGo {
     padding: 10px 40px; font-size: 17px; letter-spacing: 3px;
     background: linear-gradient(180deg, #ffe07a, #ffc42e 55%, #f5a70f);
@@ -910,7 +905,7 @@
   const elFinal = document.getElementById("finalScore");
   const elTitle = document.getElementById("overTitle");
 
-  const GAME_VERSION = "v1.5.85";   // 코드를 고칠 때마다 뒤 두 자리를 올린다
+  const GAME_VERSION = "v1.5.86";   // 코드를 고칠 때마다 뒤 두 자리를 올린다
   document.getElementById("ver").textContent = GAME_VERSION;
 
   const LS_NAME = "epjpddongpi_name";
@@ -2544,11 +2539,14 @@
       d.appendChild(document.createTextNode(line));   // textContent → HTML 삽입 불가
       tr.appendChild(d);
     }
-    if (j.f) {                                // 직업마다 붙는 한마디
-      const f = document.createElement("div");
-      f.className = "flavor";
-      f.textContent = j.f;
-      tr.appendChild(f);
+    if (j.f) {                                // 직업마다 붙는 한마디 — 모양은 위와 같게
+      const d = document.createElement("div");
+      d.className = "tr";
+      const dot = document.createElement("span");
+      dot.className = "dot";
+      d.appendChild(dot);
+      d.appendChild(document.createTextNode(j.f));
+      tr.appendChild(d);
     }
     jobList.classList.add("hidden");
     jobDetail.classList.remove("hidden");
