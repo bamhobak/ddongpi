@@ -757,7 +757,7 @@
         <span id="devDot" aria-label="통계"></span>
       </span></h1>
       <div class="board withTabs">
-        <h3>🏆 이번 주 TOP 10</h3>
+        <h3 class="boardTitle">🏆 이번 주 TOP 10</h3>
         <div class="jobTabs" id="jobTabsStart"></div>
         <ol id="boardStart"><li class="empty">불러오는 중…</li></ol>
         <div class="note" id="noteStart"></div>
@@ -860,7 +860,7 @@
       </div>
 
       <div class="board withTabs">
-        <h3>🏆 이번 주 TOP 10</h3>
+        <h3 class="boardTitle">🏆 이번 주 TOP 10</h3>
         <div class="jobTabs" id="jobTabsOver"></div>
         <ol id="boardOver"><li class="empty">불러오는 중…</li></ol>
         <div class="note" id="noteOver"></div>
@@ -906,7 +906,7 @@
   const elFinal = document.getElementById("finalScore");
   const elTitle = document.getElementById("overTitle");
 
-  const GAME_VERSION = "v1.5.81";   // 코드를 고칠 때마다 뒤 두 자리를 올린다
+  const GAME_VERSION = "v1.5.82";   // 코드를 고칠 때마다 뒤 두 자리를 올린다
   document.getElementById("ver").textContent = GAME_VERSION;
 
   const LS_NAME = "epjpddongpi_name";
@@ -3957,6 +3957,7 @@
     nameTag.textContent = "🎉 TOP 10 진입! 이름을 남기세요";
     // 게임오버 순위표는 이번 판 직업 탭으로 연다 (전체 TOP 10에 들면 아래에서 전체 탭으로 바꾼다)
     boardJob = job;
+    syncBoardTitle();
     for (const t of document.querySelectorAll(".jobTab")) t.classList.toggle("on", t.dataset.job === job);
     refreshBoards(boardOver).then(async () => {
       if (state !== STATE.OVER) return;
@@ -4270,10 +4271,17 @@
   }
   buildJobTabs();
   // 탭을 바꾸고(두 화면 모두) 목록을 다시 그린다
+  /* 제목에 지금 보고 있는 직업을 넣는다 — 전체일 때는 넣지 않는다 */
+  function syncBoardTitle() {
+    const nm = boardJob !== "all" && JOBS[boardJob] ? JOBS[boardJob].nm + " " : "";
+    for (const h of document.querySelectorAll(".boardTitle"))
+      h.textContent = "🏆 이번 주 " + nm + "TOP 10";
+  }
   function setBoardJob(key, els) {
     boardJob = key;
     for (const t of document.querySelectorAll(".jobTab"))
       t.classList.toggle("on", t.dataset.job === key);
+    syncBoardTitle();
     return showBoards(els);
   }
 
