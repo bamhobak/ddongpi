@@ -806,7 +806,7 @@
   const elFinal = document.getElementById("finalScore");
   const elTitle = document.getElementById("overTitle");
 
-  const GAME_VERSION = "v1.5.38";   // 코드를 고칠 때마다 뒤 두 자리를 올린다
+  const GAME_VERSION = "v1.5.39";   // 코드를 고칠 때마다 뒤 두 자리를 올린다
   document.getElementById("ver").textContent = GAME_VERSION;
 
   const LS_NAME = "epjpddongpi_name";
@@ -2802,12 +2802,9 @@
     // 뚜니핑 타임 끝나는 순간엔 화면이 똥으로 가득 차 있으니 1초 무적으로 숨 돌릴 틈을 준다
     if (wasFever && !fever && state === STATE.PLAY) {
       invUntil = Math.max(invUntil, now + 1500);
-      for (let i = items.length - 1; i >= 0; i--) {
-        if (items[i].giant) {                     // 대왕은 피할 수 없는 크기라 같이 사라진다
-          burst(items[i].x, items[i].y, "#c86bff", 26);
-          items.splice(i, 1);
-        }
-      }
+      /* 대왕 뚜니핑도 다른 낙하물처럼 그대로 남겨 둔다. 뚜니핑 낙하물은
+         타임이 끝나도 피해를 주지 않으니(dmg 판정에서 fever 껍질은 빠진다)
+         떠 있는 동안 마저 먹을 수 있다. */
       popText(player.x, player.y - 70, "휴… 세이프", "#fff");
       beep(520, .12, "triangle", .04);
     }
