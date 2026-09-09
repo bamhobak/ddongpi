@@ -813,7 +813,7 @@
   const elFinal = document.getElementById("finalScore");
   const elTitle = document.getElementById("overTitle");
 
-  const GAME_VERSION = "v1.5.46";   // 코드를 고칠 때마다 뒤 두 자리를 올린다
+  const GAME_VERSION = "v1.5.48";   // 코드를 고칠 때마다 뒤 두 자리를 올린다
   document.getElementById("ver").textContent = GAME_VERSION;
 
   const LS_NAME = "epjpddongpi_name";
@@ -1350,8 +1350,8 @@
   function helperPic()    { return (inSpace() && helperSpaceImg) ? helperSpaceImg : helperImg; }
   function helperAspect() { return (inSpace() && helperSpaceImg) ? HELPER_ASPECT_SPACE : HELPER_ASPECT; }
   const HELPER_H = 99;           // 화면에 그릴 높이 (110에서 10% 축소)
-  const HELPER_R = 48;           // 똥을 부수는 반경 (크기에 맞춰 함께 축소)
-  function helperScale() { return aug.helperRush ? 1.3 : 1; } // 히든 '대폭주' 시 1.3배 (면적 1.69배)
+  const HELPER_R = 43;           // 똥을 부수는 반경 (48 → 43, 면적 20% 감소)
+  function helperScale() { return aug.helperRush ? 1.2 : 1; } // 히든 '대폭주' 시 1.2배 (1.3에서 완화)
   let helpers = [];
   let helperTimer = 0;
   let fetchers = [];        // 배고픈 정연핑 — 아이템을 대신 먹으러 가는 정연핑
@@ -1887,13 +1887,13 @@
     { id: "fever50",    ic: "🌙", nm: "뚜니핑 대박", ds: "뚜니핑 낙하물 점수 증가",
       go: () => { aug.feverScoreMul += 0.20; } },   // 먹을 때마다 +20%, 감쇠 없음
     { id: "slow",       ic: "🐢", nm: "느린 하늘",   ds: "똥이 느리게 떨어진다",
-      go: () => { aug.fallMul *= 1 - 0.15 * dim("slow"); } },
+      go: () => { aug.fallMul *= 1 - 0.12 * dim("slow"); } },
     { id: "small",      ic: "🎯", nm: "마운자로 이재", ds: "몸집이 작아진다",
       cond: () => job !== "fit",   // 헬스걸은 벌크업이 정체성 — 마운자로를 맞지 않는다
       nmFn: () => "마운자로 " + ((augCount["small"] || 0) + 1) + "단계 이재",
-      go: () => { aug.hitboxMul *= 1 - 0.15 * dim("small"); } },
+      go: () => { aug.hitboxMul *= 1 - 0.12 * dim("small"); } },
     { id: "tinypoop",   ic: "🫧", nm: "작아진 똥",   ds: "똥이 작아진다",
-      go: () => { aug.poopMul *= 1 - 0.15 * dim("tinypoop"); } },
+      go: () => { aug.poopMul *= 1 - 0.12 * dim("tinypoop"); } },
     { id: "umbrella3",  ic: "☂️", nm: "우산 다발", ds: "우산을 3개 얻는다",
       max: 99,                    // 조건이 막아주므로 보유 상한은 사실상 없음
       cond: () => job !== "fit" && shields < 10,   // 헬스걸은 방패가 없는 직업 — 미등장
@@ -1916,10 +1916,10 @@
     { id: "doveWhat",   ic: "🕊️", nm: "비둘기 무엇?", ds: "비둘기가 1.5배 빠르고 커진다 · 더 자주 출격",
       hidden: true, once: true, cond: () => job === "gambler",   // 도박사 전용
       go: () => { aug.doveWhat = true; } },
-    { id: "steelUmb",   ic: "☔", nm: "우산 로켓배송", ds: "우산이 없으면 저절로 배송된다",
+    { id: "steelUmb",   ic: "☔", nm: "우산 로켓배송", ds: "우산이 없으면 저절로 배송된다 · 배송이 갈수록 느려진다",
       hidden: true, once: true,
       cond: () => augCount["umbrella3"] > 0 && job !== "fit",   // 헬스걸은 하트 자동재생이 돼버려 제외
-      go: () => { aug.steelUmb = true; shieldTimer = UMB_SEC; } },
+      go: () => { aug.steelUmb = true; umbDeliv = 0; shieldTimer = UMB_SEC; } },
     { id: "starburst",  ic: "🌠", nm: "별핑별",     ds: "별이 하늘의 똥을 쓸어버린다",
       hidden: true, once: true, cond: () => augCount["star50"] > 0,
       go: () => { aug.starburst = true; } },
@@ -1957,10 +1957,6 @@
     { id: "inter",      ic: "🕰️", nm: "인터스텔라", ds: "이따금 세상만 느려진다. 점수 시계는 그대로",
       hidden: true, once: true, cond: () => augCount["slow"] >= 2,
       go: () => { aug.inter = true; interTimer = 8; bulletT = 2; } },
-    { id: "subs",       ic: "📦", nm: "뚜니핑 정기구독", ds: "휴지가 더 자주, 안 오면 강제 배송된다",
-      hidden: true, once: true,
-      cond: () => augCount["lucky"] >= 1 && augCount["fever_time"] >= 1 && augCount["downpour"] >= 1,
-      go: () => { aug.subs = true; subsTimer = 0; } },
     { id: "dice",       ic: "🎲", nm: "주사위", ds: "다시 뽑기 3회 추가",
       cond: () => job !== "powerj",   // 파워J 는 다시 뽑기를 쓸 수 없다
       go: () => { rerolls += 3; syncReroll(); } },
@@ -2147,12 +2143,16 @@
   let invUntil = 0, powerUntil = 0;
   let magNear = 0;                 // 자석에 끌리는 정도 (0~1) — 소리 크기에 쓴다
   let shields = 0;                 // 남은 방패 수 — 우산 아이템은 최대 1, 증강으로만 여러 개
-  const UMB_SEC = 6.5;             // 우산 로켓배송: 방패가 없을 때 몇 초마다 하나씩 오는지
+  const UMB_SEC = 6.5;             // 우산 로켓배송: 첫 배송까지 몇 초 걸리는지
+  /* 배송할수록 간격이 늘어난다. 6.5초 고정이면 '맞는 간격 > 6.5초'인 순간부터
+     방패가 무한히 채워져 영영 죽지 않았다. 20초에서 멈춘다. */
+  const UMB_STEP = 1.5, UMB_MAX = 20;
+  let umbDeliv = 0;                // 이번 판에 배송된 횟수
+  function umbGap() { return Math.min(UMB_MAX, UMB_SEC + UMB_STEP * umbDeliv); }
   let shieldTimer = UMB_SEC;       // 다음 하나까지 남은 시간
   let spawnHold = 0;               // 별핑별·성난 우산: 똥 생성이 멈춰 있는 남은 시간
   let umbBlast = null;             // 성난 우산 폭발 파동 {x, y, r, t}
   let bulletT = 0, interTimer = 8;// 인터스텔라: 불릿타임 남은 시간 / 다음 발동까지
-  let subsTimer = 0;               // 휴지 정기구독: 마지막 휴지 이후 지난 시간
   let noHitSec = 0;                // 마지막 피격 이후 버틴 시간 (무소유 배율용)
   let clones = [], cloneTimer = 0; // 벼랑 끝 분신술: 날아가는 작은 이재들
   /* 도박사 — 80m 움직일 때마다 머리 위에서 비둘기가 날아오른다.
@@ -2161,7 +2161,7 @@
   let bullets = [], shipClock = 0;   // 갤러그: 날아가는 총알과 편대 공용 시계
   let ghosts = [];                   // 그건 제 잔상입니다만? — 피한 자리에 남는 잔상
   let wakBooms = [];                 // 고무고무노 피스톨 — 똥끼리 부딪혀 터진 자리의 고리
-  const SHIP_GAP = 0.5;              // 우주선 한 대가 다시 쏘기까지
+  const SHIP_GAP = 0.6;              // 우주선 한 대가 다시 쏘기까지 (0.5 → 0.6, 20% 덜 쏜다)
   const M_PX = 12, DOVE_EVERY = 80 * M_PX;   // 100m 에서 20% 줄여 80m 마다
   // 히든 '비둘기 무엇?' — 속도·크기·폭발은 1.5배, 출격은 3/4 거리마다
   function doveMul()   { return aug.doveWhat ? 1.5 : 1; }
@@ -2495,13 +2495,13 @@
     augRound = 0;
     for (const k in augSeen) delete augSeen[k];
     for (const k in augTook) delete augTook[k];
-    aug.subs = false; aug.clone = false;
-    spawnHold = 0; umbBlast = null; bulletT = 0; interTimer = 8; subsTimer = 0;
+    aug.clone = false;
+    spawnHold = 0; umbBlast = null; bulletT = 0; interTimer = 8;
     noHitSec = 0;
     clones = []; cloneTimer = 0;
     doves = []; moveDist = 0;
     bullets = []; shipClock = 0; aug.galaga = 0;
-    shieldTimer = UMB_SEC;
+    shieldTimer = UMB_SEC; umbDeliv = 0;
     aug.itemRateMul = 1; aug.feverRateMul = 1; aug.giant = 0; aug.magnet = 0;
     resetBonusTimers();          // 증강 배율을 되돌린 뒤라야 첫 타이머가 제대로 잡힌다
     aug.helper = 0; aug.helperRush = false; aug.hungry = false; aug.galaga = 0;
@@ -2731,7 +2731,6 @@
     /* 레벨은 아이템 등장에 전혀 관여하지 않는다 — 처음부터 끝까지 같은 확률.
        예전에는 레벨이 오를수록 잦아지고(최대 2배), 대신 Lv15부터 달만 뜸해졌다. */
     let mean = BONUS_BASE / (b.w / BONUS_W_TOTAL) * aug.itemRateMul;
-    if (b.type === "paper" && aug.subs) mean /= 1.4;  // 정기구독 — 휴지만 1.4배 빈도
     if (b.type === "heart" && job === "fit") mean /= 5;  // 헬스걸 — 하트 5배
     if (b.type === "umbrella" && job === "gambler") mean /= 1.5;  // 도박사 — 우산 1.5배
     if ((b.type === "moon" || b.type === "fullmoon") && job === "powerj") mean /= 2.5;  // 파워J — 달 2.5배
@@ -2785,7 +2784,6 @@
     const r = 20;
     // 낙하 속도에 변화를 주되, 너무 빠르면 못 먹고 지나가버려서 위쪽을 눌러 잡았다
     const vy = (110 + level * 6) * (H / BASE_H) * (0.6 + Math.random() * 0.5);
-    if (pick.type === "paper") subsTimer = 0;        // 정기구독 배송 시계 리셋
     items.push({
       type: pick.type, emoji: pick.emoji,
       x: r + Math.random() * (W - r * 2), y: -r - 10,
@@ -2929,7 +2927,10 @@
     noHitSec += dt;                          // 안 맞고 버틴 시간 (피격 시 1/4 감소)
     /* 레벨 시계는 뚜니핑 타임 동안 멈춘다. 무적으로 낙하물을 줍는 시간까지
        레벨에 포함되면, 정작 실력으로 버틴 시간이 아닌데도 난이도가 올라간다. */
-    if (!fever) levelTime += dt;
+    /* 난이도 시계. 예전에는 뚜니핑 타임 동안 멈춰 있었는데, 정기구독·연장을 쌓으면
+       판의 절반을 뚜니핑으로 보내게 되어 난이도가 반속도로만 올랐다. 그동안 똥은
+       무해하니 사실상 무적으로 시간을 벌 수 있었고, 그래서 판이 끝나지 않았다. */
+    levelTime += dt;
     level = 1 + Math.floor(levelTime / LEVEL_SEC);
     score += sc("생존", dt * 50 * level * aug.timeMul * scoreMul());   // 생존 점수: 초당 50 × 레벨
 
@@ -3055,20 +3056,6 @@
           popText(W / 2, H * 0.35, "🕰️ 인터스텔라", "#9fd4ff", 26);
           beep(320, .14, "sine", .05);
           beep(210, .2, "sine", .05);
-        }
-      }
-    }
-
-    // ---- 휴지 정기구독: 뚜니핑이 끝나고 한동안 휴지가 안 오면 강제 배송 ----
-    if (aug.subs) {
-      if (fever) subsTimer = 0;
-      else {
-        subsTimer += dt * tsc;
-        if (subsTimer >= 30) {
-          subsTimer = 0;
-          spawnBonus(BONUS.find(b => b.type === "paper"));
-          popText(W / 2, H * 0.3, "📦 구독 배송 도착!", "#ffd23f", 24);
-          beep(880, .1, "triangle", .05);
         }
       }
     }
@@ -3202,20 +3189,21 @@
       if (shields <= 0) {
         shieldTimer -= dt * tsc;
         if (shieldTimer <= 0) {
-          shieldTimer = UMB_SEC;
+          umbDeliv++;
+          shieldTimer = umbGap();
           shields = 1;
           popText(player.x, player.y - 60, "☔ 우산 도착!", "#7ec8ff");
           beep(880, .12, "triangle", .05);
         }
       } else {
-        shieldTimer = UMB_SEC;
+        shieldTimer = umbGap();
       }
     }
 
     // ---- 도와줘 정연핑 ----
     if (aug.helper > 0) {
       // 1명이면 4.5초, 2명이면 5.5초, 3명이면 6.5초… 인원이 늘수록 주기가 1초씩 길어진다
-      const cycle = 3.5 + 1.0 * aug.helper;
+      const cycle = 4.0 + 1.0 * aug.helper;   // 3.5 → 4.0, 출격이 조금 뜸해진다
       helperTimer -= dt * tsc;
       if (helperTimer <= 0 && helperQueue <= 0) {
         helperTimer = cycle;
@@ -3562,7 +3550,7 @@
                    반경은 화면의 2/3 넘게 덮도록 잡는다 (까다로운 똥도 함께 부순다).
                    지금 부딪힌 똥(i)은 바로 아래 공용 splice 가 지우므로 건드리지 않는다. */
                 const bx = player.x, by = player.y + player.hy;
-                const bR = Math.sqrt(4 * W * H / (3 * Math.PI)) * 1.15;
+                const bR = Math.sqrt(4 * W * H / (3 * Math.PI)) * 1.0;   // 1.15 → 1.0 (반경 13% 축소)
                 for (let k = items.length - 1; k >= 0; k--) {
                   const q = items[k];
                   if (q.type !== "poop" || k === i || q.blast) continue;
@@ -4244,6 +4232,7 @@
   AUG_NAMES.fly = "초전도 이재(삭제됨)";
   AUG_NAMES.refill = "뚜니핑 무한리필(삭제됨)";
   AUG_NAMES.ghost = "유령화(삭제됨)";
+  AUG_NAMES.subs = "뚜니핑 정기구독(삭제됨)";
   const JOB_NAMES = { none: "백수", gambler: "도박사", levitator: "부양사", fit: "헬스걸", powerj: "파워J", powerp: "무소유", powerp2: "파워P", bangul: "방울이", "(none)": "(기록 없음)" };
   const devScreen = document.getElementById("devScreen");
   const devPw     = document.getElementById("devPw");
