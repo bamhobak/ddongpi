@@ -239,7 +239,7 @@
     display: grid; grid-template-columns: repeat(2, minmax(0, 1fr));
     gap: 8px; width: 100%; max-width: 340px;
   }
-  #jobList img.ic { width: auto; height: 58px; object-fit: contain; flex: none; }
+  #jobList img.ic { width: auto; height: 78px; object-fit: contain; flex: none; }
   /* 여덟 직업이 스크롤 없이 한 화면에 들어가도록 카드를 낮춘다.
      증강 카드와 같은 .augCard 를 쓰므로 여기서만 좁힌다. */
   #jobList .augCard {
@@ -247,8 +247,7 @@
     padding: 9px 6px 8px; gap: 3px; border-radius: 12px;
   }
   #jobList .augCard .tx { flex: none; width: 100%; }
-  #jobList .augCard .nm2 { font-size: 14px; }
-  #jobList .augCard .ds { font-size: 11px; line-height: 1.3; margin-top: 1px; text-wrap: pretty; }
+  #jobList .augCard .nm2 { font-size: 15px; }
   /* ---- 직업 상세 (카드를 누르면 이 화면으로) ---- */
   #jobDetail { display: flex; flex-direction: column; align-items: center; gap: 10px; width: 100%; max-width: 340px; }
   #jobDetail.hidden { display: none; }
@@ -906,7 +905,7 @@
   const elFinal = document.getElementById("finalScore");
   const elTitle = document.getElementById("overTitle");
 
-  const GAME_VERSION = "v1.5.82";   // 코드를 고칠 때마다 뒤 두 자리를 올린다
+  const GAME_VERSION = "v1.5.83";   // 코드를 고칠 때마다 뒤 두 자리를 올린다
   document.getElementById("ver").textContent = GAME_VERSION;
 
   const LS_NAME = "epjpddongpi_name";
@@ -927,17 +926,17 @@
   /* ---------- 직업 ---------- */
   const LS_JOB = "epjpddongpi_job";
   const JOBS = {
-    none:    { nm: "백수",   ic: "🏃", ds: "시작할 때 증강 1개를 고른다", s: "증강 1개 고르고 시작" },
-    gambler: { nm: "도박사", ic: "🎰", ds: "목숨 1개 + 우산 1개 시작 · 비둘기 출격 · 하트 안 나옴 · 모든 점수 2.5배", s: "점수 2.5배 · 목숨 1개" },
-    levitator: { nm: "부양사", ic: "🎈", ds: "하늘 어디든 날 수 있다 · 높이 있을수록 점수 UP", s: "날 수 있다 · 높을수록 점수" },
-    fit: { nm: "헬스걸", ic: "💪", ds: "목숨 5개로 시작 · 벌크업 좀 된 상태", s: "목숨 5개로 시작" },
-    powerj: { nm: "파워J", ic: "📋", ds: "달이 잘 나온다 · 대신 증강은 계획대로 1개만", s: "달 많이 · 증강은 1장만" },
+    none:    { nm: "백수",   ic: "🏃", ds: "시작할 때 증강 1개를 고른다" },
+    gambler: { nm: "도박사", ic: "🎰", ds: "목숨 1개 + 우산 1개 시작 · 비둘기 출격 · 하트 안 나옴 · 모든 점수 2.5배" },
+    levitator: { nm: "부양사", ic: "🎈", ds: "하늘 어디든 날 수 있다 · 높이 있을수록 점수 UP" },
+    fit: { nm: "헬스걸", ic: "💪", ds: "목숨 5개로 시작 · 벌크업 좀 된 상태" },
+    powerj: { nm: "파워J", ic: "📋", ds: "달이 잘 나온다 · 대신 증강은 계획대로 1개만" },
     /* 파워P — 파워J 의 거울. 달은 덜 오지만 올 때마다 다섯 장을 다 펼쳐 놓고 고른다.
        아이디가 powerp2 인 것은, powerp 는 무소유가 예전에 파워P 였을 때 쓰던 이름이라
        이미 차 있기 때문이다 (옛 기록과 순위표가 그 이름을 쓴다). */
-    powerp2: { nm: "파워P", ic: "🎯", ds: "달이 덜 나온다 · 대신 증강을 5개 중에서 고른다", s: "달 적게 · 증강 5장 중 선택" },
-    powerp: { nm: "무소유", ic: "🙏", ds: "달이 아예 안 나온다 · 별이 조금 잘 나온다 · 안 맞을수록 점수가 치솟는다", s: "달 없음 · 안 맞을수록 폭등" },
-    bangul: { nm: "방울이", ic: "🫧", ds: "비누방울이 한 대를 대신 맞고 터진다 · 잠시 뒤 다시 맺힌다", s: "방울이 한 대 대신 맞는다" }
+    powerp2: { nm: "파워P", ic: "🎯", ds: "달이 덜 나온다 · 대신 증강을 5개 중에서 고른다" },
+    powerp: { nm: "무소유", ic: "🙏", ds: "달이 아예 안 나온다 · 별이 조금 잘 나온다 · 안 맞을수록 점수가 치솟는다" },
+    bangul: { nm: "방울이", ic: "🫧", ds: "비누방울이 한 대를 대신 맞고 터진다 · 잠시 뒤 다시 맺힌다" }
   };
   // 직업별 캐릭터 그림(오른쪽 이동 모습) — 직업 카드와 순위표에서 함께 쓴다
   const JOB_IMG = { none: "player", gambler: "gambler", levitator: "levitator",
@@ -2562,10 +2561,9 @@
       ic.src = "assets/" + JOB_IMG[id] + "_right.png"; ic.alt = j.ic;
       const tx = document.createElement("div"); tx.className = "tx";
       const nm = document.createElement("div"); nm.className = "nm2"; nm.textContent = j.nm;
-      const ds = document.createElement("div"); ds.className = "ds"; ds.textContent = j.s || j.ds;
-      card.title = j.ds;                       // 긴 설명은 눌러 보기 전 도움말로
+      card.title = j.ds;                       // 설명은 눌러 보기 전 도움말로만
       if (id === job) card.classList.add("sel");
-      tx.append(nm, ds);
+      tx.append(nm);
       card.append(ic, tx);
       card.dataset.job = id;
       card.addEventListener("click", () => {
