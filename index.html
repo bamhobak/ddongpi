@@ -813,7 +813,7 @@
   const elFinal = document.getElementById("finalScore");
   const elTitle = document.getElementById("overTitle");
 
-  const GAME_VERSION = "v1.5.42";   // 코드를 고칠 때마다 뒤 두 자리를 올린다
+  const GAME_VERSION = "v1.5.43";   // 코드를 고칠 때마다 뒤 두 자리를 올린다
   document.getElementById("ver").textContent = GAME_VERSION;
 
   const LS_NAME = "epjpddongpi_name";
@@ -835,16 +835,20 @@
   const LS_JOB = "epjpddongpi_job";
   const JOBS = {
     none:    { nm: "백수",   ic: "🏃", ds: "시작할 때 증강 1개를 고른다" },
-    gambler: { nm: "도박사", ic: "🎰", ds: "목숨 1개 + 우산 1개 시작 · 비둘기 출격 · 하트 안 나옴 · 증강 4개 중 선택 · 모든 점수 2배" },
+    gambler: { nm: "도박사", ic: "🎰", ds: "목숨 1개 + 우산 1개 시작 · 비둘기 출격 · 하트 안 나옴 · 모든 점수 2.5배" },
     levitator: { nm: "부양사", ic: "🎈", ds: "하늘 어디든 날 수 있다 · 높이 있을수록 점수 UP" },
     fit: { nm: "헬스걸", ic: "💪", ds: "목숨 5개로 시작 · 벌크업 좀 된 상태" },
     powerj: { nm: "파워J", ic: "📋", ds: "달이 잘 나온다 · 대신 증강은 계획대로 1개만" },
     powerp: { nm: "무소유", ic: "🙏", ds: "달이 아예 안 나온다 · 별이 조금 잘 나온다 · 안 맞을수록 점수가 치솟는다" },
+    /* 파워P — 파워J 의 반대편. 아이디가 powerp2 인 것은, powerp 는 무소유가 예전에
+       파워P 였을 때 쓰던 이름이라 이미 차 있기 때문이다 (옛 기록과 순위표가 그 이름을 쓴다). */
+    powerp2: { nm: "파워P", ic: "🎯", ds: "떨어지는 것 넷 중 셋이 달 · 증강을 5개 중에서 고른다" },
     bangul: { nm: "방울이", ic: "🫧", ds: "비누방울이 한 대를 대신 맞고 터진다 · 잠시 뒤 다시 맺힌다" }
   };
   // 직업별 캐릭터 그림(오른쪽 이동 모습) — 직업 카드와 순위표에서 함께 쓴다
   const JOB_IMG = { none: "player", gambler: "gambler", levitator: "levitator",
-                    fit: "fit", powerj: "powerj", powerp: "monk", bangul: "bangul" };
+                    fit: "fit", powerj: "powerj", powerp: "monk", powerp2: "player",
+                    bangul: "bangul" };   // 파워P 는 아직 제 그림이 없어 백수 그림을 쓴다
   function spdMul() { return job === "levitator" ? 2.5 : 1; }   // 이동 속도 배율 (부양사 2.5배)
   /* 평화의 비둘기 — 활짝 펼친 날개에 깃 모양이 물결치고, 꼬리는 부채처럼 갈라진다.
      (흰 실루엣 한 덩어리로 그려야 작게 그려도 비둘기로 읽힌다) */
@@ -2048,8 +2052,8 @@
       return base * m;
     };
     const picks = [];
-    // 파워J 는 계획이 하나면 충분하고, 도박사는 패를 한 장 더 본다 (다시 뽑을 때도 같다)
-    const nPick = job === "powerj" ? 1 : (job === "gambler" ? 4 : 3);
+    // 파워J 는 계획이 하나면 충분하고, 파워P 는 다섯 장을 다 펼쳐 놓고 고른다
+    const nPick = job === "powerj" ? 1 : (job === "powerp2" ? 5 : 3);
     while (picks.length < nPick && pool.length) {
       let total = 0;
       for (const a of pool) total += wOf(a);
@@ -2489,7 +2493,7 @@
       lives = 1;
       aug.maxLives = 1;               // 하트는 애초에 별로 대체되어 떨어진다
       shields = 1;                    // 대신 우산 1개를 쥐여 준다
-      aug.scoreMul *= 2;              // 모든 점수 2배
+      aug.scoreMul *= 2.5;            // 모든 점수 2.5배
     }
     if (job === "levitator") {
       flyOn = true;                   // 처음부터 하늘을 난다 (몸 크기는 그대로)
@@ -2712,6 +2716,13 @@
     if (b.type === "heart" && job === "fit") mean /= 5;  // 헬스걸 — 하트 5배
     if (b.type === "umbrella" && job === "gambler") mean /= 1.5;  // 도박사 — 우산 1.5배
     if ((b.type === "moon" || b.type === "fullmoon") && job === "powerj") mean /= 2.5;  // 파워J — 달 2.5배
+    /* 파워P — 떨어지는 것의 75%가 달이 된다. 전체 개수는 그대로 두고 비율만 옮겼다:
+       달 무게 99 → 190.42 (전체 253.89 의 75%), 나머지 154.89 → 63.47.
+       달만 늘리면 아이템이 2.4배로 쏟아지므로 그만큼 나머지를 줄여 균형을 맞춘다. */
+    if (job === "powerp2") {
+      if (b.type === "moon" || b.type === "fullmoon") mean /= 1.9234;
+      else mean *= 2.4403;
+    }
     if (b.type === "star" && job === "powerp") mean /= 1.5;  // 무소유 — 별 1.5배
     return mean;
   }
@@ -2749,7 +2760,7 @@
 
   function spawnBonus(picked) {
     let pick = picked;
-    if ((pick.type === "moon" || pick.type === "fullmoon") && job === "powerp") return;   // 파워P — 무계획 무증강
+    if ((pick.type === "moon" || pick.type === "fullmoon") && job === "powerp") return;   // 무소유 — 무계획 무증강
     if (pick.type === "umbrella" && job === "fit") {
       pick = BONUS.find(b => b.type === "heart");   // 헬스걸 — 우산 자리에 하트
     }
@@ -4219,7 +4230,7 @@
   AUG_NAMES.fly = "초전도 이재(삭제됨)";
   AUG_NAMES.refill = "뚜니핑 무한리필(삭제됨)";
   AUG_NAMES.ghost = "유령화(삭제됨)";
-  const JOB_NAMES = { none: "백수", gambler: "도박사", levitator: "부양사", fit: "헬스걸", powerj: "파워J", powerp: "무소유", bangul: "방울이", "(none)": "(기록 없음)" };
+  const JOB_NAMES = { none: "백수", gambler: "도박사", levitator: "부양사", fit: "헬스걸", powerj: "파워J", powerp: "무소유", powerp2: "파워P", bangul: "방울이", "(none)": "(기록 없음)" };
   const devScreen = document.getElementById("devScreen");
   const devPw     = document.getElementById("devPw");
   const devBody   = document.getElementById("devBody");
