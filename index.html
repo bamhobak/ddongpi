@@ -112,6 +112,56 @@
   .board .sc { flex: none; font-weight: 400; color: #ffd23f; font-variant-numeric: tabular-nums; }
   .board .sc img.jic { width: 22px; height: 28px; object-fit: contain; vertical-align: -8px; margin-right: 5px; }
 
+  /* 1~3위는 시상대 — 가운데가 1위, 캐릭터를 크게 보여 준다 */
+  .board li.podium {
+    display: grid; grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 6px; align-items: end; padding: 0 0 6px; border: 0;
+  }
+  .board li.podium + li { border-top: 0; }
+  .board .pod {
+    display: flex; flex-direction: column; align-items: center; gap: 1px;
+    min-width: 0; border-radius: 6px; padding: 5px 4px 6px;
+  }
+  .board .pod img.pic { height: 34px; object-fit: contain; }
+  .board .pod .pmd { font-size: 13px; line-height: 1; }
+  .board .pod .pnm {
+    max-width: 100%; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+    font-size: 11.5px; font-weight: 700;
+  }
+  .board .pod .psc { font-size: 13px; font-weight: 700; font-variant-numeric: tabular-nums; }
+  .board .pod.p1 {
+    padding: 7px 4px 7px;
+    border-left: 3px solid #ffd23f;
+    background: linear-gradient(180deg, rgba(255,210,63,.30), rgba(255,210,63,.04));
+    box-shadow: 0 0 16px rgba(255,210,63,.26);
+  }
+  .board .pod.p1 img.pic { height: 46px; }
+  .board .pod.p1 .pmd { font-size: 16px; }
+  .board .pod.p1 .pnm { font-size: 13px; font-weight: 800; color: #fff6cf; text-shadow: 0 0 10px rgba(255,210,63,.45); }
+  .board .pod.p1 .psc { font-size: 15px; font-weight: 800; color: #ffd23f; text-shadow: 0 0 10px rgba(255,210,63,.6); }
+  .board .pod.p2 {
+    border-left: 3px solid #dfe6ef;
+    background: linear-gradient(180deg, rgba(223,230,239,.26), rgba(223,230,239,.03));
+    box-shadow: 0 0 12px rgba(223,230,239,.14);
+  }
+  .board .pod.p2 .pnm { color: #f4f7fc; }
+  .board .pod.p2 .psc { color: #e8eef7; }
+  .board .pod.p3 {
+    border-left: 3px solid #cd7f32;
+    background: linear-gradient(180deg, rgba(205,127,50,.22), rgba(205,127,50,.02));
+  }
+  .board .pod.p3 .pnm { color: #efc79b; }
+  .board .pod.p3 .psc { color: #d99257; }
+  .board .pod.me { outline: 1.5px solid rgba(255,210,63,.9); outline-offset: -1px; }
+  /* 점수가 아주 길면 시상대 칸을 넘치므로 글자만 줄인다 */
+  .board .pod .psc.long { font-size: .86em; }
+  .board .pod .psc.xlong { font-size: .72em; }
+
+  /* 4~10위는 한 줄씩 */
+  .board li.rowline { display: flex; align-items: center; gap: 7px; padding: 1px 4px; font-size: 11.5px; }
+  .board li.rowline img.jic3 { width: 14px; height: 18px; object-fit: contain; flex: none; }
+  .board li.rowline .sc { color: #ffd23f; }
+
   /* 4~6위(셋), 7~10위(넷)는 세로 미니 카드로 한 줄에 담는다 */
   .board li.duo, .board li.five { display: flex; gap: 5px; padding: 3px 0; }
   .board .mini {
@@ -186,12 +236,12 @@
     border-bottom-color: rgba(255,210,63,.25);
     text-shadow: 0 0 10px rgba(255,210,63,.45);
   }
-  .lastRow { display: flex; gap: 4px; justify-content: center; flex-wrap: wrap; }
+  .lastRow { display: flex; gap: 3px; justify-content: center; flex-wrap: wrap; }
   .lastRow .lp {
     display: flex; align-items: center; gap: 4px;
-    font-size: 10.5px; color: #eaf6ff; white-space: nowrap;
+    font-size: 10px; color: #eaf6ff; white-space: nowrap;
     background: rgba(255,255,255,.06); border: 1px solid rgba(255,255,255,.14);
-    border-radius: 3px; padding: 2px 6px;
+    border-radius: 3px; padding: 2px 5px;
   }
   .lastRow .lp b { color: #ffd23f; font-weight: 700; }
   .board .note {
@@ -220,13 +270,26 @@
 
   /* ---- 직업 선택 ---- */
   #jobScreen h2 { color: #ffd23f; }
-  #jobList { display: flex; flex-direction: column; gap: 3px; width: 100%; max-width: 340px; }
-  #jobList img.ic { width: 36px; height: 46px; object-fit: contain; flex: none; }
+  /* 직업 카드는 2열 그리드 — 세로로 여덟 장 쌓는 것보다 캐릭터를 크게 보여 줄 수 있다 */
+  #jobList {
+    display: grid; grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 8px; width: 100%; max-width: 340px;
+  }
+  #jobList img.ic { width: auto; height: 58px; object-fit: contain; flex: none; }
   /* 여덟 직업이 스크롤 없이 한 화면에 들어가도록 카드를 낮춘다.
      증강 카드와 같은 .augCard 를 쓰므로 여기서만 좁힌다. */
-  #jobList .augCard { padding: 5px 11px; gap: 9px; border-radius: 10px; }
+  #jobList .augCard {
+    flex-direction: column; align-items: center; text-align: center;
+    padding: 9px 6px 8px; gap: 3px; border-radius: 12px;
+  }
+  #jobList .augCard .tx { flex: none; width: 100%; }
   #jobList .augCard .nm2 { font-size: 14px; }
-  #jobList .augCard .ds { font-size: 12px; line-height: 1.34; margin-top: 1px; }
+  #jobList .augCard .ds { font-size: 11px; line-height: 1.3; margin-top: 1px; text-wrap: pretty; }
+  /* 지금 고른 직업 */
+  #jobList .augCard.sel {
+    background: rgba(255,210,63,.14); border-color: #ffd23f;
+    box-shadow: 0 0 16px rgba(255,210,63,.3);
+  }
   #jobScreen h2 { font-size: clamp(19px, 5vw, 24px); }
   /* 고르지 않고 나가는 길 — 직업 카드보다 눈에 덜 띄게 */
   #btnJobBack {
@@ -236,13 +299,10 @@
   }
   /* 순위표 직업 탭 — 전체 + 직업별 */
   /* 순위판 왼쪽 세로 레일 — 제목은 위에 가로로, 그 아래는 [탭 | 목록] */
-  .board.withTabs {
-    display: grid; grid-template-columns: 40px minmax(0, 1fr); column-gap: 8px;
-    grid-template-areas: "h h" "tabs list";
-    position: relative;
-  }
-  .board.withTabs h3 { grid-area: h; }
-  .board.withTabs ol { grid-area: list; min-width: 0; }
+  /* 직업 탭은 판 위에 가로로 눕는다. 예전에는 왼쪽 세로 레일이었는데,
+     칸 9개의 최소 높이가 순위판 높이의 바닥을 잡아 목록보다 판이 길어졌다. */
+  .board.withTabs { position: relative; }
+  .board.withTabs ol { min-width: 0; }
   .board.withTabs li { min-width: 0; }
   /* 자릿수가 많은 점수는 글자를 줄여 오른쪽이 잘리지 않게 */
   .board .sc.long  { font-size: .88em; }
@@ -257,19 +317,19 @@
     padding: 2px 8px; font-size: 9.5px; letter-spacing: 0;
   }
   .jobTabs {
-    grid-area: tabs; display: flex; flex-direction: column; align-items: center;
-    gap: 3px; margin: 0; align-self: stretch; padding-top: 0;
+    display: flex; align-items: center; justify-content: center;
+    gap: 4px; margin: 0 0 6px;
   }
   .jobTab {
     display: inline-flex; align-items: center; justify-content: center;
     /* 탭은 순위표 높이를 나눠 갖는다. 최소 높이가 크면 직업이 늘어날 때
        탭 줄이 순위표보다 길어져 오른쪽 아래가 비어 버린다. */
-    width: 40px; flex: 1 1 0; min-height: 22px; max-height: 52px; padding: 0; border-radius: 4px;
+    height: 24px; flex: 0 1 auto; padding: 0 4px; border-radius: 4px; white-space: nowrap;
     font-size: 12px; font-weight: 700; letter-spacing: -.5px;
     background: rgba(53,240,255,.08); color: #9fb4d0;
     border: 1px solid rgba(53,240,255,.35); box-shadow: none;
   }
-  .jobTab img { width: 26px; height: 80%; max-height: 32px; object-fit: contain; }
+  .jobTab img { width: 20px; height: 21px; object-fit: contain; }
   .jobTab.on {
     color: #05060d; background: #ffd23f; border-color: #ffd23f;
     box-shadow: 0 0 12px rgba(255,210,63,.55);
@@ -554,13 +614,25 @@
   /* 줄간격과 순위 줄의 여백을 조금씩 줄여 아래에 자리를 만든다.
      남는 자리는 위아래로 나뉜다 (가운데 정렬). */
   #startScreen {
-    gap: clamp(3px, 0.75vh, 7px);
+    gap: clamp(3px, 0.6vh, 6px);
     padding-top: calc(max(10px, env(safe-area-inset-top)) + var(--lby, 0px));
     padding-left: calc(10px + var(--lbx, 0px));
     padding-right: calc(10px + var(--lbx, 0px));
   }
   #startScreen .board li { padding: 2px 0; }
-  #startScreen .board:not(.withTabs) { padding: 7px 10px; }   /* 지난주 판은 한 줄뿐이라 더 좁게 */
+  /* 지난주는 판을 벗기고 칩 한 줄로 — 판 하나가 통째로 빠진다.
+     (요소는 그대로 두고 겉모습만 바꾼다 — hidden 을 켜고 끄는 코드가 따로 있다) */
+  #startScreen .board.last {
+    width: auto; background: none; padding: 0;
+    display: flex; align-items: center; justify-content: center;
+    gap: 4px; flex-wrap: wrap;
+  }
+  #startScreen .board.last[hidden] { display: none; }
+  #startScreen .board.last h3 {
+    margin: 0; font-size: 10px; font-weight: 700; color: #ffd23f;
+    background: rgba(255,255,255,.06); border: 1px solid rgba(255,255,255,.14);
+    border-radius: 3px; padding: 2px 6px;
+  }
   #startScreen .board li.duo, #startScreen .board li.five { padding: 2px 0; }
   #startScreen .board .mini { padding: 3px 3px; }
   #startScreen h1 {
@@ -572,7 +644,7 @@
      왼쪽 아래는 테스트 모드, 오른쪽 위는 통계. 누르는 자리를 그림 위에 겹쳐 둔다. */
   #startScreen h1 .logoWrap { position: relative; display: inline-block; line-height: 0; }
   #startScreen h1 img.ttl {
-    display: block; width: min(59vw, 268px); height: auto;
+    display: block; width: min(56vw, 255px); height: auto;
     filter: drop-shadow(0 3px 10px rgba(0,0,0,.45));
   }
   #startScreen h1 #testDot, #startScreen h1 #devDot {
@@ -581,7 +653,18 @@
   }
   /* 화면이 짧은 폰에서는 제목을 조금 더 줄여 스크롤이 생기지 않게 한다 */
   @media (max-height: 670px) {
-    #startScreen h1 img.ttl { width: min(52vw, 240px); }
+    #startScreen h1 img.ttl { width: min(48vw, 220px); }
+    .board .pod img.pic { height: 30px; }
+    .board .pod.p1 img.pic { height: 40px; }
+    .board li.rowline { padding: 0 4px; font-size: 11px; }
+    .board li.rowline img.jic3 { width: 13px; height: 16px; }
+    /* 순위 배지가 행 높이의 바닥을 잡고 있어서 함께 줄인다
+       (:not 세 개는 위 규칙과 우선순위를 맞추려는 것) */
+    #startScreen .board li.rowline:not(.p1):not(.p2):not(.p3) .rk {
+      width: 18px; height: 17px; line-height: 17px; font-size: 10px;
+    }
+    #startScreen .board.withTabs { padding: 7px 9px; }
+    .jobTab { height: 22px; }
   }
   #startScreen h1 #testDot { left: 4%;  top: 69%; width: 19%; height: 27%; }   /* 왼쪽 아래 똥 */
   #startScreen h1 #devDot  { left: 68%; top: 5%;  width: 26%; height: 37%; }   /* 오른쪽 위 똥 */
@@ -699,7 +782,7 @@
         <div class="note" id="noteStart"></div>
       </div>
       <div class="board last" id="lastBoard" hidden>
-        <h3 id="lastTitle">👑 지난주 명예의 전당</h3>
+        <h3 id="lastTitle">👑 지난주</h3>
         <div id="boardLast" class="lastRow"></div>
       </div>
       <div id="nameBox">
@@ -833,7 +916,7 @@
   const elFinal = document.getElementById("finalScore");
   const elTitle = document.getElementById("overTitle");
 
-  const GAME_VERSION = "v1.5.58";   // 코드를 고칠 때마다 뒤 두 자리를 올린다
+  const GAME_VERSION = "v1.5.65";   // 코드를 고칠 때마다 뒤 두 자리를 올린다
   document.getElementById("ver").textContent = GAME_VERSION;
 
   const LS_NAME = "epjpddongpi_name";
@@ -854,17 +937,17 @@
   /* ---------- 직업 ---------- */
   const LS_JOB = "epjpddongpi_job";
   const JOBS = {
-    none:    { nm: "백수",   ic: "🏃", ds: "시작할 때 증강 1개를 고른다" },
-    gambler: { nm: "도박사", ic: "🎰", ds: "목숨 1개 + 우산 1개 시작 · 비둘기 출격 · 하트 안 나옴 · 모든 점수 2.5배" },
-    levitator: { nm: "부양사", ic: "🎈", ds: "하늘 어디든 날 수 있다 · 높이 있을수록 점수 UP" },
-    fit: { nm: "헬스걸", ic: "💪", ds: "목숨 5개로 시작 · 벌크업 좀 된 상태" },
-    powerj: { nm: "파워J", ic: "📋", ds: "달이 잘 나온다 · 대신 증강은 계획대로 1개만" },
+    none:    { nm: "백수",   ic: "🏃", ds: "시작할 때 증강 1개를 고른다", s: "증강 1개 고르고 시작" },
+    gambler: { nm: "도박사", ic: "🎰", ds: "목숨 1개 + 우산 1개 시작 · 비둘기 출격 · 하트 안 나옴 · 모든 점수 2.5배", s: "점수 2.5배 · 목숨 1개" },
+    levitator: { nm: "부양사", ic: "🎈", ds: "하늘 어디든 날 수 있다 · 높이 있을수록 점수 UP", s: "날 수 있다 · 높을수록 점수" },
+    fit: { nm: "헬스걸", ic: "💪", ds: "목숨 5개로 시작 · 벌크업 좀 된 상태", s: "목숨 5개로 시작" },
+    powerj: { nm: "파워J", ic: "📋", ds: "달이 잘 나온다 · 대신 증강은 계획대로 1개만", s: "달 많이 · 증강은 1장만" },
     /* 파워P — 파워J 의 거울. 달은 덜 오지만 올 때마다 다섯 장을 다 펼쳐 놓고 고른다.
        아이디가 powerp2 인 것은, powerp 는 무소유가 예전에 파워P 였을 때 쓰던 이름이라
        이미 차 있기 때문이다 (옛 기록과 순위표가 그 이름을 쓴다). */
-    powerp2: { nm: "파워P", ic: "🎯", ds: "달이 덜 나온다 · 대신 증강을 5개 중에서 고른다" },
-    powerp: { nm: "무소유", ic: "🙏", ds: "달이 아예 안 나온다 · 별이 조금 잘 나온다 · 안 맞을수록 점수가 치솟는다" },
-    bangul: { nm: "방울이", ic: "🫧", ds: "비누방울이 한 대를 대신 맞고 터진다 · 잠시 뒤 다시 맺힌다" }
+    powerp2: { nm: "파워P", ic: "🎯", ds: "달이 덜 나온다 · 대신 증강을 5개 중에서 고른다", s: "달 적게 · 증강 5장 중 선택" },
+    powerp: { nm: "무소유", ic: "🙏", ds: "달이 아예 안 나온다 · 별이 조금 잘 나온다 · 안 맞을수록 점수가 치솟는다", s: "달 없음 · 안 맞을수록 폭등" },
+    bangul: { nm: "방울이", ic: "🫧", ds: "비누방울이 한 대를 대신 맞고 터진다 · 잠시 뒤 다시 맺힌다", s: "방울이 한 대 대신 맞는다" }
   };
   // 직업별 캐릭터 그림(오른쪽 이동 모습) — 직업 카드와 순위표에서 함께 쓴다
   const JOB_IMG = { none: "player", gambler: "gambler", levitator: "levitator",
@@ -2451,7 +2534,9 @@
       ic.src = "assets/" + JOB_IMG[id] + "_right.png"; ic.alt = j.ic;
       const tx = document.createElement("div"); tx.className = "tx";
       const nm = document.createElement("div"); nm.className = "nm2"; nm.textContent = j.nm;
-      const ds = document.createElement("div"); ds.className = "ds"; ds.textContent = j.ds;
+      const ds = document.createElement("div"); ds.className = "ds"; ds.textContent = j.s || j.ds;
+      card.title = j.ds;                       // 긴 설명은 눌러 보기 전 도움말로
+      if (id === job) card.classList.add("sel");
       tx.append(nm, ds);
       card.append(ic, tx);
       card.addEventListener("click", () => {
@@ -4058,58 +4143,57 @@
                           : n >= 1e4 ? Math.round(n / 1e4).toLocaleString() + "만"
                           : n.toLocaleString();
     const isMe = row => myRowKey && row.name + "|" + row.score === myRowKey;
-    // 1~3위 — 금·은·동 큰 줄
-    list.slice(0, 3).forEach((row, i) => {
+    /* 1~3위 — 시상대. 가운데가 1위라 2·1·3 순서로 세운다. */
+    const top3 = list.slice(0, 3);
+    if (top3.length) {
       const li = document.createElement("li");
-      li.className = "p" + (i + 1) + (isMe(row) ? " me" : "");
-      const rk = document.createElement("span");
-      rk.className = "rk";
-      rk.textContent = medal[i];
-      const nm = document.createElement("span");
-      nm.className = "nm";
-      nm.textContent = row.name;               // textContent → HTML 삽입 불가
-      const sc = document.createElement("span");
-      const digits = String(Math.round(Number(row.score) || 0)).length;
-      sc.className = "sc" + (digits >= 11 ? " xlong" : digits >= 9 ? " long" : "");
-      if (row.job && JOBS[row.job]) {
+      li.className = "podium";
+      for (const i of [1, 0, 2]) {
+        const row = top3[i];
+        if (!row) continue;
+        const pod = document.createElement("div");
+        pod.className = "pod p" + (i + 1) + (isMe(row) ? " me" : "");
+        const jb = row.job && JOBS[row.job] ? row.job : "none";
         const im = document.createElement("img");
-        im.className = "jic";
-        im.src = "assets/" + JOB_IMG[row.job] + "_right.png";
-        im.alt = JOBS[row.job].ic;
-        sc.appendChild(im);
+        im.className = "pic";
+        im.src = "assets/" + JOB_IMG[jb] + "_right.png";
+        im.alt = JOBS[jb].ic;
+        const md = document.createElement("div");
+        md.className = "pmd";
+        md.textContent = medal[i];
+        const nm = document.createElement("div");
+        nm.className = "pnm";
+        nm.textContent = row.name;             // textContent → HTML 삽입 불가
+        const sc = document.createElement("div");
+        const digits = String(Math.round(Number(row.score) || 0)).length;
+        sc.className = "psc" + (digits >= 11 ? " xlong" : digits >= 9 ? " long" : "");
+        sc.textContent = Number(row.score).toLocaleString();
+        pod.append(im, md, nm, sc);
+        li.appendChild(pod);
       }
-      sc.appendChild(document.createTextNode(Number(row.score).toLocaleString()));
-      li.append(rk, nm, sc);
-      el.appendChild(li);
-    });
-    // 4~6위는 한 줄에 셋, 7~10위는 한 줄에 넷 — 세로 미니 카드
-    const mkMini = (row, rank) => {
-      const chip = document.createElement("span");
-      chip.className = "mini" + (isMe(row) ? " me" : "");
-      const im = document.createElement("img");
-      im.className = "jic2";
-      const jb = row.job && JOBS[row.job] ? row.job : "none";
-      im.src = "assets/" + JOB_IMG[jb] + "_right.png";
-      im.alt = JOBS[jb].ic;
-      const mn = document.createElement("span");
-      mn.className = "mn";
-      const b = document.createElement("b"); b.textContent = rank;
-      mn.appendChild(b);
-      mn.appendChild(document.createTextNode(row.name));
-      const ms = document.createElement("span");
-      ms.className = "ms";
-      ms.textContent = shortScore(Number(row.score) || 0);
-      chip.append(im, mn, ms);
-      return chip;
-    };
-    for (const [from, to, cls] of [[3, 6, "duo"], [6, 10, "five"]]) {
-      const rows = list.slice(from, to);
-      if (!rows.length) continue;
-      const li = document.createElement("li");
-      li.className = cls;
-      rows.forEach((row, k) => li.appendChild(mkMini(row, from + k + 1)));
       el.appendChild(li);
     }
+    // 4~10위 — 한 줄씩 (예전에는 세로 미니 카드 두 줄이었다)
+    list.slice(3, 10).forEach((row, k) => {
+      const li = document.createElement("li");
+      li.className = "rowline" + (isMe(row) ? " me" : "");
+      const rk = document.createElement("span");
+      rk.className = "rk";
+      rk.textContent = k + 4;
+      const jb = row.job && JOBS[row.job] ? row.job : "none";
+      const im = document.createElement("img");
+      im.className = "jic3";
+      im.src = "assets/" + JOB_IMG[jb] + "_right.png";
+      im.alt = JOBS[jb].ic;
+      const nm = document.createElement("span");
+      nm.className = "nm";
+      nm.textContent = row.name;
+      const sc = document.createElement("span");
+      sc.className = "sc";
+      sc.textContent = shortScore(Number(row.score) || 0);
+      li.append(rk, im, nm, sc);
+      el.appendChild(li);
+    });
   }
 
   const noteStart = document.getElementById("noteStart");
