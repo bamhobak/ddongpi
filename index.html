@@ -124,9 +124,11 @@
   .board .mini .mn {
     max-width: 100%; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
     font-size: 10px; color: #dfe3ee;
+    /* 이모지(🍀·❤)가 섞이면 줄이 높아져 판 크기가 흔들린다 — 높이를 못 박는다 */
+    line-height: 1.4; height: 1.4em;
   }
   .board .mini .mn b { color: #7f93b5; font-weight: 700; margin-right: 2px; }
-  .board .mini .ms { font-size: 12px; font-weight: 700; color: #ffd23f; font-variant-numeric: tabular-nums; }
+  .board .mini .ms { font-size: 12px; font-weight: 700; color: #ffd23f; font-variant-numeric: tabular-nums; line-height: 1.35; height: 1.35em; }
   .board li.five .mini { background: rgba(255,255,255,.04); border-color: rgba(255,255,255,.10); }
   .board li.five .mini .mn { font-size: 10px; }
   .board li.five .mini .ms { font-size: 11px; }
@@ -172,6 +174,18 @@
     padding: 5px 7px;
   }
   .board .empty { font-size: 13px; color: #7f8494; padding: 6px 0; }
+  /* 아직 주인이 없는 자리 — 칸은 그대로 두고 옅게만 남긴다 */
+  .board li.ghost { opacity: .30; box-shadow: none; }
+  .board li.ghost .nm, .board li.ghost .sc { color: #8b90a0; text-shadow: none; }
+  .board .mini.ghost { opacity: .30; background: rgba(255,255,255,.03); border-color: rgba(255,255,255,.10); }
+  .board .mini.ghost .ms { color: #8b90a0; }
+  /* 안내문은 칸 위에 겹쳐 띄운다 — 칸 구조가 그대로라 판 크기가 변하지 않는다 */
+  .board ol { position: relative; }
+  .board .boardMsg {
+    position: absolute; inset: 0; display: flex; align-items: center; justify-content: center;
+    text-align: center; padding: 0 12px; font-size: 12.5px; color: #b8bdcc;
+    background: rgba(5,6,13,.55); border-radius: 8px; word-break: keep-all;
+  }
   #startScreen .board ol, #overScreen .board ol { display: flex; flex-direction: column; }
   #startScreen .board .empty, #overScreen .board .empty { margin: auto 0; text-align: center; }
   .board[hidden] { display: none; }
@@ -630,7 +644,8 @@
   }
   /* 화면이 짧은 폰에서는 제목을 조금 더 줄여 스크롤이 생기지 않게 한다 */
   @media (max-height: 670px) {
-    #startScreen h1 img.ttl { width: min(52vw, 240px); }
+    #startScreen h1 img.ttl { width: min(50vw, 232px); }
+    #startScreen .board .mini { padding: 2px 3px; }   /* 이름 줄 높이를 못 박은 만큼 여백을 되돌린다 */
   }
   #startScreen h1 #testDot { left: 4%;  top: 69%; width: 19%; height: 27%; }   /* 왼쪽 아래 똥 */
   #startScreen h1 #devDot  { left: 68%; top: 5%;  width: 26%; height: 37%; }   /* 오른쪽 위 똥 */
@@ -891,7 +906,7 @@
   const elFinal = document.getElementById("finalScore");
   const elTitle = document.getElementById("overTitle");
 
-  const GAME_VERSION = "v1.5.75";   // 코드를 고칠 때마다 뒤 두 자리를 올린다
+  const GAME_VERSION = "v1.5.81";   // 코드를 고칠 때마다 뒤 두 자리를 올린다
   document.getElementById("ver").textContent = GAME_VERSION;
 
   const LS_NAME = "epjpddongpi_name";
@@ -4145,78 +4160,77 @@
     throw new Error(lastErr);
   }
 
+  /* 순위판은 늘 10칸을 그린다. 기록이 적으면 빈 칸을 옅게 남겨서,
+     직업 탭을 옮겨 다녀도 판 크기가 그대로다 (예전에는 판이 줄었다 늘었다 했다). */
   function renderBoard(el, list, msg) {
     el.innerHTML = "";
-    if (msg) {
-      const li = document.createElement("li");
-      li.className = "empty";
-      li.textContent = msg;
-      el.appendChild(li);
-      return;
-    }
-    if (!list.length) {
-      const li = document.createElement("li");
-      li.className = "empty";
-      li.textContent = "이번 주 기록이 아직 없습니다. 첫 주인공이 되어보세요!";
-      el.appendChild(li);
-      return;
-    }
+    const rows = (list || []).slice(0, 10);
+    while (rows.length < 10) rows.push(null);
     const medal = ["🥇", "🥈", "🥉"];
     const shortScore = n => n >= 1e8 ? (n / 1e8).toFixed(n >= 1e9 ? 0 : 1) + "억"
                           : n >= 1e4 ? Math.round(n / 1e4).toLocaleString() + "만"
                           : n.toLocaleString();
-    const isMe = row => myRowKey && row.name + "|" + row.score === myRowKey;
+    const isMe = row => row && myRowKey && row.name + "|" + row.score === myRowKey;
     // 1~3위 — 금·은·동 큰 줄
-    list.slice(0, 3).forEach((row, i) => {
+    rows.slice(0, 3).forEach((row, i) => {
       const li = document.createElement("li");
-      li.className = "p" + (i + 1) + (isMe(row) ? " me" : "");
+      li.className = "p" + (i + 1) + (row ? (isMe(row) ? " me" : "") : " ghost");
       const rk = document.createElement("span");
       rk.className = "rk";
       rk.textContent = medal[i];
       const nm = document.createElement("span");
       nm.className = "nm";
-      nm.textContent = row.name;               // textContent → HTML 삽입 불가
+      nm.textContent = row ? row.name : "-";     // textContent → HTML 삽입 불가
       const sc = document.createElement("span");
-      const digits = String(Math.round(Number(row.score) || 0)).length;
+      const digits = row ? String(Math.round(Number(row.score) || 0)).length : 0;
       sc.className = "sc" + (digits >= 11 ? " xlong" : digits >= 9 ? " long" : "");
-      if (row.job && JOBS[row.job]) {
-        const im = document.createElement("img");
-        im.className = "jic";
-        im.src = "assets/" + JOB_IMG[row.job] + "_right.png";
-        im.alt = JOBS[row.job].ic;
-        sc.appendChild(im);
-      }
-      sc.appendChild(document.createTextNode(Number(row.score).toLocaleString()));
+      /* 캐릭터 그림이 줄 높이를 정한다 — 빈 자리나 직업 기록이 없는 줄도
+         그림 자리는 똑같이 잡아 둬야 판 높이가 흔들리지 않는다. */
+      const jb3 = row && row.job && JOBS[row.job] ? row.job : null;
+      const im = document.createElement("img");
+      im.className = "jic";
+      im.src = "assets/" + JOB_IMG[jb3 || "none"] + "_right.png";
+      im.alt = jb3 ? JOBS[jb3].ic : "";
+      if (!jb3) im.style.visibility = "hidden";
+      sc.appendChild(im);
+      sc.appendChild(document.createTextNode(row ? Number(row.score).toLocaleString() : "-"));
       li.append(rk, nm, sc);
       el.appendChild(li);
     });
     // 4~6위는 한 줄에 셋, 7~10위는 한 줄에 넷 — 세로 미니 카드
     const mkMini = (row, rank) => {
       const chip = document.createElement("span");
-      chip.className = "mini" + (isMe(row) ? " me" : "");
+      chip.className = "mini" + (row ? (isMe(row) ? " me" : "") : " ghost");
       const im = document.createElement("img");
       im.className = "jic2";
-      const jb = row.job && JOBS[row.job] ? row.job : "none";
+      const jb = row && row.job && JOBS[row.job] ? row.job : "none";
       im.src = "assets/" + JOB_IMG[jb] + "_right.png";
       im.alt = JOBS[jb].ic;
+      if (!row) im.style.visibility = "hidden";  // 자리는 잡되 캐릭터는 비운다
       const mn = document.createElement("span");
       mn.className = "mn";
       const b = document.createElement("b"); b.textContent = rank;
       mn.appendChild(b);
-      mn.appendChild(document.createTextNode(row.name));
+      mn.appendChild(document.createTextNode(row ? row.name : ""));
       const ms = document.createElement("span");
       ms.className = "ms";
-      ms.textContent = shortScore(Number(row.score) || 0);
+      ms.textContent = row ? shortScore(Number(row.score) || 0) : "-";
       chip.append(im, mn, ms);
       return chip;
     };
     for (const [from, to, cls] of [[3, 6, "duo"], [6, 10, "five"]]) {
-      const rows = list.slice(from, to);
-      if (!rows.length) continue;
       const li = document.createElement("li");
       li.className = cls;
-      rows.forEach((row, k) => li.appendChild(mkMini(row, from + k + 1)));
+      rows.slice(from, to).forEach((row, k) => li.appendChild(mkMini(row, from + k + 1)));
       el.appendChild(li);
+    }
+    // 불러오는 중·오류·기록 없음은 칸 위에 겹쳐 띄운다
+    const note = msg || (list && list.length ? "" : "이번 주 기록이 아직 없습니다. 첫 주인공이 되어보세요!");
+    if (note) {
+      const ov = document.createElement("li");
+      ov.className = "boardMsg";
+      ov.textContent = note;
+      el.appendChild(ov);
     }
   }
 
