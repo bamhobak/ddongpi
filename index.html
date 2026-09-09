@@ -321,6 +321,12 @@
     background: #ffd23f; border-radius: 999px; padding: 3px 8px;
   }
   #augScreen h2 { color: #ffd23f; }
+  /* 다시 뽑기 — 카드 셋을 통째로 바꾼다. 남은 횟수가 없으면 사라진다 */
+  #btnReroll {
+    margin-top: 14px; font-size: 14px; padding: 9px 20px; border-radius: 999px;
+    color: #dfe6ef; background: rgba(255,255,255,.08); border: 1px solid rgba(255,255,255,.28);
+  }
+  #btnReroll:hover { background: rgba(255,255,255,.16); border-color: #fff; }
   /* 히든 증강 — 조건을 만족했을 때만 후보에 오른다 */
   .augCard.hid {
     border-color: #c86bff;
@@ -744,6 +750,7 @@
     <div id="augScreen" class="screen hidden">
       <h2 id="augTitle">⭐ 증강 선택 🌙</h2>
       <div id="augList"></div>
+      <button id="btnReroll">🔄 다시 뽑기</button>
     </div>
 
     <div id="overScreen" class="screen hidden">
@@ -806,7 +813,7 @@
   const elFinal = document.getElementById("finalScore");
   const elTitle = document.getElementById("overTitle");
 
-  const GAME_VERSION = "v1.5.39";   // 코드를 고칠 때마다 뒤 두 자리를 올린다
+  const GAME_VERSION = "v1.5.40";   // 코드를 고칠 때마다 뒤 두 자리를 올린다
   document.getElementById("ver").textContent = GAME_VERSION;
 
   const LS_NAME = "epjpddongpi_name";
@@ -1592,11 +1599,13 @@
      소리마다 녹음 크기가 제각각이라 배율로 귀에 맞춰 뒀다 (하트는 원본이 유독 작다).
      오디오 문맥이 열린 뒤에 한 번만 받아 두고, 아직 안 받았거나 실패했으면
      false 를 돌려주어 부르는 쪽이 예전 삐 소리로 대신하게 한다. */
-  const SFX_GAIN = { star: 1.0, aug: 0.9, fever: 0.8, hurt: 0.8,
-                     over: 0.8, gold: 1.4, heart: 6.0, shield: 0.8,
-                     moon: 2.5, bubble: 0.8, break: 0.6, helper: 0.45, fetch: 0.5,
+  /* 루도 소리는 파일마다 녹음 크기가 달라서, 최대치를 재어 비슷한 체감이 되게 맞춘 값 */
+  const SFX_GAIN = { star: 3.4, aug: 0.9, fever: 0.8, hurt: 0.8,
+                     over: 0.8, gold: 2.0, heart: 1.0, shield: 0.9,
+                     moon: 2.8, bubble: 0.8, break: 0.6, helper: 0.45, fetch: 0.5,
                      galaga: 0.35, dove: 0.3, clone: 1.6, burst: 0.8,
-                     angry: 0.8, laser: 0.9, fpick: 3.0, giant: 1.0, magnet: 0.55 };
+                     angry: 0.8, laser: 0.9, fpick: 1.2, giant: 1.0, magnet: 0.55,
+                     dodge: 0.9, boing: 0.9, wakboom: 0.9, reroll: 0.7 };
   const SFX_VOL = 0.55;              // 전체 크기
   const sfxBuf = {};
   let sfxAsked = false;
@@ -1791,6 +1800,8 @@
     blackhole: false,   // 히든: 블랙홀 (자석 강화 + 뚜니핑 낙하물도 조금 끌어당김)
     legion: false,      // 히든: 대왕 뚜니핑 군단 (대왕 등장·점수 강화)
     doveWhat: false,    // 히든: 비둘기 무엇? (도박사 — 비둘기가 세지고 자주 나온다)
+    dodge: 0,           // 그건 제 잔상입니다만? — 맞을 때 피할 확률 (0~0.45)
+    wak: false,         // 히든: 왁뿌총알 발사 (총알이 똥을 튕겨 올리고, 부딪히면 같이 터진다)
     scoreMul: 1,        // 모든 점수에 곱해지는 배율
     maxLives: 5
   };
@@ -1890,6 +1901,15 @@
       hidden: true, once: true,
       cond: () => augCount["lucky"] >= 1 && augCount["fever_time"] >= 1 && augCount["downpour"] >= 1,
       go: () => { aug.subs = true; subsTimer = 0; } },
+    { id: "afterimage", ic: "👻", nm: "그건 제 잔상입니다만?", ds: "맞을 때 15% 확률로 잔상만 남기고 피한다",
+      max: 5,                     // 15% → 22.5 → 30 → 37.5 → 45%
+      dsFn: () => (augCount["afterimage"] || 0)
+        ? "회피 확률 +7.5% (지금 " + Math.round(aug.dodge * 100) + "%)"
+        : "맞을 때 15% 확률로 잔상만 남기고 피한다",
+      go: () => { aug.dodge += augCount["afterimage"] ? 0.075 : 0.15; } },
+    { id: "wak",        ic: "🟣", nm: "왁뿌총알 발사", ds: "총알이 동그래진다. 맞은 똥은 튕겨 날아가 처음 부딪힌 똥과 함께 터진다",
+      hidden: true, once: true, cond: () => aug.galaga >= 2,   // 갤러그 2대 이상
+      go: () => { aug.wak = true; } },
     { id: "clone",      ic: "👯", nm: "벼랑 끝 분신술", ds: "작은 이재가 날아가 똥과 함께 자폭한다",
       hidden: true, once: true, cond: () => level >= 7 && lives <= 2,
       go: () => { aug.clone = true; cloneTimer = 1.5; } }
@@ -1906,6 +1926,23 @@
   let augTotal = 1;
 
   let augPauseAt = 0;      // 증강 고르는 동안 흘러간 시간을 나중에 되돌려주기 위한 기준
+
+  /* 다시 뽑기 — 마음에 드는 카드가 없으면 셋을 통째로 바꾼다. 한 판에 REROLLS 번.
+     파워J는 애초에 한 장뿐이라(계획은 하나) 쓸 수 없다. */
+  const REROLLS = 2;
+  let rerolls = REROLLS;
+  const btnReroll = document.getElementById("btnReroll");
+  function syncReroll() {
+    const can = rerolls > 0 && job !== "powerj";
+    btnReroll.style.display = can ? "" : "none";
+    btnReroll.textContent = "🔄 다시 뽑기 (" + rerolls + ")";
+  }
+  btnReroll.addEventListener("click", () => {
+    if (rerolls <= 0 || state !== STATE.AUG) return;
+    rerolls--;
+    if (!sfx("reroll")) beep(700, .05, "square", .04);
+    showAugmentPick();               // 방금 본 카드는 반으로 눌려 다른 것이 나온다
+  });
 
   /* 별을 먹은 것과 똑같은 점수 처리 — 별 아이템과,
      고를 증강이 다 떨어졌을 때의 달 보상 대체에 함께 쓴다. */
@@ -2000,7 +2037,7 @@
       const ic = document.createElement("span"); ic.className = "ic"; ic.textContent = a.ic;
       const tx = document.createElement("span"); tx.className = "tx";
       const nm = document.createElement("div");  nm.className = "nm2"; nm.textContent = nameOf(a);
-      const ds = document.createElement("div");  ds.className = "ds";  ds.textContent = a.ds;
+      const ds = document.createElement("div");  ds.className = "ds";  ds.textContent = a.dsFn ? a.dsFn() : a.ds;
       tx.append(nm, ds);
       card.append(ic, tx);
       if (a.hidden) {
@@ -2032,6 +2069,7 @@
       });
       augList.appendChild(card);
     }
+    syncReroll();
     augScreen.classList.remove("hidden");
   }
   let state = STATE.READY;
@@ -2057,6 +2095,8 @@
      게임 안의 1m = 논리 좌표 12px 로 본다 (캐릭터 키가 대략 1.5m 쯤 되는 비율). */
   let doves = [], moveDist = 0;
   let bullets = [], shipClock = 0;   // 갤러그: 날아가는 총알과 편대 공용 시계
+  let ghosts = [];                   // 그건 제 잔상입니다만? — 피한 자리에 남는 잔상
+  let wakBooms = [];                 // 왁뿌총알 — 똥끼리 부딪혀 터진 자리의 고리
   const SHIP_GAP = 0.5;              // 우주선 한 대가 다시 쏘기까지
   const M_PX = 12, DOVE_EVERY = 80 * M_PX;   // 100m 에서 20% 줄여 80m 마다
   // 히든 '비둘기 무엇?' — 속도·크기·폭발은 1.5배, 출격은 3/4 거리마다
@@ -2383,6 +2423,7 @@
     aug.feverBonus = 0; aug.starMul = 1; aug.timeMul = 1;
     aug.feverScoreMul = 1; aug.fallMul = 1; aug.hitboxMul = 1; aug.poopMul = 1;
     aug.steelUmb = false; aug.starburst = false; aug.scoreMul = 1;
+    aug.dodge = 0; aug.wak = false; rerolls = REROLLS; ghosts = []; wakBooms = [];
     aug.blackhole = false; aug.legion = false; roidT = 0;
     aug.doveWhat = false;
     flyOn = false;
@@ -2929,6 +2970,14 @@
 
     if (spawnHold > 0) spawnHold -= dt * tsc;
     if (umbBlast) { umbBlast.t -= dt * tsc; if (umbBlast.t <= 0) umbBlast = null; }
+    for (let k = ghosts.length - 1; k >= 0; k--) {
+      ghosts[k].t += dt;
+      if (ghosts[k].t >= ghosts[k].life) ghosts.splice(k, 1);
+    }
+    for (let k = wakBooms.length - 1; k >= 0; k--) {
+      wakBooms[k].t += dt * tsc;
+      if (wakBooms[k].t >= 0.35) wakBooms.splice(k, 1);
+    }
 
     // ---- 인터스텔라: 10초마다 2초씩 세상만 느려진다 (점수 시계는 그대로) ----
     if (aug.inter) {
@@ -3019,10 +3068,23 @@
       let hit = false;
       for (let j = items.length - 1; j >= 0; j--) {
         const q = items[j];
-        if (q.type !== "poop" || q.blast) continue;
+        if (q.type !== "poop" || q.blast || q.bounced) continue;
         if (Math.hypot(q.x - bu.x, q.y - bu.y) > q.r + 6) continue;
-        smashPoopsAround(bu.x, bu.y, 8, true);      // 맞은 똥 하나만 부순다
-        burst(bu.x, bu.y, "#9fe8ff", 10);
+        if (aug.wak && !q.gold && q.skin !== "fever") {
+          /* 왁뿌총알 — 부수지 않고 위로 튕겨 올린다. 날아가는 똥은 사람을 해치지 않고,
+             처음 부딪히는 똥과 함께 반경 50px 로 터진다 (아래 wak 처리).
+             무지개똥·뚜니핑은 튕기면 먹을 기회가 날아가니 예전처럼 그 자리에서 부순다. */
+          q.vx = (q.x - bu.x) * 5 + (Math.random() - .5) * 140;
+          q.vy = -(520 + Math.random() * 140);      // 0.7~0.9초 뒤 꼭대기, 200px 남짓 오른다
+          q.vr = (Math.random() - .5) * 12;
+          q.swayA = 0; q.special = null;
+          q.bounced = true; q.wak = true;
+          burst(bu.x, bu.y, "#d99cff", 8);
+          if (!sfx("boing")) beep(520, .06, "square", .04);
+        } else {
+          smashPoopsAround(bu.x, bu.y, 8, true);    // 맞은 똥 하나만 부순다
+          burst(bu.x, bu.y, "#9fe8ff", 10);
+        }
         hit = true;
         break;
       }
@@ -3260,13 +3322,16 @@
         it.vx = Math.sin(it.phase) * 230 * aug.fallMul;
       }
       const prevX = it.x, prevY = it.y;      // 한 프레임에 크게 움직이면 스쳐 지나갈 수 있다
+      /* 왁뿌총알에 튕긴 똥은 포물선을 그린다 — 올라갔다가 똥밭을 되짚어 내려오며
+         부딪힐 기회를 두 번 갖는다. 곧장 위로 날려 보내면 대부분 아무것도 못 만나고 사라졌다. */
+      if (it.wak) it.vy += 760 * dt * tsc;
       it.x += it.vx * dt * tsc;
       it.y += it.vy * dt * tsc;
       if (it.swayA) {                       // 살랑임 — 처음 각도를 중심으로 오간다
         it.swayP += dt * tsc * it.swayW;
         it.rot = (it.rot0 === undefined ? (it.rot0 = it.rot) : it.rot0) + Math.sin(it.swayP) * it.swayA;
       } else it.rot += it.vr * dt * tsc;
-      if (it.special !== "laser" && !it.bounced) {   // 레이저·튕긴 똥은 벽에 막히지 않는다
+      if (it.special !== "laser" && (!it.bounced || it.wak)) {   // 레이저·튕긴 똥은 벽에 막히지 않는다 (왁뿌 똥은 벽에 튕긴다)
         if (it.x < it.r) { it.x = it.r; it.vx = Math.abs(it.vx); }
         if (it.x > W - it.r) { it.x = W - it.r; it.vx = -Math.abs(it.vx); }
       }
@@ -3306,7 +3371,7 @@
          맞는 쪽만 줄여 뒀다 (.78 → .702 → .632). */
       const dmg = it.type === "poop" && !powered && it.skin !== "fever";
       // 끝점만 보면 빠른 똥이 캐릭터를 뛰어넘을 수 있어서, 이번 프레임에 지나온 선분과의 거리를 본다
-      const hit = !it.bounced && segDist(player.x, cy, prevX, prevY, it.x, it.y)
+      const hit = !it.bounced && !it.ghost && segDist(player.x, cy, prevX, prevY, it.x, it.y)
                   < it.r + player.r * (dmg ? .632 : .78) * hitMul();
 
       if (hit) {
@@ -3379,6 +3444,20 @@
              프레임 앞에서 한 번만 재어 두면, 같은 프레임에 똥 두 개가 겹쳐 닿았을 때
              첫 번째로 무적이 걸렸는데도 두 번째가 그대로 들어와 방패가 두 개 깨진다. */
           if (now >= invUntil) {
+            if (aug.dodge > 0 && Math.random() < aug.dodge) {
+              /* 그건 제 잔상입니다만? — 똥은 잔상을 뚫고 그냥 지나간다.
+                 방울·우산보다 먼저 굴려서, 피하면 그것들이 그대로 남는다.
+                 이 똥은 다시 판정하지 않는다 (다음 프레임에 또 걸리지 않게). */
+              it.ghost = true;
+              const spr = currentSprite(now), fl = sprFlipped(now), dir = fl ? 1 : -1;
+              for (let k = 0; k < 3; k++)
+                ghosts.push({ x: player.x + dir * k * 16, y: player.y, tilt: player.tilt,
+                              flip: fl, spr: spr, t: -k * 0.04, life: 0.5 });
+              burst(player.x, cy, "#cbb8ff", 10);
+              popText(player.x, player.y - 60, "그건 제 잔상입니다만?", "#cbb8ff", 18);
+              if (!sfx("dodge")) beep(880, .06, "sine", .04);
+              continue;
+            }
             /* 방울이 우산보다 먼저 터진다 — 방울은 저절로 다시 차지만
                우산은 주워야 생기니, 공짜인 쪽을 먼저 쓰는 게 이롭다. */
             if (bubbleOn) {
@@ -3463,8 +3542,10 @@
         }
       }
 
-      // 튕겨 나간 똥은 화면 밖으로 나가면 사라진다 (위·좌우 어디로든)
-      if (it.bounced && (it.y + it.r < -40 || it.x < -70 || it.x > W + 70)) { items.splice(i, 1); continue; }
+      /* 튕겨 나간 똥은 화면 밖으로 나가면 사라진다 (위·좌우 어디로든).
+         왁뿌 똥만은 예외 — 총알은 대개 똥이 막 태어나는 맨 위에서 맞히므로, 위로 나가는
+         걸 지우면 거의 다 사라져 버린다. 화면 위로 올라갔다가 중력에 되돌아오게 둔다. */
+      if (it.bounced && ((it.y + it.r < -40 && !it.wak) || it.y < -900 || it.x < -70 || it.x > W + 70)) { items.splice(i, 1); continue; }
       if (it.y - it.r > H + 20) {
         // 뚜니핑 타임 낙하물은 워낙 많이 쏟아져서, 안 먹고 흘려보낸 것에 점수를 주면
         // 가만히 있어도 점수가 폭등한다. 뚜니핑 타임 것은 0점 — 직접 받아야만 점수가 오른다.
@@ -3473,22 +3554,37 @@
       }
     }
 
-    /* 성난 우산에 날아간 똥은 부딪히는 똥을 관통하며 계속 부순다 (연쇄 청소). */
+    /* 성난 우산에 날아간 똥은 부딪히는 똥을 관통하며 계속 부순다 (연쇄 청소).
+       왁뿌총알에 튕긴 똥은 처음 부딪히는 똥과 함께 반경 50px 로 터진다. */
     let boom = false;
+    const waks = [];
     for (const a of items) {
-      if (!a.blast || a.dead) continue;
+      if (!(a.blast || a.wak) || a.dead) continue;
       for (const q of items) {
         if (q === a || q.dead || q.blast || q.type !== "poop") continue;
         if (Math.hypot(a.x - q.x, a.y - q.y) > a.r + q.r) continue;
+        if (a.wak) {                              // 둘이 같이 터진다 — 폭발은 아래에서
+          a.dead = true;
+          score += sc("똥", poopGain());          // 날아간 똥 제 몫
+          waks.push({ x: (a.x + q.x) / 2, y: (a.y + q.y) / 2 });
+          break;
+        }
         q.dead = true; boom = true;               // 날아가는 똥은 살아서 계속 나아간다
         score += sc("똥", poopGain());
         burst(q.x, q.y, "#9fd4ff", 16);
       }
     }
+    if (boom || waks.length) items = items.filter(q => !q.dead);
     if (boom) {
-      items = items.filter(q => !q.dead);
       shake = Math.max(shake, 8);
       beep(300, .07, "square", .04);
+    }
+    for (const w of waks) {
+      smashPoopsAround(w.x, w.y, 50, true);       // 부딪힌 똥과 반경 안의 똥이 함께 터진다
+      burst(w.x, w.y, "#d99cff", 30);
+      wakBooms.push({ x: w.x, y: w.y, t: 0 });
+      shake = Math.max(shake, 10);
+      if (!sfx("wakboom")) beep(220, .1, "square", .05);
     }
   }
 
@@ -5170,6 +5266,20 @@
     const blink = now < invUntil && Math.floor(now / 90) % 2 === 0;
     const spr = currentSprite(now);
 
+    for (const g of ghosts) {             // 잔상 — 뒤쪽일수록 늦게 나타나 옅게 남는다
+      if (!g.spr || g.t < 0) continue;
+      const k = 1 - g.t / g.life;
+      const gh = spriteHeight(g.spr), gw = gh * g.spr.aspect;
+      ctx.save();
+      ctx.translate(g.x, g.y);
+      ctx.rotate(g.tilt * 0.35 * (g.flip ? -1 : 1));
+      ctx.globalAlpha = 0.5 * k;
+      ctx.scale(1 + (1 - k) * 0.1, 1 + (1 - k) * 0.1);
+      if (g.flip) ctx.scale(-1, 1);
+      ctx.drawImage(g.spr.img, -gw * g.spr.cx, FOOT - gh, gw, gh);
+      ctx.restore();
+    }
+
     if (spr) {
       // 머리 지름을 판정원 지름과 일치시킨다 — 그림마다 머리 비율이 달라 각자의 값을 쓴다
       const sh = spriteHeight(spr);   // 판정이 작아지면 그림도 같이 작아진다
@@ -5732,6 +5842,12 @@
           ctx.beginPath(); ctx.arc(0, 0, R, 0, 6.283); ctx.fill();
           if (ctx.filter !== undefined) ctx.filter = fx.css;
         }
+        if (it.wak) {                        // 왁뿌총알에 튕긴 똥 — 보랏빛 테두리 (사람을 해치지 않는다)
+          ctx.fillStyle = "rgba(217,156,255,.30)";
+          ctx.beginPath(); ctx.arc(0, 0, it.size * 0.72, 0, 6.283); ctx.fill();
+          ctx.strokeStyle = "rgba(230,198,255,.9)"; ctx.lineWidth = 2.5;
+          ctx.beginPath(); ctx.arc(0, 0, it.size * 0.72, 0, 6.283); ctx.stroke();
+        }
         const ii = ITEM_IMG[it.type];      // 똥도 같은 3D 그림 (무지개똥 필터는 그림에도 먹는다)
         if (ii) {
           const d = it.size * ITEM_IMG_SCALE;
@@ -6000,11 +6116,25 @@
     }
     // 갤러그 — 총알과 우주선
     if (bullets.length) {
-      ctx.fillStyle = "#9fe8ff";
-      for (const bu of bullets) {
-        ctx.fillRect(bu.x - 2, bu.y - 9, 4, 18);
+      if (aug.wak) {                              // 왁뿌총알 — 동그란 보랏빛 구슬
+        for (const bu of bullets) {
+          ctx.fillStyle = "rgba(217,156,255,.35)";
+          ctx.beginPath(); ctx.arc(bu.x, bu.y, 9, 0, 6.283); ctx.fill();
+          ctx.fillStyle = "#e6c6ff";
+          ctx.beginPath(); ctx.arc(bu.x, bu.y, 5, 0, 6.283); ctx.fill();
+        }
+      } else {
+        ctx.fillStyle = "#9fe8ff";
+        for (const bu of bullets) ctx.fillRect(bu.x - 2, bu.y - 9, 4, 18);
       }
     }
+    for (const b of wakBooms) {                   // 왁뿌 폭발 — 50px 까지 퍼지는 고리
+      const k = b.t / 0.35;
+      ctx.globalAlpha = 1 - k;
+      ctx.strokeStyle = "#d99cff"; ctx.lineWidth = 3;
+      ctx.beginPath(); ctx.arc(b.x, b.y, 50 * (0.3 + 0.7 * k), 0, 6.283); ctx.stroke();
+    }
+    ctx.globalAlpha = 1;
     if (aug.galaga > 0) {
       const sy = H - GROUND_H * 0.55, tn = performance.now();   // drawEffects 에는 now 가 없다
       for (let k = 0; k < aug.galaga; k++) drawShip(shipX(k, aug.galaga), sy, tn + k * 137);
