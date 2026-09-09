@@ -813,7 +813,7 @@
   const elFinal = document.getElementById("finalScore");
   const elTitle = document.getElementById("overTitle");
 
-  const GAME_VERSION = "v1.5.45";   // 코드를 고칠 때마다 뒤 두 자리를 올린다
+  const GAME_VERSION = "v1.5.46";   // 코드를 고칠 때마다 뒤 두 자리를 올린다
   document.getElementById("ver").textContent = GAME_VERSION;
 
   const LS_NAME = "epjpddongpi_name";
@@ -1227,6 +1227,11 @@
              bcx: 0.500, bcy: 0.509, brr: 0.525 },
     hurt:  { img: null, aspect: 0.8313, head: 0.520, cx: 0.500, cy: 0.330, adj: 0.6521 }
   };
+  /* 파워P 전용 우주복 — 겨자색 링을 두른 흰 우주복. 헬멧이 판정원이다. */
+  const SPR_PP2_SPACE = {
+    right: { img: null, aspect: 0.678, head: 0.490, cx: 0.600, cy: 0.260, adj: 0.7228 },
+    hurt:  { img: null, aspect: 0.597, head: 0.400, cx: 0.460, cy: 0.215, adj: 0.6416 }
+  };
   /* 무소유 전용 우주복 —
      헬멧이 판정원이라 지름·중심을 재어 넣었다 (몸 높이는 다른 직업과 같은 1.475D). */
   const SPR_MONK_SPACE = {
@@ -1241,7 +1246,8 @@
   function inSpace() { return zoneIdx() >= SPACE_Z; }
   const JOB_SPRS = { gambler: SPR_GAMBLER, levitator: SPR_LEV, fit: SPR_FIT, powerj: SPR_PJ,
                      powerp: SPR_MONK, powerp2: SPR_PP2, bangul: SPR_BANGUL };
-  const JOB_SPRS_SPACE = { bangul: SPR_BANGUL_SPACE, powerp: SPR_MONK_SPACE };   // 제 우주복이 있는 직업만
+  const JOB_SPRS_SPACE = { bangul: SPR_BANGUL_SPACE, powerp: SPR_MONK_SPACE,
+                           powerp2: SPR_PP2_SPACE };   // 제 우주복이 있는 직업만
   // 인트로의 이재는 매 루프마다 아무 직업이나 입고 나온다 (직업은 판마다 고르는 방식이라)
   let introJob = "none";
   function rollIntroJob() {
@@ -1299,6 +1305,9 @@
     const ms = new Image();
     ms.onload = () => { SPR_MONK_SPACE[key].img = ms; };
     ms.src = "assets/monk_space_" + key + ".png";
+    const ps = new Image();
+    ps.onload = () => { SPR_PP2_SPACE[key].img = ps; };
+    ps.src = "assets/powerp2_space_" + key + ".png";
   }
   /* 방울이만 달리는 그림이 16장 따로 있다.
      차례대로 받아야 순서가 섞이지 않으므로 한 장씩 이어 받는다. */
