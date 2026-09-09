@@ -561,16 +561,19 @@
     letter-spacing: -1.5px; line-height: 1.15;
     display: flex; align-items: center; justify-content: center; gap: 2px;
   }
-  /* 제목은 그림 한 장. 양옆 💩 은 히든 버튼이라 남겨 두고, 글자만 그림으로 바꿨다. */
+  /* 제목은 그림 한 장. 로고 안에 그려진 똥 두 마리가 곧 히든 버튼이다 —
+     왼쪽 아래는 테스트 모드, 오른쪽 위는 통계. 누르는 자리를 그림 위에 겹쳐 둔다. */
+  #startScreen h1 .logoWrap { position: relative; display: inline-block; line-height: 0; }
   #startScreen h1 img.ttl {
-    display: block; width: min(72vw, 296px); height: auto;
+    display: block; width: min(78vw, 320px); height: auto;
     filter: drop-shadow(0 3px 10px rgba(0,0,0,.45));
   }
   #startScreen h1 #testDot, #startScreen h1 #devDot {
-    font-size: .78em; opacity: .85;
-    filter: drop-shadow(0 2px 8px rgba(0,0,0,.5));
+    position: absolute; display: block;
     transition: transform .18s ease;
   }
+  #startScreen h1 #testDot { left: 4%;  top: 69%; width: 19%; height: 27%; }   /* 왼쪽 아래 똥 */
+  #startScreen h1 #devDot  { left: 68%; top: 5%;  width: 26%; height: 37%; }   /* 오른쪽 위 똥 */
   #startScreen h1 #testDot:active, #startScreen h1 #devDot:active { transform: scale(.88); }
 
   /* 랭킹판 — 유리판 느낌 */
@@ -673,7 +676,11 @@
 
     <div id="startScreen" class="screen">
       <div id="ver"></div>
-      <h1><span id="testDot">💩</span><img class="ttl" src="assets/logo.webp" alt="이피재피똥피" decoding="async"><span id="devDot">💩</span></h1>
+      <h1><span class="logoWrap">
+        <img class="ttl" src="assets/logo.webp" alt="이피재피똥피" decoding="async">
+        <span id="testDot" aria-label="테스트 모드"></span>
+        <span id="devDot" aria-label="통계"></span>
+      </span></h1>
       <div class="board withTabs">
         <h3>🏆 이번 주 TOP 10</h3>
         <div class="jobTabs" id="jobTabsStart"></div>
@@ -815,7 +822,7 @@
   const elFinal = document.getElementById("finalScore");
   const elTitle = document.getElementById("overTitle");
 
-  const GAME_VERSION = "v1.5.51";   // 코드를 고칠 때마다 뒤 두 자리를 올린다
+  const GAME_VERSION = "v1.5.52";   // 코드를 고칠 때마다 뒤 두 자리를 올린다
   document.getElementById("ver").textContent = GAME_VERSION;
 
   const LS_NAME = "epjpddongpi_name";
