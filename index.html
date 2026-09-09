@@ -10,6 +10,7 @@
 <link rel="apple-touch-icon" href="icon-192.png">
 <title>이피재피똥피</title>
 <link rel="preload" as="image" href="assets/studio.webp">
+<link rel="preload" as="image" href="assets/logo.webp">
 <link rel="preload" as="image" href="assets/bg/title.webp">
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ctext x='50' y='52' font-size='84' text-anchor='middle' dominant-baseline='central'%3E%F0%9F%92%A9%3C/text%3E%3C/svg%3E">
 <style>
@@ -558,11 +559,12 @@
   #startScreen h1 {
     font-size: clamp(24px, 6.5vw, 32px);
     letter-spacing: -1.5px; line-height: 1.15;
-    display: flex; align-items: center; justify-content: center; gap: 10px;
+    display: flex; align-items: center; justify-content: center; gap: 2px;
   }
-  #startScreen h1 .ttl {
-    color: #fff; letter-spacing: 1px;
-    text-shadow: 0 0 6px #ff3ea5, 0 0 18px #ff3ea5, 0 0 34px rgba(255,62,165,.5);
+  /* 제목은 그림 한 장. 양옆 💩 은 히든 버튼이라 남겨 두고, 글자만 그림으로 바꿨다. */
+  #startScreen h1 img.ttl {
+    display: block; width: min(72vw, 296px); height: auto;
+    filter: drop-shadow(0 3px 10px rgba(0,0,0,.45));
   }
   #startScreen h1 #testDot, #startScreen h1 #devDot {
     font-size: .78em; opacity: .85;
@@ -671,7 +673,7 @@
 
     <div id="startScreen" class="screen">
       <div id="ver"></div>
-      <h1><span id="testDot">💩</span> <span class="ttl">이피재피똥피</span> <span id="devDot">💩</span></h1>
+      <h1><span id="testDot">💩</span><img class="ttl" src="assets/logo.webp" alt="이피재피똥피" decoding="async"><span id="devDot">💩</span></h1>
       <div class="board withTabs">
         <h3>🏆 이번 주 TOP 10</h3>
         <div class="jobTabs" id="jobTabsStart"></div>
@@ -813,7 +815,7 @@
   const elFinal = document.getElementById("finalScore");
   const elTitle = document.getElementById("overTitle");
 
-  const GAME_VERSION = "v1.5.50";   // 코드를 고칠 때마다 뒤 두 자리를 올린다
+  const GAME_VERSION = "v1.5.51";   // 코드를 고칠 때마다 뒤 두 자리를 올린다
   document.getElementById("ver").textContent = GAME_VERSION;
 
   const LS_NAME = "epjpddongpi_name";
