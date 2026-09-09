@@ -813,7 +813,7 @@
   const elFinal = document.getElementById("finalScore");
   const elTitle = document.getElementById("overTitle");
 
-  const GAME_VERSION = "v1.5.44";   // 코드를 고칠 때마다 뒤 두 자리를 올린다
+  const GAME_VERSION = "v1.5.45";   // 코드를 고칠 때마다 뒤 두 자리를 올린다
   document.getElementById("ver").textContent = GAME_VERSION;
 
   const LS_NAME = "epjpddongpi_name";
@@ -848,8 +848,8 @@
   };
   // 직업별 캐릭터 그림(오른쪽 이동 모습) — 직업 카드와 순위표에서 함께 쓴다
   const JOB_IMG = { none: "player", gambler: "gambler", levitator: "levitator",
-                    fit: "fit", powerj: "powerj", powerp: "monk", powerp2: "player",
-                    bangul: "bangul" };   // 파워P 는 아직 제 그림이 없어 백수 그림을 쓴다
+                    fit: "fit", powerj: "powerj", powerp: "monk", powerp2: "powerp2",
+                    bangul: "bangul" };
   function spdMul() { return job === "levitator" ? 2.5 : 1; }   // 이동 속도 배율 (부양사 2.5배)
   /* 평화의 비둘기 — 활짝 펼친 날개에 깃 모양이 물결치고, 꼬리는 부채처럼 갈라진다.
      (흰 실루엣 한 덩어리로 그려야 작게 그려도 비둘기로 읽힌다) */
@@ -1205,6 +1205,12 @@
     right: { img: null, aspect: 0.619, head: 0.306, cx: 0.552, cy: 0.181, adj: 0.4514 },
     hurt:  { img: null, aspect: 0.472, head: 0.291, cx: 0.512, cy: 0.231, adj: 0.4667 }
   };
+  /* 파워P — 루도로 새로 그린 캐릭터. 사진 합성이 아니라 그림이라 머리가
+     한 덩어리로 크고, 뛸 때는 머리카락이 왼쪽으로 흘러 머리 중심이 오른쪽에 있다. */
+  const SPR_PP2 = {
+    right: { img: null, aspect: 0.692, head: 0.420, cx: 0.600, cy: 0.255, adj: 0.6195 },
+    hurt:  { img: null, aspect: 0.581, head: 0.430, cx: 0.520, cy: 0.235, adj: 0.6897 }
+  };
   /* 방울이 — 옆 프로젝트에서 가져온 강아지. 사람과 몸 비율이 달라
      (가로가 넓다) 높이를 그대로 맞추면 훨씬 커 보인다. adj 는 보이는 넓이가
      백수와 비슷해지도록 잡았다: 높이 = 판정지름 × 1.30 (피격 1.13). */
@@ -1234,7 +1240,7 @@
   function spaceF() { return inSpace() ? Math.sqrt(SPACE_DIFF) : 1; }
   function inSpace() { return zoneIdx() >= SPACE_Z; }
   const JOB_SPRS = { gambler: SPR_GAMBLER, levitator: SPR_LEV, fit: SPR_FIT, powerj: SPR_PJ,
-                     powerp: SPR_MONK, bangul: SPR_BANGUL };
+                     powerp: SPR_MONK, powerp2: SPR_PP2, bangul: SPR_BANGUL };
   const JOB_SPRS_SPACE = { bangul: SPR_BANGUL_SPACE, powerp: SPR_MONK_SPACE };   // 제 우주복이 있는 직업만
   // 인트로의 이재는 매 루프마다 아무 직업이나 입고 나온다 (직업은 판마다 고르는 방식이라)
   let introJob = "none";
@@ -1279,6 +1285,9 @@
     const mk = new Image();
     mk.onload = () => { SPR_MONK[key].img = mk; };
     mk.src = "assets/monk_" + key + ".png";
+    const pp = new Image();
+    pp.onload = () => { SPR_PP2[key].img = pp; };
+    pp.src = "assets/powerp2_" + key + ".png";
   }
   for (const key of ["right", "hurt"]) {
     const bg = new Image();
