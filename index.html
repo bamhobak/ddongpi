@@ -159,19 +159,28 @@
 
   /* 4~10위 — 왼쪽 칸에 4~6위, 오른쪽 칸에 7~10위. 세로로 일곱 줄 쌓는 것보다
      네 줄로 끝나서, 그만큼 위 시상대에 자리를 내준다. */
-  .board li.rowpair { display: grid; grid-template-columns: 1fr 1fr; column-gap: 9px; padding: 0; border: 0; }
+  .board li.rowpair {
+    display: grid; grid-template-columns: 1fr 1fr; column-gap: 7px; border: 0;
+    /* 뒤 배경 그림이 비쳐 글자가 묻히던 자리 — 어두운 판을 한 겹 깐다 */
+    background: rgba(5,6,13,.42); border-radius: 8px; padding: 4px 5px;
+  }
   .board li.rowpair + li { border-top: 0; }
   .board .rcol { display: flex; flex-direction: column; min-width: 0; }
-  .board .rowline { display: flex; align-items: center; gap: 5px; padding: 1px 3px; font-size: 11.5px; }
-  .board .rowline + .rowline { border-top: 1px solid rgba(255,255,255,.06); }
+  .board .rowline {
+    display: flex; align-items: center; gap: 5px; padding: 2px 4px; font-size: 11.5px;
+    border-radius: 3px;
+  }
+  /* 한 줄 걸러 옅게 깔아 눈이 줄을 따라가기 쉽게 */
+  .board .rowline:nth-child(even) { background: rgba(255,255,255,.05); }
+
   .board .rowline img.jic3 { width: 14px; height: 18px; object-fit: contain; flex: none; }
   .board .rowline .rk {
     width: 18px; height: 18px; line-height: 18px; flex: none; text-align: center;
-    border-radius: 3px; background: rgba(53,240,255,.12); color: #9fd8ff;
+    border-radius: 3px; background: rgba(53,240,255,.20); color: #bfe6ff;
     font-size: 10px; font-weight: 700;
   }
-  .board .rowline .nm { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; text-align: left; color: #fff; }
-  .board .rowline .sc { flex: none; color: #ffd23f; font-variant-numeric: tabular-nums; }
+  .board .rowline .nm { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; text-align: left; color: #fff; font-weight: 700; }
+  .board .rowline .sc { flex: none; color: #ffd23f; font-weight: 700; font-variant-numeric: tabular-nums; }
   .board .rowline.me { outline: 1.5px solid rgba(255,210,63,.9); outline-offset: -1px; border-radius: 3px; }
 
   /* 4~6위(셋), 7~10위(넷)는 세로 미니 카드로 한 줄에 담는다 */
@@ -966,7 +975,7 @@
   const elFinal = document.getElementById("finalScore");
   const elTitle = document.getElementById("overTitle");
 
-  const GAME_VERSION = "v1.5.72";   // 코드를 고칠 때마다 뒤 두 자리를 올린다
+  const GAME_VERSION = "v1.5.73";   // 코드를 고칠 때마다 뒤 두 자리를 올린다
   document.getElementById("ver").textContent = GAME_VERSION;
 
   const LS_NAME = "epjpddongpi_name";
