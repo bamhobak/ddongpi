@@ -119,26 +119,26 @@
   }
   .board li.podium + li { border-top: 0; }
   .board .pod {
-    display: flex; flex-direction: column; align-items: center; gap: 1px;
-    min-width: 0; border-radius: 6px; padding: 5px 4px 6px;
+    display: flex; flex-direction: column; align-items: center; gap: 2px;
+    min-width: 0; border-radius: 6px; padding: 7px 4px 8px;
   }
-  .board .pod img.pic { height: 34px; object-fit: contain; }
-  .board .pod .pmd { font-size: 13px; line-height: 1; }
+  .board .pod img.pic { height: 44px; object-fit: contain; }
+  .board .pod .pmd { font-size: 15px; line-height: 1; }
   .board .pod .pnm {
     max-width: 100%; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
-    font-size: 11.5px; font-weight: 700;
+    font-size: 12px; font-weight: 700;
   }
-  .board .pod .psc { font-size: 13px; font-weight: 700; font-variant-numeric: tabular-nums; }
+  .board .pod .psc { font-size: 13.5px; font-weight: 700; font-variant-numeric: tabular-nums; }
   .board .pod.p1 {
-    padding: 7px 4px 7px;
+    padding: 10px 4px 10px;
     border-left: 3px solid #ffd23f;
     background: linear-gradient(180deg, rgba(255,210,63,.30), rgba(255,210,63,.04));
     box-shadow: 0 0 16px rgba(255,210,63,.26);
   }
-  .board .pod.p1 img.pic { height: 46px; }
-  .board .pod.p1 .pmd { font-size: 16px; }
-  .board .pod.p1 .pnm { font-size: 13px; font-weight: 800; color: #fff6cf; text-shadow: 0 0 10px rgba(255,210,63,.45); }
-  .board .pod.p1 .psc { font-size: 15px; font-weight: 800; color: #ffd23f; text-shadow: 0 0 10px rgba(255,210,63,.6); }
+  .board .pod.p1 img.pic { height: 60px; }
+  .board .pod.p1 .pmd { font-size: 20px; }
+  .board .pod.p1 .pnm { font-size: 14px; font-weight: 800; color: #fff6cf; text-shadow: 0 0 10px rgba(255,210,63,.45); }
+  .board .pod.p1 .psc { font-size: 16px; font-weight: 800; color: #ffd23f; text-shadow: 0 0 10px rgba(255,210,63,.6); }
   .board .pod.p2 {
     border-left: 3px solid #dfe6ef;
     background: linear-gradient(180deg, rgba(223,230,239,.26), rgba(223,230,239,.03));
@@ -157,10 +157,22 @@
   .board .pod .psc.long { font-size: .86em; }
   .board .pod .psc.xlong { font-size: .72em; }
 
-  /* 4~10위는 한 줄씩 */
-  .board li.rowline { display: flex; align-items: center; gap: 7px; padding: 1px 4px; font-size: 11.5px; }
-  .board li.rowline img.jic3 { width: 14px; height: 18px; object-fit: contain; flex: none; }
-  .board li.rowline .sc { color: #ffd23f; }
+  /* 4~10위 — 왼쪽 칸에 4~6위, 오른쪽 칸에 7~10위. 세로로 일곱 줄 쌓는 것보다
+     네 줄로 끝나서, 그만큼 위 시상대에 자리를 내준다. */
+  .board li.rowpair { display: grid; grid-template-columns: 1fr 1fr; column-gap: 9px; padding: 0; border: 0; }
+  .board li.rowpair + li { border-top: 0; }
+  .board .rcol { display: flex; flex-direction: column; min-width: 0; }
+  .board .rowline { display: flex; align-items: center; gap: 5px; padding: 1px 3px; font-size: 11.5px; }
+  .board .rowline + .rowline { border-top: 1px solid rgba(255,255,255,.06); }
+  .board .rowline img.jic3 { width: 14px; height: 18px; object-fit: contain; flex: none; }
+  .board .rowline .rk {
+    width: 18px; height: 18px; line-height: 18px; flex: none; text-align: center;
+    border-radius: 3px; background: rgba(53,240,255,.12); color: #9fd8ff;
+    font-size: 10px; font-weight: 700;
+  }
+  .board .rowline .nm { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; text-align: left; color: #fff; }
+  .board .rowline .sc { flex: none; color: #ffd23f; font-variant-numeric: tabular-nums; }
+  .board .rowline.me { outline: 1.5px solid rgba(255,210,63,.9); outline-offset: -1px; border-radius: 3px; }
 
   /* 4~6위(셋), 7~10위(넷)는 세로 미니 카드로 한 줄에 담는다 */
   .board li.duo, .board li.five { display: flex; gap: 5px; padding: 3px 0; }
@@ -644,7 +656,7 @@
      왼쪽 아래는 테스트 모드, 오른쪽 위는 통계. 누르는 자리를 그림 위에 겹쳐 둔다. */
   #startScreen h1 .logoWrap { position: relative; display: inline-block; line-height: 0; }
   #startScreen h1 img.ttl {
-    display: block; width: min(56vw, 255px); height: auto;
+    display: block; width: min(62vw, 285px); height: auto;
     filter: drop-shadow(0 3px 10px rgba(0,0,0,.45));
   }
   #startScreen h1 #testDot, #startScreen h1 #devDot {
@@ -653,16 +665,12 @@
   }
   /* 화면이 짧은 폰에서는 제목을 조금 더 줄여 스크롤이 생기지 않게 한다 */
   @media (max-height: 670px) {
-    #startScreen h1 img.ttl { width: min(48vw, 220px); }
-    .board .pod img.pic { height: 30px; }
-    .board .pod.p1 img.pic { height: 40px; }
-    .board li.rowline { padding: 0 4px; font-size: 11px; }
-    .board li.rowline img.jic3 { width: 13px; height: 16px; }
-    /* 순위 배지가 행 높이의 바닥을 잡고 있어서 함께 줄인다
-       (:not 세 개는 위 규칙과 우선순위를 맞추려는 것) */
-    #startScreen .board li.rowline:not(.p1):not(.p2):not(.p3) .rk {
-      width: 18px; height: 17px; line-height: 17px; font-size: 10px;
-    }
+    #startScreen h1 img.ttl { width: min(54vw, 244px); }
+    .board .pod img.pic { height: 38px; }
+    .board .pod.p1 img.pic { height: 50px; }
+    .board .rowline { padding: 0 3px; font-size: 11px; }
+    .board .rowline img.jic3 { width: 13px; height: 16px; }
+    .board .rowline .rk { height: 17px; line-height: 17px; }
     #startScreen .board.withTabs { padding: 7px 9px; }
     .jobTab { height: 22px; }
   }
@@ -916,7 +924,7 @@
   const elFinal = document.getElementById("finalScore");
   const elTitle = document.getElementById("overTitle");
 
-  const GAME_VERSION = "v1.5.65";   // 코드를 고칠 때마다 뒤 두 자리를 올린다
+  const GAME_VERSION = "v1.5.67";   // 코드를 고칠 때마다 뒤 두 자리를 올린다
   document.getElementById("ver").textContent = GAME_VERSION;
 
   const LS_NAME = "epjpddongpi_name";
@@ -4173,27 +4181,39 @@
       }
       el.appendChild(li);
     }
-    // 4~10위 — 한 줄씩 (예전에는 세로 미니 카드 두 줄이었다)
-    list.slice(3, 10).forEach((row, k) => {
+    /* 4~10위 — 왼쪽 칸에 4~6위, 오른쪽 칸에 7~10위 */
+    const rest = list.slice(3, 10);
+    if (rest.length) {
       const li = document.createElement("li");
-      li.className = "rowline" + (isMe(row) ? " me" : "");
-      const rk = document.createElement("span");
-      rk.className = "rk";
-      rk.textContent = k + 4;
-      const jb = row.job && JOBS[row.job] ? row.job : "none";
-      const im = document.createElement("img");
-      im.className = "jic3";
-      im.src = "assets/" + JOB_IMG[jb] + "_right.png";
-      im.alt = JOBS[jb].ic;
-      const nm = document.createElement("span");
-      nm.className = "nm";
-      nm.textContent = row.name;
-      const sc = document.createElement("span");
-      sc.className = "sc";
-      sc.textContent = shortScore(Number(row.score) || 0);
-      li.append(rk, im, nm, sc);
+      li.className = "rowpair";
+      const mkRow = (row, rank) => {
+        const d = document.createElement("div");
+        d.className = "rowline" + (isMe(row) ? " me" : "");
+        const rk = document.createElement("span");
+        rk.className = "rk";
+        rk.textContent = rank;
+        const jb = row.job && JOBS[row.job] ? row.job : "none";
+        const im = document.createElement("img");
+        im.className = "jic3";
+        im.src = "assets/" + JOB_IMG[jb] + "_right.png";
+        im.alt = JOBS[jb].ic;
+        const nm = document.createElement("span");
+        nm.className = "nm";
+        nm.textContent = row.name;             // textContent → HTML 삽입 불가
+        const sc = document.createElement("span");
+        sc.className = "sc";
+        sc.textContent = shortScore(Number(row.score) || 0);
+        d.append(rk, im, nm, sc);
+        return d;
+      };
+      for (const [from, to] of [[0, 3], [3, 7]]) {
+        const col = document.createElement("div");
+        col.className = "rcol";
+        rest.slice(from, to).forEach((row, k) => col.appendChild(mkRow(row, from + k + 4)));
+        li.appendChild(col);
+      }
       el.appendChild(li);
-    });
+    }
   }
 
   const noteStart = document.getElementById("noteStart");
