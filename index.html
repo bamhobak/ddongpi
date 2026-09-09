@@ -90,11 +90,11 @@
   .board {
     width: 100%; max-width: 460px;
     background: rgba(255,255,255,.06);
-    border-radius: 14px; padding: 12px 14px;
+    border-radius: 14px; padding: 9px 11px;
   }
   .board h3 {
     font-size: 13px; font-weight: 700; color: #ffd23f;
-    letter-spacing: .5px; margin-bottom: 8px;
+    letter-spacing: .5px; margin-bottom: 5px;
   }
   .board ol { list-style: none; }
   .board li {
@@ -113,28 +113,28 @@
   .board .sc img.jic { width: 22px; height: 28px; object-fit: contain; vertical-align: -8px; margin-right: 5px; }
 
   /* 4~6위(셋), 7~10위(넷)는 세로 미니 카드로 한 줄에 담는다 */
-  .board li.duo, .board li.five { display: flex; gap: 6px; padding: 5px 0; }
+  .board li.duo, .board li.five { display: flex; gap: 5px; padding: 3px 0; }
   .board .mini {
     flex: 1; min-width: 0; display: flex; flex-direction: column; align-items: center; gap: 1px;
     background: rgba(53,240,255,.07); border: 1px solid rgba(53,240,255,.22);
-    border-radius: 3px; padding: 7px 3px;
+    border-radius: 3px; padding: 4px 3px;
   }
-  .board .mini img.jic2 { width: 30px; height: 38px; object-fit: contain; }
-  .board li.five .mini img.jic2 { width: 26px; height: 33px; }
+  .board .mini img.jic2 { width: 22px; height: 28px; object-fit: contain; }
+  .board li.five .mini img.jic2 { width: 20px; height: 25px; }
   .board .mini .mn {
     max-width: 100%; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
-    font-size: 10.5px; color: #dfe3ee;
+    font-size: 10px; color: #dfe3ee;
   }
   .board .mini .mn b { color: #7f93b5; font-weight: 700; margin-right: 2px; }
-  .board .mini .ms { font-size: 13px; font-weight: 700; color: #ffd23f; font-variant-numeric: tabular-nums; }
+  .board .mini .ms { font-size: 12px; font-weight: 700; color: #ffd23f; font-variant-numeric: tabular-nums; }
   .board li.five .mini { background: rgba(255,255,255,.04); border-color: rgba(255,255,255,.10); }
   .board li.five .mini .mn { font-size: 10px; }
-  .board li.five .mini .ms { font-size: 12px; }
+  .board li.five .mini .ms { font-size: 11px; }
   .board .mini.me { outline: 1.5px solid rgba(255,210,63,.75); background: rgba(255,210,63,.12); }
 
   /* 1~3위는 금·은·동으로 따로 */
   .board li.p1, .board li.p2, .board li.p3 {
-    margin: 2px 0; padding: 4px 8px; border-radius: 3px;
+    margin: 1px 0; padding: 3px 8px; border-radius: 3px;
     border-left: 3px solid;
   }
   .board li.p1 + li, .board li.p2 + li, .board li.p3 + li { border-top: 0; }
@@ -144,9 +144,9 @@
     box-shadow: 0 0 14px rgba(255,210,63,.22);
   }
   .board li.p1 .nm { color: #fff6cf; font-weight: 800; text-shadow: 0 0 10px rgba(255,210,63,.45); }
-  .board li.p1 .sc { color: #ffd23f; font-size: 1.42em; font-weight: 800; text-shadow: 0 0 10px rgba(255,210,63,.6); }
-  .board li.p1 .sc img.jic { width: 27px; height: 34px; vertical-align: -11px; }
-  .board li.p2 .sc img.jic, .board li.p3 .sc img.jic { width: 24px; height: 30px; vertical-align: -9px; }
+  .board li.p1 .sc { color: #ffd23f; font-size: 1.28em; font-weight: 800; text-shadow: 0 0 10px rgba(255,210,63,.6); }
+  .board li.p1 .sc img.jic { width: 24px; height: 30px; vertical-align: -9px; }
+  .board li.p2 .sc img.jic, .board li.p3 .sc img.jic { width: 21px; height: 27px; vertical-align: -8px; }
 
   .board li.p2 {
     border-left-color: #dfe6ef;
@@ -154,14 +154,14 @@
     box-shadow: 0 0 12px rgba(223,230,239,.14);
   }
   .board li.p2 .nm { color: #f4f7fc; font-weight: 700; text-shadow: 0 0 10px rgba(223,230,239,.35); }
-  .board li.p2 .sc { color: #e8eef7; font-size: 1.34em; font-weight: 700; }
+  .board li.p2 .sc { color: #e8eef7; font-size: 1.22em; font-weight: 700; }
 
   .board li.p3 {
     border-left-color: #cd7f32;
     background: linear-gradient(90deg, rgba(205,127,50,.20), rgba(205,127,50,.02));
   }
   .board li.p3 .nm { color: #efc79b; font-weight: 700; }
-  .board li.p3 .sc { color: #d99257; font-size: 1.30em; font-weight: 700; }
+  .board li.p3 .sc { color: #d99257; font-size: 1.20em; font-weight: 700; }
 
   .board li.p1 .rk, .board li.p2 .rk, .board li.p3 .rk { font-size: 1.15em; }
   /* 내 기록 강조 — 금·은·동 색을 덮지 않도록 테두리로만 표시 */
@@ -186,12 +186,12 @@
     border-bottom-color: rgba(255,210,63,.25);
     text-shadow: 0 0 10px rgba(255,210,63,.45);
   }
-  .lastRow { display: flex; gap: 6px; justify-content: center; flex-wrap: wrap; }
+  .lastRow { display: flex; gap: 4px; justify-content: center; flex-wrap: wrap; }
   .lastRow .lp {
     display: flex; align-items: center; gap: 4px;
-    font-size: 11.5px; color: #eaf6ff; white-space: nowrap;
+    font-size: 10.5px; color: #eaf6ff; white-space: nowrap;
     background: rgba(255,255,255,.06); border: 1px solid rgba(255,255,255,.14);
-    border-radius: 3px; padding: 3px 9px;
+    border-radius: 3px; padding: 2px 6px;
   }
   .lastRow .lp b { color: #ffd23f; font-weight: 700; }
   .board .note {
@@ -205,7 +205,7 @@
   #nameBox .who { font-size: 14px; color: #d5d8e2; }
   #nameBox .who b { color: #ffd23f; font-weight: 700; }
   #nameBox button, #nameEdit button {
-    padding: 8px 14px; font-size: 13px; background: rgba(255,255,255,.14); color: #fff;
+    padding: 6px 13px; font-size: 13px; background: rgba(255,255,255,.14); color: #fff;
   }
   #nameEdit { display: none; align-items: center; gap: 8px; }
   #nameEdit.on { display: flex; }
@@ -220,18 +220,24 @@
 
   /* ---- 직업 선택 ---- */
   #jobScreen h2 { color: #ffd23f; }
-  #jobList { display: flex; flex-direction: column; gap: 10px; width: 100%; max-width: 340px; }
-  #jobList img.ic { width: 44px; height: 56px; object-fit: contain; flex: none; }
+  #jobList { display: flex; flex-direction: column; gap: 3px; width: 100%; max-width: 340px; }
+  #jobList img.ic { width: 36px; height: 46px; object-fit: contain; flex: none; }
+  /* 여덟 직업이 스크롤 없이 한 화면에 들어가도록 카드를 낮춘다.
+     증강 카드와 같은 .augCard 를 쓰므로 여기서만 좁힌다. */
+  #jobList .augCard { padding: 5px 11px; gap: 9px; border-radius: 10px; }
+  #jobList .augCard .nm2 { font-size: 14px; }
+  #jobList .augCard .ds { font-size: 12px; line-height: 1.34; margin-top: 1px; }
+  #jobScreen h2 { font-size: clamp(19px, 5vw, 24px); }
   /* 고르지 않고 나가는 길 — 직업 카드보다 눈에 덜 띄게 */
   #btnJobBack {
-    margin-top: 6px; font-size: 12.5px; padding: 9px 20px;
+    margin-top: 4px; font-size: 12.5px; padding: 7px 18px;
     background: rgba(255,255,255,.08); color: #b8bdcc;
     border: 1px solid rgba(255,255,255,.12); box-shadow: none;
   }
   /* 순위표 직업 탭 — 전체 + 직업별 */
   /* 순위판 왼쪽 세로 레일 — 제목은 위에 가로로, 그 아래는 [탭 | 목록] */
   .board.withTabs {
-    display: grid; grid-template-columns: 44px minmax(0, 1fr); column-gap: 9px;
+    display: grid; grid-template-columns: 40px minmax(0, 1fr); column-gap: 8px;
     grid-template-areas: "h h" "tabs list";
     position: relative;
   }
@@ -252,18 +258,18 @@
   }
   .jobTabs {
     grid-area: tabs; display: flex; flex-direction: column; align-items: center;
-    gap: 4px; margin: 0; align-self: stretch; padding-top: 0;
+    gap: 3px; margin: 0; align-self: stretch; padding-top: 0;
   }
   .jobTab {
     display: inline-flex; align-items: center; justify-content: center;
     /* 탭은 순위표 높이를 나눠 갖는다. 최소 높이가 크면 직업이 늘어날 때
        탭 줄이 순위표보다 길어져 오른쪽 아래가 비어 버린다. */
-    width: 44px; flex: 1 1 0; min-height: 30px; max-height: 52px; padding: 0; border-radius: 4px;
+    width: 40px; flex: 1 1 0; min-height: 22px; max-height: 52px; padding: 0; border-radius: 4px;
     font-size: 12px; font-weight: 700; letter-spacing: -.5px;
     background: rgba(53,240,255,.08); color: #9fb4d0;
     border: 1px solid rgba(53,240,255,.35); box-shadow: none;
   }
-  .jobTab img { width: 28px; height: 78%; max-height: 36px; object-fit: contain; }
+  .jobTab img { width: 26px; height: 80%; max-height: 32px; object-fit: contain; }
   .jobTab.on {
     color: #05060d; background: #ffd23f; border-color: #ffd23f;
     box-shadow: 0 0 12px rgba(255,210,63,.55);
@@ -548,14 +554,15 @@
   /* 줄간격과 순위 줄의 여백을 조금씩 줄여 아래에 자리를 만든다.
      남는 자리는 위아래로 나뉜다 (가운데 정렬). */
   #startScreen {
-    gap: clamp(4px, 1.0vh, 7px);
+    gap: clamp(3px, 0.75vh, 7px);
     padding-top: calc(max(10px, env(safe-area-inset-top)) + var(--lby, 0px));
     padding-left: calc(10px + var(--lbx, 0px));
     padding-right: calc(10px + var(--lbx, 0px));
   }
   #startScreen .board li { padding: 2px 0; }
-  #startScreen .board li.duo, #startScreen .board li.five { padding: 3px 0; }
-  #startScreen .board .mini { padding: 5px 3px; }
+  #startScreen .board:not(.withTabs) { padding: 7px 10px; }   /* 지난주 판은 한 줄뿐이라 더 좁게 */
+  #startScreen .board li.duo, #startScreen .board li.five { padding: 2px 0; }
+  #startScreen .board .mini { padding: 3px 3px; }
   #startScreen h1 {
     font-size: clamp(24px, 6.5vw, 32px);
     letter-spacing: -1.5px; line-height: 1.15;
@@ -565,12 +572,16 @@
      왼쪽 아래는 테스트 모드, 오른쪽 위는 통계. 누르는 자리를 그림 위에 겹쳐 둔다. */
   #startScreen h1 .logoWrap { position: relative; display: inline-block; line-height: 0; }
   #startScreen h1 img.ttl {
-    display: block; width: min(78vw, 320px); height: auto;
+    display: block; width: min(59vw, 268px); height: auto;
     filter: drop-shadow(0 3px 10px rgba(0,0,0,.45));
   }
   #startScreen h1 #testDot, #startScreen h1 #devDot {
     position: absolute; display: block;
     transition: transform .18s ease;
+  }
+  /* 화면이 짧은 폰에서는 제목을 조금 더 줄여 스크롤이 생기지 않게 한다 */
+  @media (max-height: 670px) {
+    #startScreen h1 img.ttl { width: min(52vw, 240px); }
   }
   #startScreen h1 #testDot { left: 4%;  top: 69%; width: 19%; height: 27%; }   /* 왼쪽 아래 똥 */
   #startScreen h1 #devDot  { left: 68%; top: 5%;  width: 26%; height: 37%; }   /* 오른쪽 위 똥 */
@@ -608,7 +619,7 @@
   #startScreen .board li, #overScreen .board li { padding: 3px 0; }
   /* 1~3위 줄은 좌우 여백을 되살린다 — 위 규칙이 덮어써서 점수가 줄 끝에 딱 붙어 잘려 보였다 */
   #startScreen .board li.p1, #startScreen .board li.p2, #startScreen .board li.p3,
-  #overScreen .board li.p1, #overScreen .board li.p2, #overScreen .board li.p3 { padding: 6px 11px 6px 10px; }
+  #overScreen .board li.p1, #overScreen .board li.p2, #overScreen .board li.p3 { padding: 4px 10px 4px 9px; }
 
   /* 1위 줄에 아주 느리게 빛이 흐른다 */
   .board li.p1 { position: relative; overflow: hidden; }
@@ -640,7 +651,7 @@
   /* 시작 버튼 */
   #btnStart {
     margin-top: 0;
-    padding: 12px 42px;
+    padding: 10px 40px;
     background: linear-gradient(180deg, #ffe07a, #ffc42e 55%, #f5a70f);
     border: 1px solid rgba(255,243,196,.85);
     box-shadow: 0 0 24px rgba(255,196,46,.55), 0 5px 0 #a8700a;
@@ -822,7 +833,7 @@
   const elFinal = document.getElementById("finalScore");
   const elTitle = document.getElementById("overTitle");
 
-  const GAME_VERSION = "v1.5.52";   // 코드를 고칠 때마다 뒤 두 자리를 올린다
+  const GAME_VERSION = "v1.5.58";   // 코드를 고칠 때마다 뒤 두 자리를 올린다
   document.getElementById("ver").textContent = GAME_VERSION;
 
   const LS_NAME = "epjpddongpi_name";
