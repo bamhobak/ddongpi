@@ -297,6 +297,49 @@
   #jobList .augCard .tx { flex: none; width: 100%; }
   #jobList .augCard .nm2 { font-size: 14px; }
   #jobList .augCard .ds { font-size: 11px; line-height: 1.3; margin-top: 1px; text-wrap: pretty; }
+  /* ---- 직업 상세 (카드를 누르면 이 화면으로) ---- */
+  #jobDetail { display: flex; flex-direction: column; align-items: center; gap: 10px; width: 100%; max-width: 340px; }
+  #jobDetail.hidden { display: none; }
+  #jobList.hidden { display: none; }   /* .hidden 은 .screen 에만 걸려 있어 따로 필요하다 */
+  #jobChips { display: flex; gap: 5px; width: 100%; justify-content: center; }
+  #jobChips .jchip {
+    flex: 1; min-width: 0; display: flex; align-items: center; justify-content: center;
+    height: 40px; padding: 0; border-radius: 6px; box-shadow: none;
+    background: rgba(53,240,255,.08); border: 1px solid rgba(53,240,255,.35);
+  }
+  #jobChips .jchip img { height: 32px; object-fit: contain; }
+  #jobChips .jchip.on { background: #ffd23f; border-color: #ffd23f; box-shadow: 0 0 14px rgba(255,210,63,.55); }
+  #jobCard {
+    width: 100%; background: rgba(255,255,255,.06); border-radius: 14px;
+    padding: 14px 16px; display: flex; flex-direction: column; align-items: center; gap: 8px;
+  }
+  #jobBig { height: 150px; object-fit: contain; filter: drop-shadow(0 6px 18px rgba(0,0,0,.5)); }
+  #jobName { font-size: 22px; font-weight: 700; color: #ffd23f; letter-spacing: -.5px; }
+  #jobTraits { display: flex; flex-direction: column; gap: 5px; width: 100%; }
+  #jobTraits .tr {
+    display: flex; align-items: center; gap: 8px; text-align: left;
+    font-size: 12.5px; color: #d5d8e2;
+    background: rgba(53,240,255,.07); border: 1px solid rgba(53,240,255,.22);
+    border-radius: 6px; padding: 6px 10px;
+  }
+  #jobTraits .tr .dot { flex: none; width: 5px; height: 5px; border-radius: 50%; background: #9fd8ff; }
+  #btnJobGo {
+    padding: 10px 40px; font-size: 17px; letter-spacing: 3px;
+    background: linear-gradient(180deg, #ffe07a, #ffc42e 55%, #f5a70f);
+    border: 1px solid rgba(255,243,196,.85);
+    box-shadow: 0 0 24px rgba(255,196,46,.55), 0 5px 0 #a8700a;
+  }
+  #btnJobList {
+    font-size: 12.5px; padding: 7px 18px; box-shadow: none;
+    background: rgba(255,255,255,.08); color: #b8bdcc; border: 1px solid rgba(255,255,255,.12);
+  }
+  /* 화면이 짧으면 캐릭터를 줄인다 */
+  @media (max-height: 670px) {
+    #jobBig { height: 120px; }
+    #jobChips .jchip { height: 36px; }
+    #jobChips .jchip img { height: 28px; }
+  }
+
   /* 지금 고른 직업 */
   #jobList .augCard.sel {
     background: rgba(255,210,63,.14); border-color: #ffd23f;
@@ -842,8 +885,18 @@
     </div>
 
     <div id="jobScreen" class="screen hidden">
-      <h2>직업 선택</h2>
+      <h2 id="jobTitle">직업 선택</h2>
       <div id="jobList"></div>
+      <div id="jobDetail" class="hidden">
+        <div id="jobChips"></div>
+        <div id="jobCard">
+          <img id="jobBig" alt="">
+          <div id="jobName"></div>
+          <div id="jobTraits"></div>
+        </div>
+        <button id="btnJobGo">이걸로 시작</button>
+        <button id="btnJobList">← 다른 직업 보기</button>
+      </div>
       <button id="btnJobBack">← 메인으로 돌아가기</button>
     </div>
 
@@ -924,7 +977,7 @@
   const elFinal = document.getElementById("finalScore");
   const elTitle = document.getElementById("overTitle");
 
-  const GAME_VERSION = "v1.5.67";   // 코드를 고칠 때마다 뒤 두 자리를 올린다
+  const GAME_VERSION = "v1.5.69";   // 코드를 고칠 때마다 뒤 두 자리를 올린다
   document.getElementById("ver").textContent = GAME_VERSION;
 
   const LS_NAME = "epjpddongpi_name";
@@ -2528,8 +2581,47 @@
   }
 
   /* ---------- 직업 선택 화면 ----------
-     시작하기·다시하기를 누르면 먼저 직업을 고르고, 고르는 순간 게임이 시작된다. */
+     시작하기·다시하기를 누르면 먼저 직업을 고른다. 카드를 누르면 바로 시작하지 않고
+     그 직업을 크게 보여 주고, '이걸로 시작'을 눌러야 판이 시작된다. */
   const jobScreen = document.getElementById("jobScreen");
+  const jobList   = document.getElementById("jobList");
+  const jobDetail = document.getElementById("jobDetail");
+  const jobTitle  = document.getElementById("jobTitle");
+  let jobTestMode = false;              // 테스트 모드로 들어왔는지 (상세를 거쳐도 유지)
+
+  /* 긴 설명을 가운뎃점으로 끊어 줄 단위로 보여 준다 */
+  function jobTraitLines(j) {
+    return String(j.ds).split("·").map(t => t.trim()).filter(Boolean);
+  }
+  function showJobDetail(id) {
+    job = id;
+    try { localStorage.setItem(LS_JOB, job); } catch (e) {}
+    const j = JOBS[id];
+    document.getElementById("jobBig").src = "assets/" + JOB_IMG[id] + "_right.png";
+    document.getElementById("jobBig").alt = j.nm;
+    document.getElementById("jobName").textContent = j.nm;
+    const tr = document.getElementById("jobTraits");
+    tr.innerHTML = "";
+    for (const line of jobTraitLines(j)) {
+      const d = document.createElement("div");
+      d.className = "tr";
+      const dot = document.createElement("span");
+      dot.className = "dot";
+      d.appendChild(dot);
+      d.appendChild(document.createTextNode(line));   // textContent → HTML 삽입 불가
+      tr.appendChild(d);
+    }
+    for (const c of document.querySelectorAll("#jobChips .jchip"))
+      c.classList.toggle("on", c.dataset.job === id);
+    jobTitle.textContent = "직업 선택";
+    jobList.classList.add("hidden");
+    jobDetail.classList.remove("hidden");
+  }
+  function showJobList() {
+    jobDetail.classList.add("hidden");
+    jobList.classList.remove("hidden");
+    for (const c of jobList.children) c.classList.toggle("sel", c.dataset.job === job);
+  }
   function openJobSelect(test) {           // test === true 면 고른 뒤 테스트 모드로 시작
     const list = document.getElementById("jobList");
     list.innerHTML = "";
@@ -2547,19 +2639,44 @@
       if (id === job) card.classList.add("sel");
       tx.append(nm, ds);
       card.append(ic, tx);
+      card.dataset.job = id;
       card.addEventListener("click", () => {
-        job = id;
-        try { localStorage.setItem(LS_JOB, job); } catch (e) {}
-        jobScreen.classList.add("hidden");
         beep(900, .08, "square", .05);
-        reset(test === true);
+        showJobDetail(id);               // 바로 시작하지 않고 먼저 보여 준다
       });
       list.appendChild(card);
     }
+    // 상세 화면 위쪽 칩 — 목록으로 돌아가지 않고도 옆 직업을 훑어볼 수 있다
+    const chips = document.getElementById("jobChips");
+    chips.innerHTML = "";
+    for (const id in JOBS) {
+      const b = document.createElement("button");
+      b.className = "jchip";
+      b.dataset.job = id;
+      b.title = JOBS[id].nm;
+      const im = document.createElement("img");
+      im.src = "assets/" + JOB_IMG[id] + "_right.png";
+      im.alt = JOBS[id].nm;
+      b.appendChild(im);
+      b.addEventListener("click", () => { beep(1050, .05, "square", .04); showJobDetail(id); });
+      chips.appendChild(b);
+    }
+    jobTestMode = test === true;
+    showJobList();
     startScreen.classList.add("hidden");
     overScreen.classList.add("hidden");
     jobScreen.classList.remove("hidden");
   }
+
+  document.getElementById("btnJobGo").addEventListener("click", () => {
+    jobScreen.classList.add("hidden");
+    beep(900, .08, "square", .05);
+    reset(jobTestMode);
+  });
+  document.getElementById("btnJobList").addEventListener("click", () => {
+    beep(520, .06, "square", .04);
+    showJobList();
+  });
 
   // 직업을 고르지 않고 시작화면으로 되돌아간다 (테스트 종료와 같은 길)
   document.getElementById("btnJobBack").addEventListener("click", () => {
