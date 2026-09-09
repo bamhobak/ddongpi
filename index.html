@@ -165,7 +165,21 @@
     background: rgba(5,6,13,.42); border-radius: 8px; padding: 4px 5px;
   }
   .board li.rowpair + li { border-top: 0; }
-  .board .rcol { display: flex; flex-direction: column; min-width: 0; }
+  .board .rcol { display: flex; flex-direction: column; min-width: 0; justify-content: center; }
+  /* 4~6위는 시상대 바로 아래 순위 — 7~10위보다 한 단계 크고 밝게 */
+  .board .rcol.hi .rowline { padding: 3px 5px; font-size: 12.5px; }
+  .board .rcol.hi .rowline img.jic3 { width: 18px; height: 23px; }
+  .board .rcol.hi .rowline .rk {
+    width: 20px; height: 20px; line-height: 20px; font-size: 11px;
+    background: rgba(255,210,63,.20); color: #ffd23f;
+  }
+  .board .rcol.hi .rowline .nm { color: #fff6cf; }
+  .board .rcol.hi .rowline .sc { font-size: 1.04em; text-shadow: 0 0 8px rgba(255,210,63,.35); }
+  .board .rcol.hi .rowline:nth-child(even) { background: rgba(255,210,63,.07); }
+  /* 7~10위는 한 단계 낮춰 조용하게 */
+  .board .rcol.lo .rowline { font-size: 11px; }
+  .board .rcol.lo .rowline .nm { color: #d5d8e2; font-weight: 400; }
+  .board .rcol.lo .rowline .sc { color: #e0bd5c; font-weight: 400; }
   .board .rowline {
     display: flex; align-items: center; gap: 5px; padding: 2px 4px; font-size: 11.5px;
     border-radius: 3px;
@@ -975,7 +989,7 @@
   const elFinal = document.getElementById("finalScore");
   const elTitle = document.getElementById("overTitle");
 
-  const GAME_VERSION = "v1.5.73";   // 코드를 고칠 때마다 뒤 두 자리를 올린다
+  const GAME_VERSION = "v1.5.74";   // 코드를 고칠 때마다 뒤 두 자리를 올린다
   document.getElementById("ver").textContent = GAME_VERSION;
 
   const LS_NAME = "epjpddongpi_name";
@@ -4305,12 +4319,12 @@
         d.append(rk, im, nm, sc);
         return d;
       };
-      for (const [from, to] of [[0, 3], [3, 7]]) {
+      [[0, 3], [3, 7]].forEach(([from, to], i) => {
         const col = document.createElement("div");
-        col.className = "rcol";
+        col.className = i === 0 ? "rcol hi" : "rcol lo";
         rest.slice(from, to).forEach((row, k) => col.appendChild(mkRow(row, from + k + 4)));
         li.appendChild(col);
-      }
+      });
       el.appendChild(li);
     }
   }
