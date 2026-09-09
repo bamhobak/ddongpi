@@ -301,14 +301,6 @@
   #jobDetail { display: flex; flex-direction: column; align-items: center; gap: 10px; width: 100%; max-width: 340px; }
   #jobDetail.hidden { display: none; }
   #jobList.hidden { display: none; }   /* .hidden 은 .screen 에만 걸려 있어 따로 필요하다 */
-  #jobChips { display: flex; gap: 5px; width: 100%; justify-content: center; }
-  #jobChips .jchip {
-    flex: 1; min-width: 0; display: flex; align-items: center; justify-content: center;
-    height: 40px; padding: 0; border-radius: 6px; box-shadow: none;
-    background: rgba(53,240,255,.08); border: 1px solid rgba(53,240,255,.35);
-  }
-  #jobChips .jchip img { height: 32px; object-fit: contain; }
-  #jobChips .jchip.on { background: #ffd23f; border-color: #ffd23f; box-shadow: 0 0 14px rgba(255,210,63,.55); }
   #jobCard {
     width: 100%; background: rgba(255,255,255,.06); border-radius: 14px;
     padding: 14px 16px; display: flex; flex-direction: column; align-items: center; gap: 8px;
@@ -336,8 +328,6 @@
   /* 화면이 짧으면 캐릭터를 줄인다 */
   @media (max-height: 670px) {
     #jobBig { height: 120px; }
-    #jobChips .jchip { height: 36px; }
-    #jobChips .jchip img { height: 28px; }
   }
 
   /* 지금 고른 직업 */
@@ -885,10 +875,9 @@
     </div>
 
     <div id="jobScreen" class="screen hidden">
-      <h2 id="jobTitle">직업 선택</h2>
+      <h2>직업 선택</h2>
       <div id="jobList"></div>
       <div id="jobDetail" class="hidden">
-        <div id="jobChips"></div>
         <div id="jobCard">
           <img id="jobBig" alt="">
           <div id="jobName"></div>
@@ -977,7 +966,7 @@
   const elFinal = document.getElementById("finalScore");
   const elTitle = document.getElementById("overTitle");
 
-  const GAME_VERSION = "v1.5.69";   // 코드를 고칠 때마다 뒤 두 자리를 올린다
+  const GAME_VERSION = "v1.5.71";   // 코드를 고칠 때마다 뒤 두 자리를 올린다
   document.getElementById("ver").textContent = GAME_VERSION;
 
   const LS_NAME = "epjpddongpi_name";
@@ -2586,7 +2575,7 @@
   const jobScreen = document.getElementById("jobScreen");
   const jobList   = document.getElementById("jobList");
   const jobDetail = document.getElementById("jobDetail");
-  const jobTitle  = document.getElementById("jobTitle");
+  const btnJobBack = document.getElementById("btnJobBack");
   let jobTestMode = false;              // 테스트 모드로 들어왔는지 (상세를 거쳐도 유지)
 
   /* 긴 설명을 가운뎃점으로 끊어 줄 단위로 보여 준다 */
@@ -2611,15 +2600,14 @@
       d.appendChild(document.createTextNode(line));   // textContent → HTML 삽입 불가
       tr.appendChild(d);
     }
-    for (const c of document.querySelectorAll("#jobChips .jchip"))
-      c.classList.toggle("on", c.dataset.job === id);
-    jobTitle.textContent = "직업 선택";
     jobList.classList.add("hidden");
     jobDetail.classList.remove("hidden");
+    btnJobBack.hidden = true;              // 상세에서는 '다른 직업 보기'로만 빠져나간다
   }
   function showJobList() {
     jobDetail.classList.add("hidden");
     jobList.classList.remove("hidden");
+    btnJobBack.hidden = false;
     for (const c of jobList.children) c.classList.toggle("sel", c.dataset.job === job);
   }
   function openJobSelect(test) {           // test === true 면 고른 뒤 테스트 모드로 시작
@@ -2646,21 +2634,6 @@
       });
       list.appendChild(card);
     }
-    // 상세 화면 위쪽 칩 — 목록으로 돌아가지 않고도 옆 직업을 훑어볼 수 있다
-    const chips = document.getElementById("jobChips");
-    chips.innerHTML = "";
-    for (const id in JOBS) {
-      const b = document.createElement("button");
-      b.className = "jchip";
-      b.dataset.job = id;
-      b.title = JOBS[id].nm;
-      const im = document.createElement("img");
-      im.src = "assets/" + JOB_IMG[id] + "_right.png";
-      im.alt = JOBS[id].nm;
-      b.appendChild(im);
-      b.addEventListener("click", () => { beep(1050, .05, "square", .04); showJobDetail(id); });
-      chips.appendChild(b);
-    }
     jobTestMode = test === true;
     showJobList();
     startScreen.classList.add("hidden");
@@ -2679,7 +2652,7 @@
   });
 
   // 직업을 고르지 않고 시작화면으로 되돌아간다 (테스트 종료와 같은 길)
-  document.getElementById("btnJobBack").addEventListener("click", () => {
+  btnJobBack.addEventListener("click", () => {
     beep(520, .06, "square", .04);
     jobScreen.classList.add("hidden");
     overScreen.classList.add("hidden");
