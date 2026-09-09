@@ -813,7 +813,7 @@
   const elFinal = document.getElementById("finalScore");
   const elTitle = document.getElementById("overTitle");
 
-  const GAME_VERSION = "v1.5.48";   // 코드를 고칠 때마다 뒤 두 자리를 올린다
+  const GAME_VERSION = "v1.5.49";   // 코드를 고칠 때마다 뒤 두 자리를 올린다
   document.getElementById("ver").textContent = GAME_VERSION;
 
   const LS_NAME = "epjpddongpi_name";
@@ -1916,10 +1916,10 @@
     { id: "doveWhat",   ic: "🕊️", nm: "비둘기 무엇?", ds: "비둘기가 1.5배 빠르고 커진다 · 더 자주 출격",
       hidden: true, once: true, cond: () => job === "gambler",   // 도박사 전용
       go: () => { aug.doveWhat = true; } },
-    { id: "steelUmb",   ic: "☔", nm: "우산 로켓배송", ds: "우산이 없으면 저절로 배송된다 · 배송이 갈수록 느려진다",
+    { id: "steelUmb",   ic: "☔", nm: "우산 로켓배송", ds: "우산이 없으면 저절로 배송된다",
       hidden: true, once: true,
       cond: () => augCount["umbrella3"] > 0 && job !== "fit",   // 헬스걸은 하트 자동재생이 돼버려 제외
-      go: () => { aug.steelUmb = true; umbDeliv = 0; shieldTimer = UMB_SEC; } },
+      go: () => { aug.steelUmb = true; shieldTimer = UMB_SEC; } },
     { id: "starburst",  ic: "🌠", nm: "별핑별",     ds: "별이 하늘의 똥을 쓸어버린다",
       hidden: true, once: true, cond: () => augCount["star50"] > 0,
       go: () => { aug.starburst = true; } },
@@ -2143,12 +2143,7 @@
   let invUntil = 0, powerUntil = 0;
   let magNear = 0;                 // 자석에 끌리는 정도 (0~1) — 소리 크기에 쓴다
   let shields = 0;                 // 남은 방패 수 — 우산 아이템은 최대 1, 증강으로만 여러 개
-  const UMB_SEC = 6.5;             // 우산 로켓배송: 첫 배송까지 몇 초 걸리는지
-  /* 배송할수록 간격이 늘어난다. 6.5초 고정이면 '맞는 간격 > 6.5초'인 순간부터
-     방패가 무한히 채워져 영영 죽지 않았다. 20초에서 멈춘다. */
-  const UMB_STEP = 1.5, UMB_MAX = 20;
-  let umbDeliv = 0;                // 이번 판에 배송된 횟수
-  function umbGap() { return Math.min(UMB_MAX, UMB_SEC + UMB_STEP * umbDeliv); }
+  const UMB_SEC = 6.5;             // 우산 로켓배송: 방패가 없을 때 몇 초마다 하나씩 오는지
   let shieldTimer = UMB_SEC;       // 다음 하나까지 남은 시간
   let spawnHold = 0;               // 별핑별·성난 우산: 똥 생성이 멈춰 있는 남은 시간
   let umbBlast = null;             // 성난 우산 폭발 파동 {x, y, r, t}
@@ -2501,7 +2496,7 @@
     clones = []; cloneTimer = 0;
     doves = []; moveDist = 0;
     bullets = []; shipClock = 0; aug.galaga = 0;
-    shieldTimer = UMB_SEC; umbDeliv = 0;
+    shieldTimer = UMB_SEC;
     aug.itemRateMul = 1; aug.feverRateMul = 1; aug.giant = 0; aug.magnet = 0;
     resetBonusTimers();          // 증강 배율을 되돌린 뒤라야 첫 타이머가 제대로 잡힌다
     aug.helper = 0; aug.helperRush = false; aug.hungry = false; aug.galaga = 0;
@@ -2927,10 +2922,7 @@
     noHitSec += dt;                          // 안 맞고 버틴 시간 (피격 시 1/4 감소)
     /* 레벨 시계는 뚜니핑 타임 동안 멈춘다. 무적으로 낙하물을 줍는 시간까지
        레벨에 포함되면, 정작 실력으로 버틴 시간이 아닌데도 난이도가 올라간다. */
-    /* 난이도 시계. 예전에는 뚜니핑 타임 동안 멈춰 있었는데, 정기구독·연장을 쌓으면
-       판의 절반을 뚜니핑으로 보내게 되어 난이도가 반속도로만 올랐다. 그동안 똥은
-       무해하니 사실상 무적으로 시간을 벌 수 있었고, 그래서 판이 끝나지 않았다. */
-    levelTime += dt;
+    if (!fever) levelTime += dt;
     level = 1 + Math.floor(levelTime / LEVEL_SEC);
     score += sc("생존", dt * 50 * level * aug.timeMul * scoreMul());   // 생존 점수: 초당 50 × 레벨
 
@@ -3189,14 +3181,13 @@
       if (shields <= 0) {
         shieldTimer -= dt * tsc;
         if (shieldTimer <= 0) {
-          umbDeliv++;
-          shieldTimer = umbGap();
+          shieldTimer = UMB_SEC;
           shields = 1;
           popText(player.x, player.y - 60, "☔ 우산 도착!", "#7ec8ff");
           beep(880, .12, "triangle", .05);
         }
       } else {
-        shieldTimer = umbGap();
+        shieldTimer = UMB_SEC;
       }
     }
 
