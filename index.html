@@ -905,7 +905,7 @@
   const elFinal = document.getElementById("finalScore");
   const elTitle = document.getElementById("overTitle");
 
-  const GAME_VERSION = "v1.5.86";   // 코드를 고칠 때마다 뒤 두 자리를 올린다
+  const GAME_VERSION = "v1.5.87";   // 코드를 고칠 때마다 뒤 두 자리를 올린다
   document.getElementById("ver").textContent = GAME_VERSION;
 
   const LS_NAME = "epjpddongpi_name";
@@ -2024,7 +2024,8 @@
     { id: "magnet",     ic: "🧲", nm: "자석",       ds: "근처의 아이템이 끌려온다",
       once: true, go: () => { aug.magnet = 220; } },   // 끌어당기는 반지름(px)
     { id: "lucky",      ic: "🍀", nm: "행운",       ds: "아이템이 더 자주 등장",
-      go: () => { aug.itemRateMul /= 1 + 0.15 * dim("lucky"); } },   // 등장 빈도 +20%
+      // 첫 개는 +15%, 겹칠수록 0.85배씩 덜 먹는다 (5개 누적 +69%, 실측 +65%)
+      go: () => { aug.itemRateMul /= 1 + 0.15 * dim("lucky"); } },
     { id: "giant",      ic: "🌝", nm: "대왕 뚜니핑", ds: "대왕 뚜니핑 두둥등장",
       once: true, go: () => { aug.giant = 1; } },
     { id: "downpour",   ic: "🌧️", nm: "뚜니핑 폭우", ds: "뚜니핑이 더 많이 쏟아진다",
