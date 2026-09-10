@@ -932,7 +932,7 @@
   const elFinal = document.getElementById("finalScore");
   const elTitle = document.getElementById("overTitle");
 
-  const GAME_VERSION = "v1.5.97";   // 코드를 고칠 때마다 뒤 두 자리를 올린다
+  const GAME_VERSION = "v1.5.99";   // 코드를 고칠 때마다 뒤 두 자리를 올린다
   document.getElementById("ver").textContent = GAME_VERSION;
 
   const LS_NAME = "epjpddongpi_name";
@@ -963,7 +963,7 @@
        이미 차 있기 때문이다 (옛 기록과 순위표가 그 이름을 쓴다). */
     powerp2: { nm: "파워P", ic: "🎯", ds: "달이 덜 나온다 · 대신 증강을 5개 중에서 고른다" },
     powerp: { nm: "무소유", ic: "🙏", ds: "달이 아예 안 나온다 · 별이 조금 잘 나온다 · 안 맞을수록 점수가 치솟는다" },
-    bangul: { nm: "방울이", ic: "🫧", ds: "비누방울이 한 대를 대신 맞고 터진다 · 잠시 뒤 다시 맺힌다", f: "이핑재핑보다 귀엽다" }
+    bangul: { nm: "방울이", ic: "🫧", ds: "목숨 대신 오염도 · 맞으면 25% 더러워지고 100%면 끝 · 큰 빗방울을 먹으면 35% 씻긴다 · 비누방울이 한 대를 대신 맞고 터진다", f: "이핑재핑보다 귀엽다" }
   };
   // 직업별 캐릭터 그림(오른쪽 이동 모습) — 직업 카드와 순위표에서 함께 쓴다
   const JOB_IMG = { none: "player", gambler: "gambler", levitator: "levitator",
@@ -1502,7 +1502,8 @@
   const ITEM_IMG = {};
   for (const [type, file] of [["moon", "crescent_moon"], ["fullmoon", "full_moon"], ["paper", "roll_of_paper"],
                               ["umbrella", "umbrella"], ["star", "star"], ["heart", "red_heart"],
-                              ["poop", "poop"], ["darkpoop", "dark_poop"]]) {
+                              ["poop", "poop"], ["darkpoop", "dark_poop"],
+                              ["droplet", "droplet"]]) {
     const im = new Image();
     im.onload = () => { ITEM_IMG[type] = im; };
     im.src = "assets/item_" + file + ".png";
@@ -2065,8 +2066,13 @@
     { id: "dopa",       ic: "📱", nm: "도파민 중독",  ds: "똥이 빨라지고, 생존 점수가 크게 오른다",
       go: () => { aug.fallMul *= 1 + 0.10 * dim("dopa"); aug.timeMul *= 1 + 0.5 * dim("dopa"); } },
     { id: "carrot",     ic: "🥕", nm: "하트 당근거래", ds: "목숨 1개를 팔고, 앞으로 얻는 모든 점수 +20%",
-      max: 5, cond: () => lives >= 2,
-      go: () => { lives = Math.max(1, lives - 1); aug.scoreMul *= 1.2; } },
+      // 방울이는 목숨 대신 오염도를 지불한다 (죽지 않을 만큼만)
+      max: 5, cond: () => (dirtJob() ? dirt <= DIRT_MAX - DIRT_HIT * 2 : lives >= 2),
+      go: () => {
+        if (dirtJob()) dirt = Math.min(DIRT_MAX - DIRT_HIT, dirt + DIRT_HIT);
+        else lives = Math.max(1, lives - 1);
+        aug.scoreMul *= 1.2;
+      } },
     { id: "goldLord",   ic: "🦄", nm: "무지개 수집가", ds: "무지개똥이 두 배 멀리서 세게 끌려오고, 점수 2배",
       // 무지개똥 연금술 + 자석 — 무지개똥을 만들 수 있고, 끌어올 수 있어야 뜻이 산다
       hidden: true, once: true,
@@ -2088,7 +2094,8 @@
       hidden: true, once: true, cond: () => aug.galaga >= 2,   // 갤러그 2대 이상
       go: () => { aug.wak = true; } },
     { id: "clone",      ic: "👯", nm: "벼랑 끝 분신술", ds: "작은 이재가 날아가 똥과 함께 자폭한다",
-      hidden: true, once: true, cond: () => level >= 7 && lives <= 2,
+      hidden: true, once: true,
+      cond: () => level >= 7 && (dirtJob() ? dirt >= DIRT_HIT * 2 : lives <= 2),
       go: () => { aug.clone = true; cloneTimer = 1.5; } }
   ];
 
@@ -2267,6 +2274,11 @@
   }
 
   let score = 0, lives = 3, level = 1, elapsed = 0, starCount = 0;
+  /* 방울이 전용 — 목숨 대신 오염도로 버틴다. 0 에서 시작해 맞을 때마다 DIRT_HIT 씩
+     차오르고 100 이면 끝. 빗방울을 먹으면 DIRT_WASH 만큼 씻긴다. */
+  const DIRT_MAX = 100, DIRT_HIT = 25, DIRT_WASH = 35;
+  let dirt = 0;
+  function dirtJob() { return job === "bangul"; }
   let levelTime = 0;               // 레벨이 오르는 시계 — 뚜니핑 타임에는 멈춰 있다
   const LEVEL_SEC = 13;            // 레벨 한 칸의 길이(초). 지대 하나의 길이이기도 하다
   let spawnTimer = 0;
@@ -2664,6 +2676,7 @@
     // 테스트 모드는 어차피 목숨이 안 줄어드니, 목숨 조건 증강(당근거래·분신술)을
     // 바로 시험해볼 수 있게 1부터 시작한다.
     score = 0; lives = testMode ? 1 : 3; level = 1; elapsed = 0; levelTime = 0; starCount = 0;
+    dirt = 0;
     spawnTimer = 0;
     invUntil = 0; powerUntil = 0; hurtUntil = 0; shields = 0;
     shake = 0; flash = 0; feverFlash = 0; fever = false; feverT = 0; feverBanner = 0;
@@ -2908,7 +2921,7 @@
     { type: "paper",    emoji: "🧻", w: 27.17 }, // 26 x1.1 후 5% 하향
     { type: "umbrella", emoji: "☂️", w: 26.4 },  // 22 x1.2
     { type: "star",     emoji: "⭐", w: 72.52 }, // 69.4 x1.1 후 5% 하향
-    { type: "heart",    emoji: "❤️", w: 28.8 }   // 24 x1.2
+    { type: "heart",    emoji: "❤️", w: 28.8 }   // 24 x1.2 (방울이는 빗방울로 바뀐다)
   ];
   /* 아이템은 종류마다 자기 타이머로 따로 굴러간다.
      각자의 평균 간격 = 기본 10초 ÷ 그 아이템의 비중 → 전체 등장 빈도는 예전과 같지만
@@ -2970,15 +2983,19 @@
     if (pick.type === "umbrella" && job === "fit") {
       pick = BONUS.find(b => b.type === "heart");   // 헬스걸 — 우산 자리에 하트
     }
+    /* 방울이 — 하트 자리에 빗방울이 온다. 오염도가 0 이어도 그냥 떨어진다
+       (먹어도 아무 일이 없을 뿐, 하트처럼 별로 바뀌지는 않는다). */
+    let asDrop = false;
+    if (pick.type === "heart" && dirtJob()) asDrop = true;
     if (pick.type === "heart" && job === "gambler") return;   // 도박사에겐 하트가 아예 안 나온다
-    if (pick.type === "heart" && lives >= aug.maxLives) {
+    if (pick.type === "heart" && !asDrop && lives >= aug.maxLives) {
       pick = BONUS.find(b => b.type === "star");    // 목숨 꽉 차면 별로 대체
     }
-    const r = 20;
+    const r = asDrop ? 29 : 20;      // 큰 빗방울
     // 낙하 속도에 변화를 주되, 너무 빠르면 못 먹고 지나가버려서 위쪽을 눌러 잡았다
     const vy = (110 + level * 6) * (H / BASE_H) * (0.6 + Math.random() * 0.5);
     items.push({
-      type: pick.type, emoji: pick.emoji,
+      type: asDrop ? "droplet" : pick.type, emoji: asDrop ? "💧" : pick.emoji,
       x: r + Math.random() * (W - r * 2), y: -r - 10,
       r: r,
       vx: (Math.random() - Math.random()) * vy * SPREAD_BONUS,
@@ -3775,7 +3792,10 @@
                 if (!sfx("angry")) beep(190, .22, "square", .06);
               }
             } else {
-              if (!testMode) lives--;      // 테스트 모드는 맞아도 목숨이 줄지 않는다
+              if (!testMode) {             // 테스트 모드는 맞아도 줄지 않는다
+                if (dirtJob()) dirt = Math.min(DIRT_MAX, dirt + DIRT_HIT);
+                else lives--;
+              }
               noHitSec *= 3 / 4;           // 무소유 무피격 배율 — 맞으면 1/4 만 잃는다
               invUntil = now + 1000;
               hurtUntil = now + 1000;   // 무적 시간 동안 아픈 그림으로
@@ -3783,7 +3803,7 @@
               burst(it.x, it.y, "#8a5a2b", 22);
               popText(player.x, player.y - 60, "으악!", "#ff5d5d");
               if (!sfx("hurt")) beep(140, .25, "sawtooth", .07);
-              if (lives <= 0) { items.splice(i, 1); return gameOver(); }
+              if (dirtJob() ? dirt >= DIRT_MAX : lives <= 0) { items.splice(i, 1); return gameOver(); }
             }
             items.splice(i, 1);
             continue;
@@ -3900,6 +3920,16 @@
       lives = Math.min(aug.maxLives, lives + 1);
       popText(it.x, it.y, "❤️ +1", "#ff8fb0");
       if (!sfx("heart")) beep(1000, .15, "sine", .06);
+    }
+    if (it.type === "droplet") {                    // 방울이 — 오염도를 씻어낸다
+      if (dirt > 0) {
+        dirt = Math.max(0, dirt - DIRT_WASH);
+        popText(it.x, it.y, "💧 -" + DIRT_WASH, "#8fe3ff");
+        if (!sfx("heart")) beep(1000, .15, "sine", .06);
+      } else {
+        popText(it.x, it.y, "💧", "#bfe9ff");        // 깨끗하면 아무 일도 없다
+        if (!sfx("bubble")) beep(760, .09, "sine", .04);
+      }
     }
     burst(it.x, it.y, "#ffd23f", 16);
     return false;
@@ -6315,8 +6345,30 @@
       ctx.fillText("🧘 " + Math.floor(noHitSec) + "초", W - 16, top + 44);
       ctx.textAlign = "left";
     }
+    if (dirtJob()) {                        // 방울이 — 하트 대신 오염도 막대
+      const bw = 96, bh = 12, bx = W - 16 - bw, by = top + 9;
+      const k = Math.max(0, Math.min(1, dirt / DIRT_MAX));
+      ctx.fillStyle = "rgba(5,8,20,.55)";
+      ctx.beginPath(); ctx.roundRect(bx - 2, by - 2, bw + 4, bh + 4, 7); ctx.fill();
+      ctx.fillStyle = "rgba(255,255,255,.14)";
+      ctx.beginPath(); ctx.roundRect(bx, by, bw, bh, 5); ctx.fill();
+      if (k > 0) {                          // 깨끗할수록 파랗고, 더러울수록 탁한 갈색
+        const g = ctx.createLinearGradient(bx, 0, bx + bw, 0);
+        g.addColorStop(0, "#6ea86a");
+        g.addColorStop(1, k > 0.7 ? "#7a4a22" : "#b08a3c");
+        ctx.fillStyle = g;
+        ctx.beginPath(); ctx.roundRect(bx, by, Math.max(4, bw * k), bh, 5); ctx.fill();
+      }
+      ctx.strokeStyle = "rgba(255,255,255,.30)"; ctx.lineWidth = 1;
+      ctx.beginPath(); ctx.roundRect(bx, by, bw, bh, 5); ctx.stroke();
+      ctx.textAlign = "right";
+      ctx.font = "700 11px NanumBarunGothic, system-ui, sans-serif";
+      ctx.fillStyle = k > 0.7 ? "#ffb0b0" : "#dfe6ef";
+      ctx.fillText("오염 " + Math.round(dirt) + "%", W - 16, by + bh + 12);
+      ctx.textAlign = "left";
+    }
     const hr = lives > 5 ? 7.5 : 10.5, hgap = lives > 5 ? 18 : 30;
-    for (let i = 0; i < lives; i++) {
+    for (let i = 0; dirtJob() ? false : i < lives; i++) {
       const cx = W - 18 - hr * 1.32 - (i % 10) * hgap;
       const hy = top + 16 + Math.floor(i / 10) * 19;
       ctx.fillStyle = "rgba(70,8,20,.32)";                // 그림자
