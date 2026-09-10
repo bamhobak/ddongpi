@@ -927,7 +927,7 @@
   const elFinal = document.getElementById("finalScore");
   const elTitle = document.getElementById("overTitle");
 
-  const GAME_VERSION = "v1.5.93";   // 코드를 고칠 때마다 뒤 두 자리를 올린다
+  const GAME_VERSION = "v1.5.94";   // 코드를 고칠 때마다 뒤 두 자리를 올린다
   document.getElementById("ver").textContent = GAME_VERSION;
 
   const LS_NAME = "epjpddongpi_name";
@@ -2785,7 +2785,7 @@
   function lateMul() {
     let m = 1;
     if (level > 10) m *= Math.pow(1.015, level - 10);
-    if (level > 17) m *= Math.pow(1.05, level - 17);
+    if (level > 17) m *= Math.pow(1.025, level - 17);   // 블랙홀 뒤 레벨당 (예전 +5%)
     return m;
   }
 
@@ -4911,9 +4911,9 @@
   const LAST_Z = ZONES.length - 1;
   const BH_Z = LAST_Z;                 // 블랙홀 안 — 마지막 지대
   function inBlackhole() { return zoneIdx() >= BH_Z; }
-  /* 다크똥 — 블랙홀에 들어선 뒤로 섞여 떨어진다. 처음 20%, 레벨마다 +7%p, 85%에서 멈춘다.
+  /* 다크똥 — 블랙홀에 들어선 뒤로 섞여 떨어진다. 처음 8%, 레벨마다 +6%p, 85%에서 멈춘다.
      폭발·밀림 어느 것도 통하지 않아, 후반에 화력으로 버티는 길을 막는다. */
-  const DARK_BASE = 0.20, DARK_STEP = 0.07, DARK_CAP = 0.85;
+  const DARK_BASE = 0.08, DARK_STEP = 0.06, DARK_CAP = 0.85;
   function darkChance() {
     if (!inBlackhole()) return 0;
     return Math.min(DARK_CAP, DARK_BASE + DARK_STEP * (level - 1 - BH_Z));
@@ -5840,17 +5840,19 @@
      그릴 때 조금 크게 뒤에 깔아 테두리처럼 보이게 한다.
      (그림자 흐림은 폰이 뜨거워져서 쓰지 않는다 — 이 방식은 그리기 한 번이면 된다) */
   const RIM_CACHE = new Map();
-  function rimOf(img) {
-    let c = RIM_CACHE.get(img);
+  const RIM_CACHE_DARK = new Map();          // 다크똥은 검은 테두리를 쓴다
+  function rimOf(img, dark) {
+    const cache = dark ? RIM_CACHE_DARK : RIM_CACHE;
+    let c = cache.get(img);
     if (c) return c;
     c = document.createElement("canvas");
     c.width = img.width; c.height = img.height;
     const g = c.getContext("2d");
     g.drawImage(img, 0, 0);
-    g.globalCompositeOperation = "source-in";   // 그림이 있는 자리만 흰색으로
-    g.fillStyle = "#ffffff";
+    g.globalCompositeOperation = "source-in";   // 그림이 있는 자리만 한 가지 색으로
+    g.fillStyle = dark ? "#07030f" : "#ffffff";
     g.fillRect(0, 0, c.width, c.height);
-    RIM_CACHE.set(img, c);
+    cache.set(img, c);
     return c;
   }
   /* 지대별 배경 밝기 — 배경 그림 18장에서 실제로 잰 값.
@@ -5863,11 +5865,11 @@
     const l = a + (b - a) * zoneFrac();
     return Math.max(0, Math.min(1, (0.52 - l) / 0.28));
   }
-  function drawRim(img, d, rp) {
-    const k = Math.max(2, d * 0.05);
+  function drawRim(img, d, rp, dark) {
+    const k = Math.max(2, d * (dark ? 0.065 : 0.05));   // 검은 테두리는 조금 더 두껍게
     ctx.save();
-    ctx.globalAlpha *= rp * 0.85;
-    ctx.drawImage(rimOf(img), -d / 2 - k, -d / 2 - k, d + k * 2, d + k * 2);
+    ctx.globalAlpha *= dark ? Math.max(rp, 0.9) : rp * 0.85;
+    ctx.drawImage(rimOf(img, dark), -d / 2 - k, -d / 2 - k, d + k * 2, d + k * 2);
     ctx.restore();
   }
 
@@ -6131,12 +6133,15 @@
           ctx.beginPath(); ctx.arc(0, 0, R, 0, 6.283); ctx.fill();
           if (ctx.filter !== undefined) ctx.filter = fx.css;
         }
-        if (it.dark) {                       // 다크똥 — 뒤에 보랏빛 기운만 얹는다 (그림은 따로 있다)
+        if (it.dark) {
+          /* 다크똥 — 뒤에 보랏빛 기운을 얹는다. 몸이 검어서 어두운 배경에 묻히므로,
+             안쪽부터 진하게 깔아 큰 놈(대왕 다크똥)도 확실히 눈에 들게 한다. */
           const pu = 0.5 + 0.5 * Math.sin(now / 260 + it.phase);
-          const R = it.size * (0.78 + pu * 0.12);
-          const dg = ctx.createRadialGradient(0, 0, R * 0.3, 0, 0, R);
-          dg.addColorStop(0, "rgba(150,70,255," + (0.30 + pu * 0.18).toFixed(2) + ")");
-          dg.addColorStop(1, "rgba(60,0,120,0)");
+          const R = it.size * (0.86 + pu * 0.10);
+          const dg = ctx.createRadialGradient(0, 0, R * 0.52, 0, 0, R);
+          dg.addColorStop(0, "rgba(178,102,255," + (0.55 + pu * 0.25).toFixed(2) + ")");
+          dg.addColorStop(0.75, "rgba(120,40,220," + (0.26 + pu * 0.16).toFixed(2) + ")");
+          dg.addColorStop(1, "rgba(60,0,130,0)");
           ctx.fillStyle = dg;
           ctx.beginPath(); ctx.arc(0, 0, R, 0, 6.283); ctx.fill();
         }
@@ -6151,7 +6156,7 @@
         if (ii) {
           const d = it.size * ITEM_IMG_SCALE;
           // 무지개똥은 저 혼자 번쩍여서 테두리가 필요 없다
-          if (rp > 0.03 && !it.gold) drawRim(ii, d, rp);
+          if ((rp > 0.03 || it.dark) && !it.gold) drawRim(ii, d, rp, it.dark);
           ctx.drawImage(ii, -d / 2, -d / 2, d, d);
         } else {
           ctx.fillStyle = "#fff";
