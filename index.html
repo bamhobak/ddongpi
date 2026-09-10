@@ -930,7 +930,7 @@
   const elFinal = document.getElementById("finalScore");
   const elTitle = document.getElementById("overTitle");
 
-  const GAME_VERSION = "v0.6.14";   // 코드를 고칠 때마다 뒤 두 자리를 올린다
+  const GAME_VERSION = "v0.6.15";   // 코드를 고칠 때마다 뒤 두 자리를 올린다
   document.getElementById("ver").textContent = GAME_VERSION;
 
   const LS_NAME = "epjpddongpi_name";
@@ -2817,7 +2817,7 @@
   /* 낙하 각도. 좌우 속도를 낙하 속도에 비례시켜서 레벨이 올라도 기울기 느낌이 일정하다.
      (Math.random() - Math.random()) 은 0 근처가 흔하고 양 끝이 드문 삼각분포 →
      대부분은 적당히 기울고 일부만 크게 비스듬히 떨어진다. */
-  const SPREAD_POOP  = 0.16;   // 최대 약 9도 (예전 12도에서 완화)
+  const SPREAD_POOP  = 0.1780; // 최대 약 10도 (9도에서 1도 더 벌렸다)
   const SPREAD_BONUS = 0.28;   // 아이템은 조금 얌전하게 (약 16도)
 
   const FEVER_VY = 245;      // 뚜니핑 낙하물 기준 속도 — 레벨이 올라도 그대로 유지한다
