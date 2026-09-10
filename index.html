@@ -905,7 +905,7 @@
   const elFinal = document.getElementById("finalScore");
   const elTitle = document.getElementById("overTitle");
 
-  const GAME_VERSION = "v1.5.90";   // 코드를 고칠 때마다 뒤 두 자리를 올린다
+  const GAME_VERSION = "v1.5.91";   // 코드를 고칠 때마다 뒤 두 자리를 올린다
   document.getElementById("ver").textContent = GAME_VERSION;
 
   const LS_NAME = "epjpddongpi_name";
@@ -1479,7 +1479,7 @@
   const ITEM_IMG = {};
   for (const [type, file] of [["moon", "crescent_moon"], ["fullmoon", "full_moon"], ["paper", "roll_of_paper"],
                               ["umbrella", "umbrella"], ["star", "star"], ["heart", "red_heart"],
-                              ["poop", "poop"]]) {
+                              ["poop", "poop"], ["darkpoop", "dark_poop"]]) {
     const im = new Image();
     im.onload = () => { ITEM_IMG[type] = im; };
     im.src = "assets/item_" + file + ".png";
@@ -2797,7 +2797,7 @@
   // 눈을 통째로 덮는 장식(선글라스·X눈·하트눈·별눈·안대)이면 눈 변형은 건너뛴다
   const EYE_COVER = { 3: 1, 4: 1, 8: 1, 9: 1, 12: 1 };
 
-  function spawnPoop(mul, special, forceX, forceAng) {
+  function spawnPoop(mul, special, forceX, forceAng, forceDark) {
     if (spawnHold > 0) return;              // 성난 우산 직후에는 똥이 나오지 않는다
     const m = (mul || 1) * (H / BASE_H);   // 화면이 길면 그만큼 빨리 떨어져야 체감이 같다
     // 뚜니핑 타임에 나온 것은 외형·점수를 스스로 기억한다 → 뚜니핑 타임이 끝나도 모습이 바뀌지 않는다
@@ -2805,7 +2805,8 @@
     const cls = inFever ? pickFeverSize() : null;
     /* 다크똥 — 뚜니핑 낙하물과 무지개똥을 뺀 나머지가 대상이다.
        특수똥이면 그대로 '다크특수똥'이 된다 (성질은 유지하고 무적만 얹는다). */
-    const dark = !inFever && Math.random() < darkChance();
+    const dark = forceDark !== undefined ? !!forceDark
+               : (!inFever && Math.random() < darkChance());
     // 무지개똥 연금술 — 맞아도 무해하고 먹으면 점수 (특수똥은 위협으로 남아야 해서 제외)
     let gold = false;
     if (!inFever && !dark && !special && aug.goldChance > 0 && Math.random() < aug.goldChance) {
@@ -3171,7 +3172,7 @@
       const wn = warns[k];
       wn.t -= dt * tsc;
       if (wn.t <= 0) {
-        spawnPoop(1, "laser", wn.x, wn.ang);
+        spawnPoop(1, "laser", wn.x, wn.ang, wn.dark);
         beep(180, .16, "sawtooth", .06);
         warns.splice(k, 1);
       }
@@ -3476,7 +3477,9 @@
               const ang = (Math.random() - Math.random()) * 0.62;   // 최대 약 35도
               let ex = tx - Math.tan(ang) * L;
               ex = Math.max(-20, Math.min(W + 20, ex));
-              warns.push({ x: ex, ang: Math.atan((tx - ex) / L), t: LASER_WARN });
+              /* 예고 모양을 다크로 바꾸려면 떨어질 똥이 다크인지 지금 정해야 한다 */
+              warns.push({ x: ex, ang: Math.atan((tx - ex) / L), t: LASER_WARN,
+                           dark: Math.random() < darkChance() });
               if (!sfx("laser")) beep(1500, .06, "sine", .03);
             }
           } else {
@@ -5990,13 +5993,23 @@
       ctx.rotate(-(wn.ang || 0));                     // 실제 낙하 궤적과 같은 기울기
       /* 넓은 띠는 항상 같은 밝기로 깔아둔다. 띠까지 깜빡이면 그 뒤를 지나는
          다른 똥들이 함께 깜빡이는 것처럼 보인다. 깜빡이는 건 가운데 선과 ⚠ 뿐. */
+      /* 다크 레이저는 띠를 두 배 가까이 넓히고 보랏빛으로 깐다 —
+         부술 수 없는 것이 온다는 걸 미리 알아보게 한다. */
+      const dk = !!wn.dark;
+      const halfW = dk ? 30 : 17;
       const g = ctx.createLinearGradient(0, 0, 0, L);
-      g.addColorStop(0, "rgba(255,60,60,.20)");
-      g.addColorStop(1, "rgba(255,60,60,.05)");
+      g.addColorStop(0, dk ? "rgba(150,60,255,.34)" : "rgba(255,60,60,.20)");
+      g.addColorStop(1, dk ? "rgba(40,0,80,.12)" : "rgba(255,60,60,.05)");
       ctx.fillStyle = g;
-      ctx.fillRect(-17, 0, 34, L / Math.cos(wn.ang || 0));
-      ctx.strokeStyle = "rgba(255,80,80," + (on ? 0.9 : 0.3) + ")";
-      ctx.lineWidth = 2;
+      ctx.fillRect(-halfW, 0, halfW * 2, L / Math.cos(wn.ang || 0));
+      if (dk) {                                       // 양 끝을 진하게 둘러 테두리를 만든다
+        ctx.strokeStyle = "rgba(190,110,255," + (on ? 0.8 : 0.35) + ")";
+        ctx.lineWidth = 2;
+        ctx.strokeRect(-halfW, 0, halfW * 2, L / Math.cos(wn.ang || 0));
+      }
+      ctx.strokeStyle = dk ? "rgba(210,150,255," + (on ? 1 : 0.4) + ")"
+                           : "rgba(255,80,80," + (on ? 0.9 : 0.3) + ")";
+      ctx.lineWidth = dk ? 5 : 2;
       ctx.beginPath();
       ctx.moveTo(0, 0);
       ctx.lineTo(0, L / Math.cos(wn.ang || 0));
@@ -6007,15 +6020,18 @@
       ctx.translate(0, mid);
       ctx.rotate(wn.ang || 0);
       ctx.globalAlpha = on ? 1 : 0.35;
-      ctx.fillStyle = "#ff5d5d";
-      ctx.font = "700 46px NanumBarunGothic, system-ui, sans-serif";
+      ctx.font = "700 " + (dk ? 56 : 46) + "px NanumBarunGothic, system-ui, sans-serif";
       ctx.textAlign = "center";
       ctx.textBaseline = "middle";
       ctx.beginPath();                       // 어두운 배경에서도 눈에 띄게 뒤에 원을 깐다
-      ctx.arc(0, 2, 32, 0, 6.283);
-      ctx.fillStyle = "rgba(60,0,0,.45)";
+      ctx.arc(0, 2, dk ? 38 : 32, 0, 6.283);
+      ctx.fillStyle = dk ? "rgba(18,0,38,.75)" : "rgba(60,0,0,.45)";
       ctx.fill();
-      ctx.fillStyle = "#ff5d5d";
+      if (dk) {
+        ctx.strokeStyle = "rgba(190,110,255,.9)"; ctx.lineWidth = 3;
+        ctx.beginPath(); ctx.arc(0, 2, 38, 0, 6.283); ctx.stroke();
+      }
+      ctx.fillStyle = dk ? "#d9a8ff" : "#ff5d5d";
       ctx.fillText("⚠", 0, 0);
       ctx.globalAlpha = 1;
       ctx.restore();
@@ -6069,19 +6085,14 @@
           ctx.beginPath(); ctx.arc(0, 0, R, 0, 6.283); ctx.fill();
           if (ctx.filter !== undefined) ctx.filter = fx.css;
         }
-        if (it.dark) {                       // 다크똥 — 검게 가라앉고 보랏빛 고리가 돈다
+        if (it.dark) {                       // 다크똥 — 뒤에 보랏빛 기운만 얹는다 (그림은 따로 있다)
           const pu = 0.5 + 0.5 * Math.sin(now / 260 + it.phase);
-          const R = it.size * (0.82 + pu * 0.10);
-          const dg = ctx.createRadialGradient(0, 0, R * 0.35, 0, 0, R);
-          dg.addColorStop(0, "rgba(60,10,90,0)");
-          dg.addColorStop(0.72, "rgba(120,40,200," + (0.30 + pu * 0.20).toFixed(2) + ")");
-          dg.addColorStop(1, "rgba(20,0,40,0)");
+          const R = it.size * (0.78 + pu * 0.12);
+          const dg = ctx.createRadialGradient(0, 0, R * 0.3, 0, 0, R);
+          dg.addColorStop(0, "rgba(150,70,255," + (0.30 + pu * 0.18).toFixed(2) + ")");
+          dg.addColorStop(1, "rgba(60,0,120,0)");
           ctx.fillStyle = dg;
           ctx.beginPath(); ctx.arc(0, 0, R, 0, 6.283); ctx.fill();
-          ctx.strokeStyle = "rgba(180,90,255," + (0.55 + pu * 0.35).toFixed(2) + ")";
-          ctx.lineWidth = 2;
-          ctx.beginPath(); ctx.arc(0, 0, it.size * 0.62, 0, 6.283); ctx.stroke();
-          if (ctx.filter !== undefined) ctx.filter = "brightness(0.30) saturate(0.45) hue-rotate(255deg)";
         }
         if (it.wak) {                        // 주먹에 맞은 똥 — 붉은 테두리 (사람을 해치지 않는다)
           ctx.fillStyle = "rgba(255,110,90,.30)";
@@ -6089,7 +6100,8 @@
           ctx.strokeStyle = "rgba(255,180,150,.9)"; ctx.lineWidth = 2.5;
           ctx.beginPath(); ctx.arc(0, 0, it.size * 0.72, 0, 6.283); ctx.stroke();
         }
-        const ii = ITEM_IMG[it.type];      // 똥도 같은 3D 그림 (무지개똥 필터는 그림에도 먹는다)
+        // 똥도 같은 3D 그림 (무지개똥 필터는 그림에도 먹는다). 다크똥만 제 그림을 쓴다.
+        const ii = it.dark ? (ITEM_IMG.darkpoop || ITEM_IMG[it.type]) : ITEM_IMG[it.type];
         if (ii) {
           const d = it.size * ITEM_IMG_SCALE;
           // 무지개똥은 저 혼자 번쩍여서 테두리가 필요 없다
