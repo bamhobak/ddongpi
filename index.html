@@ -905,7 +905,7 @@
   const elFinal = document.getElementById("finalScore");
   const elTitle = document.getElementById("overTitle");
 
-  const GAME_VERSION = "v1.5.87";   // 코드를 고칠 때마다 뒤 두 자리를 올린다
+  const GAME_VERSION = "v1.5.88";   // 코드를 고칠 때마다 뒤 두 자리를 올린다
   document.getElementById("ver").textContent = GAME_VERSION;
 
   const LS_NAME = "epjpddongpi_name";
@@ -1991,7 +1991,7 @@
       cond: () => job !== "fit" && shields < 10,   // 헬스걸은 방패가 없는 직업 — 미등장
       noCount: true,              // 방패 수는 화면에 우산으로 보이니 보유 뱃지는 생략
       go: () => { shields = Math.min(shields + 3, 10); } },   // 증강으로는 최대 10개까지
-    { id: "galaga",     ic: "🚀", nm: "갤러그", ds: "우주선이 0.5초마다 총알을 쏘아 올린다",
+    { id: "galaga",     ic: "🚀", nm: "갤러그", ds: "우주선이 총알을 쏘아 올린다 · 늘어날수록 각자 느긋해진다",
       cond: () => inSpace(),   // 우주복으로 갈아입은 뒤부터 나온다
       go: () => { aug.galaga++; } },
     { id: "helper",     ic: "🦸", nm: "도와줘 정연핑", ds: "정연핑이 지나가는 자리의 똥을 부순다",
@@ -2249,7 +2249,10 @@
   let bullets = [], shipClock = 0;   // 갤러그: 날아가는 총알과 편대 공용 시계
   let ghosts = [];                   // 그건 제 잔상입니다만? — 피한 자리에 남는 잔상
   let wakBooms = [];                 // 고무고무노 피스톨 — 똥끼리 부딪혀 터진 자리의 고리
-  const SHIP_GAP = 0.6;              // 우주선 한 대가 다시 쏘기까지 (0.5 → 0.6, 20% 덜 쏜다)
+  /* 우주선 한 대가 다시 쏘기까지. 대수가 늘수록 각자 느긋해진다 —
+     1대 0.6초 · 2대 0.8초 · 3대 1.0초 … (겹칠수록 총 화력의 상승폭이 줄어든다) */
+  const SHIP_GAP = 0.6, SHIP_GAP_STEP = 0.2;
+  function shipGap(n) { return SHIP_GAP + SHIP_GAP_STEP * (n - 1); }
   const M_PX = 12, DOVE_EVERY = 80 * M_PX;   // 100m 에서 20% 줄여 80m 마다
   // 히든 '비둘기 무엇?' — 속도·크기·폭발은 1.5배, 출격은 3/4 거리마다
   function doveMul()   { return aug.doveWhat ? 1.5 : 1; }
@@ -3243,16 +3246,16 @@
       }
     }
 
-      // ---- 갤러그 — 땅에 늘어선 우주선이 저마다 0.4초마다 총알을 쏘아 올린다 ----
+      // ---- 갤러그 — 땅에 늘어선 우주선이 저마다 제 주기로 총알을 쏘아 올린다 ----
     if (aug.galaga > 0) {
       /* 우주선마다 제 박자가 있다 — 다 같이 쏘면 여러 대라도 한 발처럼 보인다.
-         한 대는 0.4초마다 쏘되, k 번째는 그 주기를 n 등분한 만큼 늦게 쏜다.
+         한 대는 shipGap(n) 마다 쏘되, k 번째는 그 주기를 n 등분한 만큼 늦게 쏜다.
          시계 하나로 재기 때문에 대수가 바뀌어도 박자가 저절로 다시 갈린다. */
-      const n = aug.galaga, was = shipClock;
+      const n = aug.galaga, was = shipClock, gap = shipGap(n);
       shipClock += dt * tsc;
       for (let k = 0; k < n; k++) {
-        const ph = SHIP_GAP * k / n;
-        if (Math.floor((shipClock - ph) / SHIP_GAP) === Math.floor((was - ph) / SHIP_GAP)) continue;
+        const ph = gap * k / n;
+        if (Math.floor((shipClock - ph) / gap) === Math.floor((was - ph) / gap)) continue;
         bullets.push({ x: shipX(k, n), y: H - GROUND_H * 0.55 - 14, vy: -760 });
         // 소리는 한 바퀴에 한 번만 — 대수만큼 울리면 귀가 아프다
         if (k === 0 && !sfx("galaga")) beep(1250, .05, "square", .03);
