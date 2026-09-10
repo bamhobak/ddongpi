@@ -512,6 +512,23 @@
     background: rgba(255,80,80,.8); border-radius: 999px; padding: 5px 11px;
   }
   #btnTestEnd.on { display: block; }
+  /* 테스트 모드 전용 — 레벨을 바로 올리고 내린다 */
+  #testLv {
+    position: absolute; right: calc(12px + var(--lbx, 0px)); top: calc(126px + var(--lby, 0px));
+    z-index: 5; display: none; flex-direction: column; align-items: stretch; gap: 3px;
+  }
+  #testLv.on { display: flex; }
+  #testLv button {
+    appearance: none; border: 0; cursor: pointer; font: inherit;
+    font-size: 11px; font-weight: 700; color: #05060d;
+    background: rgba(53,240,255,.85); border-radius: 999px; padding: 5px 11px;
+    box-shadow: none;
+  }
+  #testLv button:active { transform: scale(.94); }
+  #lvNow {
+    text-align: center; font-size: 11px; font-weight: 700; color: #9fd8ff;
+    background: rgba(5,6,13,.6); border-radius: 999px; padding: 3px 0;
+  }
   #devScreen { justify-content: flex-start; padding-top: 28px; gap: 12px; }
   #devScreen h2 { font-size: 20px; color: #ffd23f; }
   #devHead { display: flex; align-items: center; gap: 10px; }
@@ -747,6 +764,11 @@
       <span class="knob"></span>
     </div>
     <button id="btnTestEnd">테스트 종료</button>
+    <div id="testLv">
+      <button id="btnLvUp" title="레벨 올리기">레벨 ▲</button>
+      <span id="lvNow">Lv 1</span>
+      <button id="btnLvDn" title="레벨 내리기">레벨 ▼</button>
+    </div>
 
     <div id="startScreen" class="screen">
       <div id="ver"></div>
@@ -905,7 +927,7 @@
   const elFinal = document.getElementById("finalScore");
   const elTitle = document.getElementById("overTitle");
 
-  const GAME_VERSION = "v1.5.91";   // 코드를 고칠 때마다 뒤 두 자리를 올린다
+  const GAME_VERSION = "v1.5.93";   // 코드를 고칠 때마다 뒤 두 자리를 올린다
   document.getElementById("ver").textContent = GAME_VERSION;
 
   const LS_NAME = "epjpddongpi_name";
@@ -2230,6 +2252,18 @@
   let state = STATE.READY;
   let testMode = false;            // 개발자 테스트 모드 — 목숨 무한, 기록 안 남김
   const btnTestEnd = document.getElementById("btnTestEnd");
+  const testLv = document.getElementById("testLv");
+  const lvNow  = document.getElementById("lvNow");
+  /* 레벨은 매 프레임 levelTime 에서 다시 세기 때문에 level 만 바꿔 두면 곧 되돌아간다.
+     levelTime 을 통째로 옮겨야 한다. 지대·난이도·다크똥 확률이 함께 따라온다. */
+  function testJumpLevel(d) {
+    const want = Math.max(1, (1 + Math.floor(levelTime / LEVEL_SEC)) + d);
+    levelTime = (want - 1) * LEVEL_SEC + 0.01;
+    level = want;
+    lvNow.textContent = "Lv " + want;
+    popText(W / 2, H * 0.30, "Lv " + want + " · " + ZONES[zoneIdx()].nm, "#9fd8ff", 26);
+    beep(d > 0 ? 900 : 500, .07, "square", .04);
+  }
 
   let score = 0, lives = 3, level = 1, elapsed = 0, starCount = 0;
   let levelTime = 0;               // 레벨이 오르는 시계 — 뚜니핑 타임에는 멈춰 있다
@@ -2622,6 +2656,8 @@
   function reset(test) {
     testMode = (test === true);    // 정확히 true 일 때만 테스트 모드 (이벤트 객체가 새어들지 않게)
     btnTestEnd.classList.toggle("on", testMode);
+    testLv.classList.toggle("on", testMode);
+    lvNow.textContent = "Lv 1";
     layout();
     items = []; particles = []; floats = []; warns = []; introPoops = []; introT = 0;
     // 테스트 모드는 어차피 목숨이 안 줄어드니, 목숨 조건 증강(당근거래·분신술)을
@@ -3085,6 +3121,7 @@
        레벨에 포함되면, 정작 실력으로 버틴 시간이 아닌데도 난이도가 올라간다. */
     if (!fever) levelTime += dt;
     level = 1 + Math.floor(levelTime / LEVEL_SEC);
+    if (testMode && lvNow.textContent !== "Lv " + level) lvNow.textContent = "Lv " + level;
     score += sc("생존", dt * 50 * level * aug.timeMul * scoreMul());   // 생존 점수: 초당 50 × 레벨
 
     // 한 단계 올라설 때마다 어디에 도착했는지 알려준다
@@ -4774,9 +4811,13 @@
     openJobSelect(true);                   // 테스트 모드도 직업을 고르고 시작
   }
 
+  document.getElementById("btnLvUp").addEventListener("click", () => testJumpLevel(1));
+  document.getElementById("btnLvDn").addEventListener("click", () => testJumpLevel(-1));
+
   btnTestEnd.addEventListener("click", () => {
     testMode = false;
     btnTestEnd.classList.remove("on");
+    testLv.classList.remove("on");
     btnPause.classList.remove("on"); syncPad();
     pauseScreen.classList.add("hidden");
     state = STATE.READY;
@@ -4868,7 +4909,7 @@
       sky: [[  0,   0,   0], [  0,   0,   0], [  0,   0,   0]] }
   ];
   const LAST_Z = ZONES.length - 1;
-  const BH_Z = LAST_Z;                 // 블랙홀 안 — 여기부터 모든 조건이 두 배
+  const BH_Z = LAST_Z;                 // 블랙홀 안 — 마지막 지대
   function inBlackhole() { return zoneIdx() >= BH_Z; }
   /* 다크똥 — 블랙홀에 들어선 뒤로 섞여 떨어진다. 처음 20%, 레벨마다 +7%p, 85%에서 멈춘다.
      폭발·밀림 어느 것도 통하지 않아, 후반에 화력으로 버티는 길을 막는다. */
@@ -4878,8 +4919,13 @@
     return Math.min(DARK_CAP, DARK_BASE + DARK_STEP * (level - 1 - BH_Z));
   }
   function bhMul() { return inBlackhole() ? 2 : 1; }   // 블랙홀 안 점수 배율
-  // 블랙홀 안의 '난이도' 배율 — 점수·아이템 배율(2배)과 달리 낙하 속도·똥 수량에만 쓴다
-  function bhDiff() { return inBlackhole() ? 1.5 : 1; }
+  /* 블랙홀 안의 '난이도' 배율 — 점수 배율(2배)과 달리 낙하 속도·똥 수량에만 쓴다.
+     속도와 빈도 양쪽에 걸리므로, 우주(SPACE_DIFF)와 같이 제곱근을 나눠 걸어
+     둘을 합친 체감이 정확히 BH_DIFF 가 되게 한다 (예전에는 1.5 를 양쪽에 그대로
+     걸어 체감이 2.25배였다). */
+  const BH_DIFF = 1.5;
+  const BH_DIFF_F = Math.sqrt(BH_DIFF);
+  function bhDiff() { return inBlackhole() ? BH_DIFF_F : 1; }
   /* 부양사 — 높이 날수록 모든 점수가 커진다. 바닥 +0%, 중간 +50%, 꼭대기 +100%. */
   function levMul() {
     if (job !== "levitator" || !flyOn) return 1;
