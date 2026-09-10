@@ -932,7 +932,7 @@
   const elFinal = document.getElementById("finalScore");
   const elTitle = document.getElementById("overTitle");
 
-  const GAME_VERSION = "v1.6.05";   // 코드를 고칠 때마다 뒤 두 자리를 올린다
+  const GAME_VERSION = "v1.6.06";   // 코드를 고칠 때마다 뒤 두 자리를 올린다
   document.getElementById("ver").textContent = GAME_VERSION;
 
   const LS_NAME = "epjpddongpi_name";
@@ -2070,7 +2070,7 @@
       // 목숨을 파는 증강이라, 목숨 대신 오염도로 버티는 방울이에게는 나오지 않는다
       max: 5, cond: () => !dirtJob() && lives >= 2,
       go: () => { lives = Math.max(1, lives - 1); aug.scoreMul *= 1.2; } },
-    { id: "dungy",      ic: "💩", nm: "똥묻히기", ds: "더러울수록 모든 점수가 오른다 · 오염 100%면 3배",
+    { id: "dungy",      ic: "💩", nm: "똥묻히기", ds: "더러울수록 모든 점수가 오른다 · 오염 100%면 2배",
       once: true, cond: () => dirtJob(),        // 방울이 전용 — 당근거래 자리
       go: () => { aug.dungy = true; } },
     { id: "goldLord",   ic: "🦄", nm: "무지개 수집가", ds: "무지개똥이 두 배 멀리서 세게 끌려오고, 점수 2배",
@@ -4981,10 +4981,10 @@
   /* 점수 눈금 — 모든 점수가 여기를 지나므로, 이 값만 바꾸면
      항목 사이의 균형은 그대로 두고 자릿수만 키우거나 줄일 수 있다. */
   const SCORE_SCALE = 3;
-  /* 똥묻히기 — 지금 오염도에 비례해 점수가 오른다. 0%면 1배, 100%면 3배.
-     맞을 때마다 영구히 곱하는 게 아니라, 빗방울로 씻으면 배율도 같이 내려간다.
-     (100% 는 곧 끝이라, 실제로 누릴 수 있는 최대는 75% = 2.5배다) */
-  function dungyMul() { return aug.dungy ? 1 + 2 * (dirt / DIRT_MAX) : 1; }
+  /* 똥묻히기 — 지금 오염도에 비례해 점수가 오른다. 0%면 1배, 100%면 2배.
+     한 번만 먹는 증강이고, 빗방울로 씻으면 배율도 같이 내려간다.
+     (100% 는 곧 끝이라, 실제로 누리는 최대는 75% = 1.75배다) */
+  function dungyMul() { return aug.dungy ? 1 + (dirt / DIRT_MAX) : 1; }
   function scoreMul() { return SCORE_SCALE * aug.scoreMul * bhMul() * levMul() * monkMul() * dungyMul(); }
 
   function zoneIdx() { return Math.min(LAST_Z, level - 1); }
