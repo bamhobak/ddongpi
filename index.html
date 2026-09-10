@@ -927,7 +927,7 @@
   const elFinal = document.getElementById("finalScore");
   const elTitle = document.getElementById("overTitle");
 
-  const GAME_VERSION = "v1.5.94";   // 코드를 고칠 때마다 뒤 두 자리를 올린다
+  const GAME_VERSION = "v1.5.95";   // 코드를 고칠 때마다 뒤 두 자리를 올린다
   document.getElementById("ver").textContent = GAME_VERSION;
 
   const LS_NAME = "epjpddongpi_name";
@@ -6029,6 +6029,39 @@
     ctx.restore();
   }
 
+  /* ⚠ 글자는 글자칸 한가운데에 그려도 잉크(실제 칠해진 부분)의 중심이 거기 있지 않다.
+     기기마다 쓰는 이모지 글꼴이 달라 값을 박아 둘 수 없어, 처음 한 번 직접 재어 둔다.
+     돌려주는 값은 글자 크기 대비 비율이라 크기가 바뀌어도 그대로 쓴다. */
+  let warnInk = null;
+  function warnInkOffset() {
+    if (warnInk) return warnInk;
+    warnInk = { dx: 0, dy: 0 };
+    try {
+      const S = 64, c = document.createElement("canvas");
+      c.width = c.height = S * 2;
+      const g = c.getContext("2d");
+      g.font = "700 " + S + "px NanumBarunGothic, system-ui, sans-serif";
+      g.textAlign = "center";
+      g.textBaseline = "middle";
+      g.fillStyle = "#fff";
+      g.fillText("⚠", S, S);
+      const d = g.getImageData(0, 0, c.width, c.height).data;
+      let x0 = 1e9, y0 = 1e9, x1 = -1e9, y1 = -1e9;
+      for (let y = 0; y < c.height; y++) {
+        for (let x = 0; x < c.width; x++) {
+          if (d[(y * c.width + x) * 4 + 3] > 24) {
+            if (x < x0) x0 = x;
+            if (x > x1) x1 = x;
+            if (y < y0) y0 = y;
+            if (y > y1) y1 = y;
+          }
+        }
+      }
+      if (x1 >= x0) warnInk = { dx: (S - (x0 + x1) / 2) / S, dy: (S - (y0 + y1) / 2) / S };
+    } catch (e) {}                            // 못 재면 그냥 글자칸 기준으로 둔다
+    return warnInk;
+  }
+
   // 레이저가 떨어질 자리를 미리 깜빡여 알려준다 (막판일수록 빠르게)
   function drawWarnings(now) {
     const L = H - GROUND_H;
@@ -6068,19 +6101,21 @@
       ctx.translate(0, mid);
       ctx.rotate(wn.ang || 0);
       ctx.globalAlpha = on ? 1 : 0.35;
-      ctx.font = "700 " + (dk ? 56 : 46) + "px NanumBarunGothic, system-ui, sans-serif";
+      const fs = dk ? 56 : 46, rr = dk ? 38 : 32;
+      ctx.font = "700 " + fs + "px NanumBarunGothic, system-ui, sans-serif";
       ctx.textAlign = "center";
       ctx.textBaseline = "middle";
       ctx.beginPath();                       // 어두운 배경에서도 눈에 띄게 뒤에 원을 깐다
-      ctx.arc(0, 2, dk ? 38 : 32, 0, 6.283);
+      ctx.arc(0, 0, rr, 0, 6.283);
       ctx.fillStyle = dk ? "rgba(18,0,38,.75)" : "rgba(60,0,0,.45)";
       ctx.fill();
       if (dk) {
         ctx.strokeStyle = "rgba(190,110,255,.9)"; ctx.lineWidth = 3;
-        ctx.beginPath(); ctx.arc(0, 2, 38, 0, 6.283); ctx.stroke();
+        ctx.beginPath(); ctx.arc(0, 0, rr, 0, 6.283); ctx.stroke();
       }
       ctx.fillStyle = dk ? "#d9a8ff" : "#ff5d5d";
-      ctx.fillText("⚠", 0, 0);
+      const ink = warnInkOffset();           // 잉크 중심을 원 한가운데에 맞춘다
+      ctx.fillText("⚠", ink.dx * fs, ink.dy * fs);
       ctx.globalAlpha = 1;
       ctx.restore();
     }
