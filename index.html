@@ -927,7 +927,7 @@
   const elFinal = document.getElementById("finalScore");
   const elTitle = document.getElementById("overTitle");
 
-  const GAME_VERSION = "v1.5.95";   // 코드를 고칠 때마다 뒤 두 자리를 올린다
+  const GAME_VERSION = "v1.5.96";   // 코드를 고칠 때마다 뒤 두 자리를 올린다
   document.getElementById("ver").textContent = GAME_VERSION;
 
   const LS_NAME = "epjpddongpi_name";
@@ -1222,10 +1222,10 @@
   function spriteHeight(spr) { return (player.r * 2 * hitMul()) / spr.head * spr.adj; }
   function headOffset(spr) { return spr ? FOOT - spriteHeight(spr) * (1 - spr.cy) : 0; }  // 실제 크기 = 도안의 80%
 
-  const MIN_W = 340, MAX_W = 620;    // 논리 가로 허용 범위
-  /* 화면 비율을 그대로 따르되, 가로가 넓은 기기(폴더블·태블릿)에서 피할 공간이
-     넓어지지 않게 상한을 둔다. 상한을 넘는 만큼은 여백으로 두고 배경으로 채운다. */
-  const RATIO_MAX = 0.62;
+  /* 놀이판 비율을 못 박는다. 예전에는 기기 화면 비율을 그대로 따라가서
+     폰마다 논리 가로 폭이 340~446 으로 달랐고, 넓을수록 피하기 쉬웠다.
+     이제 어떤 기기에서든 9:16 (405 x 720) 이다. */
+  const BASE_RATIO = 9 / 16;
   const MAX_CSS_H = 1100;   // 놀이판이 지나치게 커지지 않게 하는 상한(px)
 
   /* 전체 난이도 배율. 낙하 속도와 낙하 빈도에 각각 제곱근을 적용해서
@@ -1236,19 +1236,15 @@
   function layout() {
     const rect = stage.getBoundingClientRect();
     const bw = Math.max(1, rect.width), bh = Math.max(1, rect.height);
-    const ratio = Math.min(bw / bh, RATIO_MAX);   // 넓은 화면은 0.62 에서 멈춘다
-
-    // 화면 비율과 논리 캔버스 비율을 '항상 똑같이' 맞춘다.
-    // 가로가 범위를 벗어나면 가로를 자르는 대신 세로를 늘리고 줄여서 비율을 유지 → 잘림/찌그러짐 없음
+    const ratio = BASE_RATIO;             // 기기와 상관없이 늘 같은 비율
     H = BASE_H;
     W = Math.round(H * ratio);
-    if (W < MIN_W)      { W = MIN_W; H = Math.round(W / ratio); }
-    else if (W > MAX_W) { W = MAX_W; H = Math.round(W / ratio); }
 
-    /* 실제로 그려지는 크기 — 비율을 지킨 채 화면 안에 가장 크게 넣고 가운데 정렬한다.
-       (설치형 전체화면처럼 화면이 크면 그만큼 크게 그려서 빈 자리를 줄인다) */
-    let cssH = Math.min(bh, MAX_CSS_H), cssW = cssH * ratio;
-    if (cssW > bw) { cssW = bw; cssH = bw / ratio; }
+    /* 그려지는 크기 — 가로를 가득 채우고 위아래 남는 자리는 놀이판 밖으로 둔다.
+       가로가 넓은 기기(태블릿·가로 모드)에서는 그러면 세로가 넘치므로 세로에 맞춘다. */
+    let cssW = bw, cssH = bw / ratio;
+    if (cssH > bh) { cssH = bh; cssW = bh * ratio; }
+    if (cssH > MAX_CSS_H) { cssH = MAX_CSS_H; cssW = cssH * ratio; }   // 데스크톱에서 너무 커지지 않게
     cv.style.width  = cssW + "px";
     cv.style.height = cssH + "px";
     // 좌우·상하 여백 크기를 알려 준다 (일시정지 버튼 등을 놀이판 안쪽에 붙이기 위해)
