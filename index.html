@@ -932,7 +932,7 @@
   const elFinal = document.getElementById("finalScore");
   const elTitle = document.getElementById("overTitle");
 
-  const GAME_VERSION = "v1.5.99";   // 코드를 고칠 때마다 뒤 두 자리를 올린다
+  const GAME_VERSION = "v1.6.01";   // 코드를 고칠 때마다 뒤 두 자리를 올린다
   document.getElementById("ver").textContent = GAME_VERSION;
 
   const LS_NAME = "epjpddongpi_name";
@@ -2278,6 +2278,10 @@
      차오르고 100 이면 끝. 빗방울을 먹으면 DIRT_WASH 만큼 씻긴다. */
   const DIRT_MAX = 100, DIRT_HIT = 25, DIRT_WASH = 35;
   let dirt = 0;
+  /* 막대는 진짜 값을 곧바로 따라가지 않고 미끄러지듯 뒤따른다 —
+     한 칸이 25씩이라 뚝 끊기면 얼마나 찼는지 눈이 못 따라간다. */
+  let dirtShown = 0;
+  const DIRT_SLIDE = 70;                   // 초당 몇 % 씩 움직이는지 (25 는 0.36초)
   function dirtJob() { return job === "bangul"; }
   let levelTime = 0;               // 레벨이 오르는 시계 — 뚜니핑 타임에는 멈춰 있다
   const LEVEL_SEC = 13;            // 레벨 한 칸의 길이(초). 지대 하나의 길이이기도 하다
@@ -2676,7 +2680,7 @@
     // 테스트 모드는 어차피 목숨이 안 줄어드니, 목숨 조건 증강(당근거래·분신술)을
     // 바로 시험해볼 수 있게 1부터 시작한다.
     score = 0; lives = testMode ? 1 : 3; level = 1; elapsed = 0; levelTime = 0; starCount = 0;
-    dirt = 0;
+    dirt = 0; dirtShown = 0;
     spawnTimer = 0;
     invUntil = 0; powerUntil = 0; hurtUntil = 0; shields = 0;
     shake = 0; flash = 0; feverFlash = 0; fever = false; feverT = 0; feverBanner = 0;
@@ -2991,7 +2995,7 @@
     if (pick.type === "heart" && !asDrop && lives >= aug.maxLives) {
       pick = BONUS.find(b => b.type === "star");    // 목숨 꽉 차면 별로 대체
     }
-    const r = asDrop ? 29 : 20;      // 큰 빗방울
+    const r = asDrop ? 24 : 20;      // 빗방울은 조금 크게
     // 낙하 속도에 변화를 주되, 너무 빠르면 못 먹고 지나가버려서 위쪽을 눌러 잡았다
     const vy = (110 + level * 6) * (H / BASE_H) * (0.6 + Math.random() * 0.5);
     items.push({
@@ -3130,6 +3134,11 @@
       if (titleArt) { flash = 0; feverFlash = 0; }
       else introUpdate(dt, now);
       return;
+    }
+    if (dirtShown !== dirt) {              // 막대가 진짜 값을 뒤따라간다
+      const gap = dirt - dirtShown;
+      const move = Math.max(DIRT_SLIDE, Math.abs(gap) * 5) * dt;
+      dirtShown = Math.abs(gap) <= move ? dirt : dirtShown + Math.sign(gap) * move;
     }
     if (state !== STATE.PLAY) return;
 
@@ -3924,7 +3933,7 @@
     if (it.type === "droplet") {                    // 방울이 — 오염도를 씻어낸다
       if (dirt > 0) {
         dirt = Math.max(0, dirt - DIRT_WASH);
-        popText(it.x, it.y, "💧 -" + DIRT_WASH, "#8fe3ff");
+        popText(it.x, it.y, "💧", "#8fe3ff");     // 얼마나 씻겼는지는 막대가 보여 준다
         if (!sfx("heart")) beep(1000, .15, "sine", .06);
       } else {
         popText(it.x, it.y, "💧", "#bfe9ff");        // 깨끗하면 아무 일도 없다
@@ -6347,7 +6356,7 @@
     }
     if (dirtJob()) {                        // 방울이 — 하트 대신 오염도 막대
       const bw = 96, bh = 12, bx = W - 16 - bw, by = top + 9;
-      const k = Math.max(0, Math.min(1, dirt / DIRT_MAX));
+      const k = Math.max(0, Math.min(1, dirtShown / DIRT_MAX));
       ctx.fillStyle = "rgba(5,8,20,.55)";
       ctx.beginPath(); ctx.roundRect(bx - 2, by - 2, bw + 4, bh + 4, 7); ctx.fill();
       ctx.fillStyle = "rgba(255,255,255,.14)";
@@ -6361,11 +6370,6 @@
       }
       ctx.strokeStyle = "rgba(255,255,255,.30)"; ctx.lineWidth = 1;
       ctx.beginPath(); ctx.roundRect(bx, by, bw, bh, 5); ctx.stroke();
-      ctx.textAlign = "right";
-      ctx.font = "700 11px NanumBarunGothic, system-ui, sans-serif";
-      ctx.fillStyle = k > 0.7 ? "#ffb0b0" : "#dfe6ef";
-      ctx.fillText("오염 " + Math.round(dirt) + "%", W - 16, by + bh + 12);
-      ctx.textAlign = "left";
     }
     const hr = lives > 5 ? 7.5 : 10.5, hgap = lives > 5 ? 18 : 30;
     for (let i = 0; dirtJob() ? false : i < lives; i++) {
