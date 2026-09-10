@@ -905,7 +905,7 @@
   const elFinal = document.getElementById("finalScore");
   const elTitle = document.getElementById("overTitle");
 
-  const GAME_VERSION = "v1.5.88";   // 코드를 고칠 때마다 뒤 두 자리를 올린다
+  const GAME_VERSION = "v1.5.90";   // 코드를 고칠 때마다 뒤 두 자리를 올린다
   document.getElementById("ver").textContent = GAME_VERSION;
 
   const LS_NAME = "epjpddongpi_name";
@@ -1451,6 +1451,8 @@
   const FETCH_SPEED = 714;   // 840 에서 15% 감속
   let helperQueue = 0;      // 이번 차례에 아직 안 나온 인원
   let helperGap = 0;        // 다음 한 명까지 남은 시간
+  const FETCH_REST = 2;     // 배고픈 정연핑이 다녀온 뒤 쉬는 시간(초)
+  let fetchRest = 0;        // 남은 쉬는 시간
 
   // 뚜니핑 타임에는 똥 이모지 대신 이 이미지가 떨어진다
   let feverPoop = null, feverPoopSpace = null;
@@ -2655,7 +2657,7 @@
     resetBonusTimers();          // 증강 배율을 되돌린 뒤라야 첫 타이머가 제대로 잡힌다
     aug.helper = 0; aug.helperRush = false; aug.hungry = false; aug.galaga = 0;
     helpers = []; fetchers = [];
-    helperTimer = 0; helperQueue = 0; helperGap = 0; aug.maxLives = 5;
+    helperTimer = 0; helperQueue = 0; helperGap = 0; fetchRest = 0; aug.maxLives = 5;
     // ---- 직업 효과 ----
     if (job === "gambler") {
       lives = 1;
@@ -2801,9 +2803,12 @@
     // 뚜니핑 타임에 나온 것은 외형·점수를 스스로 기억한다 → 뚜니핑 타임이 끝나도 모습이 바뀌지 않는다
     const inFever = fever;
     const cls = inFever ? pickFeverSize() : null;
+    /* 다크똥 — 뚜니핑 낙하물과 무지개똥을 뺀 나머지가 대상이다.
+       특수똥이면 그대로 '다크특수똥'이 된다 (성질은 유지하고 무적만 얹는다). */
+    const dark = !inFever && Math.random() < darkChance();
     // 무지개똥 연금술 — 맞아도 무해하고 먹으면 점수 (특수똥은 위협으로 남아야 해서 제외)
     let gold = false;
-    if (!inFever && !special && aug.goldChance > 0 && Math.random() < aug.goldChance) {
+    if (!inFever && !dark && !special && aug.goldChance > 0 && Math.random() < aug.goldChance) {
       gold = true;
     }
     // 뚜니핑 낙하물은 크기가 곧 점수라서 '작아진 똥'의 영향을 받지 않는다
@@ -2845,6 +2850,7 @@
       skin: inFever ? "fever" : "poop",
       space: inSpace(),
       gold: gold,
+      dark: dark,                            // 폭발·밀림이 통하지 않는다
       special: special || null,
       bumpCd: 0,                             // 정연핑과 부딪힌 직후의 무반응 시간
       phase: Math.random() * 6.28,
@@ -3129,7 +3135,7 @@
         const py = player.y + player.hy;
         let best = null, bd = -1e9;
         for (const q of items) {
-          if (q.type !== "poop" || q.blast) continue;
+          if (q.type !== "poop" || q.blast || q.dark) continue;
           if (q.y > player.y - 40) continue;          // 이미 지나친 똥은 무시
           /* 머리 위 부채꼴 안에서 '가장 멀리 있는' 똥을 노린다.
              바로 앞 똥만 잡으면 금방 터져 버려서 날아가는 맛이 없다. */
@@ -3213,7 +3219,7 @@
         let best = null, bd = 1e9;
         const py = player.y + player.hy;
         for (const q of items) {
-          if (q.type !== "poop") continue;            // 무지개똥·특수똥도 표적으로 삼는다
+          if (q.type !== "poop" || q.dark) continue;   // 무지개똥·특수똥도 표적 (다크똥만 제외)
           if (q.y > player.y - 40) continue;          // 이미 지나친 똥은 무시
           /* 머리 위쪽 좁은 부채꼴 안에서만 고른다. 옆으로 멀리 날아가면
              분신이 가로로 새는 것처럼 보여서, 가로 거리에 벌점을 준다. */
@@ -3267,7 +3273,7 @@
       let hit = false;
       for (let j = items.length - 1; j >= 0; j--) {
         const q = items[j];
-        if (q.type !== "poop" || q.blast || q.bounced) continue;
+        if (q.type !== "poop" || q.blast || q.bounced || q.dark) continue;
         if (Math.hypot(q.x - bu.x, q.y - bu.y) > q.r + 6) continue;
         if (aug.wak && !q.gold && q.skin !== "fever") {
           /* 고무고무노 피스톨 — 부수지 않고 위로 튕겨 올린다. 날아가는 똥은 사람을 해치지 않고,
@@ -3299,7 +3305,7 @@
       if (items.indexOf(c.t) < 0) {
         let best = null, bd = -1e9;
         for (const q of items) {
-          if (q.type !== "poop" || q.blast) continue;
+          if (q.type !== "poop" || q.blast || q.dark) continue;
           const dy = c.y - q.y, dx = Math.abs(q.x - c.x);
           if (dy < 0) continue;                         // 이미 지나친 똥은 무시
           if (dx > 90 + dy * 0.75) continue;
@@ -3317,7 +3323,7 @@
       /* 표적이 아니어도 가는 길에 닿은 똥이 있으면 그 자리에서 터진다 */
       let bump = false;
       for (const q of items) {
-        if (q.type !== "poop" || q.blast || q === c.t) continue;
+        if (q.type !== "poop" || q.blast || q.dark || q === c.t) continue;
         if (Math.hypot(q.x - c.x, q.y - c.y) < q.r + 14 * dm) { bump = true; break; }
       }
       if (bump || (alive && d2 < (c.t.r || 20) + 14 * dm) || c.y < -40) {
@@ -3388,16 +3394,22 @@
     }
 
     // ---- 배고픈 정연핑: 아이템이 뜨고 3초 뒤에 화면 아래 중앙에서 출발 ----
-    if (aug.hungry) {
-      for (const it of items) {
+    /* 배고픈 정연핑 — 한 번에 한 명만 나간다. 아이템이 여럿이라고 우르르 몰려가면
+       아이템을 통째로 쓸어가 버려서, 다녀온 뒤 FETCH_REST 만큼 쉬었다 다시 나간다. */
+    if (fetchRest > 0) fetchRest -= dt * tsc;
+    if (aug.hungry && !fetchers.length && fetchRest <= 0) {
+      let pick = null;
+      for (const it of items) {                 // 가장 오래 떠 있던 것 하나만
         if (it.type === "poop" || it.claimed) continue;
-        if (elapsed - it.born >= FETCH_DELAY) {
-          it.claimed = true;
-          fetchers.push({ x: W / 2, y: H + 50, vx: 0, vy: -FETCH_SPEED, t: it });
-          if (!sfx("fetch")) {
-            beep(660, .1, "sine", .05);
-            beep(990, .12, "sine", .04);
-          }
+        if (elapsed - it.born < FETCH_DELAY) continue;
+        if (!pick || it.born < pick.born) pick = it;
+      }
+      if (pick) {
+        pick.claimed = true;
+        fetchers.push({ x: W / 2, y: H + 50, vx: 0, vy: -FETCH_SPEED, t: pick });
+        if (!sfx("fetch")) {
+          beep(660, .1, "sine", .05);
+          beep(990, .12, "sine", .04);
         }
       }
     }
@@ -3416,11 +3428,12 @@
         const idx = items.indexOf(f.t);
         if (idx >= 0) items.splice(idx, 1);
         fetchers.splice(k, 1);
+        fetchRest = FETCH_REST;
         burst(f.x, f.y, "#ffd23f", 24);
         if (collectItem(f.t, now)) return;    // 달이면 화면이 멈춘다
         continue;
       }
-      if (f.y < -HELPER_H * 2 || f.x < -260 || f.x > W + 260) fetchers.splice(k, 1);
+      if (f.y < -HELPER_H * 2 || f.x < -260 || f.x > W + 260) { fetchers.splice(k, 1); fetchRest = FETCH_REST; }
     }
 
     magNear = 0;                          // 이번 프레임에 가장 세게 끌린 정도
@@ -3625,7 +3638,7 @@
             else if (Math.random() < .5) beep(note + Math.random() * 200, .06, "square", .04);
             continue;
           }
-          if (roidT > 0) {
+          if (roidT > 0 && !it.dark) {          // 다크똥은 튕겨 나가지 않는다
             /* 스테로이드 — 몸에 닿은 똥이 위로 튕겨 나간다. 피한 것과 같은 점수를 받고,
                특수 성질(분열·지그재그·레이저)은 튕기는 순간 사라진다. */
             score += sc("똥", poopGain());
@@ -3698,7 +3711,7 @@
                 const bR = Math.sqrt(4 * W * H / (3 * Math.PI)) * 1.0;   // 1.15 → 1.0 (반경 13% 축소)
                 for (let k = items.length - 1; k >= 0; k--) {
                   const q = items[k];
-                  if (q.type !== "poop" || k === i || q.blast) continue;
+                  if (q.type !== "poop" || k === i || q.blast || q.dark) continue;
                   const dx = q.x - bx, dy = q.y - by, d = Math.hypot(dx, dy);
                   if (d > bR + q.r) continue;                 // 폭발 밖은 그대로 떨어진다
                   /* 부수지 않고 바깥으로 날려 보낸다. 날아가는 똥은 사람을 해치지 않고,
@@ -3760,7 +3773,7 @@
     for (const a of items) {
       if (!(a.blast || a.wak) || a.dead) continue;
       for (const q of items) {
-        if (q === a || q.dead || q.blast || q.type !== "poop") continue;
+        if (q === a || q.dead || q.blast || q.dark || q.type !== "poop") continue;
         if (Math.hypot(a.x - q.x, a.y - q.y) > a.r + q.r) continue;
         if (a.wak) {                              // 둘이 같이 터진다 — 폭발은 아래에서
           a.dead = true;
@@ -3817,7 +3830,7 @@
         for (let k = items.length - 1; k >= 0; k--) {
           const q = items[k];
           // 무지개똥은 주우면 훨씬 값지므로 쓸어버리지 않고 남긴다
-          if (q.type !== "poop" || q.skin === "fever" || q.gold) continue;
+          if (q.type !== "poop" || q.skin === "fever" || q.gold || q.dark) continue;
           bonus += poopGain() * 6;
           burst(q.x, q.y, "#ffe9a8", 10);
           items.splice(k, 1);
@@ -3881,7 +3894,7 @@
     const gm = gainMul || 1;
     for (let i = items.length - 1; i >= 0; i--) {
       const it = items[i];
-      if (it.type !== "poop") continue;
+      if (it.type !== "poop" || it.dark) continue;   // 다크똥은 무엇으로도 부술 수 없다
       if (Math.hypot(it.x - x, it.y - y) >= radius + it.r) continue;
       if (it.gold) {                         // 무지개똥 — 부수면 직접 먹은 것과 같은 점수
         const g = Math.round(120 * (aug.goldLord ? 2 : 1) * scoreMul() * level * gm);
@@ -4854,6 +4867,13 @@
   const LAST_Z = ZONES.length - 1;
   const BH_Z = LAST_Z;                 // 블랙홀 안 — 여기부터 모든 조건이 두 배
   function inBlackhole() { return zoneIdx() >= BH_Z; }
+  /* 다크똥 — 블랙홀에 들어선 뒤로 섞여 떨어진다. 처음 20%, 레벨마다 +7%p, 85%에서 멈춘다.
+     폭발·밀림 어느 것도 통하지 않아, 후반에 화력으로 버티는 길을 막는다. */
+  const DARK_BASE = 0.20, DARK_STEP = 0.07, DARK_CAP = 0.85;
+  function darkChance() {
+    if (!inBlackhole()) return 0;
+    return Math.min(DARK_CAP, DARK_BASE + DARK_STEP * (level - 1 - BH_Z));
+  }
   function bhMul() { return inBlackhole() ? 2 : 1; }   // 블랙홀 안 점수 배율
   // 블랙홀 안의 '난이도' 배율 — 점수·아이템 배율(2배)과 달리 낙하 속도·똥 수량에만 쓴다
   function bhDiff() { return inBlackhole() ? 1.5 : 1; }
@@ -6049,6 +6069,20 @@
           ctx.beginPath(); ctx.arc(0, 0, R, 0, 6.283); ctx.fill();
           if (ctx.filter !== undefined) ctx.filter = fx.css;
         }
+        if (it.dark) {                       // 다크똥 — 검게 가라앉고 보랏빛 고리가 돈다
+          const pu = 0.5 + 0.5 * Math.sin(now / 260 + it.phase);
+          const R = it.size * (0.82 + pu * 0.10);
+          const dg = ctx.createRadialGradient(0, 0, R * 0.35, 0, 0, R);
+          dg.addColorStop(0, "rgba(60,10,90,0)");
+          dg.addColorStop(0.72, "rgba(120,40,200," + (0.30 + pu * 0.20).toFixed(2) + ")");
+          dg.addColorStop(1, "rgba(20,0,40,0)");
+          ctx.fillStyle = dg;
+          ctx.beginPath(); ctx.arc(0, 0, R, 0, 6.283); ctx.fill();
+          ctx.strokeStyle = "rgba(180,90,255," + (0.55 + pu * 0.35).toFixed(2) + ")";
+          ctx.lineWidth = 2;
+          ctx.beginPath(); ctx.arc(0, 0, it.size * 0.62, 0, 6.283); ctx.stroke();
+          if (ctx.filter !== undefined) ctx.filter = "brightness(0.30) saturate(0.45) hue-rotate(255deg)";
+        }
         if (it.wak) {                        // 주먹에 맞은 똥 — 붉은 테두리 (사람을 해치지 않는다)
           ctx.fillStyle = "rgba(255,110,90,.30)";
           ctx.beginPath(); ctx.arc(0, 0, it.size * 0.72, 0, 6.283); ctx.fill();
@@ -6067,7 +6101,7 @@
           ctx.fillText(it.emoji, 0, 0);
         }
         if (ctx.filter !== undefined) ctx.filter = "none";
-        if (it.type === "poop" && it.size >= 28 && !it.gold) {
+        if (it.type === "poop" && it.size >= 28 && !it.gold && !it.dark) {
           if (!EYE_COVER[it.face]) drawPoopEyes(it.eye || 0, it.size);
           drawPoopMouth(it.mouth || 0, it.size);
           if (it.face > 1) drawPoopFace(it.face, it.size);
