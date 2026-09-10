@@ -932,7 +932,7 @@
   const elFinal = document.getElementById("finalScore");
   const elTitle = document.getElementById("overTitle");
 
-  const GAME_VERSION = "v1.6.02";   // 코드를 고칠 때마다 뒤 두 자리를 올린다
+  const GAME_VERSION = "v1.6.03";   // 코드를 고칠 때마다 뒤 두 자리를 올린다
   document.getElementById("ver").textContent = GAME_VERSION;
 
   const LS_NAME = "epjpddongpi_name";
@@ -3124,8 +3124,7 @@
       /* 대왕 뚜니핑도 다른 낙하물처럼 그대로 남겨 둔다. 뚜니핑 낙하물은
          타임이 끝나도 피해를 주지 않으니(dmg 판정에서 fever 껍질은 빠진다)
          떠 있는 동안 마저 먹을 수 있다. */
-      popText(player.x, player.y - 70, "휴… 세이프", "#fff");
-      beep(520, .12, "triangle", .04);
+      beep(520, .12, "triangle", .04);          // 무적이 걸렸다는 건 소리로만 알린다
     }
 
     if (state === STATE.READY) {
