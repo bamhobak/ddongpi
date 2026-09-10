@@ -41,18 +41,20 @@
   #app {
     height: 100%;
     display: flex; align-items: center; justify-content: center;
-    /* 놀이판 밖(비율 여백·노치·상태표시줄 자리)을 게임 물건 무늬로 채운다.
-       무늬는 게임의 실제 아이템 그림을 이어지도록 엮어 만든 320px 타일이다.
-       그 위에 네온 격자와 빛을 얹어 놀이판과 이어지는 느낌을 준다. */
+    /* 놀이판 밖(비율 여백·노치·상태표시줄 자리)을 밤하늘 무늬로 채운다.
+       무늬는 겹쳐 섞어 만든 타일이라 어느 크기에서도 이음새가 없다. 같은 무늬를
+       크기와 자리를 달리해 두 겹 깔면 되풀이되는 격자가 눈에 띄지 않는다.
+       가장자리를 살짝 눌러 두어 시선이 가운데 놀이판으로 모인다. */
     background:
-      radial-gradient(120% 55% at 50% 0%, rgba(255,62,165,.20), transparent 62%),
-      radial-gradient(90% 45% at 50% 100%, rgba(53,240,255,.16), transparent 66%),
-      repeating-linear-gradient(90deg, rgba(53,240,255,.06) 0 1px, transparent 1px 26px),
-      repeating-linear-gradient(0deg,  rgba(53,240,255,.05) 0 1px, transparent 1px 26px),
-      url("assets/pattern.webp"),
-      #07070f;
-    background-repeat: no-repeat, no-repeat, repeat, repeat, repeat, repeat;
-    background-size: auto, auto, auto, auto, 160px 160px, auto;
+      radial-gradient(125% 85% at 50% 50%, rgba(8,6,20,0) 42%, rgba(6,5,16,.62) 100%),
+      radial-gradient(120% 55% at 50% 0%, rgba(255,150,205,.12), transparent 60%),
+      radial-gradient(90% 45% at 50% 100%, rgba(120,215,255,.10), transparent 64%),
+      url("assets/bg_night.webp"),
+      url("assets/bg_night2.webp"),
+      #302840;
+    background-repeat: no-repeat, no-repeat, no-repeat, repeat, repeat, repeat;
+    background-position: 0 0, 0 0, 0 0, 0 0, 90px 55px, 0 0;
+    background-size: auto, auto, auto, 300px 300px, 520px 520px, auto;
     /* 노치·둥근 모서리·홈바에 화면이 잘리지 않도록 */
     padding: env(safe-area-inset-top) env(safe-area-inset-right)
              env(safe-area-inset-bottom) env(safe-area-inset-left);
@@ -932,7 +934,7 @@
   const elFinal = document.getElementById("finalScore");
   const elTitle = document.getElementById("overTitle");
 
-  const GAME_VERSION = "v0.6.07";   // 코드를 고칠 때마다 뒤 두 자리를 올린다
+  const GAME_VERSION = "v0.6.09";   // 코드를 고칠 때마다 뒤 두 자리를 올린다
   document.getElementById("ver").textContent = GAME_VERSION;
 
   const LS_NAME = "epjpddongpi_name";
