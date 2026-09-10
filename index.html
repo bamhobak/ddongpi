@@ -41,20 +41,15 @@
   #app {
     height: 100%;
     display: flex; align-items: center; justify-content: center;
-    /* 놀이판 밖(비율 여백·노치·상태표시줄 자리)을 밤하늘 무늬로 채운다.
-       무늬는 겹쳐 섞어 만든 타일이라 어느 크기에서도 이음새가 없다. 같은 무늬를
-       크기와 자리를 달리해 두 겹 깔면 되풀이되는 격자가 눈에 띄지 않는다.
+    /* 놀이판 밖(비율 여백·노치·상태표시줄 자리)을 귀여운 스티커 무늬로 채운다.
+       스티커 낱장을 감싸 그려(반대쪽에도 똑같이 찍어) 짠 타일이라 이음새가 아예 없다.
        가장자리를 살짝 눌러 두어 시선이 가운데 놀이판으로 모인다. */
     background:
-      radial-gradient(125% 85% at 50% 50%, rgba(8,6,20,0) 42%, rgba(6,5,16,.62) 100%),
-      radial-gradient(120% 55% at 50% 0%, rgba(255,150,205,.12), transparent 60%),
-      radial-gradient(90% 45% at 50% 100%, rgba(120,215,255,.10), transparent 64%),
-      url("assets/bg_night.webp"),
-      url("assets/bg_night2.webp"),
-      #302840;
-    background-repeat: no-repeat, no-repeat, no-repeat, repeat, repeat, repeat;
-    background-position: 0 0, 0 0, 0 0, 0 0, 90px 55px, 0 0;
-    background-size: auto, auto, auto, 300px 300px, 520px 520px, auto;
+      radial-gradient(125% 85% at 50% 50%, rgba(10,7,14,0) 45%, rgba(8,5,12,.55) 100%),
+      url("assets/bg_sticker.webp"),
+      #2b1f28;
+    background-repeat: no-repeat, repeat, repeat;
+    background-size: auto, 320px 320px, auto;
     /* 노치·둥근 모서리·홈바에 화면이 잘리지 않도록 */
     padding: env(safe-area-inset-top) env(safe-area-inset-right)
              env(safe-area-inset-bottom) env(safe-area-inset-left);
@@ -934,7 +929,7 @@
   const elFinal = document.getElementById("finalScore");
   const elTitle = document.getElementById("overTitle");
 
-  const GAME_VERSION = "v0.6.09";   // 코드를 고칠 때마다 뒤 두 자리를 올린다
+  const GAME_VERSION = "v0.6.11";   // 코드를 고칠 때마다 뒤 두 자리를 올린다
   document.getElementById("ver").textContent = GAME_VERSION;
 
   const LS_NAME = "epjpddongpi_name";
@@ -2945,7 +2940,7 @@
     let mean = BONUS_BASE / (b.w / BONUS_W_TOTAL) * aug.itemRateMul;
     if (b.type === "heart" && job === "fit") mean /= 5;  // 헬스걸 — 하트 5배
     if (b.type === "umbrella" && job === "gambler") mean /= 1.5;  // 도박사 — 우산 1.5배
-    if ((b.type === "moon" || b.type === "fullmoon") && job === "powerj") mean /= 2.1;  // 파워J — 달 2.1배
+    if ((b.type === "moon" || b.type === "fullmoon") && job === "powerj") mean /= 2;    // 파워J — 달 2배
     // 파워P — 달이 평소의 75%만 나온다 (한 번 볼 때 다섯 장을 고르는 대가)
     if ((b.type === "moon" || b.type === "fullmoon") && job === "powerp2") mean /= 0.75;
     if (b.type === "star" && job === "powerp") mean /= 1.5;  // 무소유 — 별 1.5배
