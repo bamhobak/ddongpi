@@ -930,7 +930,7 @@
   const elFinal = document.getElementById("finalScore");
   const elTitle = document.getElementById("overTitle");
 
-  const GAME_VERSION = "v0.6.19";   // 코드를 고칠 때마다 뒤 두 자리를 올린다
+  const GAME_VERSION = "v0.6.20";   // 코드를 고칠 때마다 뒤 두 자리를 올린다
   document.getElementById("ver").textContent = GAME_VERSION;
 
   const LS_NAME = "epjpddongpi_name";
@@ -3352,6 +3352,9 @@
       for (let j = items.length - 1; j >= 0; j--) {
         const q = items[j];
         if (q.type !== "poop" || q.blast || q.bounced || q.dark) continue;
+        /* 레이저똥은 무엇으로도 건드릴 수 없다 — 총알이 여기서 없어지면 헛방이 되므로
+           정연핑이 지나가듯 그냥 스쳐 지나가게 둔다. */
+        if (q.special === "laser" && !aug.wak) continue;
         if (Math.hypot(q.x - bu.x, q.y - bu.y) > q.r + 6) continue;
         if (aug.wak && !q.gold && q.skin !== "fever") {
           /* 고무고무노 피스톨 — 부수지 않고 위로 튕겨 올린다. 날아가는 똥은 사람을 해치지 않고,
@@ -3365,7 +3368,10 @@
           burst(bu.x, bu.y, "#ff8a6a", 8);
           if (!sfx("boing")) beep(520, .06, "square", .04);
         } else {
-          smashPoopsAround(bu.x, bu.y, 8, true);    // 맞은 똥 하나만 부순다
+          /* 맞은 똥 하나만. force 를 주지 않아야 정연핑과 똑같이 다룬다 —
+             대왕똥은 셋으로 쪼개지고, 분열똥은 그 자리에서 쪼개지고,
+             지그재그똥은 방향이 뒤집힌다 (예전에는 전부 통째로 사라졌다). */
+          smashPoopsAround(bu.x, bu.y, 8);
           burst(bu.x, bu.y, "#9fe8ff", 10);
         }
         hit = true;
