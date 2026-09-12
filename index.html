@@ -930,7 +930,7 @@
   const elFinal = document.getElementById("finalScore");
   const elTitle = document.getElementById("overTitle");
 
-  const GAME_VERSION = "v0.6.20";   // 코드를 고칠 때마다 뒤 두 자리를 올린다
+  const GAME_VERSION = "v0.6.21";   // 코드를 고칠 때마다 뒤 두 자리를 올린다
   document.getElementById("ver").textContent = GAME_VERSION;
 
   const LS_NAME = "epjpddongpi_name";
@@ -2312,7 +2312,8 @@
   let wakBooms = [];                 // 고무고무노 피스톨 — 똥끼리 부딪혀 터진 자리의 고리
   /* 우주선 한 대가 다시 쏘기까지. 대수가 늘수록 각자 느긋해진다 —
      1대 0.6초 · 2대 0.8초 · 3대 1.0초 … (겹칠수록 총 화력의 상승폭이 줄어든다) */
-  const SHIP_GAP = 0.6, SHIP_GAP_STEP = 0.2;
+  // 0.6 → 0.1 : 대수와 상관없이 발사 간격을 통째로 0.5초 줄였다
+  const SHIP_GAP = 0.1, SHIP_GAP_STEP = 0.2;
   function shipGap(n) { return SHIP_GAP + SHIP_GAP_STEP * (n - 1); }
   const M_PX = 12, DOVE_EVERY = 80 * M_PX;   // 100m 에서 20% 줄여 80m 마다
   // 히든 '비둘기 무엇?' — 속도·크기·폭발은 1.5배, 출격은 3/4 거리마다
