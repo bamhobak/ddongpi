@@ -930,7 +930,7 @@
   const elFinal = document.getElementById("finalScore");
   const elTitle = document.getElementById("overTitle");
 
-  const GAME_VERSION = "v0.6.22";   // 코드를 고칠 때마다 뒤 두 자리를 올린다
+  const GAME_VERSION = "v0.6.23";   // 코드를 고칠 때마다 뒤 두 자리를 올린다
   document.getElementById("ver").textContent = GAME_VERSION;
 
   const LS_NAME = "epjpddongpi_name";
@@ -956,10 +956,10 @@
     levitator: { nm: "부양사", ic: "🎈", ds: "하늘 어디든 날 수 있다 · 높이 있을수록 점수 UP" },
     fit: { nm: "헬스걸", ic: "💪", ds: "목숨 5개로 시작 · 우산이 안 나온다 · 하트가 어마무시하게 잘 나온다 · 벌크업 좀 된 상태" },
     powerj: { nm: "파워J", ic: "📋", ds: "달이 잘 나온다 · 대신 증강은 계획대로 1개만" },
-    /* 파워P — 파워J 의 거울. 달은 덜 오지만 올 때마다 다섯 장을 다 펼쳐 놓고 고른다.
+    /* 파워P — 파워J 의 거울. 달은 남들만큼 오는데, 올 때마다 네 장을 펼쳐 놓고 고른다.
        아이디가 powerp2 인 것은, powerp 는 무소유가 예전에 파워P 였을 때 쓰던 이름이라
        이미 차 있기 때문이다 (옛 기록과 순위표가 그 이름을 쓴다). */
-    powerp2: { nm: "파워P", ic: "🎯", ds: "달이 덜 나온다 · 대신 증강을 5개 중에서 고른다" },
+    powerp2: { nm: "파워P", ic: "🎯", ds: "증강을 4개 중에서 고른다" },
     powerp: { nm: "무소유", ic: "🙏", ds: "달이 아예 안 나온다 · 별이 조금 잘 나온다 · 안 맞을수록 점수가 치솟는다" },
     bangul: { nm: "방울이", ic: "🫧", ds: "목숨 대신 오염도 · 비누방울이 한 대를 대신 맞고 터진다 · 잠시 뒤 다시 맺힌다", f: "이핑재핑보다 귀엽다" }
   };
@@ -2200,8 +2200,8 @@
       return base * m;
     };
     const picks = [];
-    // 파워J 는 계획이 하나면 충분하고, 파워P 는 다섯 장을 다 펼쳐 놓고 고른다
-    const nPick = job === "powerj" ? 1 : (job === "powerp2" ? 5 : 3);
+    // 파워J 는 계획이 하나면 충분하고, 파워P 는 네 장을 다 펼쳐 놓고 고른다
+    const nPick = job === "powerj" ? 1 : (job === "powerp2" ? 4 : 3);
     while (picks.length < nPick && pool.length) {
       let total = 0;
       for (const a of pool) total += wOf(a);
@@ -2959,8 +2959,6 @@
     if (b.type === "heart" && job === "fit") mean /= 5;  // 헬스걸 — 하트 5배
     if (b.type === "umbrella" && job === "gambler") mean /= 1.5;  // 도박사 — 우산 1.5배
     if ((b.type === "moon" || b.type === "fullmoon") && job === "powerj") mean /= 2;    // 파워J — 달 2배
-    // 파워P — 달이 평소의 80%만 나온다 (한 번 볼 때 다섯 장을 고르는 대가)
-    if ((b.type === "moon" || b.type === "fullmoon") && job === "powerp2") mean /= 0.80;
     if (b.type === "star" && job === "powerp") mean /= 1.5;  // 무소유 — 별 1.5배
     return mean;
   }
