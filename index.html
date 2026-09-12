@@ -930,7 +930,7 @@
   const elFinal = document.getElementById("finalScore");
   const elTitle = document.getElementById("overTitle");
 
-  const GAME_VERSION = "v0.6.18";   // 코드를 고칠 때마다 뒤 두 자리를 올린다
+  const GAME_VERSION = "v0.6.19";   // 코드를 고칠 때마다 뒤 두 자리를 올린다
   document.getElementById("ver").textContent = GAME_VERSION;
 
   const LS_NAME = "epjpddongpi_name";
@@ -3611,7 +3611,8 @@
       } else if (it.special === "zigzag") {
         // 흔들리는 속도·폭도 '느린 하늘'의 영향을 받는다 (세로만 느려지면 더 촘촘해져서 어색하다)
         it.phase += dt * tsc * 3.0 * aug.fallMul;
-        it.vx = Math.sin(it.phase) * 230 * aug.fallMul;
+        // 195.5 = 230 의 85% — 흔드는 리듬(3.0)은 그대로라 좌우 폭만 15% 좁아진다
+        it.vx = Math.sin(it.phase) * 195.5 * aug.fallMul;
       }
       const prevX = it.x, prevY = it.y;      // 한 프레임에 크게 움직이면 스쳐 지나갈 수 있다
       /* 주먹에 맞은 똥은 포물선을 그린다 — 올라갔다가 똥밭을 되짚어 내려오며
