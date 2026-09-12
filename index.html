@@ -930,7 +930,7 @@
   const elFinal = document.getElementById("finalScore");
   const elTitle = document.getElementById("overTitle");
 
-  const GAME_VERSION = "v0.6.16";   // 코드를 고칠 때마다 뒤 두 자리를 올린다
+  const GAME_VERSION = "v0.6.17";   // 코드를 고칠 때마다 뒤 두 자리를 올린다
   document.getElementById("ver").textContent = GAME_VERSION;
 
   const LS_NAME = "epjpddongpi_name";
@@ -2070,7 +2070,7 @@
       max: 5, cond: () => !dirtJob() && lives >= 2,
       go: () => { lives = Math.max(1, lives - 1); aug.scoreMul *= 1.2; } },
     { id: "momMeal",    ic: "🍚", nm: "엄마는 우리 딸 믿어",
-      ds: "엄마의 밥상이 별만큼 자주 떨어진다 · 먹으면 지금 점수의 10%",
+      ds: "힘들때마다 차려지는 엄마의 따뜻한 밥상",
       once: true, cond: () => job === "none",   // 백수 전용
       go: () => {
         aug.momMeal = true;
