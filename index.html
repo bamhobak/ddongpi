@@ -930,7 +930,7 @@
   const elFinal = document.getElementById("finalScore");
   const elTitle = document.getElementById("overTitle");
 
-  const GAME_VERSION = "v0.6.25";   // 코드를 고칠 때마다 뒤 두 자리를 올린다
+  const GAME_VERSION = "v0.6.26";   // 코드를 고칠 때마다 뒤 두 자리를 올린다
   document.getElementById("ver").textContent = GAME_VERSION;
 
   const LS_NAME = "epjpddongpi_name";
@@ -1868,7 +1868,14 @@
     }
     return bgmPair[name];
   }
+  // 이 오디오에 걸려 있던 '물러나기' 예약을 지운다
+  function bgmUnfade(el) {
+    for (let i = bgmOut.length - 1; i >= 0; i--) if (bgmOut[i].el === el) bgmOut.splice(i, 1);
+  }
   function bgmStart(a) {
+    /* 물러나는 중이던 것을 다시 트는 경우 — 예약을 취소하지 않으면 시간이 되어
+       pause() 가 불리고, 방금 튼 소리가 그대로 멎은 채 곡이 바뀔 때까지 조용해진다. */
+    bgmUnfade(a);
     try { a.currentTime = 0; } catch (e) {}
     a.volume = 0;
     const pr = a.play();
@@ -1877,11 +1884,14 @@
     if (pr && pr.catch) pr.catch(() => { bgmName = null; bgmRetryAt = Date.now() + 800; });
   }
   function bgmFadeOut(el, len) {
-    if (!el) return;
+    if (!el || el.paused) return;
+    bgmUnfade(el);                     // 같은 것에 두 번 걸어 두지 않는다
     bgmOut.push({ el: el, t: len, len: len, v0: el.volume });
   }
   function playBgm(name) {
-    bgmFadeOut(bgmCur, BGM_SWAP_X);
+    /* 곡 끝과 처음을 겹치는 동안에는 같은 곡 두 벌이 함께 울린다.
+       bgmCur 한 벌만 물리면 나머지 한 벌이 끝까지 남아 새 곡과 겹쳐 울린다. */
+    for (const k in bgmPair) for (const a of bgmPair[k]) bgmFadeOut(a, BGM_SWAP_X);
     bgmCur = null;
     bgmName = name;
     if (bgmOff || !name) return;
@@ -1917,8 +1927,8 @@
   function syncBgm() {
     const inGame = state === STATE.PLAY || state === STATE.AUG || state === STATE.PAUSE;
     const want = inGame
-      ? (fever ? "fever"
-               : (inBlackhole() ? "blackhole" : (inSpace() ? "space" : "play")))
+      ? (feverBgm ? "fever"
+                  : (inBlackhole() ? "blackhole" : (inSpace() ? "space" : "play")))
       : "menu";
     if (want === bgmName || bgmOff) return;
     if (bgmName === null && Date.now() < bgmRetryAt) return;   // 막힌 직후에는 잠깐 쉰다
@@ -2335,6 +2345,9 @@
   let bubPops = [];                  // 터진 비누방울 — 테두리가 퍼지고 물방울이 튄다
   const BUB_TONES = ["#ffffff", "#cfefff", "#ffd2f2", "#d6fff2", "#e6dcff"];
   let fever = false, feverT = 0, feverDur = 10000;
+  /* 배경음용 뚜니핑 여부 — fever 는 증강 화면·일시정지에서 꺼지므로,
+     그대로 쓰면 달을 먹을 때마다 곡이 갈아탔다가 돌아와 처음부터 다시 시작한다. */
+  let feverBgm = false;
   let feverBanner = 0;               // 뚜니핑 타임 시작 알림 (1 → 0, 1.1초)
   let last = 0;
 
@@ -2692,7 +2705,8 @@
     dirt = 0; dirtShown = 0;
     spawnTimer = 0;
     invUntil = 0; powerUntil = 0; hurtUntil = 0; shields = 0;
-    shake = 0; flash = 0; feverFlash = 0; fever = false; feverT = 0; feverBanner = 0;
+    shake = 0; flash = 0; feverFlash = 0; fever = false; feverBgm = false;
+    feverT = 0; feverBanner = 0;
     scoreShown = 0; scorePunch = 0; prevScore = 0; rings = []; bubPops = [];
     scoreSrc = {};
     bubbleOn = (job === "bangul"); bubbleT = 0;   // 방울이는 방울을 두르고 시작한다
@@ -3128,6 +3142,7 @@
 
     const wasFever = fever;
     fever = state === STATE.PLAY && now < powerUntil;
+    if (state === STATE.PLAY) feverBgm = fever;   // 놀고 있을 때만 새로 쓴다
     if (!wasFever && fever) feverBanner = 1;      // 막 시작했다
     // 겹쳐 먹어 남은 시간이 한 번 분량을 넘으면 게이지가 넘치므로 1로 묶는다
     feverT = fever ? Math.min(1, (powerUntil - now) / feverDur) : 0;
