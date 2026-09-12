@@ -930,7 +930,7 @@
   const elFinal = document.getElementById("finalScore");
   const elTitle = document.getElementById("overTitle");
 
-  const GAME_VERSION = "v0.6.15";   // 코드를 고칠 때마다 뒤 두 자리를 올린다
+  const GAME_VERSION = "v0.6.16";   // 코드를 고칠 때마다 뒤 두 자리를 올린다
   document.getElementById("ver").textContent = GAME_VERSION;
 
   const LS_NAME = "epjpddongpi_name";
@@ -1978,6 +1978,7 @@
     doveWhat: false,    // 히든: 비둘기 무엇? (도박사 — 비둘기가 세지고 자주 나온다)
     dodge: 0,           // 그건 제 잔상입니다만? — 맞을 때 피할 확률 (0~0.45)
     dungy: false,       // 방울이: 똥묻히기 (오염도만큼 모든 점수가 오른다)
+    momMeal: false,     // 백수: 엄마는 우리 딸 믿어 (엄마의 밥상이 떨어진다)
     wak: false,         // 히든: 고무고무노 피스톨 (주먹이 똥을 튕겨 올리고, 부딪히면 같이 터진다)
     scoreMul: 1,        // 모든 점수에 곱해지는 배율
     maxLives: 5
@@ -2068,6 +2069,15 @@
       // 목숨을 파는 증강이라, 목숨 대신 오염도로 버티는 방울이에게는 나오지 않는다
       max: 5, cond: () => !dirtJob() && lives >= 2,
       go: () => { lives = Math.max(1, lives - 1); aug.scoreMul *= 1.2; } },
+    { id: "momMeal",    ic: "🍚", nm: "엄마는 우리 딸 믿어",
+      ds: "엄마의 밥상이 별만큼 자주 떨어진다 · 먹으면 지금 점수의 10%",
+      once: true, cond: () => job === "none",   // 백수 전용
+      go: () => {
+        aug.momMeal = true;
+        // 지금부터 시간을 재기 시작한다 (안 그러면 판이 끝날 때까지 한 번도 안 온다)
+        const b = BONUS.find(x => x.type === "meal");
+        if (b) b.t = bonusInterval(b);
+      } },
     { id: "dungy",      ic: "💩", nm: "똥묻히기", ds: "더러울수록 모든 점수가 오른다 · 오염 100%면 2배",
       once: true, cond: () => dirtJob(),        // 방울이 전용 — 당근거래 자리
       go: () => { aug.dungy = true; } },
@@ -2690,7 +2700,8 @@
     aug.feverBonus = 0; aug.starMul = 1; aug.timeMul = 1;
     aug.feverScoreMul = 1; aug.fallMul = 1; aug.hitboxMul = 1; aug.poopMul = 1;
     aug.steelUmb = false; aug.starburst = false; aug.scoreMul = 1;
-    aug.dodge = 0; aug.wak = false; aug.dungy = false; rerolls = REROLLS; ghosts = []; wakBooms = [];
+    aug.dodge = 0; aug.wak = false; aug.dungy = false; aug.momMeal = false;
+    rerolls = REROLLS; ghosts = []; wakBooms = [];
     aug.blackhole = false; aug.legion = false; roidT = 0;
     aug.doveWhat = false;
     flyOn = false;
@@ -2923,7 +2934,10 @@
     { type: "paper",    emoji: "🧻", w: 27.17 }, // 26 x1.1 후 5% 하향
     { type: "umbrella", emoji: "☂️", w: 26.4 },  // 22 x1.2
     { type: "star",     emoji: "⭐", w: 72.52 }, // 69.4 x1.1 후 5% 하향
-    { type: "heart",    emoji: "❤️", w: 28.8 }   // 24 x1.2 (방울이는 빗방울로 바뀐다)
+    { type: "heart",    emoji: "❤️", w: 28.8 },  // 24 x1.2 (방울이는 빗방울로 바뀐다)
+    /* 엄마의 밥상 — 별과 똑같은 비중. 증강을 먹기 전에는 아예 나오지 않으므로
+       다른 아이템의 등장 빈도에는 영향을 주지 않는다 (기준값이 고정이라 더욱 그렇다). */
+    { type: "meal",     emoji: "🍚", w: 72.52 }
   ];
   /* 아이템은 종류마다 자기 타이머로 따로 굴러간다.
      각자의 평균 간격 = 기본 10초 ÷ 그 아이템의 비중 → 전체 등장 빈도는 예전과 같지만
@@ -2936,6 +2950,8 @@
 
   // 이 아이템이 지금 평균 몇 초마다 나오는지 (흔들림을 뺀 값)
   function bonusMean(b) {
+    // 엄마의 밥상은 '엄마는 우리 딸 믿어'를 먹기 전에는 영영 오지 않는다
+    if (b.type === "meal" && !aug.momMeal) return Infinity;
     /* 레벨은 아이템 등장에 전혀 관여하지 않는다 — 처음부터 끝까지 같은 확률.
        예전에는 레벨이 오를수록 잦아지고(최대 2배), 대신 Lv15부터 달만 뜸해졌다. */
     let mean = BONUS_BASE / (b.w / BONUS_W_TOTAL) * aug.itemRateMul;
@@ -3922,6 +3938,16 @@
       if (full) { flash = 0; feverFlash = 1; shake = Math.max(shake, 14); }
       openAugment(full ? 3 : 1);     // 보름달은 3연속 선택
       return true;
+    }
+    if (it.type === "meal") {
+      /* 엄마의 밥상 — 그 순간 점수의 10%. 판이 무르익을수록 한 상이 커진다.
+         모든 점수에 곱하는 배율(scoreMul)은 얹지 않는다. 이미 배율이 반영된
+         점수에서 떼어 오는 것이라, 또 곱하면 두 번 먹는 셈이 된다. */
+      const gain = Math.round(score * 0.10);
+      score += sc("밥상", gain);
+      popGain(it.x, it.y, gain, "🍚 엄마의 밥상", "#ffd7a8");
+      if (!sfx("star")) { beep(680, .12, "triangle", .05); beep(900, .16, "triangle", .045); }
+      if (navigator.vibrate) navigator.vibrate(40);
     }
     if (it.type === "heart") {
       lives = Math.min(aug.maxLives, lives + 1);
