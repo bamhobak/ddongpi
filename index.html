@@ -930,7 +930,7 @@
   const elFinal = document.getElementById("finalScore");
   const elTitle = document.getElementById("overTitle");
 
-  const GAME_VERSION = "v0.6.17";   // 코드를 고칠 때마다 뒤 두 자리를 올린다
+  const GAME_VERSION = "v0.6.18";   // 코드를 고칠 때마다 뒤 두 자리를 올린다
   document.getElementById("ver").textContent = GAME_VERSION;
 
   const LS_NAME = "epjpddongpi_name";
@@ -2958,8 +2958,8 @@
     if (b.type === "heart" && job === "fit") mean /= 5;  // 헬스걸 — 하트 5배
     if (b.type === "umbrella" && job === "gambler") mean /= 1.5;  // 도박사 — 우산 1.5배
     if ((b.type === "moon" || b.type === "fullmoon") && job === "powerj") mean /= 2;    // 파워J — 달 2배
-    // 파워P — 달이 평소의 75%만 나온다 (한 번 볼 때 다섯 장을 고르는 대가)
-    if ((b.type === "moon" || b.type === "fullmoon") && job === "powerp2") mean /= 0.75;
+    // 파워P — 달이 평소의 80%만 나온다 (한 번 볼 때 다섯 장을 고르는 대가)
+    if ((b.type === "moon" || b.type === "fullmoon") && job === "powerp2") mean /= 0.80;
     if (b.type === "star" && job === "powerp") mean /= 1.5;  // 무소유 — 별 1.5배
     return mean;
   }
