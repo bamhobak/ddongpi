@@ -946,7 +946,7 @@
   const elFinal = document.getElementById("finalScore");
   const elTitle = document.getElementById("overTitle");
 
-  const GAME_VERSION = "v0.6.43";   // 코드를 고칠 때마다 뒤 두 자리를 올린다
+  const GAME_VERSION = "v0.6.44";   // 코드를 고칠 때마다 뒤 두 자리를 올린다
   document.getElementById("ver").textContent = GAME_VERSION;
 
   const LS_NAME = "epjpddongpi_name";
@@ -1803,9 +1803,12 @@
                      over: 0.8, gold: 2.0, heart: 1.0, shield: 0.9,
                      moon: 2.8, bubble: 0.8, break: 0.6, helper: 0.45, fetch: 0.5,
                      galaga: 0.35, dove: 0.3, clone: 1.6, burst: 0.8,
-                     angry: 0.8, laser: 0.9, fpick: 1.2, giant: 2.4, magnet: 0.55,
+                     angry: 0.8, laser: 0.9, fpick: 3.4, giant: 2.4, magnet: 0.55,
                      dodge: 0.9, boing: 0.9, wakboom: 0.9, reroll: 0.7,
                      coin: 1.8 };
+  /* 꼬리가 긴 녹음을 짧게 잘라 쓴다 (초 단위). 뚜니핑 줍는 소리는 초당 여러 번
+     겹쳐 울리므로, 1초를 다 울리게 두면 소리가 뭉개진다. 끝에서 부드럽게 잦아든다. */
+  const SFX_CUT = { fpick: 0.30 };
   const SFX_VOL = 0.55;              // 전체 크기
   const sfxBuf = {};
   let sfxAsked = false;
@@ -1830,9 +1833,19 @@
       if (!buf) return false;
       const src = ac.createBufferSource(), g = ac.createGain();
       src.buffer = buf;
-      g.gain.value = SFX_VOL * (SFX_GAIN[name] || 1) * (vol === undefined ? 1 : vol);
+      const lv = SFX_VOL * (SFX_GAIN[name] || 1) * (vol === undefined ? 1 : vol);
+      g.gain.value = lv;
       src.connect(g); g.connect(ac.destination);
-      src.start();
+      const cut = SFX_CUT[name];
+      if (cut) {                     // 앞은 그대로 두고 끝만 부드럽게 닫는다
+        const t0 = ac.currentTime;
+        g.gain.setValueAtTime(lv, t0 + cut * 0.55);
+        g.gain.linearRampToValueAtTime(0, t0 + cut);
+        src.start();
+        src.stop(t0 + cut + 0.02);
+      } else {
+        src.start();
+      }
       return true;
     } catch (e) { return false; }
   }
