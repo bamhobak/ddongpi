@@ -946,7 +946,7 @@
   const elFinal = document.getElementById("finalScore");
   const elTitle = document.getElementById("overTitle");
 
-  const GAME_VERSION = "v0.6.55";   // 코드를 고칠 때마다 뒤 두 자리를 올린다
+  const GAME_VERSION = "v0.6.56";   // 코드를 고칠 때마다 뒤 두 자리를 올린다
   document.getElementById("ver").textContent = GAME_VERSION;
 
   const LS_NAME = "epjpddongpi_name";
@@ -2777,7 +2777,6 @@
     bullets = []; shipClock = 0; aug.galaga = 0;
     coinRun = 0; coinDebt = 0; coinSeen = 0; coinGot = 0;
     monkStreak = 0; fullOwn = false; fullBanner = 0; fullFx = 0;
-    fullMsg = "풀소유 진화!";
     shieldTimer = UMB_SEC;
     aug.itemRateMul = 1; aug.feverRateMul = 1; aug.giant = 0; aug.magnet = 0;
     /* 백수는 '엄마는 우리 딸 믿어' 를 기본으로 깔고 시작한다.
@@ -2887,8 +2886,6 @@
   const FULL_NEED = 3, FULL_MUL = 5;   // 세 개 연속 / 진화 뒤 코인이 다섯 배로 잦아진다
   const FULL_FX = 0.7;            // 변신 번쩍임이 이어지는 시간(초)
   let monkStreak = 0, fullOwn = false, fullBanner = 0, fullFx = 0;
-  /* 우주에서 진화하면 옷이 그대로라 알릴 말도 달라진다 */
-  let fullMsg = "풀소유 진화!";
   function spawnCoin() {
     let tot = 0;
     for (const c of COIN_KINDS) tot += c.w;
@@ -4093,8 +4090,6 @@
         const grow = (++monkStreak >= FULL_NEED);
         if (grow) {
           fullOwn = true; fullBanner = 2.6; fullFx = FULL_FX;
-          // 우주에서는 우주복을 벗을 수 없으니, 마음만 바뀐 셈이다
-          fullMsg = inSpace() ? "되구만" : "풀소유 진화!";
           hurtUntil = 0;                     // 바뀐 모습을 바로 보여 준다
           burst(player.x, player.y, "#ffd23f", 46);
           burst(player.x, player.y, "#ffffff", 30);
@@ -6857,12 +6852,12 @@
       ctx.font = "900 46px NanumBarunGothic, system-ui, sans-serif";
       ctx.lineWidth = 11; ctx.lineJoin = "round";
       ctx.strokeStyle = "rgba(58,26,4,.75)";
-      ctx.strokeText(fullMsg, 0, 0);
+      ctx.strokeText("풀소유 진화!", 0, 0);
       const tg = ctx.createLinearGradient(0, -28, 0, 28);
       tg.addColorStop(0, "#fffbe8");
       tg.addColorStop(1, "#ffc21f");
       ctx.fillStyle = tg;
-      ctx.fillText(fullMsg, 0, 0);
+      ctx.fillText("풀소유 진화!", 0, 0);
       ctx.restore();
       ctx.textAlign = "left"; ctx.textBaseline = "top";
     }
