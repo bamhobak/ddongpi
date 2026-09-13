@@ -953,7 +953,7 @@
   const elTitle = document.getElementById("overTitle");
   const coinNote = document.getElementById("coinNote");
 
-  const GAME_VERSION = "v0.6.59";   // 코드를 고칠 때마다 뒤 두 자리를 올린다
+  const GAME_VERSION = "v0.6.60";   // 코드를 고칠 때마다 뒤 두 자리를 올린다
   document.getElementById("ver").textContent = GAME_VERSION;
 
   const LS_NAME = "epjpddongpi_name";
@@ -6718,11 +6718,13 @@
     }
 
     // 하트가 많으면 작게 그리고 10개 단위로 줄을 바꾼다 (헬스걸은 최대 20개)
-    if (job === "powerp") {                 // 무소유 — 무피격으로 버틴 시간
+    if (job === "powerp") {                 // 무소유 — 안 맞고 버틴 만큼 붙은 배율
       ctx.textAlign = "right";
       ctx.font = "700 13px NanumBarunGothic, system-ui, sans-serif";
       ctx.fillStyle = "#ffe08a";
-      ctx.fillText("🧘 " + Math.floor(noHitSec) + "초", W - 16, top + 44);
+      /* 초가 아니라 지금 얹혀 있는 몫을 보여 준다 (배율 - 1).
+         소수 한 자리까지 — 초 단위로 또박또박 올라가야 쌓이는 맛이 난다. */
+      ctx.fillText("🧘 +" + (monkMul() - 1).toFixed(1), W - 16, top + 44);
       ctx.textAlign = "left";
     }
     if (dirtJob()) {                        // 방울이 — 하트 대신 오염도 막대
