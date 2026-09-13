@@ -686,6 +686,11 @@
   #startScreen h1 #testDot:active, #startScreen h1 #devDot:active { transform: scale(.88); }
 
   /* 랭킹판 — 유리판 느낌 */
+  /* 이번 판에 주운 코인 — 마지막 점수 바로 아래 */
+  #coinNote {
+    margin-top: -2px; font-size: 14px; font-weight: 800; letter-spacing: .3px;
+    color: #ffd23f; text-shadow: 0 1px 2px rgba(0,0,0,.6);
+  }
   #startScreen .board, #overScreen .board {
     max-width: 460px;
     padding: 10px 14px 9px;
@@ -889,6 +894,7 @@
     <div id="overScreen" class="screen hidden">
       <h2 id="overTitle">게임 오버!</h2>
       <div class="big" id="finalScore">0</div>
+      <div id="coinNote">🪙 0</div>
 
       <div id="nameRow">
         <div class="tag" id="nameTag">🎉 TOP 10 진입! 이름을 남기세요</div>
@@ -945,8 +951,9 @@
   const overScreen  = document.getElementById("overScreen");
   const elFinal = document.getElementById("finalScore");
   const elTitle = document.getElementById("overTitle");
+  const coinNote = document.getElementById("coinNote");
 
-  const GAME_VERSION = "v0.6.56";   // 코드를 고칠 때마다 뒤 두 자리를 올린다
+  const GAME_VERSION = "v0.6.57";   // 코드를 고칠 때마다 뒤 두 자리를 올린다
   document.getElementById("ver").textContent = GAME_VERSION;
 
   const LS_NAME = "epjpddongpi_name";
@@ -2869,7 +2876,7 @@
   const COIN_RATIO = 0.02;        // 똥 백 개당 코인 두 개
   /* 백수와 무소유는 코인이 기본 두 배로 나온다.
      (백수는 모으는 직업이라, 무소유는 쥘지 말지를 자주 고르게 하려고.)
-     풀소유가 되면 거기서 다시 다섯 배 — 일반 직업의 열 배가 쏟아진다.
+     풀소유가 되면 거기서 다시 7.5 배 — 일반 직업의 열다섯 배가 쏟아진다.
      값은 그대로고 개수만 는다. */
   function coinRatio() {
     let r = COIN_RATIO;
@@ -2883,7 +2890,9 @@
   let coinSeen = 0, coinGot = 0;
   /* 무소유 → 풀소유. 코인을 연달아 FULL_NEED 개 쥐면 진화한다.
      하나라도 흘려보내면 연속이 끊겨 처음부터 다시 센다. */
-  const FULL_NEED = 3, FULL_MUL = 5;   // 세 개 연속 / 진화 뒤 코인이 다섯 배로 잦아진다
+  /* 세 개 연속이면 진화. FULL_MUL 은 무소유(이미 2배) 위에 더 곱하는 값이라,
+     7.5 를 곱해야 일반 직업의 15 배가 된다. */
+  const FULL_NEED = 3, FULL_MUL = 7.5;
   const FULL_FX = 0.7;            // 변신 번쩍임이 이어지는 시간(초)
   let monkStreak = 0, fullOwn = false, fullBanner = 0, fullFx = 0;
   function spawnCoin() {
@@ -4245,6 +4254,9 @@
       const miss = Math.max(0, coinSeen - coinGot);
       if (miss > 0) score *= 1 + 0.01 * miss;
     }
+    // 이번 판에 주운 코인 (지갑에 들어간 값과 낱개 수)
+    coinNote.textContent = "🪙 " + coinRun.toLocaleString()
+                         + (coinGot > 0 ? "  (" + coinGot + "개)" : "");
     const s = Math.floor(score);
     burst(player.x, player.y, "#8a5a2b", 40);
     shake = 30;
