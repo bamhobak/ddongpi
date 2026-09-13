@@ -954,7 +954,7 @@
   const elTitle = document.getElementById("overTitle");
   const coinNote = document.getElementById("coinNote");
 
-  const GAME_VERSION = "v0.6.65";   // 코드를 고칠 때마다 뒤 두 자리를 올린다
+  const GAME_VERSION = "v0.6.66";   // 코드를 고칠 때마다 뒤 두 자리를 올린다
   document.getElementById("ver").textContent = GAME_VERSION;
 
   const LS_NAME = "epjpddongpi_name";
@@ -1990,7 +1990,7 @@
   function syncBgm() {
     const inGame = state === STATE.PLAY || state === STATE.AUG || state === STATE.PAUSE;
     // 리듬을 켜 두면 지대와 상관없이 리듬 전용 곡을 돌린다
-    const want = (rhythmOn && inGame) ? "rhythm"
+    const want = (rhythmActive() && inGame) ? "rhythm"
       : inGame
       ? (feverBgm ? "fever"
                   : (inBlackhole() ? "blackhole" : (inSpace() ? "space" : "play")))
@@ -2379,6 +2379,9 @@
      rhythmLead 는 몇 초 앞서 내보낼지 — 그만큼의 거리를 그 시간에 주파하도록
      낙하 속도를 거꾸로 계산하므로, 도착 시각이 프레임 오차 없이 딱 맞는다. */
   let rhythmOn = false, beatPulse = 0;
+  /* 리듬은 시험 장치라 테스트 모드 안에서만 산다. 켜 둔 채 테스트를 나가도
+     일반 게임에는 한 톨도 새지 않도록, 쓰는 곳마다 이 문을 지난다. */
+  function rhythmActive() { return rhythmOn && testMode; }
   let ghosts = [];                   // 그건 제 잔상입니다만? — 피한 자리에 남는 잔상
   let wakBooms = [];                 // 고무고무노 피스톨 — 똥끼리 부딪혀 터진 자리의 고리
   /* 우주선 한 대가 다시 쏘기까지. 대수가 늘수록 각자 느긋해진다 —
@@ -3081,7 +3084,7 @@
      레이저똥은 예고선을 따라야 하므로 vx 도 같은 배율로 곱한다. */
   const SNAP_LIMIT = 0.15;
   function snapArrival(it) {
-    if (!rhythmOn || !bgmCur || !bgmName) return;
+    if (!rhythmActive() || !bgmCur || !bgmName) return;
     const bpm = BGM_BPM[bgmName];
     if (!bpm || it.vy <= 0) return;
     const off = BGM_OFF[bgmName] || 0, beat = 60 / bpm;
@@ -3103,7 +3106,7 @@
 
   /* 박자마다 화면이 한 번 뛴다 (소리를 껐을 때도 박자가 보이도록) */
   function rhythmTick() {
-    if (!rhythmOn || !bgmCur || !bgmName) return;
+    if (!rhythmActive() || !bgmCur || !bgmName) return;
     const bpm = BGM_BPM[bgmName];
     if (!bpm) return;
     const period = 60 / bpm, off = BGM_OFF[bgmName] || 0;
@@ -3713,7 +3716,7 @@
 
     // 화면이 좁으면 그만큼 똥도 덜 떨어지게(체감 난이도 유지)
     const widthFactor = 480 / W;
-    if (rhythmOn) rhythmTick();
+    if (rhythmActive()) rhythmTick();
     if (beatPulse > 0) beatPulse = Math.max(0, beatPulse - dt * 4);
     spawnTimer -= dt * tsc;
     if (spawnTimer <= 0) {
@@ -5137,6 +5140,8 @@
 
   btnTestEnd.addEventListener("click", () => {
     testMode = false;
+    rhythmOn = false; beatPulse = 0;
+    document.getElementById("btnRhythm").textContent = "리듬 OFF";
     btnTestEnd.classList.remove("on");
     testLv.classList.remove("on");
     btnPause.classList.remove("on"); syncPad();
