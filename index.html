@@ -946,7 +946,7 @@
   const elFinal = document.getElementById("finalScore");
   const elTitle = document.getElementById("overTitle");
 
-  const GAME_VERSION = "v0.6.35";   // 코드를 고칠 때마다 뒤 두 자리를 올린다
+  const GAME_VERSION = "v0.6.36";   // 코드를 고칠 때마다 뒤 두 자리를 올린다
   document.getElementById("ver").textContent = GAME_VERSION;
 
   const LS_NAME = "epjpddongpi_name";
@@ -2363,6 +2363,11 @@
      그대로 쓰면 달을 먹을 때마다 곡이 갈아탔다가 돌아와 처음부터 다시 시작한다. */
   let feverBgm = false;
   let feverBanner = 0;               // 뚜니핑 타임 시작 알림 (1 → 0, 1.1초)
+  /* 백수로 시작할 때 뜨는 엄마의 한마디 — 남은 시간(초). 뚜니핑 알림과 달리
+     글자가 길어 두 줄로 띄우고, 아케이드투가 아니라 따뜻한 색으로 쓴다. */
+  const MOM_SEC = 3;
+  const MOM_LINES = ["이재야.. 엄마는 우리 딸 믿어.", "파이팅"];
+  let momMsg = 0;
   let last = 0;
 
   const keys = {};
@@ -2721,6 +2726,7 @@
     invUntil = 0; powerUntil = 0; hurtUntil = 0; shields = 0;
     shake = 0; flash = 0; feverFlash = 0; fever = false; feverBgm = false;
     feverT = 0; feverBanner = 0;
+    momMsg = (job === "none") ? MOM_SEC : 0;   // 백수에게만
     scoreShown = 0; scorePunch = 0; prevScore = 0; rings = []; bubPops = [];
     scoreSrc = {};
     bubbleOn = (job === "bangul"); bubbleT = 0;   // 방울이는 방울을 두르고 시작한다
@@ -3175,6 +3181,7 @@
     if (flash > 0) flash = Math.max(0, flash - dt * 3);
     if (feverFlash > 0) feverFlash = Math.max(0, feverFlash - dt * 2.5);
     if (feverBanner > 0) feverBanner = Math.max(0, feverBanner - dt / 1.1);
+    if (momMsg > 0 && state === STATE.PLAY) momMsg = Math.max(0, momMsg - dt);
     // 방울이 — 터진 방울이 다시 맺힌다
     if (job === "bangul" && state === STATE.PLAY && !bubbleOn) {
       bubbleT += dt;
@@ -6696,6 +6703,39 @@
       ctx.fillStyle = tg;
       ctx.fillText("뚜니핑 타임!", 0, 0);
       ctx.restore();
+      ctx.textBaseline = "top";
+    }
+    /* 엄마의 한마디 — 스르르 떠올랐다가 끝에서 스르르 사라진다.
+       뚜니핑 알림처럼 튀어오르지 않고, 조용히 떠 있다 지나간다. */
+    if (momMsg > 0) {
+      const k = MOM_SEC - momMsg;                          // 0 → 3 (흐른 시간)
+      const al = Math.min(1, k / 0.45) * Math.min(1, momMsg / 0.6);
+      const rise = (1 - Math.min(1, k / 0.6)) * 14;
+      ctx.save();
+      ctx.globalAlpha = Math.max(0, al);
+      ctx.translate(W / 2, H * 0.27 + rise);
+      const gl = ctx.createRadialGradient(0, 0, 0, 0, 0, 190);
+      gl.addColorStop(0, "rgba(255,196,120,.36)");
+      gl.addColorStop(1, "rgba(255,180,90,0)");
+      ctx.fillStyle = gl;
+      ctx.beginPath(); ctx.arc(0, 0, 190, 0, 6.283); ctx.fill();
+
+      ctx.textAlign = "center"; ctx.textBaseline = "middle";
+      ctx.lineWidth = 7; ctx.lineJoin = "round";
+      for (let i = 0; i < MOM_LINES.length; i++) {
+        const big = i === MOM_LINES.length - 1;            // 마지막 줄(파이팅)은 크게
+        ctx.font = "900 " + (big ? 32 : 23) + "px NanumBarunGothic, system-ui, sans-serif";
+        const y = -16 + i * 40;
+        ctx.strokeStyle = "rgba(58,26,4,.72)";
+        ctx.strokeText(MOM_LINES[i], 0, y);
+        const tg = ctx.createLinearGradient(0, y - 18, 0, y + 18);
+        tg.addColorStop(0, "#fff8e8");
+        tg.addColorStop(1, big ? "#ffc85a" : "#ffe3b0");
+        ctx.fillStyle = tg;
+        ctx.fillText(MOM_LINES[i], 0, y);
+      }
+      ctx.restore();
+      ctx.textAlign = "left";
       ctx.textBaseline = "top";
     }
     ctx.restore();
