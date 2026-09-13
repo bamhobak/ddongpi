@@ -791,6 +791,7 @@
       <button id="btnLvUp" title="레벨 올리기">레벨 ▲</button>
       <span id="lvNow">Lv 1</span>
       <button id="btnLvDn" title="레벨 내리기">레벨 ▼</button>
+      <button id="btnRhythm" title="도착을 박자에 맞춰 떨어뜨린다">리듬 OFF</button>
     </div>
 
     <div id="startScreen" class="screen">
@@ -953,7 +954,7 @@
   const elTitle = document.getElementById("overTitle");
   const coinNote = document.getElementById("coinNote");
 
-  const GAME_VERSION = "v0.6.62";   // 코드를 고칠 때마다 뒤 두 자리를 올린다
+  const GAME_VERSION = "v0.6.63";   // 코드를 고칠 때마다 뒤 두 자리를 올린다
   document.getElementById("ver").textContent = GAME_VERSION;
 
   const LS_NAME = "epjpddongpi_name";
@@ -1905,6 +1906,10 @@
      브라우저의 loop 로 그냥 되감으면 mp3 앞뒤 여백만큼 소리가 비고 마디도 뚝 끊기는데,
      겹쳐 넘기면 그 자리가 크로스페이드로 메워진다. */
   const BGM_VOL = { menu: 0.42, play: 0.34, space: 0.36, blackhole: 0.40, fever: 0.42 };
+  /* 곡마다 잰 박자와 첫 박 위치(초). 소리의 세기가 커지는 지점을 뽑아
+     격자를 맞춰 구한 값이다 — 128·140·105·132 처럼 정수로 떨어져 믿을 만하다. */
+  const BGM_BPM = { menu: 140, play: 128, space: 105, blackhole: 104, fever: 132 };
+  const BGM_OFF = { menu: 0.424, play: 0.006, space: 0.003, blackhole: 0.517, fever: 0.232 };
   const BGM_LOOP_X = 3.5;            // 곡 끝과 처음을 겹치는 시간(초)
   const BGM_SWAP_X = 0.45;           // 다른 곡으로 갈아탈 때 겹치는 시간(초)
   const bgmPair = {};                // 이름 -> 같은 곡 두 벌
@@ -2364,6 +2369,12 @@
      게임 안의 1m = 논리 좌표 12px 로 본다 (캐릭터 키가 대략 1.5m 쯤 되는 비율). */
   let doves = [], moveDist = 0;
   let bullets = [], shipClock = 0;   // 갤러그: 날아가는 총알과 편대 공용 시계
+  /* ── 리듬 실험 ──
+     rhythmOn 이면 평소 생성기를 멈추고, 곡의 박자에 '도착' 하도록 떨어뜨린다.
+     rhythmLead 는 몇 초 앞서 내보낼지 — 그만큼의 거리를 그 시간에 주파하도록
+     낙하 속도를 거꾸로 계산하므로, 도착 시각이 프레임 오차 없이 딱 맞는다. */
+  let rhythmOn = false, rhythmBeat = -1, rhythmSong = 0, beatPulse = 0;
+  const RHYTHM_LEAD = 1.15;
   let ghosts = [];                   // 그건 제 잔상입니다만? — 피한 자리에 남는 잔상
   let wakBooms = [];                 // 고무고무노 피스톨 — 똥끼리 부딪혀 터진 자리의 고리
   /* 우주선 한 대가 다시 쏘기까지. 대수가 늘수록 각자 느긋해진다 —
@@ -3054,6 +3065,48 @@
     // 코인은 평범한 똥에만 덤으로 붙는다 — 뚜니핑 낙하물에는 안 붙는다
     if (!inFever) coinDebt += coinRatio();
   }
+  /* 박자 하나에 똥 하나 — lead 초 뒤에 캐릭터 머리 높이에 닿도록 속도를 정한다. */
+  function spawnOnBeat(lead) {
+    const r = Math.max(12.6, (12.6 + Math.random() * 11.7) * 0.95) * aug.poopMul;
+    const startY = -r - 10;
+    const targetY = player.y + player.hy;      // 판정원의 한가운데 = 도착선
+    const vy = (targetY - startY) / lead;      // 여기가 이 기능의 심장
+    items.push({
+      type: "poop", emoji: "💩",
+      x: r + Math.random() * Math.max(1, W - r * 2), y: startY,
+      r: r * 0.82,
+      vx: (Math.random() - Math.random()) * vy * SPREAD_POOP, vy: vy,
+      rot: (Math.random() - Math.random()) * 1.571, vr: 0,
+      swayA: 0.14 + Math.random() * 0.07, swayW: 1.1 + Math.random() * 1.1,
+      swayP: Math.random() * 6.28,
+      size: r * 2, sz: r, fast: false,
+      skin: "poop", space: inSpace(), gold: false, dark: false, special: null,
+      bumpCd: 0, phase: Math.random() * 6.28, splitAt: 1e9, sz0: 0,
+      face: randFace(), eye: randEye(), mouth: randMouth(), gain: 0, giant: false
+    });
+  }
+
+  /* 곡의 어느 지점인지 읽어, 도착할 때가 된 박자만큼 미리 내보낸다. */
+  function rhythmTick() {
+    if (!rhythmOn || !bgmCur || !bgmName) return;
+    const bpm = BGM_BPM[bgmName];
+    if (!bpm) return;
+    const period = 60 / bpm, off = BGM_OFF[bgmName] || 0;
+    const t = bgmCur.currentTime;
+    if (t < rhythmSong - 0.2) rhythmBeat = -1;   // 곡이 처음으로 돌아갔다
+    rhythmSong = t;
+    const due = Math.floor((t + RHYTHM_LEAD - off) / period);
+    if (rhythmBeat < 0) rhythmBeat = due - 1;    // 처음엔 지난 박자를 건너뛴다
+    while (rhythmBeat < due) {
+      rhythmBeat++;
+      const lead = off + rhythmBeat * period - t;
+      if (lead > 0.12) spawnOnBeat(lead);
+    }
+    // 박자마다 화면이 한 번 뛴다 (소리를 껐을 때도 박자가 보이도록)
+    const ph = ((t - off) / period) % 1;
+    if (ph < 0.5) beatPulse = Math.max(beatPulse, 1 - ph / 0.5);
+  }
+
   /* w 는 등장 빈도에 그대로 비례한다 (간격 = 기준값 ÷ (w / 204)).
      아래는 전체를 10% 올리고, 하트·우산만 20% 올린 값이다. */
   const BONUS = [
@@ -3656,8 +3709,10 @@
 
     // 화면이 좁으면 그만큼 똥도 덜 떨어지게(체감 난이도 유지)
     const widthFactor = 480 / W;
+    if (rhythmOn) rhythmTick();
+    if (beatPulse > 0) beatPulse = Math.max(0, beatPulse - dt * 4);
     spawnTimer -= dt * tsc;
-    if (spawnTimer <= 0) {
+    if (spawnTimer <= 0 && !rhythmOn) {
       if (powered) {
         // 뚜니핑 타임: 똥이 폭포처럼 쏟아지고 속도도 2배 이상
         const n = 3 + Math.floor(Math.random() * 4);   // 스폰당 3~6개 (평균 4.5개)
@@ -5067,6 +5122,13 @@
     openJobSelect(true);                   // 테스트 모드도 직업을 고르고 시작
   }
 
+  document.getElementById("btnRhythm").addEventListener("click", () => {
+    rhythmOn = !rhythmOn;
+    rhythmBeat = -1;
+    document.getElementById("btnRhythm").textContent = rhythmOn ? "리듬 ON" : "리듬 OFF";
+    popText(W / 2, H * 0.3, rhythmOn ? "리듬 켬" : "리듬 끔", "#9fd8ff", 22);
+    beep(rhythmOn ? 1000 : 600, .07, "triangle", .05);
+  });
   document.getElementById("btnLvUp").addEventListener("click", () => testJumpLevel(1));
   document.getElementById("btnLvDn").addEventListener("click", () => testJumpLevel(-1));
 
@@ -7051,6 +7113,14 @@
     }
     if (feverFlash > 0) {
       ctx.fillStyle = "rgba(255,240,180," + (feverFlash * .6) + ")";
+      ctx.fillRect(0, 0, W, H);
+    }
+    if (beatPulse > 0.01) {                 // 박자마다 가장자리가 한 번 밝아진다
+      const k = beatPulse * beatPulse;
+      const g = ctx.createRadialGradient(W / 2, H / 2, H * 0.25, W / 2, H / 2, H * 0.72);
+      g.addColorStop(0, "rgba(255,255,255,0)");
+      g.addColorStop(1, "rgba(255,240,190," + (k * 0.34).toFixed(3) + ")");
+      ctx.fillStyle = g;
       ctx.fillRect(0, 0, W, H);
     }
   }
