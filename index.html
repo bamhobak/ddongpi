@@ -946,7 +946,7 @@
   const elFinal = document.getElementById("finalScore");
   const elTitle = document.getElementById("overTitle");
 
-  const GAME_VERSION = "v0.6.45";   // 코드를 고칠 때마다 뒤 두 자리를 올린다
+  const GAME_VERSION = "v0.6.46";   // 코드를 고칠 때마다 뒤 두 자리를 올린다
   document.getElementById("ver").textContent = GAME_VERSION;
 
   const LS_NAME = "epjpddongpi_name";
@@ -2902,10 +2902,12 @@
   /* 레벨이 오를수록 좁아지는 똥 사이 간격. 바닥(상한) 없이 계속 좁아지되,
      0.13초부터는 곱셈으로 줄여서 0 아래로 내려가지 않는다. */
   function spawnGap() {
-    // 레벨당 좁아지는 폭을 완화했다 (레벨 1 간격은 그대로)
-    const lin = 0.50707 - level * 0.029087;
-    // 0.765 로 나눠 간격을 벌린다 → 떨어지는 똥이 예전보다 10% + 다시 15% 줄어든다
-    return (lin > 0.13 ? lin : 0.13 * Math.pow(0.9271, level - 12.37)) / 0.765 / Math.sqrt(lateMul());
+    // 레벨당 좁아지는 폭을 또 5% 완화했다 (레벨 1 간격은 그대로)
+    const lin = 0.505616 - level * 0.027633;
+    /* 후반 곡선도 같은 비율로 늦췄다. 직선과 만나는 레벨(13.593)을 지수의 기준점으로
+       삼아 두 구간이 끊기지 않고 이어진다.
+       0.765 로 나눠 간격을 벌린다 → 떨어지는 똥이 예전보다 10% + 다시 15% 줄어든다 */
+    return (lin > 0.13 ? lin : 0.13 * Math.pow(0.9305, level - 13.593)) / 0.765 / Math.sqrt(lateMul());
   }
 
   /* 낙하 각도. 좌우 속도를 낙하 속도에 비례시켜서 레벨이 올라도 기울기 느낌이 일정하다.
@@ -3814,9 +3816,11 @@
             /* 초당 수십 개가 쏟아지므로 소리를 아껴 쓴다.
                큰 것(44 이상)만 진짜 소리를 내고, 작은 것은 절반만 짧은 삐 소리로 둔다.
                작은 것까지 음원을 겹치면 뭉개져서 잡음처럼 들린다. */
-            if (it.giant) { if (!sfx("giant")) beep(note, .14, "square", .05); }
-            else if (sz >= 44) { if (!sfx("fpick")) beep(note + Math.random() * 200, .06, "square", .04); }
-            else if (Math.random() < .5) beep(note + Math.random() * 200, .06, "square", .04);
+            /* 삐 소리는 사각파 대신 삼각파로 — 사각파는 배음이 거칠어서 초당 여러 번
+               울리면 쨍하게 들린다. 대신 배음이 적은 만큼 크기를 1.4 배로 올려 맞췄다. */
+            if (it.giant) { if (!sfx("giant")) beep(note, .14, "triangle", .07); }
+            else if (sz >= 44) { if (!sfx("fpick")) beep(note + Math.random() * 200, .06, "triangle", .056); }
+            else if (Math.random() < .5) beep(note + Math.random() * 200, .06, "triangle", .056);
             continue;
           }
           if (roidT > 0 && !it.dark) {          // 다크똥은 튕겨 나가지 않는다
@@ -5087,7 +5091,8 @@
   function inBlackhole() { return zoneIdx() >= BH_Z; }
   /* 다크똥 — 블랙홀에 들어선 뒤로 섞여 떨어진다. 처음 8%, 레벨마다 +6%p, 85%에서 멈춘다.
      폭발·밀림 어느 것도 통하지 않아, 후반에 화력으로 버티는 길을 막는다. */
-  const DARK_BASE = 0.08, DARK_STEP = 0.06, DARK_CAP = 0.85;
+  // 기존 대비 5% 상향 — 0.08 / 0.06 / 0.85 에 각각 1.05 를 곱했다
+  const DARK_BASE = 0.084, DARK_STEP = 0.063, DARK_CAP = 0.8925;
   function darkChance() {
     if (!inBlackhole()) return 0;
     return Math.min(DARK_CAP, DARK_BASE + DARK_STEP * (level - 1 - BH_Z));
