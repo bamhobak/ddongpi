@@ -946,7 +946,7 @@
   const elFinal = document.getElementById("finalScore");
   const elTitle = document.getElementById("overTitle");
 
-  const GAME_VERSION = "v0.6.37";   // 코드를 고칠 때마다 뒤 두 자리를 올린다
+  const GAME_VERSION = "v0.6.38";   // 코드를 고칠 때마다 뒤 두 자리를 올린다
   document.getElementById("ver").textContent = GAME_VERSION;
 
   const LS_NAME = "epjpddongpi_name";
@@ -1510,7 +1510,8 @@
   for (const [type, file] of [["moon", "crescent_moon"], ["fullmoon", "full_moon"], ["paper", "roll_of_paper"],
                               ["umbrella", "umbrella"], ["star", "star"], ["heart", "red_heart"],
                               ["poop", "poop"], ["darkpoop", "dark_poop"],
-                              ["droplet", "droplet"], ["coin", "coin"]]) {
+                              ["droplet", "droplet"],
+                              ["coin", "coin"], ["coin3", "coin3"], ["coin5", "coin5"]]) {
     const im = new Image();
     im.onload = () => { ITEM_IMG[type] = im; };
     im.src = "assets/item_" + file + ".png";
@@ -2830,30 +2831,32 @@
   ];
   // 대왕 뚜니핑 — 기존 최대(52~62)의 2배 크기, 점수는 최대 등급(75)의 3배
   const GIANT = { min: 104, max: 124, score: 138, w: 3, giant: true };
-  /* 코인 — 뚜니핑 낙하물과 같은 7등급 크기로 떨어진다 (대왕 크기는 없다).
-     등급마다 값이 다르다: 제일 작은 것이 1, 제일 큰 것이 5.
-     등급이 나오는 빈도는 뚜니핑 낙하물과 같아서, 큰 코인일수록 드물다. */
-  const COIN_VAL = [1, 1, 2, 2, 3, 4, 5];
-  const COIN_RATIO = 0.05;        // 뚜니핑 낙하물 스무 개당 코인 한 개
+  /* 코인 — 평범한 게임 중에만, 똥이 나올 때 덤으로 함께 떨어진다.
+     크기는 한 가지뿐이고 대신 생김새가 셋이다 (색도 모양도 다르다).
+     w 는 뽑기 비중이다 — 셋을 합쳐 105 라서 실제 비율은 67 / 24 / 10 쯤 된다. */
+  const COIN_KINDS = [
+    { v: 1, w: 70, img: "coin",  emoji: "🪙" },   // 금화
+    { v: 3, w: 25, img: "coin3", emoji: "💠" },   // 은화에 파란 보석
+    { v: 5, w: 10, img: "coin5", emoji: "🌟" }    // 분홍 별
+  ];
+  const COIN_R = 20;              // 아이템과 같은 크기 한 가지
+  const COIN_RATIO = 0.02;        // 똥 백 개당 코인 두 개
   // 백수는 코인이 두 배로 나온다 (직업 능력이 없는 대신 모으는 속도가 빠르다)
   function coinRatio() { return COIN_RATIO * (job === "none" ? 2 : 1); }
   let coinDebt = 0;               // 아직 안 떨어뜨린 코인 (소수점을 다음 차례로 넘긴다)
   function spawnCoin() {
     let tot = 0;
-    for (const c of FEVER_SIZES) tot += c.w;
-    let n = Math.random() * tot, i = 0;
-    for (; i < FEVER_SIZES.length; i++) { if (n < FEVER_SIZES[i].w) break; n -= FEVER_SIZES[i].w; }
-    if (i >= FEVER_SIZES.length) i = 0;
-    const cls = FEVER_SIZES[i];
-    const rr = cls.min + Math.random() * (cls.max - cls.min);
-    // 떨어지는 속도는 뚜니핑 낙하물과 같게 — 함께 쏟아지는 것처럼 보여야 한다
-    const vy = (FEVER_VY + Math.random() * 110) * (H / BASE_H);
+    for (const c of COIN_KINDS) tot += c.w;
+    let n = Math.random() * tot, k = COIN_KINDS[0];
+    for (const c of COIN_KINDS) { if (n < c.w) { k = c; break; } n -= c.w; }
+    // 떨어지는 속도는 다른 아이템과 같게
+    const vy = (110 + level * 6) * (H / BASE_H) * (0.6 + Math.random() * 0.5);
     items.push({
-      type: "coin", emoji: "🪙", coin: COIN_VAL[i],
-      x: rr + Math.random() * Math.max(1, W - rr * 2), y: -rr - 10,
-      r: rr * 0.82,
+      type: "coin", emoji: k.emoji, img: k.img, coin: k.v,
+      x: COIN_R + Math.random() * Math.max(1, W - COIN_R * 2), y: -COIN_R - 10,
+      r: COIN_R,
       vx: (Math.random() - Math.random()) * vy * SPREAD_BONUS, vy: vy,
-      rot: 0, vr: 0, size: rr * 2, bob: Math.random() * 6.28,
+      rot: 0, vr: 0, size: COIN_R * 2, bob: Math.random() * 6.28,
       born: elapsed
     });
   }
@@ -2991,6 +2994,8 @@
       gain: cls ? cls.score : 0,
       giant: !!(cls && cls.giant)
     });
+    // 코인은 평범한 똥에만 덤으로 붙는다 — 뚜니핑 낙하물에는 안 붙는다
+    if (!inFever) coinDebt += coinRatio();
   }
   /* w 는 등장 빈도에 그대로 비례한다 (간격 = 기준값 ÷ (w / 204)).
      아래는 전체를 10% 올리고, 하트·우산만 20% 올린 값이다. */
@@ -3600,11 +3605,6 @@
         const cap = Math.min(280, Math.round(165 / aug.feverRateMul));
         if (items.length < cap) {
           for (let k = 0; k < n; k++) spawnPoop(2.09 + Math.random() * 0.855);
-          /* 코인은 방금 떨어뜨린 낙하물 수의 5% (백수는 10%). 낙하물을 그대로 따라가므로
-             증강으로 낙하량이 늘면 코인도 함께 늘고, 뚜니핑 쪽은 손대지 않는다.
-             1 이 못 되는 나머지는 쌓아 두었다가 다음 차례에 떨어뜨린다. */
-          coinDebt += n * coinRatio();
-          while (coinDebt >= 1) { spawnCoin(); coinDebt -= 1; }
         }
         /* 한 번에 평균 4.5개 → 초당 55개.
            59 로 나누는 것은 아래 widthFactor(480/W) 때문이다 — 실제 캔버스가 446 언저리라
@@ -3643,7 +3643,9 @@
         spawnTimer = spawnGap() / DIFF_F / spaceF() / bhDiff() * widthFactor * (0.7 + Math.random() * 0.6);
       }
     }
-    if (!powered) coinDebt = 0;        // 타임이 끝나면 남은 조각은 버린다
+    /* 쌓인 몫만큼 코인을 떨어뜨린다. 몫은 똥 하나가 나올 때마다 spawnPoop 에서
+       붙는다 (뚜니핑 낙하물은 빼고). 1 이 못 되는 나머지는 다음으로 넘긴다. */
+    while (coinDebt >= 1) { spawnCoin(); coinDebt -= 1; }
     if (!powered) {
       for (const b of BONUS) {           // 종류별로 따로 세다가 각자 때가 되면 떨어진다
         b.t -= dt * tsc;
@@ -3726,8 +3728,10 @@
       const magF = aug.magnet > 0 ? 1 : 0.45;
       if (magR > 0 && (it.type !== "poop" || it.gold)) {
         const d = Math.hypot(dx, dy);
-        // 무지개똥은 아이템의 절반 반경·절반 힘 — 수집가라면 그 2배(아이템과 동일)
-        const goldF = it.gold ? (aug.goldLord ? 1 : 0.5) : 1;
+        /* 무지개똥과 코인은 아이템의 절반 반경·절반 힘.
+           (무지개똥은 수집가를 먹으면 그 2배가 되어 아이템과 같아진다) */
+        const goldF = it.gold ? (aug.goldLord ? 1 : 0.5)
+                    : (it.type === "coin" ? 0.5 : 1);
         const R = magR * goldF;
         if (d < R && d > 1) {
           const near = 1 - d / R;              // 가장자리 0, 코앞 1
@@ -4022,8 +4026,10 @@
       /* 이번 판 점수와는 아무 상관이 없다 — 판을 넘어 쌓이기만 한다. */
       const v = it.coin || 1;
       addCoins(v);
-      popText(it.x, it.y, "🪙 +" + v, "#ffd23f", 18 + v * 2);
-      if (!sfx("coin")) { beep(1180, .06, "square", .04); beep(1570, .09, "square", .035); }
+      popText(it.x, it.y, it.emoji + " +" + v,
+              v >= 5 ? "#ff9ede" : (v >= 3 ? "#8fd8ff" : "#ffd23f"), 18 + v * 2);
+      if (!sfx("coin")) { beep(1100 + v * 60, .06, "square", .04);
+                          beep(1480 + v * 80, .09, "square", .035); }
     }
     if (it.type === "meal") {
       /* 엄마의 밥상 — 그 순간 점수의 10%. 판이 무르익을수록 한 상이 커진다.
@@ -6459,7 +6465,8 @@
           ctx.beginPath(); ctx.arc(0, 0, it.size * 0.72, 0, 6.283); ctx.stroke();
         }
         // 똥도 같은 3D 그림 (무지개똥 필터는 그림에도 먹는다). 다크똥만 제 그림을 쓴다.
-        const ii = it.dark ? (ITEM_IMG.darkpoop || ITEM_IMG[it.type]) : ITEM_IMG[it.type];
+        const ii = it.dark ? (ITEM_IMG.darkpoop || ITEM_IMG[it.type])
+                 : (it.img ? (ITEM_IMG[it.img] || ITEM_IMG[it.type]) : ITEM_IMG[it.type]);
         if (ii) {
           const d = it.size * ITEM_IMG_SCALE;
           // 무지개똥은 저 혼자 번쩍여서 테두리가 필요 없다
