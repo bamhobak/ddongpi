@@ -953,7 +953,7 @@
   const elTitle = document.getElementById("overTitle");
   const coinNote = document.getElementById("coinNote");
 
-  const GAME_VERSION = "v0.6.61";   // 코드를 고칠 때마다 뒤 두 자리를 올린다
+  const GAME_VERSION = "v0.6.62";   // 코드를 고칠 때마다 뒤 두 자리를 올린다
   document.getElementById("ver").textContent = GAME_VERSION;
 
   const LS_NAME = "epjpddongpi_name";
@@ -4112,7 +4112,8 @@
           /* 쥔 것이 곧 짐이라는 뜻으로 잠깐 아픈 모습이 된다.
              hurtUntil 은 그림만 바꾼다 — 무적(invUntil)은 건드리지 않는다. */
           hurtUntil = now + 1000;
-          if (!sfx("coin", 0.55)) beep(900, .08, "triangle", .035);
+          // 소리도 맞았을 때와 같게 — 쥐는 것이 곧 얻어맞는 일이라는 뜻
+          if (!sfx("hurt")) beep(140, .25, "sawtooth", .07);
         }
       } else {
         popText(it.x, it.y, it.emoji + " +" + v,
