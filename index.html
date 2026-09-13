@@ -946,7 +946,7 @@
   const elFinal = document.getElementById("finalScore");
   const elTitle = document.getElementById("overTitle");
 
-  const GAME_VERSION = "v0.6.40";   // 코드를 고칠 때마다 뒤 두 자리를 올린다
+  const GAME_VERSION = "v0.6.41";   // 코드를 고칠 때마다 뒤 두 자리를 올린다
   document.getElementById("ver").textContent = GAME_VERSION;
 
   const LS_NAME = "epjpddongpi_name";
@@ -2838,7 +2838,9 @@
     { v: 3, w: 17.5, img: "coin3", emoji: "🪙" },   // 파랑
     { v: 5, w: 3.5,  img: "coin5", emoji: "🪙" }    // 분홍
   ];
-  const COIN_R = 20;              // 아이템과 같은 크기 한 가지
+  /* 크기 한 가지. 20 에서 70% 줄여 6 — 지름 12px 이다.
+     그림도 96px 로 미리 줄여 두었다 (256 짜리를 매 프레임 줄이면 테두리가 자글거린다). */
+  const COIN_R = 6;
   const COIN_RATIO = 0.02;        // 똥 백 개당 코인 두 개
   // 백수는 코인이 두 배로 나온다 (직업 능력이 없는 대신 모으는 속도가 빠르다)
   function coinRatio() { return COIN_RATIO * (job === "none" ? 2 : 1); }
