@@ -686,11 +686,6 @@
   #startScreen h1 #testDot:active, #startScreen h1 #devDot:active { transform: scale(.88); }
 
   /* 랭킹판 — 유리판 느낌 */
-  /* 무소유 전용 — 흘려보낸 코인으로 받은 몫을 마지막 점수 아래에 한 줄로 */
-  #monkNote {
-    margin-top: -2px; font-size: 13px; font-weight: 700;
-    color: #ffd9a0; text-shadow: 0 1px 2px rgba(0,0,0,.6);
-  }
   #startScreen .board, #overScreen .board {
     max-width: 460px;
     padding: 10px 14px 9px;
@@ -894,7 +889,6 @@
     <div id="overScreen" class="screen hidden">
       <h2 id="overTitle">게임 오버!</h2>
       <div class="big" id="finalScore">0</div>
-      <div id="monkNote" hidden></div>
 
       <div id="nameRow">
         <div class="tag" id="nameTag">🎉 TOP 10 진입! 이름을 남기세요</div>
@@ -951,9 +945,8 @@
   const overScreen  = document.getElementById("overScreen");
   const elFinal = document.getElementById("finalScore");
   const elTitle = document.getElementById("overTitle");
-  const monkNote = document.getElementById("monkNote");
 
-  const GAME_VERSION = "v0.6.48";   // 코드를 고칠 때마다 뒤 두 자리를 올린다
+  const GAME_VERSION = "v0.6.49";   // 코드를 고칠 때마다 뒤 두 자리를 올린다
   document.getElementById("ver").textContent = GAME_VERSION;
 
   const LS_NAME = "epjpddongpi_name";
@@ -4200,15 +4193,12 @@
     btnPause.classList.remove("on"); syncPad();
     augScreen.classList.add("hidden");
     /* 무소유 — 끝내 손대지 않고 흘려보낸 코인 하나당 점수가 1% 늘어난다.
-       (화면에 아직 떠 있던 코인도 안 쥔 것으로 친다) */
-    let monkMiss = 0;
+       (화면에 아직 떠 있던 코인도 안 쥔 것으로 친다)
+       따로 알리지 않는다 — 마지막 점수에 이미 담겨 있다. */
     if (job === "powerp") {
-      monkMiss = Math.max(0, coinSeen - coinGot);
-      if (monkMiss > 0) score *= 1 + 0.01 * monkMiss;
+      const miss = Math.max(0, coinSeen - coinGot);
+      if (miss > 0) score *= 1 + 0.01 * miss;
     }
-    monkNote.hidden = !(monkMiss > 0);
-    if (monkMiss > 0) monkNote.textContent =
-      "🙏 공수래공수거 — 흘려보낸 코인 " + monkMiss + "개  +" + monkMiss + "%";
     const s = Math.floor(score);
     burst(player.x, player.y, "#8a5a2b", 40);
     shake = 30;
