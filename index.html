@@ -608,6 +608,21 @@
     color: rgba(159,180,208,.55);
   }
 
+  /* 모은 코인 — 판 번호(오른쪽 아래)와 마주 보게 왼쪽 아래에 둔다.
+     떠 있는 자리라서 아래 패널들의 높이에 영향을 주지 않는다. */
+  #startScreen #coinBox {
+    position: absolute;
+    bottom: max(8px, env(safe-area-inset-bottom));
+    left: 14px;
+    font-size: 14px; font-weight: 800; letter-spacing: .3px;
+    color: #ffd23f;
+    background: rgba(8,9,16,.55);
+    border: 1px solid rgba(255,210,63,.35);
+    border-radius: 999px;
+    padding: 4px 12px;
+    text-shadow: 0 1px 2px rgba(0,0,0,.6);
+  }
+
   /* ─────────── 시작 화면 ─────────── */
   #startScreen {
     gap: clamp(8px, 1.8vh, 14px);
@@ -775,6 +790,7 @@
 
     <div id="startScreen" class="screen">
       <div id="ver"></div>
+      <div id="coinBox" title="모은 코인">🪙 0</div>
       <h1><span class="logoWrap">
         <img class="ttl" src="assets/logo.webp" alt="이피재피똥피" decoding="async">
         <span id="testDot" aria-label="테스트 모드"></span>
@@ -930,7 +946,7 @@
   const elFinal = document.getElementById("finalScore");
   const elTitle = document.getElementById("overTitle");
 
-  const GAME_VERSION = "v0.6.30";   // 코드를 고칠 때마다 뒤 두 자리를 올린다
+  const GAME_VERSION = "v0.6.31";   // 코드를 고칠 때마다 뒤 두 자리를 올린다
   document.getElementById("ver").textContent = GAME_VERSION;
 
   const LS_NAME = "epjpddongpi_name";
@@ -1493,7 +1509,7 @@
   for (const [type, file] of [["moon", "crescent_moon"], ["fullmoon", "full_moon"], ["paper", "roll_of_paper"],
                               ["umbrella", "umbrella"], ["star", "star"], ["heart", "red_heart"],
                               ["poop", "poop"], ["darkpoop", "dark_poop"],
-                              ["droplet", "droplet"]]) {
+                              ["droplet", "droplet"], ["coin", "coin"]]) {
     const im = new Image();
     im.onload = () => { ITEM_IMG[type] = im; };
     im.src = "assets/item_" + file + ".png";
@@ -1739,6 +1755,19 @@
   /* 소리 끄기 — 배경음과 효과음을 따로 끈다. 브라우저에 기억시킨다.
      예전에는 하나로 묶여 있었으므로, 그때 꺼 둔 사람은 둘 다 꺼진 채로 이어받는다. */
   const LS_MUTE = "epjpddongpi_mute";      // 옛 키
+  /* 코인 — 판이 끝나도 사라지지 않고 계속 쌓인다. 쓰는 곳은 나중에 붙인다. */
+  const LS_COINS = "epjpddongpi_coins";
+  let coins = 0;      // 지금까지 모은 전체
+  let coinRun = 0;    // 이번 판에 주운 것
+  try { coins = Math.max(0, parseInt(localStorage.getItem(LS_COINS), 10) || 0); } catch (e) {}
+  const coinBox = document.getElementById("coinBox");
+  function showCoins() { if (coinBox) coinBox.textContent = "🪙 " + coins.toLocaleString(); }
+  function addCoins(n) {
+    coins += n; coinRun += n;
+    try { localStorage.setItem(LS_COINS, String(coins)); } catch (e) {}
+    showCoins();
+  }
+  showCoins();
   const LS_BGM = "epjpddongpi_bgmoff";
   const LS_SFX = "epjpddongpi_sfxoff";
   let bgmOff = false, sfxOff = false;
@@ -1773,7 +1802,8 @@
                      moon: 2.8, bubble: 0.8, break: 0.6, helper: 0.45, fetch: 0.5,
                      galaga: 0.35, dove: 0.3, clone: 1.6, burst: 0.8,
                      angry: 0.8, laser: 0.9, fpick: 1.2, giant: 1.0, magnet: 0.55,
-                     dodge: 0.9, boing: 0.9, wakboom: 0.9, reroll: 0.7 };
+                     dodge: 0.9, boing: 0.9, wakboom: 0.9, reroll: 0.7,
+                     coin: 1.6 };
   const SFX_VOL = 0.55;              // 전체 크기
   const sfxBuf = {};
   let sfxAsked = false;
@@ -2722,6 +2752,7 @@
     clones = []; cloneTimer = 0;
     doves = []; moveDist = 0;
     bullets = []; shipClock = 0; aug.galaga = 0;
+    coinRun = 0; coinTimer = 0;
     shieldTimer = UMB_SEC;
     aug.itemRateMul = 1; aug.feverRateMul = 1; aug.giant = 0; aug.magnet = 0;
     resetBonusTimers();          // 증강 배율을 되돌린 뒤라야 첫 타이머가 제대로 잡힌다
@@ -2798,6 +2829,31 @@
   ];
   // 대왕 뚜니핑 — 기존 최대(52~62)의 2배 크기, 점수는 최대 등급(75)의 3배
   const GIANT = { min: 104, max: 124, score: 138, w: 3, giant: true };
+  /* 코인 — 뚜니핑 낙하물과 같은 7등급 크기로 떨어진다 (대왕 크기는 없다).
+     등급마다 값이 다르다: 제일 작은 것이 1, 제일 큰 것이 5.
+     등급이 나오는 빈도는 뚜니핑 낙하물과 같아서, 큰 코인일수록 드물다. */
+  const COIN_VAL = [1, 1, 2, 2, 3, 4, 5];
+  const COIN_GAP = 0.55;          // 뚜니핑 타임에 코인 하나가 나오는 평균 간격(초)
+  let coinTimer = 0;
+  function spawnCoin() {
+    let tot = 0;
+    for (const c of FEVER_SIZES) tot += c.w;
+    let n = Math.random() * tot, i = 0;
+    for (; i < FEVER_SIZES.length; i++) { if (n < FEVER_SIZES[i].w) break; n -= FEVER_SIZES[i].w; }
+    if (i >= FEVER_SIZES.length) i = 0;
+    const cls = FEVER_SIZES[i];
+    const rr = cls.min + Math.random() * (cls.max - cls.min);
+    // 떨어지는 속도는 뚜니핑 낙하물과 같게 — 함께 쏟아지는 것처럼 보여야 한다
+    const vy = (FEVER_VY + Math.random() * 110) * (H / BASE_H);
+    items.push({
+      type: "coin", emoji: "🪙", coin: COIN_VAL[i],
+      x: rr + Math.random() * Math.max(1, W - rr * 2), y: -rr - 10,
+      r: rr * 0.82,
+      vx: (Math.random() - Math.random()) * vy * SPREAD_BONUS, vy: vy,
+      rot: 0, vr: 0, size: rr * 2, bob: Math.random() * 6.28,
+      born: elapsed
+    });
+  }
   function pickFeverSize() {
     const list = aug.giant > 0
       ? FEVER_SIZES.concat([{
@@ -3578,6 +3634,12 @@
         spawnTimer = spawnGap() / DIFF_F / spaceF() / bhDiff() * widthFactor * (0.7 + Math.random() * 0.6);
       }
     }
+    /* 코인은 뚜니핑 타임에만, 아이템과 따로 제 시계로 떨어진다.
+       타임이 끝나면 시계를 0 으로 돌려 다음 타임이 시작되자마자 하나가 온다. */
+    if (powered) {
+      coinTimer -= dt * tsc;
+      if (coinTimer <= 0) { spawnCoin(); coinTimer = COIN_GAP * (0.6 + Math.random() * 0.8); }
+    } else coinTimer = 0;
     if (!powered) {
       for (const b of BONUS) {           // 종류별로 따로 세다가 각자 때가 되면 떨어진다
         b.t -= dt * tsc;
@@ -3951,6 +4013,13 @@
       if (full) { flash = 0; feverFlash = 1; shake = Math.max(shake, 14); }
       openAugment(full ? 3 : 1);     // 보름달은 3연속 선택
       return true;
+    }
+    if (it.type === "coin") {
+      /* 이번 판 점수와는 아무 상관이 없다 — 판을 넘어 쌓이기만 한다. */
+      const v = it.coin || 1;
+      addCoins(v);
+      popText(it.x, it.y, "🪙 +" + v, "#ffd23f", 18 + v * 2);
+      if (!sfx("coin")) { beep(1180, .06, "square", .04); beep(1570, .09, "square", .035); }
     }
     if (it.type === "meal") {
       /* 엄마의 밥상 — 그 순간 점수의 10%. 판이 무르익을수록 한 상이 커진다.
