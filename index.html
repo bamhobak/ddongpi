@@ -413,7 +413,7 @@
   }
 
   /* ---- 개발자 통계 패널 (제목 오른쪽 💩 → 비밀번호) ---- */
-  #devDot, #testDot { cursor: pointer; }
+  #devDot, #testDot, #stageDot { cursor: pointer; }
   #testScreen { gap: 14px; }
   #testScreen h2 { font-size: 20px; color: #ffd23f; }
   #testRow { display: flex; gap: 8px; align-items: center; }
@@ -672,7 +672,7 @@
     display: block; width: min(59vw, 268px); height: auto;
     filter: drop-shadow(0 3px 10px rgba(0,0,0,.45));
   }
-  #startScreen h1 #testDot, #startScreen h1 #devDot {
+  #startScreen h1 #testDot, #startScreen h1 #devDot, #startScreen h1 #stageDot {
     position: absolute; display: block;
     transition: transform .18s ease;
   }
@@ -683,9 +683,19 @@
   }
   #startScreen h1 #testDot { left: 4%;  top: 69%; width: 19%; height: 27%; }   /* 왼쪽 아래 똥 */
   #startScreen h1 #devDot  { left: 68%; top: 5%;  width: 26%; height: 37%; }   /* 오른쪽 위 똥 */
-  #startScreen h1 #testDot:active, #startScreen h1 #devDot:active { transform: scale(.88); }
+  #startScreen h1 #stageDot { left: 38%; top: 41%; width: 25%; height: 32%; }  /* 가운데 '재피' */
+  #startScreen h1 #testDot:active, #startScreen h1 #devDot:active,
+  #startScreen h1 #stageDot:active { transform: scale(.88); }
 
   /* 랭킹판 — 유리판 느낌 */
+  /* 스테이지는 랭킹을 쓰지 않는다 — 순위표와 이름 입력을 통째로 감춘다 */
+  #overScreen.stage .board, #overScreen.stage #nameRow { display: none !important; }
+  #btnStageHome { display: none; }
+  #overScreen.stage #btnStageHome {
+    display: block; margin-top: 8px;
+    padding: 9px 18px; font-size: 14px;
+    background: rgba(255,255,255,.14); color: #fff;
+  }
   /* 이번 판에 주운 코인 — 마지막 점수 바로 아래 */
   #coinNote {
     margin-top: -2px; font-size: 14px; font-weight: 800; letter-spacing: .3px;
@@ -801,6 +811,7 @@
         <img class="ttl" src="assets/logo.webp" alt="이피재피똥피" decoding="async">
         <span id="testDot" aria-label="테스트 모드"></span>
         <span id="devDot" aria-label="통계"></span>
+        <span id="stageDot" aria-label="스테이지"></span>
       </span></h1>
       <div class="board withTabs">
         <h3 class="boardTitle">🏆 이번 주 TOP 10</h3>
@@ -914,6 +925,7 @@
       </div>
 
       <button id="btnRetry">다시 하기</button>
+      <button id="btnStageHome">메인으로</button>
     </div>
   </div>
 </div>
@@ -954,7 +966,7 @@
   const elTitle = document.getElementById("overTitle");
   const coinNote = document.getElementById("coinNote");
 
-  const GAME_VERSION = "v0.6.66";   // 코드를 고칠 때마다 뒤 두 자리를 올린다
+  const GAME_VERSION = "v0.6.68";   // 코드를 고칠 때마다 뒤 두 자리를 올린다
   document.getElementById("ver").textContent = GAME_VERSION;
 
   const LS_NAME = "epjpddongpi_name";
@@ -1990,7 +2002,7 @@
   function syncBgm() {
     const inGame = state === STATE.PLAY || state === STATE.AUG || state === STATE.PAUSE;
     // 리듬을 켜 두면 지대와 상관없이 리듬 전용 곡을 돌린다
-    const want = (rhythmActive() && inGame) ? "rhythm"
+    const want = ((rhythmActive() || stageMode) && inGame) ? "rhythm"
       : inGame
       ? (feverBgm ? "fever"
                   : (inBlackhole() ? "blackhole" : (inSpace() ? "space" : "play")))
@@ -2379,6 +2391,41 @@
      rhythmLead 는 몇 초 앞서 내보낼지 — 그만큼의 거리를 그 시간에 주파하도록
      낙하 속도를 거꾸로 계산하므로, 도착 시각이 프레임 오차 없이 딱 맞는다. */
   let rhythmOn = false, beatPulse = 0;
+
+  /* ---------- 스테이지 모드 ----------
+     한 줄이 8박(칸 16개, 반 박마다 하나). 점은 빈 칸, 1~5 는 그 칸으로 똥 하나.
+     칸 사이를 건너뛸 수 있는 거리를 먼저 재고 짰다 — 놀이판 폭 405px 에 다섯 칸
+     (간격 73px), 이동 최고 속도 780px/s, 반 박 0.234초 · 한 박 0.469초.
+     그래서 반 박 안에서는 두 칸까지, 한 박 안에서는 네 칸까지만 쓴다.
+     곡의 흐름을 그대로 따라간다: 인트로 → 벌스 → 후렴 → 정적 → 마지막 후렴 */
+  const STAGE1 = [
+    "3...............",
+    "3.......3.......",
+    "2.......4.......",
+    "1.......5.......",
+    "1...2...3...4...",
+    "5...4...3...2...",
+    "1...3...5...3...",
+    "2...4...2...4...",
+    "1...2...3...4...",
+    "5...3...1...3...",
+    "1.1.3.3.5.5.3.3.",
+    "2.2.4.4.2.2.4.4.",
+    "1.2.3.4.5.4.3.2.",
+    "5.4.3.2.1.2.3.4.",
+    "13..24..35..42..",
+    "1.2.3.4.5.4.3.2.",
+    "................",
+    "3.......3.......",
+    "1.2.3.4.5.4.3.2.",
+    "1.1.3.3.5.5.3.3.",
+    "13..35..53..31..",
+    "1.2.3.4.5.4.3.2."
+  ];
+  const STAGE_LEAD = 1.4;          // 몇 초 앞서 내보낼까 (보고 피할 틈)
+  let stageMode = false, stageSlot = -1, stageDone = false, stageT = 0;
+  // 다섯 칸의 가로 자리
+  function laneX(n) { return W * (0.14 + (n - 1) * 0.18); }
   /* 리듬은 시험 장치라 테스트 모드 안에서만 산다. 켜 둔 채 테스트를 나가도
      일반 게임에는 한 톨도 새지 않도록, 쓰는 곳마다 이 문을 지난다. */
   function rhythmActive() { return rhythmOn && testMode; }
@@ -2759,7 +2806,22 @@
     if (!savedName()) { startEditName(); return; }   // 이름부터 정하고 시작
     openJobSelect();
   });
-  document.getElementById("btnRetry").addEventListener("click", () => openJobSelect());
+  document.getElementById("btnRetry").addEventListener("click", () => {
+    if (overScreen.classList.contains("stage")) { startStage(); return; }
+    openJobSelect();
+  });
+  document.getElementById("btnStageHome").addEventListener("click", () => {
+    beep(520, .06, "triangle", .04);
+    stageMode = false;
+    overScreen.classList.remove("stage");
+    overScreen.classList.add("hidden");
+    startScreen.classList.remove("hidden");
+    state = STATE.READY;
+  });
+  document.getElementById("stageDot").addEventListener("click", () => {
+    beep(1000, .08, "triangle", .05);
+    startStage();
+  });
 
   function reset(test) {
     testMode = (test === true);    // 정확히 true 일 때만 테스트 모드 (이벤트 객체가 새어들지 않게)
@@ -2801,6 +2863,8 @@
     doves = []; moveDist = 0;
     bullets = []; shipClock = 0; aug.galaga = 0;
     coinRun = 0; coinDebt = 0; coinSeen = 0; coinGot = 0;
+    stageMode = false; stageSlot = -1; stageDone = false; stageT = 0;
+    overScreen.classList.remove("stage");
     monkStreak = 0; fullOwn = false; fullBanner = 0; fullFx = 0;
     shieldTimer = UMB_SEC;
     aug.itemRateMul = 1; aug.feverRateMul = 1; aug.giant = 0; aug.magnet = 0;
@@ -3102,6 +3166,50 @@
         return;
       }
     }
+  }
+
+  /* 채보 한 칸 — lead 초 뒤에 캐릭터 머리 높이의 그 칸에 닿도록 속도를 정한다. */
+  function spawnChart(lane, lead) {
+    const r = 15 + Math.random() * 5;
+    const startY = -r - 10;
+    const vy = ((player.y + player.hy) - startY) / lead;
+    items.push({
+      type: "poop", emoji: "💩",
+      x: laneX(lane), y: startY, r: r * 0.82,
+      vx: 0, vy: vy,
+      rot: (Math.random() - Math.random()) * 1.571, vr: 0,
+      swayA: 0, swayW: 1, swayP: 0,
+      size: r * 2, sz: r, fast: false,
+      skin: "poop", space: inSpace(), gold: false, dark: false, special: null,
+      bumpCd: 0, phase: Math.random() * 6.28, splitAt: 1e9, sz0: 0,
+      face: randFace(), eye: randEye(), mouth: randMouth(), gain: 0, giant: false
+    });
+  }
+
+  /* 곡의 지금 위치를 읽어, 도착할 때가 된 칸만큼 미리 내보낸다. */
+  function stageTick(dt) {
+    if (!stageMode) return;
+    const beat = 60 / BGM_BPM.rhythm, off = BGM_OFF.rhythm, slot = beat / 2;
+    /* 곡이 돌고 있으면 곡의 시각을 기준으로 삼고, 배경음을 껐으면 자체 시계로 돈다.
+       소리를 끄고도 스테이지는 똑같이 굴러가야 한다. */
+    if (bgmCur && !bgmCur.paused && bgmName === "rhythm") stageT = bgmCur.currentTime;
+    else stageT += dt;
+    const t = stageT;
+    const total = STAGE1.length * 16;
+    const due = Math.floor((t + STAGE_LEAD - off) / slot);
+    while (stageSlot < due && !stageDone) {
+      stageSlot++;
+      if (stageSlot >= total) { stageDone = true; break; }
+      const ch = STAGE1[Math.floor(stageSlot / 16)][stageSlot % 16];
+      if (ch >= "1" && ch <= "5") {
+        const lead = off + stageSlot * slot - t;
+        if (lead > 0.15) spawnChart(+ch, lead);
+      }
+    }
+    const ph = ((t - off) / beat) % 1;
+    if (ph < 0.5) beatPulse = Math.max(beatPulse, 1 - ph / 0.5);
+    // 채보가 끝나고 화면의 똥까지 다 지나가면 클리어
+    if (stageDone && !items.some(q => q.type === "poop")) stageFinish(true);
   }
 
   /* 박자마다 화면이 한 번 뛴다 (소리를 껐을 때도 박자가 보이도록) */
@@ -3717,9 +3825,10 @@
     // 화면이 좁으면 그만큼 똥도 덜 떨어지게(체감 난이도 유지)
     const widthFactor = 480 / W;
     if (rhythmActive()) rhythmTick();
+    if (stageMode) stageTick(dt);
     if (beatPulse > 0) beatPulse = Math.max(0, beatPulse - dt * 4);
     spawnTimer -= dt * tsc;
-    if (spawnTimer <= 0) {
+    if (spawnTimer <= 0 && !stageMode) {
       if (powered) {
         // 뚜니핑 타임: 똥이 폭포처럼 쏟아지고 속도도 2배 이상
         const n = 3 + Math.floor(Math.random() * 4);   // 스폰당 3~6개 (평균 4.5개)
@@ -3768,7 +3877,7 @@
     /* 쌓인 몫만큼 코인을 떨어뜨린다. 몫은 똥 하나가 나올 때마다 spawnPoop 에서
        붙는다 (뚜니핑 낙하물은 빼고). 1 이 못 되는 나머지는 다음으로 넘긴다. */
     while (coinDebt >= 1) { spawnCoin(); coinDebt -= 1; }
-    if (!powered) {
+    if (!powered && !stageMode) {
       for (const b of BONUS) {           // 종류별로 따로 세다가 각자 때가 되면 떨어진다
         b.t -= dt * tsc;
         if (b.t <= 0) {
@@ -4306,7 +4415,38 @@
     }
   }
 
+  function stageFinish(clear) {
+    if (state === STATE.OVER) return;
+    state = STATE.OVER;
+    btnPause.classList.remove("on"); syncPad();
+    augScreen.classList.add("hidden");
+    overScreen.classList.add("stage");
+    elFinal.textContent = Math.floor(score).toLocaleString();
+    elTitle.textContent = clear ? "스테이지 1 클리어!" : "스테이지 1 실패";
+    coinNote.textContent = "🪙 " + coinRun.toLocaleString() + " coin";
+    nameRow.classList.remove("on");
+    overScreen.classList.remove("hidden");
+    if (clear) { burst(player.x, player.y, "#ffd23f", 60); feverFlash = 1; }
+    if (!sfx(clear ? "burst" : "over")) beep(clear ? 1400 : 220, .3, "triangle", .06);
+    if (navigator.vibrate) navigator.vibrate(clear ? [40, 60, 40, 60, 90] : 120);
+  }
+
+  function startStage() {
+    startScreen.classList.add("hidden");
+    jobScreen.classList.add("hidden");
+    overScreen.classList.add("hidden");
+    stageMode = true;
+    reset(false);                       // 평소처럼 판을 차린다
+    stageMode = true;                   // reset 뒤에 다시 세운다
+    stageSlot = -1; stageDone = false; stageT = 0;
+    for (const b of BONUS) b.t = 1e9;   // 달·아이템은 나오지 않는다
+    spawnTimer = 1e9;
+    playBgm("rhythm");
+    if (bgmCur) { try { bgmCur.currentTime = 0; } catch (e) {} }
+  }
+
   function gameOver() {
+    if (stageMode) { stageFinish(false); return; }
     state = STATE.OVER;
     btnPause.classList.remove("on"); syncPad();
     augScreen.classList.add("hidden");
