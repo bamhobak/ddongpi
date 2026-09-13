@@ -946,7 +946,7 @@
   const elFinal = document.getElementById("finalScore");
   const elTitle = document.getElementById("overTitle");
 
-  const GAME_VERSION = "v0.6.38";   // 코드를 고칠 때마다 뒤 두 자리를 올린다
+  const GAME_VERSION = "v0.6.39";   // 코드를 고칠 때마다 뒤 두 자리를 올린다
   document.getElementById("ver").textContent = GAME_VERSION;
 
   const LS_NAME = "epjpddongpi_name";
@@ -2832,12 +2832,11 @@
   // 대왕 뚜니핑 — 기존 최대(52~62)의 2배 크기, 점수는 최대 등급(75)의 3배
   const GIANT = { min: 104, max: 124, score: 138, w: 3, giant: true };
   /* 코인 — 평범한 게임 중에만, 똥이 나올 때 덤으로 함께 떨어진다.
-     크기는 한 가지뿐이고 대신 생김새가 셋이다 (색도 모양도 다르다).
-     w 는 뽑기 비중이다 — 셋을 합쳐 105 라서 실제 비율은 67 / 24 / 10 쯤 된다. */
+     크기도 모양도 한 가지, 색만 셋이다. w 는 뽑기 비중(합 100 = 그대로 %). */
   const COIN_KINDS = [
-    { v: 1, w: 70, img: "coin",  emoji: "🪙" },   // 금화
-    { v: 3, w: 25, img: "coin3", emoji: "💠" },   // 은화에 파란 보석
-    { v: 5, w: 10, img: "coin5", emoji: "🌟" }    // 분홍 별
+    { v: 1, w: 70, img: "coin",  emoji: "🪙" },   // 금
+    { v: 3, w: 25, img: "coin3", emoji: "🪙" },   // 파랑
+    { v: 5, w: 5,  img: "coin5", emoji: "🪙" }    // 분홍
   ];
   const COIN_R = 20;              // 아이템과 같은 크기 한 가지
   const COIN_RATIO = 0.02;        // 똥 백 개당 코인 두 개
