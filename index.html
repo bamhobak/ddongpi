@@ -946,7 +946,7 @@
   const elFinal = document.getElementById("finalScore");
   const elTitle = document.getElementById("overTitle");
 
-  const GAME_VERSION = "v0.6.50";   // 코드를 고칠 때마다 뒤 두 자리를 올린다
+  const GAME_VERSION = "v0.6.52";   // 코드를 고칠 때마다 뒤 두 자리를 올린다
   document.getElementById("ver").textContent = GAME_VERSION;
 
   const LS_NAME = "epjpddongpi_name";
@@ -1363,6 +1363,12 @@
     right: { img: null, aspect: 0.6139, head: 0.388, cx: 0.550, cy: 0.230, adj: 0.5723 },
     hurt:  { img: null, aspect: 0.4583, head: 0.357, cx: 0.545, cy: 0.265, adj: 0.5726 }
   };
+  /* 풀소유 — 무소유가 코인을 연달아 다섯 개 쥐면 이 모습이 된다.
+     우주복보다도 우선한다 (이미 손에 쥔 것이 너무 많아 갈아입을 수가 없다). */
+  const SPR_FULL = {
+    right: { img: null, aspect: 0.7806, head: 0.320, cx: 0.565, cy: 0.225, adj: 0.4720 },
+    hurt:  { img: null, aspect: 0.7583, head: 0.320, cx: 0.430, cy: 0.215, adj: 0.5133 }
+  };
   const SPACE_Z = 6;                 // 오로라 지대 — 여기부터 우주복 차림
   /* 우주에 올라서면 체감 난이도를 이 배율만큼 올린다.
      낙하 속도와 낙하 빈도에 각각 제곱근을 나눠 걸어 둘을 합친 체감이 정확히 이 값이 된다. */
@@ -1382,6 +1388,8 @@
   rollIntroJob();                        // 첫 바퀴부터 무작위
   function sprSet() {
     const jb = state === STATE.READY ? introJob : job;
+    // 풀소유로 진화했으면 지대와 상관없이 이 모습이다
+    if (jb === "powerp" && fullOwn && SPR_FULL.right.img) return SPR_FULL;
     if (inSpace()) {                       // 우주에서는 우주복 차림
       const SS = JOB_SPRS_SPACE[jb];       // 제 우주복이 있으면 그걸로
       if (SS && SS.right.img) return SS;
@@ -1430,6 +1438,9 @@
     const ms = new Image();
     ms.onload = () => { SPR_MONK_SPACE[key].img = ms; };
     ms.src = "assets/monk_space_" + key + ".png";
+    const fo = new Image();
+    fo.onload = () => { SPR_FULL[key === "right" ? "right" : "hurt"].img = fo; };
+    fo.src = "assets/full_" + (key === "right" ? "right" : "hurt") + ".png";
   }
   /* 방울이만 달리는 그림이 16장 따로 있다.
      차례대로 받아야 순서가 섞이지 않으므로 한 장씩 이어 받는다. */
@@ -2765,6 +2776,7 @@
     doves = []; moveDist = 0;
     bullets = []; shipClock = 0; aug.galaga = 0;
     coinRun = 0; coinDebt = 0; coinSeen = 0; coinGot = 0;
+    monkStreak = 0; fullOwn = false; fullBanner = 0;
     shieldTimer = UMB_SEC;
     aug.itemRateMul = 1; aug.feverRateMul = 1; aug.giant = 0; aug.magnet = 0;
     /* 백수는 '엄마는 우리 딸 믿어' 를 기본으로 깔고 시작한다.
@@ -2861,6 +2873,10 @@
   /* 무소유의 계산용 — 이번 판에 나온 코인과 주운 코인의 개수(값이 아니라 낱개).
      둘의 차이가 '흘려보낸 코인' 이고, 판 끝에 그만큼 점수가 늘어난다. */
   let coinSeen = 0, coinGot = 0;
+  /* 무소유 → 풀소유. 코인을 연달아 FULL_NEED 개 쥐면 진화한다.
+     하나라도 흘려보내면 연속이 끊겨 처음부터 다시 센다. */
+  const FULL_NEED = 5, FULL_MUL = 5;
+  let monkStreak = 0, fullOwn = false, fullBanner = 0;
   function spawnCoin() {
     let tot = 0;
     for (const c of COIN_KINDS) tot += c.w;
@@ -3211,6 +3227,7 @@
     if (feverFlash > 0) feverFlash = Math.max(0, feverFlash - dt * 2.5);
     if (feverBanner > 0) feverBanner = Math.max(0, feverBanner - dt / 1.1);
     if (momMsg > 0 && state === STATE.PLAY) momMsg = Math.max(0, momMsg - dt);
+    if (fullBanner > 0 && state === STATE.PLAY) fullBanner = Math.max(0, fullBanner - dt);
     // 방울이 — 터진 방울이 다시 맺힌다
     if (job === "bangul" && state === STATE.PLAY && !bubbleOn) {
       bubbleT += dt;
@@ -3955,6 +3972,7 @@
         // 뚜니핑 타임 낙하물은 워낙 많이 쏟아져서, 안 먹고 흘려보낸 것에 점수를 주면
         // 가만히 있어도 점수가 폭등한다. 뚜니핑 타임 것은 0점 — 직접 받아야만 점수가 오른다.
         if (it.type === "poop" && it.skin !== "fever") score += sc("똥", poopGain());
+        if (it.type === "coin") monkStreak = 0;   // 흘려보내면 연속이 끊긴다
         items.splice(i, 1);
       }
     }
@@ -4050,10 +4068,11 @@
     }
     if (it.type === "coin") {
       /* 이번 판 점수와는 아무 상관이 없다 — 판을 넘어 쌓이기만 한다. */
-      const v = it.coin || 1;
+      let v = it.coin || 1;
+      if (job === "powerp" && fullOwn) v *= FULL_MUL;   // 풀소유 — 쥐는 코인이 다섯 배
       addCoins(v);
       coinGot++;
-      if (job === "powerp") {
+      if (job === "powerp" && !fullOwn) {
         /* 무소유 — 쥐는 순간 점수가 1% 깎인다. 끝에 안 쥔 것만큼 돌려받으므로,
            주울지 흘려보낼지가 그대로 셈이 된다. */
         score *= 0.99;
@@ -4062,6 +4081,17 @@
            hurtUntil 은 그림만 바꾼다 — 무적(invUntil)은 건드리지 않는다. */
         hurtUntil = now + 500;
         if (!sfx("coin", 0.55)) beep(900, .08, "triangle", .035);
+        /* 연달아 다섯 개를 쥐면 마음이 꺾인다 — 풀소유로 바뀐다. */
+        if (++monkStreak >= FULL_NEED) {
+          fullOwn = true; fullBanner = 2.6;
+          hurtUntil = 0;                     // 바뀐 모습을 바로 보여 준다
+          burst(player.x, player.y, "#ffd23f", 46);
+          feverFlash = Math.max(feverFlash, 0.8);
+          shake = Math.max(shake, 18);
+          // 문구는 가운데 큰 배너 하나로만 — 머리 위에도 띄우면 두 번 읽힌다
+          if (!sfx("giant")) beep(1200, .18, "triangle", .06);
+          if (navigator.vibrate) navigator.vibrate([40, 60, 90]);
+        }
       } else {
         popText(it.x, it.y, it.emoji + " +" + v,
                 v >= 5 ? "#ff9ede" : (v >= 3 ? "#8fd8ff" : "#ffd23f"), 18 + v * 2);
@@ -4198,7 +4228,7 @@
     /* 무소유 — 끝내 손대지 않고 흘려보낸 코인 하나당 점수가 1% 늘어난다.
        (화면에 아직 떠 있던 코인도 안 쥔 것으로 친다)
        따로 알리지 않는다 — 마지막 점수에 이미 담겨 있다. */
-    if (job === "powerp") {
+    if (job === "powerp" && !fullOwn) {
       const miss = Math.max(0, coinSeen - coinGot);
       if (miss > 0) score *= 1 + 0.01 * miss;
     }
@@ -6757,6 +6787,34 @@
       ctx.fillText("뚜니핑 타임!", 0, 0);
       ctx.restore();
       ctx.textBaseline = "top";
+    }
+    /* 풀소유 진화 — 금빛으로 한 번 크게 알린다. */
+    if (fullBanner > 0) {
+      const k = 2.6 - fullBanner;                          // 흐른 시간
+      const pop = Math.min(1, k / 0.24);
+      const sc2 = 0.6 + 0.58 * (1 - Math.pow(1 - pop, 3));
+      const al = Math.min(1, fullBanner / 0.45);
+      ctx.save();
+      ctx.globalAlpha = Math.max(0, al);
+      ctx.translate(W / 2, H * 0.32);
+      ctx.scale(sc2, sc2);
+      const gl = ctx.createRadialGradient(0, 0, 0, 0, 0, 170);
+      gl.addColorStop(0, "rgba(255,205,70,.5)");
+      gl.addColorStop(1, "rgba(255,180,40,0)");
+      ctx.fillStyle = gl;
+      ctx.beginPath(); ctx.arc(0, 0, 170, 0, 6.283); ctx.fill();
+      ctx.textAlign = "center"; ctx.textBaseline = "middle";
+      ctx.font = "900 36px NanumBarunGothic, system-ui, sans-serif";
+      ctx.lineWidth = 9; ctx.lineJoin = "round";
+      ctx.strokeStyle = "rgba(58,26,4,.75)";
+      ctx.strokeText("풀소유 진화!", 0, 0);
+      const tg = ctx.createLinearGradient(0, -22, 0, 22);
+      tg.addColorStop(0, "#fffbe8");
+      tg.addColorStop(1, "#ffc21f");
+      ctx.fillStyle = tg;
+      ctx.fillText("풀소유 진화!", 0, 0);
+      ctx.restore();
+      ctx.textAlign = "left"; ctx.textBaseline = "top";
     }
     /* 엄마의 한마디 — 스르르 떠올랐다가 끝에서 스르르 사라진다.
        뚜니핑 알림처럼 튀어오르지 않고, 조용히 떠 있다 지나간다. */
