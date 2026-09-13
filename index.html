@@ -686,6 +686,11 @@
   #startScreen h1 #testDot:active, #startScreen h1 #devDot:active { transform: scale(.88); }
 
   /* 랭킹판 — 유리판 느낌 */
+  /* 무소유 전용 — 흘려보낸 코인으로 받은 몫을 마지막 점수 아래에 한 줄로 */
+  #monkNote {
+    margin-top: -2px; font-size: 13px; font-weight: 700;
+    color: #ffd9a0; text-shadow: 0 1px 2px rgba(0,0,0,.6);
+  }
   #startScreen .board, #overScreen .board {
     max-width: 460px;
     padding: 10px 14px 9px;
@@ -889,6 +894,7 @@
     <div id="overScreen" class="screen hidden">
       <h2 id="overTitle">게임 오버!</h2>
       <div class="big" id="finalScore">0</div>
+      <div id="monkNote" hidden></div>
 
       <div id="nameRow">
         <div class="tag" id="nameTag">🎉 TOP 10 진입! 이름을 남기세요</div>
@@ -945,8 +951,9 @@
   const overScreen  = document.getElementById("overScreen");
   const elFinal = document.getElementById("finalScore");
   const elTitle = document.getElementById("overTitle");
+  const monkNote = document.getElementById("monkNote");
 
-  const GAME_VERSION = "v0.6.47";   // 코드를 고칠 때마다 뒤 두 자리를 올린다
+  const GAME_VERSION = "v0.6.48";   // 코드를 고칠 때마다 뒤 두 자리를 올린다
   document.getElementById("ver").textContent = GAME_VERSION;
 
   const LS_NAME = "epjpddongpi_name";
@@ -2764,7 +2771,7 @@
     clones = []; cloneTimer = 0;
     doves = []; moveDist = 0;
     bullets = []; shipClock = 0; aug.galaga = 0;
-    coinRun = 0; coinDebt = 0;
+    coinRun = 0; coinDebt = 0; coinSeen = 0; coinGot = 0;
     shieldTimer = UMB_SEC;
     aug.itemRateMul = 1; aug.feverRateMul = 1; aug.giant = 0; aug.magnet = 0;
     /* 백수는 '엄마는 우리 딸 믿어' 를 기본으로 깔고 시작한다.
@@ -2858,6 +2865,9 @@
   // 백수는 코인이 두 배로 나온다 (직업 능력이 없는 대신 모으는 속도가 빠르다)
   function coinRatio() { return COIN_RATIO * (job === "none" ? 2 : 1); }
   let coinDebt = 0;               // 아직 안 떨어뜨린 코인 (소수점을 다음 차례로 넘긴다)
+  /* 무소유의 계산용 — 이번 판에 나온 코인과 주운 코인의 개수(값이 아니라 낱개).
+     둘의 차이가 '흘려보낸 코인' 이고, 판 끝에 그만큼 점수가 늘어난다. */
+  let coinSeen = 0, coinGot = 0;
   function spawnCoin() {
     let tot = 0;
     for (const c of COIN_KINDS) tot += c.w;
@@ -2873,6 +2883,7 @@
       rot: 0, vr: 0, size: COIN_R * 2, bob: Math.random() * 6.28,
       born: elapsed
     });
+    coinSeen++;
   }
   function pickFeverSize() {
     const list = aug.giant > 0
@@ -4048,10 +4059,19 @@
       /* 이번 판 점수와는 아무 상관이 없다 — 판을 넘어 쌓이기만 한다. */
       const v = it.coin || 1;
       addCoins(v);
-      popText(it.x, it.y, it.emoji + " +" + v,
-              v >= 5 ? "#ff9ede" : (v >= 3 ? "#8fd8ff" : "#ffd23f"), 18 + v * 2);
-      if (!sfx("coin")) { beep(1100 + v * 60, .06, "square", .04);
-                          beep(1480 + v * 80, .09, "square", .035); }
+      coinGot++;
+      if (job === "powerp") {
+        /* 무소유 — 쥐는 순간 점수가 1% 깎인다. 끝에 안 쥔 것만큼 돌려받으므로,
+           주울지 흘려보낼지가 그대로 셈이 된다. */
+        score *= 0.99;
+        popText(it.x, it.y, "공수래공수거", "#d8cdbb", 13);
+        if (!sfx("coin", 0.55)) beep(900, .08, "triangle", .035);
+      } else {
+        popText(it.x, it.y, it.emoji + " +" + v,
+                v >= 5 ? "#ff9ede" : (v >= 3 ? "#8fd8ff" : "#ffd23f"), 18 + v * 2);
+        if (!sfx("coin")) { beep(1100 + v * 60, .06, "triangle", .056);
+                            beep(1480 + v * 80, .09, "triangle", .05); }
+      }
     }
     if (it.type === "meal") {
       /* 엄마의 밥상 — 그 순간 점수의 10%. 판이 무르익을수록 한 상이 커진다.
@@ -4179,6 +4199,16 @@
     state = STATE.OVER;
     btnPause.classList.remove("on"); syncPad();
     augScreen.classList.add("hidden");
+    /* 무소유 — 끝내 손대지 않고 흘려보낸 코인 하나당 점수가 1% 늘어난다.
+       (화면에 아직 떠 있던 코인도 안 쥔 것으로 친다) */
+    let monkMiss = 0;
+    if (job === "powerp") {
+      monkMiss = Math.max(0, coinSeen - coinGot);
+      if (monkMiss > 0) score *= 1 + 0.01 * monkMiss;
+    }
+    monkNote.hidden = !(monkMiss > 0);
+    if (monkMiss > 0) monkNote.textContent =
+      "🙏 공수래공수거 — 흘려보낸 코인 " + monkMiss + "개  +" + monkMiss + "%";
     const s = Math.floor(score);
     burst(player.x, player.y, "#8a5a2b", 40);
     shake = 30;
@@ -5111,12 +5141,12 @@
     const air = Math.max(0, Math.min(1, (groundY - player.y) / Math.max(1, groundY - H * FLY_TOP)));
     return 1 + 1.0 * air;
   }
-  /* 무소유 — 증강이 없는 대신, 안 맞고 버틴 시간만큼 배율이 오른다 (초당 +15%, 상한 없음).
+  /* 무소유 — 증강이 없는 대신, 안 맞고 버틴 시간만큼 배율이 오른다 (초당 +10%, 상한 없음).
      레벨 배수는 곱하지 않는다 — 점수 자체가 이미 레벨에 비례하므로 두 번 세는 셈이 된다.
      목숨을 잃으면 무피격 시간의 1/4 만 깎인다 (우산·방울·회피로 막은 것은 그대로 유지). */
   function monkMul() {
     if (job !== "powerp") return 1;
-    return 1 + 0.15 * noHitSec;
+    return 1 + 0.10 * noHitSec;
   }
   /* 점수 눈금 — 모든 점수가 여기를 지나므로, 이 값만 바꾸면
      항목 사이의 균형은 그대로 두고 자릿수만 키우거나 줄일 수 있다. */
