@@ -946,7 +946,7 @@
   const elFinal = document.getElementById("finalScore");
   const elTitle = document.getElementById("overTitle");
 
-  const GAME_VERSION = "v0.6.54";   // 코드를 고칠 때마다 뒤 두 자리를 올린다
+  const GAME_VERSION = "v0.6.55";   // 코드를 고칠 때마다 뒤 두 자리를 올린다
   document.getElementById("ver").textContent = GAME_VERSION;
 
   const LS_NAME = "epjpddongpi_name";
@@ -1363,8 +1363,8 @@
     right: { img: null, aspect: 0.6139, head: 0.388, cx: 0.550, cy: 0.230, adj: 0.5723 },
     hurt:  { img: null, aspect: 0.4583, head: 0.357, cx: 0.545, cy: 0.265, adj: 0.5726 }
   };
-  /* 풀소유 — 무소유가 코인을 연달아 다섯 개 쥐면 이 모습이 된다.
-     우주복보다도 우선한다 (이미 손에 쥔 것이 너무 많아 갈아입을 수가 없다). */
+  /* 풀소유 — 무소유가 코인을 연달아 세 개 쥐면 이 모습이 된다.
+     다만 우주에서는 우주복이 먼저라, 땅 위에서만 이 차림이 보인다. */
   const SPR_FULL = {
     right: { img: null, aspect: 0.7806, head: 0.320, cx: 0.565, cy: 0.225, adj: 0.4720 },
     hurt:  { img: null, aspect: 0.7583, head: 0.320, cx: 0.430, cy: 0.215, adj: 0.5133 }
@@ -1388,13 +1388,13 @@
   rollIntroJob();                        // 첫 바퀴부터 무작위
   function sprSet() {
     const jb = state === STATE.READY ? introJob : job;
-    // 풀소유로 진화했으면 지대와 상관없이 이 모습이다
-    if (jb === "powerp" && fullOwn && SPR_FULL.right.img) return SPR_FULL;
     if (inSpace()) {                       // 우주에서는 우주복 차림
       const SS = JOB_SPRS_SPACE[jb];       // 제 우주복이 있으면 그걸로
       if (SS && SS.right.img) return SS;
       if (SPR_SPACE.right.img) return SPR_SPACE;
     }
+    // 풀소유 차림. 우주복보다는 뒤다 — 진공에서 명품을 걸칠 수는 없다
+    if (jb === "powerp" && fullOwn && SPR_FULL.right.img) return SPR_FULL;
     const S = JOB_SPRS[jb];
     if (S && S.right.img) return S;
     return SPR;
@@ -2777,6 +2777,7 @@
     bullets = []; shipClock = 0; aug.galaga = 0;
     coinRun = 0; coinDebt = 0; coinSeen = 0; coinGot = 0;
     monkStreak = 0; fullOwn = false; fullBanner = 0; fullFx = 0;
+    fullMsg = "풀소유 진화!";
     shieldTimer = UMB_SEC;
     aug.itemRateMul = 1; aug.feverRateMul = 1; aug.giant = 0; aug.magnet = 0;
     /* 백수는 '엄마는 우리 딸 믿어' 를 기본으로 깔고 시작한다.
@@ -2867,11 +2868,13 @@
      그림은 96px 로 미리 줄여 두었다 (256 짜리를 매 프레임 줄이면 테두리가 자글거린다). */
   const COIN_R = 13.86;
   const COIN_RATIO = 0.02;        // 똥 백 개당 코인 두 개
-  /* 백수는 코인이 두 배로 나온다 (직업 능력이 없는 대신 모으는 속도가 빠르다).
-     풀소유가 되면 다섯 배로 쏟아진다 — 값은 그대로고 개수만 는다. */
+  /* 백수와 무소유는 코인이 기본 두 배로 나온다.
+     (백수는 모으는 직업이라, 무소유는 쥘지 말지를 자주 고르게 하려고.)
+     풀소유가 되면 거기서 다시 다섯 배 — 일반 직업의 열 배가 쏟아진다.
+     값은 그대로고 개수만 는다. */
   function coinRatio() {
     let r = COIN_RATIO;
-    if (job === "none") r *= 2;
+    if (job === "none" || job === "powerp") r *= 2;
     if (job === "powerp" && fullOwn) r *= FULL_MUL;
     return r;
   }
@@ -2881,9 +2884,11 @@
   let coinSeen = 0, coinGot = 0;
   /* 무소유 → 풀소유. 코인을 연달아 FULL_NEED 개 쥐면 진화한다.
      하나라도 흘려보내면 연속이 끊겨 처음부터 다시 센다. */
-  const FULL_NEED = 5, FULL_MUL = 5;   // 다섯 개 연속 / 진화 뒤 코인이 다섯 배로 잦아진다
+  const FULL_NEED = 3, FULL_MUL = 5;   // 세 개 연속 / 진화 뒤 코인이 다섯 배로 잦아진다
   const FULL_FX = 0.7;            // 변신 번쩍임이 이어지는 시간(초)
   let monkStreak = 0, fullOwn = false, fullBanner = 0, fullFx = 0;
+  /* 우주에서 진화하면 옷이 그대로라 알릴 말도 달라진다 */
+  let fullMsg = "풀소유 진화!";
   function spawnCoin() {
     let tot = 0;
     for (const c of COIN_KINDS) tot += c.w;
@@ -4088,6 +4093,8 @@
         const grow = (++monkStreak >= FULL_NEED);
         if (grow) {
           fullOwn = true; fullBanner = 2.6; fullFx = FULL_FX;
+          // 우주에서는 우주복을 벗을 수 없으니, 마음만 바뀐 셈이다
+          fullMsg = inSpace() ? "되구만" : "풀소유 진화!";
           hurtUntil = 0;                     // 바뀐 모습을 바로 보여 준다
           burst(player.x, player.y, "#ffd23f", 46);
           burst(player.x, player.y, "#ffffff", 30);
@@ -4097,10 +4104,10 @@
           if (!sfx("giant")) beep(1200, .18, "triangle", .06);
           if (navigator.vibrate) navigator.vibrate([40, 60, 90]);
         } else {
-          popText(it.x, it.y, "공수래공수거", "#d8cdbb", 13);
+          popText(it.x, it.y, "공수래공수거 ㅠㅠ", "#d8cdbb", 13);
           /* 쥔 것이 곧 짐이라는 뜻으로 잠깐 아픈 모습이 된다.
              hurtUntil 은 그림만 바꾼다 — 무적(invUntil)은 건드리지 않는다. */
-          hurtUntil = now + 500;
+          hurtUntil = now + 1000;
           if (!sfx("coin", 0.55)) beep(900, .08, "triangle", .035);
         }
       } else {
@@ -6850,12 +6857,12 @@
       ctx.font = "900 46px NanumBarunGothic, system-ui, sans-serif";
       ctx.lineWidth = 11; ctx.lineJoin = "round";
       ctx.strokeStyle = "rgba(58,26,4,.75)";
-      ctx.strokeText("풀소유 진화!", 0, 0);
+      ctx.strokeText(fullMsg, 0, 0);
       const tg = ctx.createLinearGradient(0, -28, 0, 28);
       tg.addColorStop(0, "#fffbe8");
       tg.addColorStop(1, "#ffc21f");
       ctx.fillStyle = tg;
-      ctx.fillText("풀소유 진화!", 0, 0);
+      ctx.fillText(fullMsg, 0, 0);
       ctx.restore();
       ctx.textAlign = "left"; ctx.textBaseline = "top";
     }
