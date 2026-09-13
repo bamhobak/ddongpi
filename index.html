@@ -894,7 +894,7 @@
     <div id="overScreen" class="screen hidden">
       <h2 id="overTitle">게임 오버!</h2>
       <div class="big" id="finalScore">0</div>
-      <div id="coinNote">0 coin</div>
+      <div id="coinNote">🪙 0 coin</div>
 
       <div id="nameRow">
         <div class="tag" id="nameTag">🎉 TOP 10 진입! 이름을 남기세요</div>
@@ -953,7 +953,7 @@
   const elTitle = document.getElementById("overTitle");
   const coinNote = document.getElementById("coinNote");
 
-  const GAME_VERSION = "v0.6.58";   // 코드를 고칠 때마다 뒤 두 자리를 올린다
+  const GAME_VERSION = "v0.6.59";   // 코드를 고칠 때마다 뒤 두 자리를 올린다
   document.getElementById("ver").textContent = GAME_VERSION;
 
   const LS_NAME = "epjpddongpi_name";
@@ -4255,7 +4255,7 @@
       if (miss > 0) score *= 1 + 0.01 * miss;
     }
     // 이번 판에 지갑으로 들어간 코인
-    coinNote.textContent = coinRun.toLocaleString() + " coin";
+    coinNote.textContent = "🪙 " + coinRun.toLocaleString() + " coin";
     const s = Math.floor(score);
     burst(player.x, player.y, "#8a5a2b", 40);
     shake = 30;
