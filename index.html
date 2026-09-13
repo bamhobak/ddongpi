@@ -946,7 +946,7 @@
   const elFinal = document.getElementById("finalScore");
   const elTitle = document.getElementById("overTitle");
 
-  const GAME_VERSION = "v0.6.31";   // 코드를 고칠 때마다 뒤 두 자리를 올린다
+  const GAME_VERSION = "v0.6.32";   // 코드를 고칠 때마다 뒤 두 자리를 올린다
   document.getElementById("ver").textContent = GAME_VERSION;
 
   const LS_NAME = "epjpddongpi_name";
@@ -2752,7 +2752,7 @@
     clones = []; cloneTimer = 0;
     doves = []; moveDist = 0;
     bullets = []; shipClock = 0; aug.galaga = 0;
-    coinRun = 0; coinTimer = 0;
+    coinRun = 0; coinDebt = 0;
     shieldTimer = UMB_SEC;
     aug.itemRateMul = 1; aug.feverRateMul = 1; aug.giant = 0; aug.magnet = 0;
     resetBonusTimers();          // 증강 배율을 되돌린 뒤라야 첫 타이머가 제대로 잡힌다
@@ -2833,8 +2833,8 @@
      등급마다 값이 다르다: 제일 작은 것이 1, 제일 큰 것이 5.
      등급이 나오는 빈도는 뚜니핑 낙하물과 같아서, 큰 코인일수록 드물다. */
   const COIN_VAL = [1, 1, 2, 2, 3, 4, 5];
-  const COIN_GAP = 0.55;          // 뚜니핑 타임에 코인 하나가 나오는 평균 간격(초)
-  let coinTimer = 0;
+  const COIN_RATIO = 0.10;        // 뚜니핑 낙하물 열 개당 코인 한 개
+  let coinDebt = 0;               // 아직 안 떨어뜨린 코인 (소수점을 다음 차례로 넘긴다)
   function spawnCoin() {
     let tot = 0;
     for (const c of FEVER_SIZES) tot += c.w;
@@ -3596,6 +3596,11 @@
         const cap = Math.min(280, Math.round(165 / aug.feverRateMul));
         if (items.length < cap) {
           for (let k = 0; k < n; k++) spawnPoop(2.09 + Math.random() * 0.855);
+          /* 코인은 방금 떨어뜨린 낙하물 수의 10%. 낙하물을 그대로 따라가므로
+             증강으로 낙하량이 늘면 코인도 함께 늘고, 뚜니핑 쪽은 손대지 않는다.
+             1 이 못 되는 나머지는 쌓아 두었다가 다음 차례에 떨어뜨린다. */
+          coinDebt += n * COIN_RATIO;
+          while (coinDebt >= 1) { spawnCoin(); coinDebt -= 1; }
         }
         /* 한 번에 평균 4.5개 → 초당 55개.
            59 로 나누는 것은 아래 widthFactor(480/W) 때문이다 — 실제 캔버스가 446 언저리라
@@ -3634,12 +3639,7 @@
         spawnTimer = spawnGap() / DIFF_F / spaceF() / bhDiff() * widthFactor * (0.7 + Math.random() * 0.6);
       }
     }
-    /* 코인은 뚜니핑 타임에만, 아이템과 따로 제 시계로 떨어진다.
-       타임이 끝나면 시계를 0 으로 돌려 다음 타임이 시작되자마자 하나가 온다. */
-    if (powered) {
-      coinTimer -= dt * tsc;
-      if (coinTimer <= 0) { spawnCoin(); coinTimer = COIN_GAP * (0.6 + Math.random() * 0.8); }
-    } else coinTimer = 0;
+    if (!powered) coinDebt = 0;        // 타임이 끝나면 남은 조각은 버린다
     if (!powered) {
       for (const b of BONUS) {           // 종류별로 따로 세다가 각자 때가 되면 떨어진다
         b.t -= dt * tsc;
