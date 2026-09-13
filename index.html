@@ -953,7 +953,7 @@
   const elTitle = document.getElementById("overTitle");
   const coinNote = document.getElementById("coinNote");
 
-  const GAME_VERSION = "v0.6.60";   // 코드를 고칠 때마다 뒤 두 자리를 올린다
+  const GAME_VERSION = "v0.6.61";   // 코드를 고칠 때마다 뒤 두 자리를 올린다
   document.getElementById("ver").textContent = GAME_VERSION;
 
   const LS_NAME = "epjpddongpi_name";
@@ -6722,9 +6722,10 @@
       ctx.textAlign = "right";
       ctx.font = "700 13px NanumBarunGothic, system-ui, sans-serif";
       ctx.fillStyle = "#ffe08a";
-      /* 초가 아니라 지금 얹혀 있는 몫을 보여 준다 (배율 - 1).
-         소수 한 자리까지 — 초 단위로 또박또박 올라가야 쌓이는 맛이 난다. */
-      ctx.fillText("🧘 +" + (monkMul() - 1).toFixed(1), W - 16, top + 44);
+      /* 초가 아니라 점수에 곱해지는 배율을 그대로 보여 준다.
+         시작이 ×1.0 이라 지금 몇 배인지가 바로 읽힌다. 소수 한 자리까지 —
+         0.1배/초라 정수만 쓰면 10초에 한 번만 바뀌어 멈춰 보인다. */
+      ctx.fillText("🧘 ×" + monkMul().toFixed(1), W - 16, top + 44);
       ctx.textAlign = "left";
     }
     if (dirtJob()) {                        // 방울이 — 하트 대신 오염도 막대
