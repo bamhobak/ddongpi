@@ -946,7 +946,7 @@
   const elFinal = document.getElementById("finalScore");
   const elTitle = document.getElementById("overTitle");
 
-  const GAME_VERSION = "v0.6.49";   // 코드를 고칠 때마다 뒤 두 자리를 올린다
+  const GAME_VERSION = "v0.6.50";   // 코드를 고칠 때마다 뒤 두 자리를 올린다
   document.getElementById("ver").textContent = GAME_VERSION;
 
   const LS_NAME = "epjpddongpi_name";
@@ -2851,9 +2851,9 @@
     { v: 3, w: 17.5, img: "coin3", emoji: "🪙" },   // 파랑
     { v: 5, w: 3.5,  img: "coin5", emoji: "🪙" }    // 분홍
   ];
-  /* 크기 한 가지. 지름 26.4px.
+  /* 크기 한 가지. 지름 27.72px.
      그림은 96px 로 미리 줄여 두었다 (256 짜리를 매 프레임 줄이면 테두리가 자글거린다). */
-  const COIN_R = 13.2;
+  const COIN_R = 13.86;
   const COIN_RATIO = 0.02;        // 똥 백 개당 코인 두 개
   // 백수는 코인이 두 배로 나온다 (직업 능력이 없는 대신 모으는 속도가 빠르다)
   function coinRatio() { return COIN_RATIO * (job === "none" ? 2 : 1); }
@@ -3101,8 +3101,8 @@
     if (pick.type === "heart" && !asDrop && lives >= aug.maxLives) {
       pick = BONUS.find(b => b.type === "star");    // 목숨 꽉 차면 별로 대체
     }
-    // 0.9 배 — 달·별·하트·우산·휴지·밥상 모두 한 번에 10% 줄였다 (빗방울은 조금 크게)
-    const r = (asDrop ? 24 : 20) * 0.9;
+    // 0.945 배 — 10% 줄였다가 다시 5% 키운 값 (빗방울은 원래 조금 크다)
+    const r = (asDrop ? 24 : 20) * 0.945;
     // 낙하 속도에 변화를 주되, 너무 빠르면 못 먹고 지나가버려서 위쪽을 눌러 잡았다
     const vy = (110 + level * 6) * (H / BASE_H) * (0.6 + Math.random() * 0.5);
     items.push({
@@ -4058,6 +4058,9 @@
            주울지 흘려보낼지가 그대로 셈이 된다. */
         score *= 0.99;
         popText(it.x, it.y, "공수래공수거", "#d8cdbb", 13);
+        /* 쥔 것이 곧 짐이라는 뜻으로 잠깐 아픈 모습이 된다.
+           hurtUntil 은 그림만 바꾼다 — 무적(invUntil)은 건드리지 않는다. */
+        hurtUntil = now + 500;
         if (!sfx("coin", 0.55)) beep(900, .08, "triangle", .035);
       } else {
         popText(it.x, it.y, it.emoji + " +" + v,
