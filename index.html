@@ -946,7 +946,7 @@
   const elFinal = document.getElementById("finalScore");
   const elTitle = document.getElementById("overTitle");
 
-  const GAME_VERSION = "v0.6.33";   // 코드를 고칠 때마다 뒤 두 자리를 올린다
+  const GAME_VERSION = "v0.6.34";   // 코드를 고칠 때마다 뒤 두 자리를 올린다
   document.getElementById("ver").textContent = GAME_VERSION;
 
   const LS_NAME = "epjpddongpi_name";
@@ -967,7 +967,9 @@
   /* ---------- 직업 ---------- */
   const LS_JOB = "epjpddongpi_job";
   const JOBS = {
-    none:    { nm: "백수",   ic: "🏃", ds: "시작할 때 증강 1개를 고른다" },
+    none:    { nm: "백수",   ic: "🏃",
+               ds: "엄마의 밥상이 별만큼 떨어진다 · 먹으면 그때 점수의 10% · 코인이 2배로 나온다",
+               f: "힘들때마다 차려지는 엄마의 따뜻한 밥상" },
     gambler: { nm: "도박사", ic: "🎰", ds: "목숨 1개 + 우산 1개 시작 · 비둘기 출격 · 하트 안 나옴 · 모든 점수 2.5배" },
     levitator: { nm: "부양사", ic: "🎈", ds: "하늘 어디든 날 수 있다 · 높이 있을수록 점수 UP" },
     fit: { nm: "헬스걸", ic: "💪", ds: "목숨 5개로 시작 · 우산이 안 나온다 · 하트가 어마무시하게 잘 나온다 · 벌크업 좀 된 상태" },
@@ -2101,15 +2103,6 @@
       // 목숨을 파는 증강이라, 목숨 대신 오염도로 버티는 방울이에게는 나오지 않는다
       max: 5, cond: () => !dirtJob() && lives >= 2,
       go: () => { lives = Math.max(1, lives - 1); aug.scoreMul *= 1.2; } },
-    { id: "momMeal",    ic: "🍚", nm: "엄마는 우리 딸 믿어",
-      ds: "힘들때마다 차려지는 엄마의 따뜻한 밥상",
-      once: true, cond: () => job === "none",   // 백수 전용
-      go: () => {
-        aug.momMeal = true;
-        // 지금부터 시간을 재기 시작한다 (안 그러면 판이 끝날 때까지 한 번도 안 온다)
-        const b = BONUS.find(x => x.type === "meal");
-        if (b) b.t = bonusInterval(b);
-      } },
     { id: "dungy",      ic: "💩", nm: "똥묻히기", ds: "더러울수록 모든 점수가 오른다 · 오염 100%면 2배",
       once: true, cond: () => dirtJob(),        // 방울이 전용 — 당근거래 자리
       go: () => { aug.dungy = true; } },
@@ -2755,6 +2748,10 @@
     coinRun = 0; coinDebt = 0;
     shieldTimer = UMB_SEC;
     aug.itemRateMul = 1; aug.feverRateMul = 1; aug.giant = 0; aug.magnet = 0;
+    /* 백수는 '엄마는 우리 딸 믿어' 를 기본으로 깔고 시작한다.
+       타이머를 잡기 전에 켜 두어야 엄마의 밥상 시계가 제대로 돌아간다
+       (꺼져 있으면 평균 간격이 무한이라 영영 안 떨어진다). */
+    aug.momMeal = (job === "none");
     resetBonusTimers();          // 증강 배율을 되돌린 뒤라야 첫 타이머가 제대로 잡힌다
     aug.helper = 0; aug.helperRush = false; aug.hungry = false; aug.galaga = 0;
     helpers = []; fetchers = [];
@@ -2788,7 +2785,6 @@
     btnPause.classList.add("on"); syncPad();
     pauseScreen.classList.add("hidden");
     resumeCountEnd = 0;
-    if (job === "none") openAugment(1);   // 백수의 소소한 복지 — 시작하자마자 증강 1개
   }
 
   /* 구름 하나하나의 생김새를 따로 만든다. 같은 덩이 세 개를 겹쳐 놓으면
@@ -2834,6 +2830,8 @@
      등급이 나오는 빈도는 뚜니핑 낙하물과 같아서, 큰 코인일수록 드물다. */
   const COIN_VAL = [1, 1, 2, 2, 3, 4, 5];
   const COIN_RATIO = 0.05;        // 뚜니핑 낙하물 스무 개당 코인 한 개
+  // 백수는 코인이 두 배로 나온다 (직업 능력이 없는 대신 모으는 속도가 빠르다)
+  function coinRatio() { return COIN_RATIO * (job === "none" ? 2 : 1); }
   let coinDebt = 0;               // 아직 안 떨어뜨린 코인 (소수점을 다음 차례로 넘긴다)
   function spawnCoin() {
     let tot = 0;
@@ -3596,10 +3594,10 @@
         const cap = Math.min(280, Math.round(165 / aug.feverRateMul));
         if (items.length < cap) {
           for (let k = 0; k < n; k++) spawnPoop(2.09 + Math.random() * 0.855);
-          /* 코인은 방금 떨어뜨린 낙하물 수의 5%. 낙하물을 그대로 따라가므로
+          /* 코인은 방금 떨어뜨린 낙하물 수의 5% (백수는 10%). 낙하물을 그대로 따라가므로
              증강으로 낙하량이 늘면 코인도 함께 늘고, 뚜니핑 쪽은 손대지 않는다.
              1 이 못 되는 나머지는 쌓아 두었다가 다음 차례에 떨어뜨린다. */
-          coinDebt += n * COIN_RATIO;
+          coinDebt += n * coinRatio();
           while (coinDebt >= 1) { spawnCoin(); coinDebt -= 1; }
         }
         /* 한 번에 평균 4.5개 → 초당 55개.
