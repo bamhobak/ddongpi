@@ -930,7 +930,7 @@
   const elFinal = document.getElementById("finalScore");
   const elTitle = document.getElementById("overTitle");
 
-  const GAME_VERSION = "v0.6.28";   // 코드를 고칠 때마다 뒤 두 자리를 올린다
+  const GAME_VERSION = "v0.6.29";   // 코드를 고칠 때마다 뒤 두 자리를 올린다
   document.getElementById("ver").textContent = GAME_VERSION;
 
   const LS_NAME = "epjpddongpi_name";
@@ -1318,11 +1318,11 @@
     right: { img: null, aspect: 0.619, head: 0.306, cx: 0.552, cy: 0.181, adj: 0.4514 },
     hurt:  { img: null, aspect: 0.472, head: 0.291, cx: 0.512, cy: 0.231, adj: 0.4667 }
   };
-  /* 파워P — 루도로 새로 그린 캐릭터. 사진 합성이 아니라 그림이라 머리가
-     한 덩어리로 크고, 뛸 때는 머리카락이 왼쪽으로 흘러 머리 중심이 오른쪽에 있다. */
+  /* 파워P — 다른 직업과 같은 사진 캐리커처 그림. 뛸 때는 머리카락이 왼쪽으로
+     흘러 머리 중심이 오른쪽에 있고, 맞을 때는 좌우로 퍼져 가운데에 온다. */
   const SPR_PP2 = {
-    right: { img: null, aspect: 0.692, head: 0.420, cx: 0.600, cy: 0.255, adj: 0.6195 },
-    hurt:  { img: null, aspect: 0.581, head: 0.430, cx: 0.520, cy: 0.235, adj: 0.6897 }
+    right: { img: null, aspect: 0.7444, head: 0.430, cx: 0.560, cy: 0.235, adj: 0.6343 },
+    hurt:  { img: null, aspect: 0.5278, head: 0.440, cx: 0.520, cy: 0.280, adj: 0.7058 }
   };
   /* 방울이 — 옆 프로젝트에서 가져온 강아지. 사람과 몸 비율이 달라
      (가로가 넓다) 높이를 그대로 맞추면 훨씬 커 보인다. adj 는 보이는 넓이가
