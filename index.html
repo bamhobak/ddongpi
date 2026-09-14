@@ -1000,7 +1000,7 @@
   const elTitle = document.getElementById("overTitle");
   const coinNote = document.getElementById("coinNote");
 
-  const GAME_VERSION = "v0.6.73";   // 코드를 고칠 때마다 뒤 두 자리를 올린다
+  const GAME_VERSION = "v0.6.74";   // 코드를 고칠 때마다 뒤 두 자리를 올린다
   document.getElementById("ver").textContent = GAME_VERSION;
 
   const LS_NAME = "epjpddongpi_name";
@@ -5121,7 +5121,9 @@
        400 이 오면 칸을 하나씩 빼며 다시 보낸다. */
     const withName = o => (nm ? Object.assign({ name: nm }, o) : o);
     const tries = [
-      withName(Object.assign({ job: job, src: srcPct }, base)),   // 직업 + 이름 + 점수 비중
+      // 주운 코인 개수 + 풀소유까지 갔는지
+      withName(Object.assign({ job: job, src: srcPct, coins: coinGot, fullown: fullOwn }, base)),
+      withName(Object.assign({ job: job, src: srcPct }, base)),   // 코인 칸이 없는 서버
       withName(Object.assign({ job: job }, base)),   // src 칸이 없는 서버
       withName(base)                                  // 직업 칸도 없는 서버
     ];
@@ -5186,6 +5188,13 @@
     return keys.map(k => (AUG_NAMES[k] || k) + (augs[k] > 1 ? " x" + augs[k] : "")).join(", ");
   }
 
+  /* 평균 코인 한 칸 — 몇 판에서 잰 값인지 같이 보여준다.
+     기록이 아직 없으면(예전 판에는 코인 칸이 없다) 줄만 남기고 비운다. */
+  function coinCell(avg, runs) {
+    if (!runs) return "-";
+    return Number(avg || 0).toFixed(2) + "개 (" + runs + "판)";
+  }
+
   function renderDevStats(data) {
     const P = devPanes;
     const su = data.summary || {};
@@ -5194,7 +5203,11 @@
       ["평균 점수", { t: Number(su.avg_score || 0).toLocaleString(), c: "num" }],
       ["최고 점수", { t: Number(su.max_score || 0).toLocaleString(), c: "num" }],
       ["평균 생존", { t: (su.avg_secs || 0) + "초", c: "num" }],
-      ["평균 별 개수", { t: su.avg_stars || 0, c: "num" }]
+      ["평균 별 개수", { t: su.avg_stars || 0, c: "num" }],
+      /* 코인은 풀소유 판을 따로 뺀다 — 풀소유는 코인이 열다섯 배로 쏟아져
+         같이 묶으면 평범한 판의 감각이 묻힌다. */
+      ["평균 코인 (풀소유 빼고)", { t: coinCell(su.avg_coins, su.coin_runs), c: "num" }],
+      ["평균 코인 (풀소유)", { t: coinCell(su.avg_coins_full, su.coin_runs_full), c: "num" }]
     ]));
 
     /* 오브젝트별 점수 비중 — 판마다의 비중을 평균 낸 값이라
