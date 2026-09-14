@@ -716,8 +716,10 @@
     background: rgba(255,255,255,.14); color: #fff;
   }
 
-  /* 스테이지는 랭킹을 쓰지 않는다 — 순위표와 이름 입력을 통째로 감춘다 */
-  #overScreen.stage .board, #overScreen.stage #nameRow { display: none !important; }
+  /* 스테이지는 랭킹을 쓰지 않는다 — 순위표와 이름 입력을 통째로 감춘다.
+     점수도 쓰지 않는다. 코인은 스테이지에서 아예 안 떨어지므로 0 만 뜬다. */
+  #overScreen.stage .board, #overScreen.stage #nameRow,
+  #overScreen.stage #finalScore, #overScreen.stage #coinNote { display: none !important; }
   #btnStageHome { display: none; }
   #overScreen.stage #btnStageHome {
     display: block; margin-top: 8px;
@@ -1000,7 +1002,7 @@
   const elTitle = document.getElementById("overTitle");
   const coinNote = document.getElementById("coinNote");
 
-  const GAME_VERSION = "v0.6.76";   // 코드를 고칠 때마다 뒤 두 자리를 올린다
+  const GAME_VERSION = "v0.6.77";   // 코드를 고칠 때마다 뒤 두 자리를 올린다
   document.getElementById("ver").textContent = GAME_VERSION;
 
   const LS_NAME = "epjpddongpi_name";
@@ -3377,7 +3379,10 @@
       chart: true, homeX: home, y0: startY, yT: targetY,
       wvA: wvA, wvK: st.wvK || 0, tilt0: tilt,
       rot: (Math.random() - Math.random()) * 1.571, vr: 0,
-      swayA: 0.12 + Math.random() * 0.06, swayW: 1.1 + Math.random() * 1.1,
+      /* 내려오는 동안 좌우로 기운다. 떨어지는 시간이 1초 남짓이라
+         평소 똥의 흔들림(5초에 한 바퀴)으로는 기우는 티가 안 났다.
+         한 판에 한 바퀴 반쯤 오가도록 빠르게, 폭도 20도 넘게 준다. */
+      swayA: 0.32 + Math.random() * 0.14, swayW: 5.4 + Math.random() * 2.6,
       swayP: Math.random() * 6.28,
       size: r * 2, sz: r, fast: false,
       skin: "poop", space: inSpace(), gold: false, dark: false, special: null,
@@ -7126,19 +7131,21 @@
     // 100점 단위로만 바뀐다 — 생존 점수 때문에 뒷자리가 계속 떨리는 것을 막는다
     const stxt = (Math.floor(scoreShown / 100) * 100).toLocaleString();
     const pk = scorePunch;
-    ctx.save();
-    ctx.translate(16, top);
-    if (pk > 0.01) {
-      ctx.scale(1 + pk * 0.15, 1 + pk * 0.15);   // 더 키우면 아래 지대 이름을 덮는다
-      ctx.shadowColor = "rgba(255,196,60," + (0.9 * pk).toFixed(2) + ")";
-      ctx.shadowBlur = 6 + pk * 18;
+    if (!stageMode) {                   // 스테이지는 점수를 쓰지 않는다
+      ctx.save();
+      ctx.translate(16, top);
+      if (pk > 0.01) {
+        ctx.scale(1 + pk * 0.15, 1 + pk * 0.15);   // 더 키우면 아래 지대 이름을 덮는다
+        ctx.shadowColor = "rgba(255,196,60," + (0.9 * pk).toFixed(2) + ")";
+        ctx.shadowBlur = 6 + pk * 18;
+      }
+      ctx.fillStyle = "rgba(0,0,0,.35)";
+      ctx.fillText(stxt, 1, 1);
+      ctx.fillStyle = "rgb(255," + Math.round(255 - 45 * pk) + ","
+                                + Math.round(255 - 192 * pk) + ")";
+      ctx.fillText(stxt, 0, 0);
+      ctx.restore();
     }
-    ctx.fillStyle = "rgba(0,0,0,.35)";
-    ctx.fillText(stxt, 1, 1);
-    ctx.fillStyle = "rgb(255," + Math.round(255 - 45 * pk) + ","
-                              + Math.round(255 - 192 * pk) + ")";
-    ctx.fillText(stxt, 0, 0);
-    ctx.restore();
 
 
     ctx.font = "600 13px NanumBarunGothic, system-ui, sans-serif";
@@ -7202,7 +7209,8 @@
     }
 
     // 하트가 많으면 작게 그리고 10개 단위로 줄을 바꾼다 (헬스걸은 최대 20개)
-    if (job === "powerp") {                 // 무소유 — 안 맞고 버틴 만큼 붙은 배율
+    if (job === "powerp" && !stageMode) {   // 무소유 — 안 맞고 버틴 만큼 붙은 배율
+                                            // (점수가 없는 스테이지에서는 뜻이 없다)
       ctx.textAlign = "right";
       ctx.font = "700 13px NanumBarunGothic, system-ui, sans-serif";
       ctx.fillStyle = "#ffe08a";
