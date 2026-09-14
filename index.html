@@ -1002,7 +1002,7 @@
   const elTitle = document.getElementById("overTitle");
   const coinNote = document.getElementById("coinNote");
 
-  const GAME_VERSION = "v0.6.81";   // 코드를 고칠 때마다 뒤 두 자리를 올린다
+  const GAME_VERSION = "v0.6.82";   // 코드를 고칠 때마다 뒤 두 자리를 올린다
   document.getElementById("ver").textContent = GAME_VERSION;
 
   const LS_NAME = "epjpddongpi_name";
@@ -4133,23 +4133,22 @@
       it.x += it.vx * dt * tsc;
       it.y += it.vy * dt * tsc;
       if (it.chart) {
-        /* 채보 똥 — 흔들리고 기울어 내려오지만 닿는 순간에는 반드시 제 칸이다.
-           흔들림은 정수 바퀴라 끝에서 0 이 되고, 기울기는 (1 - 진행도)로 사라진다. */
+        /* 채보 똥 — 좌우로 휘며 내려오지만 닿는 순간에는 반드시 제 칸이다.
+           휘는 폭은 정수 바퀴라 끝에서 0 이 되고, 그 전에 아래 접기로 이미 멎는다. */
         const pr = Math.max(0, Math.min(1, (it.y - it.y0) / (it.yT - it.y0)));
         /* 절반쯤 내려오면 좌우로 휘는 것을 아주 멈춘다.
            끝까지 흔들면 어디로 올지 읽을 수가 없다 — 위쪽에서 실컷 휘다가
            0.15 지점부터 잦아들어 0.50 에서 완전히 제 칸에 선다. */
         const u = Math.max(0, Math.min(1, (0.50 - pr) / 0.35));
         const env = u * u * (3 - 2 * u);         // 양 끝에서 매끄럽게 붙는다
-        it.wvEnv = env;                          // 도는 것도 같이 잦아들게
         it.x = it.homeX + env * (it.tilt0
              + (it.wvA ? it.wvA * Math.sin(6.2832 * it.wvK * pr) : 0));
       }
       if (it.swayA) {                       // 살랑임 — 처음 각도를 중심으로 오간다
         it.swayP += dt * tsc * it.swayW;
-        // 채보 똥은 좌우로 휘는 것과 함께 기우는 것도 절반에서 멎는다
-        const amp = it.swayA * (it.wvEnv === undefined ? 1 : it.wvEnv);
-        it.rot = (it.rot0 === undefined ? (it.rot0 = it.rot) : it.rot0) + Math.sin(it.swayP) * amp;
+        /* 기우는 것은 바닥까지 계속 간다 — 자리를 옮기는 게 아니라 몸을 뒤척이는 것이라
+           어디로 올지 읽는 데는 방해가 안 된다. 멎는 것은 좌우로 휘는 쪽뿐이다. */
+        it.rot = (it.rot0 === undefined ? (it.rot0 = it.rot) : it.rot0) + Math.sin(it.swayP) * it.swayA;
       } else it.rot += it.vr * dt * tsc;
       if (it.special !== "laser" && (!it.bounced || it.wak)) {   // 레이저·튕긴 똥은 벽에 막히지 않는다 (주먹에 맞은 똥은 벽에 튕긴다)
         if (it.x < it.r) { it.x = it.r; it.vx = Math.abs(it.vx); }
