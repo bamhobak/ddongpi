@@ -717,9 +717,14 @@
   }
 
   /* 스테이지는 랭킹을 쓰지 않는다 — 순위표와 이름 입력을 통째로 감춘다.
-     점수도 쓰지 않는다. 코인은 스테이지에서 아예 안 떨어지므로 0 만 뜬다. */
+     점수도 쓰지 않는다. 코인은 스테이지에서 아예 안 떨어지므로 0 만 뜬다.
+     큰 숫자 자리에는 점수 대신 어디까지 왔는지를 적는다. */
   #overScreen.stage .board, #overScreen.stage #nameRow,
-  #overScreen.stage #finalScore, #overScreen.stage #coinNote { display: none !important; }
+  #overScreen.stage #coinNote { display: none !important; }
+  #stageProg { display: none; }
+  #overScreen.stage #stageProg {
+    display: block; font-size: 13px; color: #9fb4d0; margin-top: 2px;
+  }
   #btnStageHome { display: none; }
   #overScreen.stage #btnStageHome {
     display: block; margin-top: 8px;
@@ -943,6 +948,7 @@
       <h2 id="overTitle">게임 오버!</h2>
       <div class="big" id="finalScore">0</div>
       <div id="coinNote">🪙 0 coin</div>
+      <div id="stageProg"></div>
 
       <div id="nameRow">
         <div class="tag" id="nameTag">🎉 TOP 10 진입! 이름을 남기세요</div>
@@ -1002,7 +1008,7 @@
   const elTitle = document.getElementById("overTitle");
   const coinNote = document.getElementById("coinNote");
 
-  const GAME_VERSION = "v0.6.82";   // 코드를 고칠 때마다 뒤 두 자리를 올린다
+  const GAME_VERSION = "v0.6.83";   // 코드를 고칠 때마다 뒤 두 자리를 올린다
   document.getElementById("ver").textContent = GAME_VERSION;
 
   const LS_NAME = "epjpddongpi_name";
@@ -4637,7 +4643,16 @@
     btnPause.classList.remove("on"); syncPad();
     augScreen.classList.add("hidden");
     overScreen.classList.add("stage");
-    elFinal.textContent = Math.floor(score).toLocaleString();
+    /* 어디까지 왔는지 — 곡에서 채보가 흐른 만큼으로 잰다.
+       깼을 때는 끝을 넘어서 있으므로 100% 로 자른다. */
+    const st = STAGES[stageNo - 1];
+    const beat = 60 / BGM_BPM.rhythm, slot = beat * st.sub;
+    const len = st.chart.length * 16 * slot;
+    const base = BGM_OFF.rhythm + STAGE_INTRO * beat;
+    const done = Math.max(0, Math.min(1, (stageT - base) / len));
+    elFinal.textContent = Math.round(done * 100) + "%";
+    document.getElementById("stageProg").textContent =
+      Math.round(len) + "초 중 " + (done * len).toFixed(1) + "초";
     const nm = "스테이지 " + stageNo + " · " + STAGES[stageNo - 1].nm;
     elTitle.textContent = nm + (clear ? " 클리어!" : " 실패");
     if (clear) markStageClear(stageNo);
