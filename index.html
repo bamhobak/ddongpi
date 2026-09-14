@@ -1000,7 +1000,7 @@
   const elTitle = document.getElementById("overTitle");
   const coinNote = document.getElementById("coinNote");
 
-  const GAME_VERSION = "v0.6.75";   // 코드를 고칠 때마다 뒤 두 자리를 올린다
+  const GAME_VERSION = "v0.6.76";   // 코드를 고칠 때마다 뒤 두 자리를 올린다
   document.getElementById("ver").textContent = GAME_VERSION;
 
   const LS_NAME = "epjpddongpi_name";
@@ -1038,7 +1038,13 @@
   const JOB_IMG = { none: "player", gambler: "gambler", levitator: "levitator",
                     fit: "fit", powerj: "powerj", powerp: "monk", powerp2: "powerp2",
                     bangul: "bangul" };
-  function spdMul() { return job === "levitator" ? 2.5 : 1; }   // 이동 속도 배율 (부양사 2.5배)
+  /* 이동 속도 배율 — 부양사 2.5배, 스테이지는 30% 느리게.
+     스테이지는 박자에 맞춰 딛는 맛이라, 순간이동하듯 건너뛰면 리듬이 죽는다. */
+  function spdMul() {
+    let m = job === "levitator" ? 2.5 : 1;
+    if (stageMode) m *= 0.7;
+    return m;
+  }
   /* 평화의 비둘기 — 활짝 펼친 날개에 깃 모양이 물결치고, 꼬리는 부채처럼 갈라진다.
      (흰 실루엣 한 덩어리로 그려야 작게 그려도 비둘기로 읽힌다) */
   function drawDove(x, y, ph, target) {
