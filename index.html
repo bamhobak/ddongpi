@@ -692,6 +692,20 @@
     font-size: 22px; font-weight: 900; color: #ffd23f; margin-bottom: 4px;
     text-shadow: 0 2px 6px rgba(0,0,0,.6);
   }
+  /* 직업 줄 — 직업마다 스테이지 여덟 판이 따로 있다 */
+  #stageJobs {
+    display: flex; flex-wrap: wrap; justify-content: center; gap: 5px;
+    width: min(86vw, 330px); margin-bottom: 8px;
+  }
+  .stgJob {
+    padding: 5px 9px; border-radius: 999px; cursor: pointer;
+    border: 1px solid rgba(255,255,255,.14);
+    background: rgba(255,255,255,.07); color: #cfe0f5;
+    font: inherit; font-size: 12px; font-weight: 700;
+  }
+  .stgJob.on { background: rgba(255,210,63,.22); border-color: rgba(255,210,63,.5); color: #ffd23f; }
+  .stgJob.soon { opacity: .38; }
+  .stgJob b { font-weight: 800; margin-left: 3px; font-size: 10px; color: #9fb4d0; }
   #stageList { display: flex; flex-direction: column; gap: 8px; width: min(86vw, 330px); }
   .stgCard {
     display: flex; align-items: center; gap: 10px; width: 100%;
@@ -711,6 +725,8 @@
   .stgCard .meta { font-size: 11px; color: #9fb4d0; margin-top: 1px; }
   .stgCard .done { margin-left: auto; font-size: 16px; }
   .stgCard.cleared { background: rgba(255,210,63,.12); border-color: rgba(255,210,63,.34); }
+  .stgCard.boss { background: rgba(255,80,110,.12); border-color: rgba(255,80,110,.42); }
+  .stgCard.boss .no { background: rgba(255,80,110,.24); color: #ff9db3; }
   #btnStageBack {
     margin-top: 12px; padding: 9px 18px; font-size: 14px;
     background: rgba(255,255,255,.14); color: #fff;
@@ -883,6 +899,7 @@
 
     <div id="stageScreen" class="screen hidden">
       <h2 id="stageTitle">스테이지</h2>
+      <div id="stageJobs"></div>
       <div id="stageList"></div>
       <button id="btnStageBack">← 메인으로</button>
     </div>
@@ -1008,7 +1025,7 @@
   const elTitle = document.getElementById("overTitle");
   const coinNote = document.getElementById("coinNote");
 
-  const GAME_VERSION = "v0.6.87";   // 코드를 고칠 때마다 뒤 두 자리를 올린다
+  const GAME_VERSION = "v0.6.88";   // 코드를 고칠 때마다 뒤 두 자리를 올린다
   document.getElementById("ver").textContent = GAME_VERSION;
 
   const LS_NAME = "epjpddongpi_name";
@@ -2051,7 +2068,8 @@
     if (clearFx > 0) return;        // 잔치 동안에는 팡파르만 들린다
     const inGame = state === STATE.PLAY || state === STATE.AUG || state === STATE.PAUSE;
     // 리듬을 켜 두면 지대와 상관없이 리듬 전용 곡을 돌린다
-    const want = ((rhythmActive() || stageMode) && inGame) ? "rhythm"
+    const want = (stageMode && inGame) ? stageSet().bgm
+      : (rhythmActive() && inGame) ? "rhythm"
       : inGame
       ? (feverBgm ? "fever"
                   : (inBlackhole() ? "blackhole" : (inSpace() ? "space" : "play")))
@@ -2457,7 +2475,7 @@
 
      칸 사이를 옮겨 다닐 수 있는지는 게임의 이동 규칙을 그대로 흉내 낸
      검사기로 전부 확인했다 (완벽히 조작하면 다 피할 수 있다). */
-  const STAGES = [
+  const STAGES_NONE = [
     { nm: "첫걸음", sub: 0.5, lead: 2.27, lv: 1, wv: 0.00, wvK: 0, tilt: 0.00, chart: [
       "3...............",
       "3.......3.......",
@@ -2546,7 +2564,7 @@
       "2343234323432343",
       "3.......3......."
     ] },
-    { nm: "마지막", sub: 0.25, lead: 1.58, lv: 11, wv: 0.12, wvK: 2, tilt: 0.20, chart: [
+    { nm: "큰길", sub: 0.25, lead: 1.58, lv: 9, wv: 0.12, wvK: 2, tilt: 0.20, chart: [
       "M...A...A.......",
       "K.......E...E...",
       "L.L..K...K..K...",
@@ -2579,12 +2597,131 @@
       ".N...M...D..D...",
       "D.....D...D..D..",
       "...A..A.....D..D"
+    ] },
+    { nm: "굽잇길", sub: 0.25, lead: 1.91, lv: 11, wv: 0.12, wvK: 2, tilt: 0.20, chart: [
+      "D.....A.....D...",
+      "..L...M.....N...",
+      "D.D.D.D...M..N.N",
+      "...N...N...M.M.M",
+      "..A.A.A.A..A...L",
+      ".L.L..E.E...K...",
+      "K..E.E..L.L..M.M",
+      "..Q.L..R.Q.K..K.",
+      "Q.Q..Q.P.P..P.P.",
+      "Q.R.Q.R.S.T.N.S.",
+      ".S..Q.L.L.L..P.K",
+      ".P.K.K.P..Q.R.M.",
+      "M.......D.......",
+      "N..M.MM.M.S..L.R",
+      "R..M..NN.N..N.NN",
+      ".N.N.S.T..NN.N.N",
+      ".N.N..MM.R.M..L.",
+      "LL.L.R.Q.L.LL..M",
+      ".R.LL..S..NN.N.S",
+      ".S..N.....N.N...",
+      "D...N.S.RR.S....",
+      ".D...MM...N.....",
+      "NNN.NNN.T...N...",
+      "D..M.R...L..RR..",
+      ".R.....L.....N..",
+      "...D..M.MM.S..A.",
+      ".L.L.....E.....K",
+      "..K...L...A...M.",
+      ".L.L...E.E.E..L.",
+      "L.L..K.K.....K..",
+      "E...K...E.E.E...",
+      "..K...E...E..K.."
+    ] },
+    { nm: "뒤엉킴", sub: 0.25, lead: 1.75, lv: 12, wv: 0.14, wvK: 2, tilt: 0.24, chart: [
+      "D...N.....L...K.",
+      "....E...K.....A.",
+      "1.2.3.4.5.4.3.2.",
+      "N..S.S..T.N.T..T",
+      ".S..T.T.T.T.S.M.",
+      ".R.L.Q.L.L.R.Q.P",
+      ".Q.L.R.R.S..Q.R.",
+      "A.3.A.3.A.3.A.3.",
+      "PP..P...R...T.N.",
+      "..R...N.N...N..S",
+      "...T.NN...N.N.N.",
+      ".M..M.S..L.L...L",
+      "2323232343434343",
+      "M..N...R...L.L..",
+      "M.M...RR...N...M",
+      "M..N..NN..R.M..Q",
+      "...A.....E......",
+      "C.B.C.B.C.B.C.B.",
+      "P.Q.PPPPPPP.P.QQ",
+      "Q.L.Q.Q.L.Q.PP.K",
+      ".K.PP.P.Q.L.LLL.",
+      "L.RRRR.R.SS.NNN.",
+      "1122334455112233",
+      ".K.PPP.PPP.KK.Q.",
+      "R.A.A.A.A...Q...",
+      "M.M.M.M.M.M...N.",
+      ".R.A.A.R.L.L..M.",
+      "B.3.B.3.A.3.A.3.",
+      "..L..L...M..M.M.",
+      "M.M...L.L..K...P",
+      ".P..P.K..E.E.E.E",
+      "..E.Q...M..D...N"
+    ] },
+    { nm: "엄마의 밥상", sub: 0.25, lead: 1.58, lv: 13,
+      wv: 0.12, wvK: 2, tilt: 0.20,
+      boss: { nm: "엄마의 밥상", ic: "🍚",
+              말: ["이재야.. 더 먹어.", "한 술만 더!", "다 먹기 전엔 못 간다"] }, chart: [
+      "M..N.....M.....N",
+      "...M..N...N..N..",
+      "N.....N.....N...",
+      "D..D...M.....N..",
+      ".M...D..N..D...N",
+      "...M.....D...N..",
+      ".D.....N...N...M",
+      "...L...K..E...K.",
+      "..E...L.....N...",
+      "M...N..M...D....",
+      ".L.Q...K.K..P.P.",
+      "K.P...P.K...K...",
+      "L..K.P...P.P.K.Q",
+      ".L.L.L..R..S..Q.",
+      "Q.K.P.K..L.R...K",
+      ".P.K...K..P.K.K.",
+      "..L..Q..L..Q.R.M",
+      ".R..K..K.P..K.K.",
+      "K.K.K..K.K...Q.Q",
+      ".P.K.P...K.K.K.Q",
+      "...M.S.N.N.N...N",
+      "..TT.T..NNN.S.S.",
+      "T.NN.S.S.R.Q.Q.Q",
+      ".R.R..Q.Q.P.PP.Q",
+      ".PP.KK.K..Q.RR.L",
+      ".Q..P.P.K..L.QQ.",
+      "LL..R.QQ..Q..P.P",
+      ".P.K..R.R..K.P.K",
+      ".QQ.P.PPPPPP..P.",
+      "P.Q.QQ.P.Q.P..PP",
+      ".K..P.Q.R..NN.NN",
+      ".S..T.NN.S..TT.T"
     ] }
   ];
   /* 겹 표기 — 한 글자가 여러 줄기다.
      앞쪽 다섯은 '막을 칸'을 고른 것이고 (A 는 1·5, C 는 1·3·5 …),
      뒤쪽 아홉은 반대로 '길'을 고른 것이다. P~T 는 그 한 칸만 비우고 나머지를 다 막고,
      K~N 는 두 칸을 비운다. 길이 한 칸씩만 옮겨 가면 똥밭 사이로 길이 뻗어 보인다. */
+  /* ---------- 직업별 스테이지 ----------
+     직업마다 여덟 판씩, 테마도 곡도 다르다. 백수는 다섯 칸을 오가는 지금 방식 그대로.
+     STAGES 는 지금 고른 직업의 목록을 가리킨다 (직업을 바꾸면 이것부터 갈아 끼운다). */
+  const JOB_STAGES = {
+    none: { bgm: "rhythm", list: STAGES_NONE }
+  };
+  let stageJob = "none";
+  let STAGES = JOB_STAGES.none.list;
+  function stageSet() { return JOB_STAGES[stageJob] || JOB_STAGES.none; }
+  function setStageJob(j) {
+    stageJob = JOB_STAGES[j] ? j : "none";
+    STAGES = stageSet().list;
+  }
+
   const STAGE_GROUP = {
     A: [1, 5], B: [2, 4], C: [1, 3, 5], D: [1, 2], E: [4, 5],
     P: [2, 3, 4, 5], Q: [1, 3, 4, 5], R: [1, 2, 4, 5],   // 길 1 · 2 · 3
@@ -2598,14 +2735,25 @@
   /* 흔들림 폭의 한계 — 옆 칸에 선 사람과 최소 38px 은 벌어져 있어야 안 맞는다.
      칸 간격이 약 73px 이니 0.40칸(29px)까지가 안전하다. */
   const WEAVE_CAP = 0.40;
+  /* 깬 기록은 직업마다 따로 남긴다 — { none: "123", levitator: "1" }.
+     예전에 남긴 번호 문자열은 백수 것으로 옮긴다. */
   const LS_STAGE = "epjpddongpi_stages";
-  let stageClear = "";                 // 깬 스테이지 (번호 문자열)
-  try { stageClear = localStorage.getItem(LS_STAGE) || ""; } catch (e) {}
-  function stageCleared(n) { return stageClear.indexOf("" + n) >= 0; }
+  let stageClear = {};
+  try {
+    const raw = localStorage.getItem(LS_STAGE) || "";
+    if (raw.charAt(0) === "{") stageClear = JSON.parse(raw);
+    else if (raw) stageClear = { none: raw };
+  } catch (e) { stageClear = {}; }
+  function stageCleared(n, jb) {
+    return (stageClear[jb || stageJob] || "").indexOf("" + n) >= 0;
+  }
+  function stageDone8(jb) {            // 그 직업에서 깬 판 수
+    return (stageClear[jb] || "").length;
+  }
   function markStageClear(n) {
     if (stageCleared(n)) return;
-    stageClear += n;
-    try { localStorage.setItem(LS_STAGE, stageClear); } catch (e) {}
+    stageClear[stageJob] = (stageClear[stageJob] || "") + n;
+    try { localStorage.setItem(LS_STAGE, JSON.stringify(stageClear)); } catch (e) {}
   }
   let stageMode = false, stageNo = 0, stageSlot = -1, stageDone = false, stageT = 0;
   // 다섯 칸의 가로 자리
@@ -3003,7 +3151,8 @@
   });
   document.getElementById("stageDot").addEventListener("click", () => {
     beep(1000, .08, "triangle", .05);
-    openStageSelect();
+    // 지금 고른 직업의 스테이지부터 보여 준다 (아직 없으면 백수)
+    openStageSelect(JOB_STAGES[job] ? job : "none");
   });
   document.getElementById("btnStageBack").addEventListener("click", () => {
     beep(520, .06, "triangle", .04);
@@ -3027,6 +3176,7 @@
     invUntil = 0; powerUntil = 0; hurtUntil = 0; shields = 0;
     shake = 0; flash = 0; feverFlash = 0; fever = false; feverBgm = false;
     clearFx = 0; clearRing = 0; confetti.length = 0;
+    bossPhase = -1; bossRoar = 0; bossHp = 1;
     feverT = 0; feverBanner = 0;
     momMsg = (job === "none") ? MOM_SEC : 0;   // 백수에게만
     scoreShown = 0; scorePunch = 0; prevScore = 0; rings = []; bubPops = [];
@@ -3400,10 +3550,11 @@
   function stageTick(dt) {
     if (!stageMode) return;
     const st = STAGES[stageNo - 1];
-    const beat = 60 / BGM_BPM.rhythm, off = BGM_OFF.rhythm, slot = beat * st.sub;
+    const bg = stageSet().bgm;
+    const beat = 60 / BGM_BPM[bg], off = BGM_OFF[bg], slot = beat * st.sub;
     /* 곡이 돌고 있으면 곡의 시각을 기준으로 삼고, 배경음을 껐으면 자체 시계로 돈다.
        소리를 끄고도 스테이지는 똑같이 굴러가야 한다. */
-    if (bgmCur && !bgmCur.paused && bgmName === "rhythm") stageT = bgmCur.currentTime;
+    if (bgmCur && !bgmCur.paused && bgmName === bg) stageT = bgmCur.currentTime;
     else stageT += dt;
     const t = stageT;
     const total = st.chart.length * 16;
@@ -3422,6 +3573,7 @@
       const lanes = STAGE_GROUP[ch] || [+ch];
       for (const L of lanes) spawnChart(L, lead);
     }
+    bossTick(dt, Math.max(0, Math.min(1, (t - base) / (total * slot))));
     const ph = ((t - off) / beat) % 1;
     if (ph < 0.5) beatPulse = Math.max(beatPulse, 1 - ph / 0.5);
     // 채보가 끝나고 화면의 똥까지 다 지나가면 클리어
@@ -4649,6 +4801,65 @@
     }
   }
 
+  /* ---------- 보스 ----------
+     여덟 판째에는 보스가 화면 위에 버티고 앉는다. 채보가 흐른 만큼 체력이 깎이고,
+     3분의 1 씩 깎일 때마다 성깔이 바뀐다 (한마디 내지르고 화면이 흔들린다). */
+  let bossPhase = -1, bossRoar = 0, bossHp = 1;
+  function bossOf() { return stageMode ? (STAGES[stageNo - 1] || {}).boss : null; }
+  function bossTick(dt, prog) {
+    const bs = bossOf();
+    if (!bs) { bossPhase = -1; bossRoar = 0; bossHp = 1; return; }
+    bossHp = Math.max(0, 1 - prog);
+    if (bossRoar > 0) bossRoar = Math.max(0, bossRoar - dt);
+    const ph = Math.min(2, Math.floor(prog * 3));
+    if (ph !== bossPhase) {
+      if (bossPhase >= 0) {              // 첫 진입은 조용히 넘어간다
+        bossRoar = 1.1;
+        shake = Math.max(shake, 18);
+        feverFlash = Math.max(feverFlash, 0.5);
+        popText(W / 2, H * 0.30, bs.말[Math.min(bs.말.length - 1, ph)], "#ffb3c4", 19);
+        if (!sfx("angry")) beep(180, .3, "sawtooth", .07);
+        if (navigator.vibrate) navigator.vibrate([30, 40, 70]);
+      }
+      bossPhase = ph;
+    }
+  }
+  function drawBoss(now) {
+    const bs = bossOf();
+    if (!bs) return;
+    const cx = W / 2, cy = H * 0.14;
+    const bob = Math.sin(now / 420) * 7;
+    const rage = bossRoar > 0 ? bossRoar / 1.1 : 0;
+    ctx.save();
+    ctx.setTransform(baseScale, 0, 0, baseScale, 0, 0);
+    // 체력 막대
+    const bw = W * 0.62, bx = cx - bw / 2, by = 8;
+    ctx.fillStyle = "rgba(6,10,22,.55)";
+    ctx.beginPath(); ctx.roundRect(bx - 3, by - 3, bw + 6, 14, 7); ctx.fill();
+    ctx.fillStyle = "rgba(255,255,255,.14)";
+    ctx.beginPath(); ctx.roundRect(bx, by, bw, 8, 4); ctx.fill();
+    const g = ctx.createLinearGradient(bx, 0, bx + bw, 0);
+    g.addColorStop(0, "#ff3d6a"); g.addColorStop(1, "#ffa03d");
+    ctx.fillStyle = g;
+    ctx.beginPath(); ctx.roundRect(bx, by, Math.max(2, bw * bossHp), 8, 4); ctx.fill();
+    ctx.font = "800 11px NanumBarunGothic, system-ui, sans-serif";
+    ctx.textAlign = "center"; ctx.textBaseline = "top";
+    ctx.fillStyle = "#ffd6df";
+    ctx.fillText("👑 " + bs.nm, cx, by + 13);
+    // 몸통 — 성날수록 커지고 붉어진다
+    ctx.translate(cx, cy + bob);
+    ctx.scale(1 + rage * 0.18, 1 + rage * 0.18);
+    const rg = ctx.createRadialGradient(0, 0, 6, 0, 0, 78);
+    rg.addColorStop(0, "rgba(255," + Math.round(120 - rage * 90) + ",90,.42)");
+    rg.addColorStop(1, "rgba(255,90,120,0)");
+    ctx.fillStyle = rg;
+    ctx.beginPath(); ctx.arc(0, 0, 78, 0, 6.283); ctx.fill();
+    ctx.font = "64px serif";
+    ctx.textAlign = "center"; ctx.textBaseline = "middle";
+    ctx.fillText(bs.ic, 0, 0);
+    ctx.restore();
+  }
+
   /* ---------- 깼다! ----------
      결과 화면을 바로 띄우면 "끝났다"로 끝난다. 2.4초 동안 터뜨리고 나서 띄운다.
      이 동안에는 캐릭터도 계속 그려서 폴짝거리게 둔다. */
@@ -4777,9 +4988,10 @@
     /* 어디까지 왔는지 — 곡에서 채보가 흐른 만큼으로 잰다.
        깼을 때는 끝을 넘어서 있으므로 100% 로 자른다. */
     const st = STAGES[stageNo - 1];
-    const beat = 60 / BGM_BPM.rhythm, slot = beat * st.sub;
+    const bg = stageSet().bgm;
+    const beat = 60 / BGM_BPM[bg], slot = beat * st.sub;
     const len = st.chart.length * 16 * slot;
-    const base = BGM_OFF.rhythm + STAGE_INTRO * beat;
+    const base = BGM_OFF[bg] + STAGE_INTRO * beat;
     const done = Math.max(0, Math.min(1, (stageT - base) / len));
     elFinal.textContent = Math.round(done * 100) + "%";
     document.getElementById("stageProg").textContent =
@@ -4799,13 +5011,39 @@
     overScreen.classList.remove("hidden");
   }
 
-  function openStageSelect() {
+  function openStageSelect(jb) {
+    if (jb) setStageJob(jb);
+    const bar = document.getElementById("stageJobs");
+    bar.innerHTML = "";
+    for (const id in JOBS) {
+      const b = document.createElement("button");
+      const ready = !!JOB_STAGES[id];
+      b.className = "stgJob" + (id === stageJob ? " on" : "") + (ready ? "" : " soon");
+      b.textContent = JOBS[id].ic + " " + JOBS[id].nm;
+      if (ready) {
+        const cnt = document.createElement("b");
+        cnt.textContent = stageDone8(id) + "/" + JOB_STAGES[id].list.length;
+        b.appendChild(cnt);
+        b.addEventListener("click", () => {
+          if (id === stageJob) return;
+          beep(760, .06, "triangle", .045);
+          openStageSelect(id);
+        });
+      } else {
+        b.title = "준비 중";
+        b.addEventListener("click", () => beep(220, .07, "triangle", .04));
+      }
+      bar.appendChild(b);
+    }
+    document.getElementById("stageTitle").textContent =
+      JOBS[stageJob].nm + " 스테이지";
     const list = document.getElementById("stageList");
     list.innerHTML = "";
     STAGES.forEach((st, i) => {
       const n = i + 1;
       const card = document.createElement("button");
-      card.className = "stgCard" + (stageCleared(n) ? " cleared" : "");
+      card.className = "stgCard" + (stageCleared(n) ? " cleared" : "")
+                                  + (st.boss ? " boss" : "");
       const no = document.createElement("div"); no.className = "no"; no.textContent = n;
       const box = document.createElement("div");
       const nm = document.createElement("div"); nm.className = "nm"; nm.textContent = st.nm;
@@ -4815,8 +5053,8 @@
         for (const ch of row)
           if (ch !== ".") cnt += (STAGE_GROUP[ch] || [0]).length;
       const zn = ZONES[Math.min(LAST_Z, st.lv - 1)];
-      me.textContent = zn.ic + " " + zn.nm + " · 똥 " + cnt + "개 · "
-                     + (st.sub === 0.25 ? "16분음표" : "8분음표");
+      me.textContent = (st.boss ? "👑 보스 · " : "") + zn.ic + " " + zn.nm
+                     + " · 똥 " + cnt + "개";
       box.appendChild(nm); box.appendChild(me);
       const dn = document.createElement("div"); dn.className = "done";
       dn.textContent = stageCleared(n) ? "⭐" : "";
@@ -4833,6 +5071,8 @@
 
   function startStage(n) {
     stageNo = Math.max(1, Math.min(STAGES.length, n || 1));
+    job = stageJob;                     // 그 직업의 스테이지니 그 직업으로 뛴다
+    try { localStorage.setItem(LS_JOB, job); } catch (e) {}
     document.getElementById("stageScreen").classList.add("hidden");
     startScreen.classList.add("hidden");
     jobScreen.classList.add("hidden");
@@ -4843,7 +5083,7 @@
     stageSlot = -1; stageDone = false; stageT = 0;
     for (const b of BONUS) b.t = 1e9;   // 달·아이템은 나오지 않는다
     spawnTimer = 1e9;
-    playBgm("rhythm");
+    playBgm(stageSet().bgm);
     if (bgmCur) { try { bgmCur.currentTime = 0; } catch (e) {} }
   }
 
@@ -7752,6 +7992,7 @@
     drawEffects();
     if (confetti.length) drawConfetti();
     ctx.restore();
+    if (stageMode && state !== STATE.READY) drawBoss(now);
     if (clearFx > 0) drawClearBanner();
     if (state === STATE.PLAY || state === STATE.PAUSE) drawHud();
     if (dpad.classList.contains("on")) dpad.classList.toggle("noVert", !flyOn);
