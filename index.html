@@ -1008,7 +1008,7 @@
   const elTitle = document.getElementById("overTitle");
   const coinNote = document.getElementById("coinNote");
 
-  const GAME_VERSION = "v0.6.83";   // 코드를 고칠 때마다 뒤 두 자리를 올린다
+  const GAME_VERSION = "v0.6.84";   // 코드를 고칠 때마다 뒤 두 자리를 올린다
   document.getElementById("ver").textContent = GAME_VERSION;
 
   const LS_NAME = "epjpddongpi_name";
@@ -1884,7 +1884,7 @@
                      galaga: 0.35, dove: 0.3, clone: 1.6, burst: 0.8,
                      angry: 0.8, laser: 0.9, fpick: 3.4, giant: 2.4, magnet: 0.55,
                      dodge: 0.9, boing: 0.9, wakboom: 0.9, reroll: 0.7,
-                     coin: 1.8 };
+                     coin: 1.8, clear: 1.5 };
   /* 꼬리가 긴 녹음을 짧게 잘라 쓴다 (초 단위). 뚜니핑 줍는 소리는 초당 여러 번
      겹쳐 울리므로, 1초를 다 울리게 두면 소리가 뭉개진다. 끝에서 부드럽게 잦아든다. */
   const SFX_CUT = { fpick: 0.30 };
@@ -2048,6 +2048,7 @@
     if (left <= 0.06) { bgmFadeOut(bgmCur, 0.15); bgmCur = other; }
   }
   function syncBgm() {
+    if (clearFx > 0) return;        // 잔치 동안에는 팡파르만 들린다
     const inGame = state === STATE.PLAY || state === STATE.AUG || state === STATE.PAUSE;
     // 리듬을 켜 두면 지대와 상관없이 리듬 전용 곡을 돌린다
     const want = ((rhythmActive() || stageMode) && inGame) ? "rhythm"
@@ -3016,6 +3017,7 @@
     spawnTimer = 0;
     invUntil = 0; powerUntil = 0; hurtUntil = 0; shields = 0;
     shake = 0; flash = 0; feverFlash = 0; fever = false; feverBgm = false;
+    clearFx = 0; clearRing = 0; confetti.length = 0;
     feverT = 0; feverBanner = 0;
     momMsg = (job === "none") ? MOM_SEC : 0;   // 백수에게만
     scoreShown = 0; scorePunch = 0; prevScore = 0; rings = []; bubPops = [];
@@ -3588,6 +3590,7 @@
       f.t += dt; f.y -= 40 * dt; f.x += (f.vx || 0) * dt;
       if (f.t > f.life) floats.splice(i, 1);
     }
+    partyTick(dt);                 // 깬 뒤의 잔치 (색종이·고리·큰 글씨)
     for (let i = rings.length - 1; i >= 0; i--) {
       const rg = rings[i];
       rg.t += dt;
@@ -4637,6 +4640,125 @@
     }
   }
 
+  /* ---------- 깼다! ----------
+     결과 화면을 바로 띄우면 "끝났다"로 끝난다. 2.4초 동안 터뜨리고 나서 띄운다.
+     이 동안에는 캐릭터도 계속 그려서 폴짝거리게 둔다. */
+  const CLEAR_FX = 2.4;
+  let clearFx = 0, clearRing = 0, confetti = [];
+  const CONFETTI_COL = ["#ffd23f", "#ff6ec7", "#7ee8ff", "#9cff8f", "#ffffff", "#ff9a3c"];
+  function startParty() {
+    clearFx = CLEAR_FX; clearRing = 0;
+    confetti.length = 0;
+    for (let i = 0; i < 160; i++) {
+      confetti.push({
+        x: Math.random() * W, y: -20 - Math.random() * H * 0.85,
+        vx: (Math.random() - Math.random()) * 70,
+        vy: 120 + Math.random() * 200,
+        w: 5 + Math.random() * 7, h: 9 + Math.random() * 11,
+        rot: Math.random() * 6.28, vr: (Math.random() - Math.random()) * 8,
+        ph: Math.random() * 6.28, sw: 1.6 + Math.random() * 2.4,
+        c: CONFETTI_COL[(Math.random() * CONFETTI_COL.length) | 0]
+      });
+    }
+    feverFlash = 1; flash = 0; shake = Math.max(shake, 26);
+    burst(player.x, player.y + player.hy, "#ffd23f", 54);
+    burst(player.x, player.y + player.hy, "#ffffff", 26);
+    if (!sfx("clear")) {                 // 팡파르가 없으면 삐 소리로 세 음 올린다
+      beep(784, .16, "triangle", .06);
+      setTimeout(() => beep(1047, .16, "triangle", .06), 130);
+      setTimeout(() => beep(1319, .34, "triangle", .07), 260);
+    }
+    bgmFadeOut(bgmCur, 0.35);            // 곡을 접어 팡파르가 들리게
+    if (navigator.vibrate) navigator.vibrate([40, 60, 40, 60, 140]);
+  }
+  /* 잔치 동안 세상을 계속 굴린다 — 색종이가 내리고 고리가 퍼진다. */
+  function partyTick(dt) {
+    for (let i = confetti.length - 1; i >= 0; i--) {
+      const f = confetti[i];
+      f.ph += dt * f.sw;
+      f.x += (f.vx + Math.sin(f.ph) * 48) * dt;
+      f.y += f.vy * dt;
+      f.rot += f.vr * dt;
+      if (f.y > H + 40) confetti.splice(i, 1);
+    }
+    if (clearFx <= 0) return;
+    clearFx = Math.max(0, clearFx - dt);
+    const gone = CLEAR_FX - clearFx;
+    while (clearRing < 3 && gone >= clearRing * 0.17) {
+      rings.push({ x: player.x, y: player.y + player.hy, t: 0, life: 0.85,
+                   r1: 330, color: clearRing === 1 ? "#ffe9a8" : "#ffffff" });
+      clearRing++;
+    }
+    if (clearFx === 0) showStageResult();
+  }
+  /* 깼을 때 캐릭터가 뛰어오르는 높이 */
+  function clearHop() {
+    if (clearFx <= 0) return 0;
+    const gone = CLEAR_FX - clearFx;
+    return Math.max(0, Math.sin(gone * 7.4)) * 30 * Math.max(0, 1 - gone / 1.9);
+  }
+  /* 가운데 큰 글씨 — 툭 튀어나왔다가 자리를 잡고, 금빛이 쓸고 지나간다. */
+  function drawClearBanner() {
+    const gone = CLEAR_FX - clearFx;
+    if (gone < 0.12) return;
+    const k = Math.min(1, (gone - 0.12) / 0.38);
+    const e = 1 - Math.pow(1 - k, 3);
+    const sc = 0.45 + e * 0.55 + Math.sin(k * Math.PI) * 0.2;
+    const cx = W / 2, cy = H * 0.36;
+    ctx.save();
+    ctx.setTransform(baseScale, 0, 0, baseScale, 0, 0);
+    // 뒤에 금빛 무리
+    const rg = ctx.createRadialGradient(cx, cy, 8, cx, cy, 210);
+    rg.addColorStop(0, "rgba(255,210,63,.40)");
+    rg.addColorStop(1, "rgba(255,210,63,0)");
+    ctx.fillStyle = rg;
+    ctx.beginPath(); ctx.arc(cx, cy, 210, 0, 6.283); ctx.fill();
+    ctx.translate(cx, cy);
+    ctx.scale(sc, sc);
+    ctx.textAlign = "center"; ctx.textBaseline = "middle";
+    ctx.font = "900 62px NanumBarunGothic, system-ui, sans-serif";
+    ctx.fillStyle = "rgba(0,0,0,.45)";
+    ctx.fillText("클리어!", 3, 4);
+    /* 밝은 하늘에서도 읽히도록 어두운 테를 두른다 — 금빛만으로는 묻힌다 */
+    ctx.lineJoin = "round";
+    ctx.lineWidth = 10;
+    ctx.strokeStyle = "rgba(52,26,0,.62)";
+    ctx.strokeText("클리어!", 0, 0);
+    // 금빛이 왼쪽에서 오른쪽으로 쓸고 간다
+    const g = ctx.createLinearGradient(-170, 0, 170, 0);
+    const q = ((gone * 0.85) % 1.25) / 1.25;
+    const st1 = Math.max(0, Math.min(1, q - 0.2));
+    const st2 = Math.max(st1, Math.min(1, q));
+    const st3 = Math.max(st2, Math.min(1, q + 0.2));
+    g.addColorStop(0, "#f5a623");
+    g.addColorStop(st1, "#ffd23f");
+    g.addColorStop(st2, "#fffdf2");
+    g.addColorStop(st3, "#ffd23f");
+    g.addColorStop(1, "#f5a623");
+    ctx.fillStyle = g;
+    ctx.fillText("클리어!", 0, 0);
+    ctx.font = "800 19px NanumBarunGothic, system-ui, sans-serif";
+    const sub = "스테이지 " + stageNo + " · " + STAGES[stageNo - 1].nm;
+    ctx.lineWidth = 5;
+    ctx.strokeStyle = "rgba(24,12,0,.55)";
+    ctx.strokeText(sub, 0, 50);
+    ctx.fillStyle = "#fff";
+    ctx.fillText(sub, 0, 50);
+    ctx.restore();
+  }
+  function drawConfetti() {
+    for (const f of confetti) {
+      ctx.save();
+      ctx.translate(f.x, f.y);
+      ctx.rotate(f.rot);
+      ctx.fillStyle = f.c;
+      // 돌아가는 종잇조각처럼 세로로 납작해졌다 펴진다
+      const hh = f.h * (0.3 + 0.7 * Math.abs(Math.cos(f.ph)));
+      ctx.fillRect(-f.w / 2, -hh / 2, f.w, hh);
+      ctx.restore();
+    }
+  }
+
   function stageFinish(clear) {
     if (state === STATE.OVER) return;
     state = STATE.OVER;
@@ -4658,10 +4780,14 @@
     if (clear) markStageClear(stageNo);
     coinNote.textContent = "🪙 " + coinRun.toLocaleString() + " coin";
     nameRow.classList.remove("on");
+    if (clear) { startParty(); return; }        // 결과는 잔치가 끝나고
     overScreen.classList.remove("hidden");
-    if (clear) { burst(player.x, player.y, "#ffd23f", 60); feverFlash = 1; }
-    if (!sfx(clear ? "burst" : "over")) beep(clear ? 1400 : 220, .3, "triangle", .06);
-    if (navigator.vibrate) navigator.vibrate(clear ? [40, 60, 40, 60, 90] : 120);
+    if (!sfx("over")) beep(220, .3, "triangle", .06);
+    if (navigator.vibrate) navigator.vibrate(120);
+  }
+  // 잔치가 끝나면 그제서야 결과를 띄운다
+  function showStageResult() {
+    overScreen.classList.remove("hidden");
   }
 
   function openStageSelect() {
@@ -7606,10 +7732,18 @@
       drawWarnings(now);
       drawItems(now);
       drawHelpers();
-      if (state !== STATE.OVER) drawPlayer(now);
+      if (state !== STATE.OVER || clearFx > 0) {
+        const hop = clearHop();      // 깼으면 폴짝폴짝
+        const y0 = player.y;
+        player.y -= hop;
+        drawPlayer(now);
+        player.y = y0;
+      }
     }
     drawEffects();
+    if (confetti.length) drawConfetti();
     ctx.restore();
+    if (clearFx > 0) drawClearBanner();
     if (state === STATE.PLAY || state === STATE.PAUSE) drawHud();
     if (dpad.classList.contains("on")) dpad.classList.toggle("noVert", !flyOn);
 
