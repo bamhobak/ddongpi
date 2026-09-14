@@ -1002,7 +1002,7 @@
   const elTitle = document.getElementById("overTitle");
   const coinNote = document.getElementById("coinNote");
 
-  const GAME_VERSION = "v0.6.77";   // 코드를 고칠 때마다 뒤 두 자리를 올린다
+  const GAME_VERSION = "v0.6.78";   // 코드를 고칠 때마다 뒤 두 자리를 올린다
   document.getElementById("ver").textContent = GAME_VERSION;
 
   const LS_NAME = "epjpddongpi_name";
@@ -2451,7 +2451,7 @@
      칸 사이를 옮겨 다닐 수 있는지는 게임의 이동 규칙을 그대로 흉내 낸
      검사기로 전부 확인했다 (완벽히 조작하면 다 피할 수 있다). */
   const STAGES = [
-    { nm: "첫걸음", sub: 0.5, lead: 1.40, wv: 0.00, wvK: 0, tilt: 0.00, chart: [
+    { nm: "첫걸음", sub: 0.5, lead: 1.89, wv: 0.00, wvK: 0, tilt: 0.00, chart: [
       "3...............",
       "3.......3.......",
       "2.......4.......",
@@ -2475,7 +2475,7 @@
       "13..35..53..31..",
       "1.2.3.4.5.4.3.2."
     ] },
-    { nm: "지그재그", sub: 0.5, lead: 1.28, wv: 0.22, wvK: 2, tilt: 0.25, chart: [
+    { nm: "지그재그", sub: 0.5, lead: 1.73, wv: 0.22, wvK: 2, tilt: 0.25, chart: [
       "3.......3.......",
       "1...3...5...3...",
       "2.2.4.4.2.2.4.4.",
@@ -2497,7 +2497,7 @@
       "1.1.5.5.2.2.4.4.",
       "1.2.3.4.5.4.3.2."
     ] },
-    { nm: "벽", sub: 0.5, lead: 1.18, wv: 0.30, wvK: 2, tilt: 0.50, chart: [
+    { nm: "벽", sub: 0.5, lead: 1.59, wv: 0.30, wvK: 2, tilt: 0.50, chart: [
       "3.......3.......",
       "A...3...A...3...",
       "B...3...B...3...",
@@ -2519,7 +2519,7 @@
       "C...3...C...3...",
       "1.2.3.4.5.4.3.2."
     ] },
-    { nm: "연타", sub: 0.25, lead: 1.08, wv: 0.34, wvK: 3, tilt: 0.70, chart: [
+    { nm: "연타", sub: 0.25, lead: 1.46, wv: 0.34, wvK: 3, tilt: 0.70, chart: [
       "3.......3.......",
       "33......33......",
       "3.3.3.3.........",
@@ -2553,7 +2553,7 @@
       "2343234323432343",
       "3.......3......."
     ] },
-    { nm: "마지막", sub: 0.25, lead: 0.98, wv: 0.38, wvK: 3, tilt: 1.00, chart: [
+    { nm: "마지막", sub: 0.25, lead: 1.32, wv: 0.38, wvK: 3, tilt: 1.00, chart: [
       "3.......3.......",
       "2323232343434343",
       "A.......3.......",
@@ -4146,15 +4146,20 @@
         /* 채보 똥 — 흔들리고 기울어 내려오지만 닿는 순간에는 반드시 제 칸이다.
            흔들림은 정수 바퀴라 끝에서 0 이 되고, 기울기는 (1 - 진행도)로 사라진다. */
         const pr = Math.max(0, Math.min(1, (it.y - it.y0) / (it.yT - it.y0)));
-        /* 아래로 갈수록 좌우 폭을 접는다 — 제곱이라 부딪히는 높이에서는 사실상 0,
-           그래도 위쪽에서는 크게 휘어 내려온다. */
-        const e = Math.min(1, (1 - pr) / 0.45), env = e * e;
+        /* 절반쯤 내려오면 좌우로 휘는 것을 아주 멈춘다.
+           끝까지 흔들면 어디로 올지 읽을 수가 없다 — 위쪽에서 실컷 휘다가
+           0.15 지점부터 잦아들어 0.50 에서 완전히 제 칸에 선다. */
+        const u = Math.max(0, Math.min(1, (0.50 - pr) / 0.35));
+        const env = u * u * (3 - 2 * u);         // 양 끝에서 매끄럽게 붙는다
+        it.wvEnv = env;                          // 도는 것도 같이 잦아들게
         it.x = it.homeX + env * (it.tilt0
              + (it.wvA ? it.wvA * Math.sin(6.2832 * it.wvK * pr) : 0));
       }
       if (it.swayA) {                       // 살랑임 — 처음 각도를 중심으로 오간다
         it.swayP += dt * tsc * it.swayW;
-        it.rot = (it.rot0 === undefined ? (it.rot0 = it.rot) : it.rot0) + Math.sin(it.swayP) * it.swayA;
+        // 채보 똥은 좌우로 휘는 것과 함께 기우는 것도 절반에서 멎는다
+        const amp = it.swayA * (it.wvEnv === undefined ? 1 : it.wvEnv);
+        it.rot = (it.rot0 === undefined ? (it.rot0 = it.rot) : it.rot0) + Math.sin(it.swayP) * amp;
       } else it.rot += it.vr * dt * tsc;
       if (it.special !== "laser" && (!it.bounced || it.wak)) {   // 레이저·튕긴 똥은 벽에 막히지 않는다 (주먹에 맞은 똥은 벽에 튕긴다)
         if (it.x < it.r) { it.x = it.r; it.vx = Math.abs(it.vx); }
