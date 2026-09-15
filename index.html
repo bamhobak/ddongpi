@@ -1025,7 +1025,7 @@
   const elTitle = document.getElementById("overTitle");
   const coinNote = document.getElementById("coinNote");
 
-  const GAME_VERSION = "v0.6.89";   // 코드를 고칠 때마다 뒤 두 자리를 올린다
+  const GAME_VERSION = "v0.6.90";   // 코드를 고칠 때마다 뒤 두 자리를 올린다
   document.getElementById("ver").textContent = GAME_VERSION;
 
   const LS_NAME = "epjpddongpi_name";
@@ -1607,7 +1607,8 @@
                               ["umbrella", "umbrella"], ["star", "star"], ["heart", "red_heart"],
                               ["poop", "poop"], ["darkpoop", "dark_poop"],
                               ["droplet", "droplet"],
-                              ["coin", "coin"], ["coin3", "coin3"], ["coin5", "coin5"]]) {
+                              ["coin", "coin"], ["coin3", "coin3"], ["coin5", "coin5"],
+                              ["bone", "bone"]]) {
     const im = new Image();
     im.onload = () => { ITEM_IMG[type] = im; };
     im.src = "assets/item_" + file + ".png";
@@ -1987,9 +1988,9 @@
   /* 곡마다 잰 박자와 첫 박 위치(초). 소리의 세기가 커지는 지점을 뽑아
      격자를 맞춰 구한 값이다 — 128·140·105·132 처럼 정수로 떨어져 믿을 만하다. */
   const BGM_BPM = { menu: 140, play: 128, space: 105, blackhole: 104, fever: 132,
-                    rhythm: 128, levitator: 112 };   // 스테이지 전용 — 격자가 또렷한 곡
+                    rhythm: 128, levitator: 112, bangul: 120 };   // 스테이지 전용
   const BGM_OFF = { menu: 0.424, play: 0.006, space: 0.003, blackhole: 0.517, fever: 0.232,
-                    rhythm: 0.467, levitator: 0.003 };
+                    rhythm: 0.467, levitator: 0.003, bangul: 0.499 };
   const BGM_LOOP_X = 3.5;            // 곡 끝과 처음을 겹치는 시간(초)
   const BGM_SWAP_X = 0.45;           // 다른 곡으로 갈아탈 때 겹치는 시간(초)
   const bgmPair = {};                // 이름 -> 같은 곡 두 벌
@@ -2997,9 +2998,299 @@
     ] }
   ];
 
+  /* 방울이 — 똥을 피하면서 뼈다귀를 주워 모은다. 벽은 백수와 같은 다섯 칸이고,
+     v~z 가 1~5번 칸에 떨어지는 뼈다귀다. 뼈다귀는 안 주워도 안 맞는다.
+     다만 정해진 만큼 못 모으면 끝까지 버텨도 클리어가 아니다 — 욕심을 부려야 한다. */
+  const BONE_LANE = { v: 1, w: 2, x: 3, y: 4, z: 5 };
+  const STAGES_BANGUL = [
+    { nm: "첫 뼈다귀", sub: 0.25, lead: 2.10, lv: 1, need: 18,
+      wv: 0.14, wvK: 2, tilt: 0.25, chart: [
+      "D...Dx..D......z",
+      "D.......D...D...",
+      "..D.z.....N...D.",
+      "....N.....N...D.",
+      ".M...Lx....D....",
+      ".Lx..M..N.....N.",
+      ".N...D.y.N..M...",
+      "L.xM...N..Dx.D..",
+      ".M...x.D..M.....",
+      "L...K...E..K..K.",
+      "..K.v.E...K..E..",
+      ".L..E...K.....M.",
+      ".xL.....K.wL...M",
+      "....yN...N...Dy.",
+      "...M...Ny..N....",
+      ".Dz......D.x...A",
+      ".......D.....D..",
+      ".x.L.L.L..E.Ev..",
+      "E.E.E...L..L...M",
+      "..xL.L.....L....",
+      ".N....zN...N....",
+      "zN.N...D.D.....A",
+      "..w..K...L..x..D",
+      "...D.D.D..M...A.",
+      ".A...L...K..w..L",
+      ".....Lw....E..L.",
+      "L.....K..L.....N",
+      ".N...D...M..L...",
+      "Kv.E.....K.v...K",
+      ".K.K.Kv..E.....K",
+      ".K..E.E...x.E.E.",
+      ".E...x.L...K...K"
+    ] },
+    { nm: "산책", sub: 0.25, lead: 1.95, lv: 3, need: 24,
+      wv: 0.14, wvK: 2, tilt: 0.25, chart: [
+      "D...D.....D....y",
+      "M.......Dz....D.",
+      "..D.z.D...D.y...",
+      "..A..M...D...Ny.",
+      "N...D..zN...D..z",
+      "N...D...M.....K.",
+      "..L...M....yD..M",
+      ".....K..L..K..w.",
+      ".A...L.x.E...L..",
+      ".Kw..E...E.x...M",
+      "...My.N...M...Dx",
+      ".M..N..N.y.M..N.",
+      "..M.y.N..M...L..",
+      ".M...D..x..L..K.",
+      ".wK...K..L...K..",
+      "E.x.....E.w.....",
+      "A....wE.......E.",
+      "x...M.M.M..xM.M.",
+      "..D.z.D...N..zD.",
+      "..N..y..D....yA.",
+      "..A...x.E.....A.",
+      "w...E....vE.....",
+      "E.E.E..E...L....",
+      ".N.N.....L...AyA",
+      ".....ExE...K.K..",
+      "K..E.E...E...K..",
+      ".K..K.K...K.....",
+      "K..w..K..E.E.x..",
+      ".M...M..D.....A.",
+      "xM..N...Dy....N.",
+      ".Nz....D...M.y.N",
+      "..D.D..x..A.A..y"
+    ] },
+    { nm: "골목", sub: 0.25, lead: 1.80, lv: 5, need: 21,
+      wv: 0.14, wvK: 2, tilt: 0.25, chart: [
+      "M...x.A.....K.w.",
+      "..L...K.w.E.....",
+      "L...A.A.x.L.L...",
+      "K..K..K.w.K..L..",
+      "xM...M..L.L..M.M",
+      ".yD..M..D.x.M.M.",
+      "..D...M...Lw..K.",
+      "..Kw.K.K.K...K..",
+      ".K...E...K..L.Lw",
+      "..L...Aw..A...Aw",
+      "A...M.yN...N...D",
+      ".D..D..xD...D..x",
+      "D..N...N...M..xA",
+      ".A..Aw..A.A..Lw.",
+      ".A....y..D....x.",
+      ".M...N..N.N...N.",
+      "S.y.N..M.M.M.M..",
+      "M...Q..K.Q...K.K",
+      ".Q.K.K...P..Q...",
+      "K...L...KvK.P..L",
+      ".Q...L.R..xM..N.",
+      ".M...N..N.zN..N.",
+      "N.z.N.S...N.S...",
+      "N.yM.M.S...N..N.",
+      "..Dx..M...L...M.",
+      "..DxD...M..N.N..",
+      "D...Ny.D...D..Dx",
+      "D...N.yN...D..M.",
+      ".A...AyA...M...M",
+      "y..N...D.Dx..M.M",
+      "..D.D...M.Mx..L.",
+      "L...L.L...M.M..A"
+    ] },
+    { nm: "뜀박질", sub: 0.25, lead: 1.70, lv: 7, need: 30,
+      wv: 0.14, wvK: 2, tilt: 0.25, chart: [
+      "M..x..L...x.M...",
+      "..K....wA....wE.",
+      "....M..M..Mx..L.",
+      ".L.L...M.y.N...D",
+      ".x.D...MyM..L.L.",
+      "x.M..M..Ax.M...M",
+      ".y.N..D.xD...N.y",
+      "M..L...Lx..M...L",
+      "...M.y.N.N...N.N",
+      "...Dx.M...M..L..",
+      "K.K.K...E..E...E",
+      "..L..Lx.E...EvE.",
+      "..E.xL.L...A..L.",
+      ".Kv..E...L..A.A.",
+      "..A.....w.E...v.",
+      "..P..Lx.M.M.M..y",
+      "N...S.MxM...M..Q",
+      ".L.L.LxR..N.Tz..",
+      "N.S.Nz..T..Tz.N.",
+      "..N...R.R..xM...",
+      "S.M.M..N.zT..T.N",
+      "z..N..NyN.N.N.Nz",
+      "..N.N..My.N...Sy",
+      "N.N...Nz..N.Ny.M",
+      ".M.M...L..E...E.",
+      "Ev.K..E.x.E.E...",
+      "Lx..M...N...M.My",
+      "..N.N.Ny.D.D.Dz.",
+      "N..D.y.M..L..LxL",
+      "...MyM..M..Ny.D.",
+      ".M...L...M.y.N..",
+      "N.y.D...My.N..N."
+    ] },
+    { nm: "진흙탕", sub: 0.25, lead: 1.60, lv: 9, need: 27,
+      wv: 0.14, wvK: 2, tilt: 0.25, chart: [
+      "M..xA...L....wK.",
+      "....E...E.v...E.",
+      ".xE...KwK..Kw..K",
+      ".K.K..EvE.E..E..",
+      ".K.w.L.Lw.A...A.",
+      ".L..wE.E...K...E",
+      "w.K..vK...K...K.",
+      "wK.K.v.E..K..wL.",
+      "..Ew..K..Lw.E.E.",
+      ".E...L.x.M..N...",
+      "N.N..N..zN...Dz.",
+      ".D.z.D...N.z.N..",
+      ".Ny.D.D...D...D.",
+      ".zD...N..D.D.D..",
+      "D..x..D...x.A...",
+      "..x.M..Tz..T...N",
+      "z..N.Tz.T.Sy.N..",
+      ".N.T..T...M.M.M.",
+      "Rx..M.M.M.M..R.M",
+      "...N.S..T.zN.N.N",
+      "..M.S.R.S.T...M.",
+      "..Q..wL.L..KvK..",
+      ".KwK..L.xM..M..M",
+      "y.N.N.N.N.N...M.",
+      "M...M..D..yM.M..",
+      "D...M.My.A.A.A..",
+      "M...A...L.x.A.A.",
+      ".Lx.A...L.L.L.L.",
+      "wK...E..E.E..L..",
+      "L..wA.A.Ay.M..D.",
+      ".N.N...M..M..M..",
+      "N.N.N.N...M..N.."
+    ] },
+    { nm: "쫓고 쫓기", sub: 0.25, lead: 1.52, lv: 11, need: 24,
+      wv: 0.14, wvK: 2, tilt: 0.25, chart: [
+      "N..y..D..y..A...",
+      "y.N...D.....L...",
+      "P..LxL...Mx..L.L",
+      "x..M..xL.L.L.L..",
+      "M.R..N..N..yM..T",
+      "z.N.N..Nz..N..yM",
+      ".M...Qw..Q...M..",
+      "N.S...T...N...N.",
+      "N...N..N..M...M.",
+      ".R..N..N...R.M.M",
+      "..M...T...T.zN..",
+      "NyS..NyNN..zNN..",
+      "...Q..M..D.x...L",
+      "L.L.....Kv..KK.K",
+      ".wLL..R...N.z.N.",
+      "..M..L.L..w..E..",
+      "KK..P...L.w.A...",
+      ".xE.QQ.w...K.w..",
+      ".E.w...AAw.L.R.x",
+      ".M..yA....wK...K",
+      "..wE....x..E.v..",
+      "...PvP.PP.P.Q..K",
+      "KKvPP..PP.Q..K.w",
+      "Q.LL.Q..P.PvP.KK",
+      ".vK.P.K.QQ.Q..Q.",
+      "P..P.Q..P.Q.P..Q",
+      "..P..KK.Q..P..QQ",
+      ".QwK.P.QQ.RR.Q.L",
+      ".LL.QQ..Q..S..NN",
+      ".NNN.T.T.T.NN.S.",
+      ".N..T.Nz.T..NyNN",
+      "..M.R.S.RR.L.Q.P"
+    ] },
+    { nm: "뼈 무덤", sub: 0.25, lead: 1.45, lv: 12, need: 27,
+      wv: 0.14, wvK: 2, tilt: 0.25, chart: [
+      "N.z.N.z...Ny..M.",
+      ".x..Ay..A..yM...",
+      "y.N..N.y.N...N..",
+      ".N.z.N...S...Lw.",
+      ".K...K.Q.Lw.K.Kv",
+      "..K.vK.P...L.Qw.",
+      "K.K..wQ.L.xM..Tz",
+      "..T..R...M...T..",
+      "N...Ny..M.x.M..S",
+      "...N.N.N..T...M.",
+      "..M..NyN...R.M..",
+      ".D.....Q...K.K.K",
+      "v.EE.wLLLL..S...",
+      "N..D.DD..Dx.R.Mx",
+      "M...Dx..MM.....D",
+      "y..MM..L..Q.Lx..",
+      "..L.L...R..AAw.L",
+      "..E....vE.ExE...",
+      "..M.....Q.....NN",
+      ".S.y...Dx..R...K",
+      "...Ex...v..E..w.",
+      "..wLL..P.PP..PvK",
+      "..KK.K.Pv.P.Q.PP",
+      "P.vPP.Q..P.P.Q.Q",
+      "..R.M.S.TzT..SSS",
+      ".NNN.S.R.S.MM.RR",
+      ".L.LLwQ.L.Q.R.S.",
+      ".Q.KK.K..R..N.NN",
+      "N.Sy.N..NNN.S..Q",
+      ".Q.PP..LwL.R.SS.",
+      "R..RxL.R..S.S.NN",
+      ".S..Nz.TTzTTT.NN"
+    ] },
+    { nm: "큰 개", sub: 0.25, lead: 1.38, lv: 13, need: 22,
+      wv: 0.14, wvK: 2, tilt: 0.25,
+      boss: { nm: "큰 개", ic: "🐕",
+              말: ["멍!", "그건 내 뼈다귀야", "다 내놔!"] }, chart: [
+      "N.y.N.....L.....",
+      "N..z..N..y..N..y",
+      "N.N.N..T.N.S.N..",
+      "yM..N...S..N..R.",
+      "MxM..R.L..wK.K..",
+      ".K.K..vK...KvP.K",
+      "..K...KvP.PvK.Kv",
+      "..P.K...K.v.K..Q",
+      "w..K.w.L.Q.R.M..",
+      "T...N..N.TzT..zN",
+      ".Ny.N.T..N.zN..R",
+      ".RR.....N..M.MM.",
+      "..LLw....K.K.P..",
+      "...LLL.....P.v.P",
+      "PPv..PPP..P..L..",
+      "PPPv..E.EE.E.w..",
+      ".K.v.P..E.....M.",
+      "....P..R...x.R..",
+      "K....wK..L.....N",
+      ".T.N.Sy.N....zD.",
+      "..D...x...A..x..",
+      "..RxM..R.S.T.S..",
+      "QQ.L..S.Rx.RRRRR",
+      "..Q.K..K..P.P.Qw",
+      ".L.wK.P..Q.R..NN",
+      "yS.N.SS..S.SS.T.",
+      ".M..RR.QQ..PP.P.",
+      "P..KwQQ.Q.P.P.K.",
+      ".K.K.KK.K.P.K.K.",
+      "Q.P.Q.P..PvPP.PP",
+      "PPPPPP.Q.QQ.R.R.",
+      "L.L.L..S.S.M.M.R"
+    ] }
+  ];
+
   const JOB_STAGES = {
     none:      { bgm: "rhythm",    kind: "lane", list: STAGES_NONE },
-    levitator: { bgm: "levitator", kind: "ring", list: STAGES_LEV }
+    levitator: { bgm: "levitator", kind: "ring", list: STAGES_LEV },
+    bangul:    { bgm: "bangul",    kind: "bone", list: STAGES_BANGUL }
   };
   let stageJob = "none";
   let STAGES = JOB_STAGES.none.list;
@@ -3490,6 +3781,7 @@
     doves = []; moveDist = 0;
     bullets = []; shipClock = 0; aug.galaga = 0;
     coinRun = 0; coinDebt = 0; coinSeen = 0; coinGot = 0; coinSeenV = 0; coinGotV = 0;
+    boneSeen = 0; boneGot = 0;
     stageMode = false; stageSlot = -1; stageDone = false; stageT = 0;
     overScreen.classList.remove("stage");
     monkStreak = 0; fullOwn = false; fullBanner = 0; fullFx = 0;
@@ -3597,6 +3889,8 @@
   /* 무소유의 계산용 — 이번 판에 나온 코인과 주운 코인의 개수(값이 아니라 낱개).
      둘의 차이가 '흘려보낸 코인' 이고, 판 끝에 그만큼 점수가 늘어난다. */
   let coinSeen = 0, coinGot = 0;
+  let boneSeen = 0, boneGot = 0;               // 방울이 스테이지 — 흘린 것과 주운 것
+  function curNeed() { return stageMode ? ((STAGES[stageNo - 1] || {}).need || 0) : 0; }
   // 무소유의 셈은 개수가 아니라 값으로 한다 — 3코인은 3%, 5코인은 5%
   let coinSeenV = 0, coinGotV = 0;
   /* 무소유 → 풀소유. 코인을 연달아 FULL_NEED 개 쥐면 진화한다.
@@ -3833,6 +4127,22 @@
     });
   }
 
+  /* 뼈다귀 하나 — 똥과 똑같이 lead 초 뒤 그 칸에 닿는다.
+     그때 거기 서 있어야 주울 수 있다. */
+  function spawnBone(lane, lead) {
+    const r = 15;
+    const startY = -r - 10;
+    const targetY = player.y + player.hy;
+    items.push({
+      type: "bone", emoji: "🦴", img: "bone",
+      x: laneX(lane), y: startY, r: r,
+      vx: 0, vy: (targetY - startY) / lead,
+      rot: (Math.random() - Math.random()) * 0.6, vr: 0,
+      size: r * 2.1, bob: Math.random() * 6.28, born: elapsed
+    });
+    boneSeen++;
+  }
+
   /* 고리 한 벌 — lead 초 뒤에 RING_HIT 까지 조여들도록 속도를 정한다.
      di 가 가리키는 쪽(0 = 위, 시계 방향 22.5도씩)만 gap 칸만큼 비워 둔다. */
   function spawnRing(di, gap, lead) {
@@ -3885,7 +4195,9 @@
          제 몫의 시간을 못 받는 똥은 그냥 거른다 — 억울하게 맞는 것보다 낫다. */
       if (lead < st.lead * 0.7) continue;
       // 글자 하나가 여러 줄기일 수 있다 (A 는 1·5 처럼)
-      if (stageSet().kind === "ring") {
+      if (BONE_LANE[ch]) {
+        spawnBone(BONE_LANE[ch], lead);
+      } else if (stageSet().kind === "ring") {
         spawnRing(parseInt(ch, 16), st.gap || 5, lead);
       } else {
         const lanes = STAGE_GROUP[ch] || [+ch];
@@ -3896,7 +4208,10 @@
     const ph = ((t - off) / beat) % 1;
     if (ph < 0.5) beatPulse = Math.max(beatPulse, 1 - ph / 0.5);
     // 채보가 끝나고 화면의 똥까지 다 지나가면 클리어
-    if (stageDone && !items.some(q => q.type === "poop")) stageFinish(true);
+    if (stageDone && !items.some(q => q.type === "poop" || q.type === "bone")) {
+      const need = curNeed();
+      stageFinish(!need || boneGot >= need);    // 뼈다귀 판은 목표만큼 모아야 깬 것
+    }
   }
 
   /* 박자마다 화면이 한 번 뛴다 (소리를 껐을 때도 박자가 보이도록) */
@@ -4968,6 +5283,13 @@
       openAugment(full ? 3 : 1);     // 보름달은 3연속 선택
       return true;
     }
+    if (it.type === "bone") {
+      boneGot++;
+      popText(it.x, it.y, "🦴 " + boneGot + (bossOf() ? "" : " / " + (curNeed() || 0)),
+              "#ffe9c4", 16);
+      if (!sfx("coin", 0.7)) beep(880 + Math.min(12, boneGot) * 20, .06, "triangle", .05);
+      return true;
+    }
     if (it.type === "coin") {
       /* 이번 판 점수와는 아무 상관이 없다 — 판을 넘어 쌓이기만 한다. */
       const v = it.coin || 1;
@@ -5322,8 +5644,11 @@
     const base = BGM_OFF[bg] + STAGE_INTRO * beat;
     const done = Math.max(0, Math.min(1, (stageT - base) / len));
     elFinal.textContent = Math.round(done * 100) + "%";
-    document.getElementById("stageProg").textContent =
-      Math.round(len) + "초 중 " + (done * len).toFixed(1) + "초";
+    const need = curNeed();
+    document.getElementById("stageProg").textContent = need
+      ? ("🦴 " + boneGot + " / " + need + " · " + Math.round(len) + "초 중 "
+         + (done * len).toFixed(1) + "초")
+      : (Math.round(len) + "초 중 " + (done * len).toFixed(1) + "초");
     const nm = "스테이지 " + stageNo + " · " + STAGES[stageNo - 1].nm;
     elTitle.textContent = nm + (clear ? " 클리어!" : " 실패");
     if (clear) markStageClear(stageNo);
@@ -5384,7 +5709,8 @@
                                       : (STAGE_GROUP[ch] || [0]).length;
       const zn = ZONES[Math.min(LAST_Z, st.lv - 1)];
       me.textContent = (st.boss ? "👑 보스 · " : "") + zn.ic + " " + zn.nm
-                     + " · 똥 " + cnt + "개";
+                     + " · 똥 " + cnt + "개"
+                     + (st.need ? " · 🦴 " + st.need + "개" : "");
       box.appendChild(nm); box.appendChild(me);
       const dn = document.createElement("div"); dn.className = "done";
       dn.textContent = stageCleared(n) ? "⭐" : "";
@@ -7925,6 +8251,13 @@
     }
 
     // 하트가 많으면 작게 그리고 10개 단위로 줄을 바꾼다 (헬스걸은 최대 20개)
+    if (curNeed()) {                        // 방울이 스테이지 — 모은 뼈다귀
+      const need = curNeed(), done = boneGot >= need;
+      ctx.textAlign = "left";
+      ctx.font = "800 17px NanumBarunGothic, system-ui, sans-serif";
+      ctx.fillStyle = done ? "#9cff8f" : "#ffe9c4";
+      ctx.fillText("🦴 " + boneGot + " / " + need, 16, top);
+    }
     if (job === "powerp" && !stageMode) {   // 무소유 — 안 맞고 버틴 만큼 붙은 배율
                                             // (점수가 없는 스테이지에서는 뜻이 없다)
       ctx.textAlign = "right";
