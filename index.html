@@ -1025,7 +1025,7 @@
   const elTitle = document.getElementById("overTitle");
   const coinNote = document.getElementById("coinNote");
 
-  const GAME_VERSION = "v0.6.95";   // 코드를 고칠 때마다 뒤 두 자리를 올린다
+  const GAME_VERSION = "v0.6.96";   // 코드를 고칠 때마다 뒤 두 자리를 올린다
   document.getElementById("ver").textContent = GAME_VERSION;
 
   const LS_NAME = "epjpddongpi_name";
@@ -2240,11 +2240,13 @@
     { id: "dice",       ic: "🎲", nm: "주사위", ds: "다시 뽑기 3회 추가",
       cond: () => job !== "powerj",   // 파워J 는 다시 뽑기를 쓸 수 없다
       go: () => { rerolls += 3; syncReroll(); } },
-    { id: "afterimage", ic: "👻", nm: "그건 제 잔상입니다만?", ds: "맞을 때 10% 확률로 잔상만 남기고 피한다",
-      max: 5,                     // 10% → 15 → 20 → 25 → 30%
+    /* 회피 확률은 일부러 안 적는다 — 숫자를 세는 것보다 '가끔 스르륵 피해진다'는
+       느낌으로 두는 게 낫다. 안쪽 값은 10% 로 시작해 한 장마다 5%p 씩 (최대 30%). */
+    { id: "afterimage", ic: "👻", nm: "그건 제 잔상입니다만?", ds: "맞을 때 가끔 잔상만 남기고 피한다",
+      max: 5,
       dsFn: () => (augCount["afterimage"] || 0)
-        ? "회피 확률 +5% (지금 " + Math.round(aug.dodge * 100) + "%)"
-        : "맞을 때 10% 확률로 잔상만 남기고 피한다",
+        ? "더 자주 잔상만 남기고 피한다"
+        : "맞을 때 가끔 잔상만 남기고 피한다",
       go: () => { aug.dodge += augCount["afterimage"] ? 0.05 : 0.10; } },
     { id: "wak",        ic: "👊", nm: "고무고무노 피스톨", ds: "총알이 주먹이 된다. 맞은 똥은 튕겨 날아가 처음 부딪힌 똥과 함께 터진다",
       hidden: true, once: true, cond: () => aug.galaga >= 2,   // 갤러그 2대 이상
