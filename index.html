@@ -1025,7 +1025,7 @@
   const elTitle = document.getElementById("overTitle");
   const coinNote = document.getElementById("coinNote");
 
-  const GAME_VERSION = "v0.6.96";   // 코드를 고칠 때마다 뒤 두 자리를 올린다
+  const GAME_VERSION = "v0.6.97";   // 코드를 고칠 때마다 뒤 두 자리를 올린다
   document.getElementById("ver").textContent = GAME_VERSION;
 
   const LS_NAME = "epjpddongpi_name";
@@ -1471,8 +1471,65 @@
     introJob = keys[Math.floor(Math.random() * keys.length)];
   }
   rollIntroJob();                        // 첫 바퀴부터 무작위
+  /* ---------- 스테이지 강아지 ----------
+     스테이지 모드에서만 직업마다 그 직업에 맞는 강아지가 뛴다. 아케이드는 원래 그림 그대로.
+     백수 퍼그 · 도박사 도베르만 · 부양사 파피용 · 헬스걸 복서 · 파워J 보더콜리 ·
+     파워P 비글 · 무소유 진돗개. 방울이는 원래 강아지라 그대로 둔다.
+     머리 중심(cx·cy)은 실루엣에서 가장 두꺼운 자리로 잰 값이고, 그림 크기 비율은 방울이와 같다. */
+  const DOG_SPRS = {
+    none: {
+      ground: { right: { img: null, aspect: 0.9406, head: 0.512, cx: 0.681, cy: 0.272, adj: 0.6656 },
+                hurt:  { img: null, aspect: 0.8063, head: 0.577, cx: 0.512, cy: 0.359, adj: 0.6520 } },
+      space:  { right: { img: null, aspect: 0.8375, head: 0.602, cx: 0.604, cy: 0.300, adj: 0.8127 },
+                hurt:  { img: null, aspect: 0.7344, head: 0.570, cx: 0.489, cy: 0.372, adj: 0.7125 } } },
+    gambler: {
+      ground: { right: { img: null, aspect: 0.9031, head: 0.433, cx: 0.678, cy: 0.394, adj: 0.5629 },
+                hurt:  { img: null, aspect: 0.6188, head: 0.429, cx: 0.490, cy: 0.406, adj: 0.4848 } },
+      space:  { right: { img: null, aspect: 0.9938, head: 0.664, cx: 0.620, cy: 0.320, adj: 0.8964 },
+                hurt:  { img: null, aspect: 0.8281, head: 0.645, cx: 0.472, cy: 0.378, adj: 0.8062 } } },
+    levitator: {
+      ground: { right: { img: null, aspect: 0.6188, head: 0.316, cx: 0.720, cy: 0.520, adj: 0.4108 },
+                hurt:  { img: null, aspect: 0.9125, head: 0.338, cx: 0.514, cy: 0.591, adj: 0.3819 } },
+      space:  { right: { img: null, aspect: 0.9500, head: 0.538, cx: 0.562, cy: 0.416, adj: 0.7263 },
+                hurt:  { img: null, aspect: 0.8969, head: 0.552, cx: 0.533, cy: 0.422, adj: 0.6900 } } },
+    fit: {
+      ground: { right: { img: null, aspect: 0.8688, head: 0.458, cx: 0.691, cy: 0.253, adj: 0.5954 },
+                hurt:  { img: null, aspect: 0.8656, head: 0.581, cx: 0.498, cy: 0.300, adj: 0.6565 } },
+      space:  { right: { img: null, aspect: 0.8281, head: 0.611, cx: 0.592, cy: 0.306, adj: 0.8248 },
+                hurt:  { img: null, aspect: 0.6813, head: 0.576, cx: 0.482, cy: 0.288, adj: 0.7200 } } },
+    powerj: {
+      ground: { right: { img: null, aspect: 0.9844, head: 0.558, cx: 0.584, cy: 0.325, adj: 0.7254 },
+                hurt:  { img: null, aspect: 0.8719, head: 0.581, cx: 0.513, cy: 0.319, adj: 0.6565 } },
+      space:  { right: { img: null, aspect: 0.9469, head: 0.644, cx: 0.604, cy: 0.325, adj: 0.8694 },
+                hurt:  { img: null, aspect: 0.7906, head: 0.586, cx: 0.518, cy: 0.294, adj: 0.7325 } } },
+    powerp2: {
+      ground: { right: { img: null, aspect: 0.8625, head: 0.515, cx: 0.630, cy: 0.325, adj: 0.6695 },
+                hurt:  { img: null, aspect: 0.8031, head: 0.575, cx: 0.537, cy: 0.350, adj: 0.6497 } },
+      space:  { right: { img: null, aspect: 0.8281, head: 0.601, cx: 0.608, cy: 0.300, adj: 0.8114 },
+                hurt:  { img: null, aspect: 0.7656, head: 0.601, cx: 0.416, cy: 0.300, adj: 0.7512 } } },
+    powerp: {
+      ground: { right: { img: null, aspect: 0.9313, head: 0.515, cx: 0.688, cy: 0.338, adj: 0.6695 },
+                hurt:  { img: null, aspect: 0.7063, head: 0.560, cx: 0.518, cy: 0.366, adj: 0.6328 } },
+      space:  { right: { img: null, aspect: 0.8219, head: 0.645, cx: 0.574, cy: 0.322, adj: 0.8708 },
+                hurt:  { img: null, aspect: 0.7906, head: 0.651, cx: 0.498, cy: 0.362, adj: 0.8138 } } }
+  };
+  for (const jb in DOG_SPRS) {
+    for (const [set, pre] of [["ground", ""], ["space", "space_"]]) {
+      for (const key of ["right", "hurt"]) {
+        const im = new Image();
+        im.onload = () => { DOG_SPRS[jb][set][key].img = im; };
+        im.src = "assets/dogs/" + jb + "_" + pre + key + ".png";
+      }
+    }
+  }
+
   function sprSet() {
     const jb = state === STATE.READY ? introJob : job;
+    // 스테이지 모드 — 직업 강아지 (그림이 아직 안 왔으면 원래 그림으로)
+    if (stageMode && state !== STATE.READY && DOG_SPRS[jb]) {
+      const D = DOG_SPRS[jb][inSpace() ? "space" : "ground"];
+      if (D.right.img) return D;
+    }
     if (inSpace()) {                       // 우주에서는 우주복 차림
       const SS = JOB_SPRS_SPACE[jb];       // 제 우주복이 있으면 그걸로
       if (SS && SS.right.img) return SS;
