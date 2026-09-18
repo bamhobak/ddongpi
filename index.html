@@ -995,7 +995,7 @@
   const elTitle = document.getElementById("overTitle");
   const coinNote = document.getElementById("coinNote");
 
-  const GAME_VERSION = "v0.7.12";   // 코드를 고칠 때마다 뒤 두 자리를 올린다
+  const GAME_VERSION = "v0.7.13";   // 코드를 고칠 때마다 뒤 두 자리를 올린다
   document.getElementById("ver").textContent = GAME_VERSION;
 
   const LS_NAME = "epjpddongpi_name";
@@ -2282,6 +2282,8 @@
     blackhole: false,   // 히든: 블랙홀 (자석 강화 + 뚜니핑 낙하물도 조금 끌어당김)
     legion: false,      // 히든: 대왕 뚜니핑 군단 (대왕 등장·점수 강화)
     doveWhat: false,    // 히든: 비둘기 무엇? (비둘기 펫이 세지고 자주 나온다)
+    doveFlock: 0,       // 비둘기 떼 — 한 번 출격에 더 나가는 마리 수
+    doveFreq: 1,        // 귀소 본능 — 출격 거리 배율 (작을수록 자주)
     dodge: 0,           // 그건 제 잔상입니다만? — 맞을 때 피할 확률 (0~0.30)
     dungy: false,       // 방울이: 똥묻히기 (오염도만큼 모든 점수가 오른다)
     momMeal: false,     // 쉬었음 청년: 엄마는 우리 딸 믿어 (엄마의 밥상이 떨어진다)
@@ -2323,9 +2325,21 @@
       cond: () => job !== "fit" && shields < 10,   // 헬스걸은 방패가 없는 직업 — 미등장
       noCount: true,              // 방패 수는 화면에 우산으로 보이니 보유 뱃지는 생략
       go: () => { shields = Math.min(shields + 3, 10); } },   // 증강으로는 최대 10개까지
-    /* 갤러그·도와줘 정연핑은 펫으로 옮겨 갔다 (PETS). 아래 히든들은 그 펫이 있을 때만 나온다. */
+    /* ── 펫 전용 증강 — 그 펫을 데리고 있을 때만 후보에 나온다 ── */
+    { id: "helper",     ic: "🦸", nm: "도와줘 정연핑", ds: "정연핑이 한 명 더 날아온다",
+      max: 4, cond: () => pet === "helper",                    // 펫 1명 + 증강 4 = 최대 5명
+      go: () => { aug.helper++; helperTimer = Math.min(helperTimer, 0.6); } },
+    { id: "galaga",     ic: "🚀", nm: "갤러그 편대", ds: "우주선이 한 대 더 늘어난다 · 늘어날수록 각자 느긋해진다",
+      max: 4, cond: () => pet === "galaga",                    // 펫 1대 + 증강 4 = 최대 5대
+      go: () => { aug.galaga++; } },
+    { id: "doveFlock",  ic: "🐦", nm: "비둘기 떼", ds: "출격할 때 비둘기가 한 마리 더 날아오른다",
+      max: 3, cond: () => pet === "dove",
+      go: () => { aug.doveFlock++; } },
+    { id: "doveHome",   ic: "📯", nm: "귀소 본능", ds: "비둘기가 더 자주 출격한다",
+      max: 3, cond: () => pet === "dove",
+      go: () => { aug.doveFreq *= 1 - 0.2 * dim("doveHome"); } },   // 80m → 64m → 53m …
     { id: "helperRush", ic: "💥", nm: "정연핑 대폭주", ds: "정연핑!!!?? 무엇!!?!",
-      hidden: true, once: true, cond: () => pet === "helper",   // 정연핑 펫
+      hidden: true, once: true, cond: () => pet === "helper" && aug.helper >= 2,   // 정연핑 2명 이상
       go: () => { aug.helperRush = true; } },
     { id: "hungry",     ic: "😋", nm: "마운자로를 이겨낸 정연핑", ds: "정연핑이 아이템을 대신 먹어준다",
       hidden: true, once: true, cond: () => pet === "helper" && aug.magnet > 0,   // 정연핑 펫 + 자석
@@ -2334,7 +2348,8 @@
       max: 99, noCount: true, cond: () => job === "fit" && level >= 7,   // 헬스걸 전용 — 우산 다발 자리
       go: () => { roidT = 7; } },
     { id: "doveWhat",   ic: "🕊️", nm: "비둘기 무엇?", ds: "비둘기가 1.5배 빠르고 커진다 · 더 자주 출격",
-      hidden: true, once: true, cond: () => pet === "dove",   // 비둘기 펫
+      hidden: true, once: true,
+      cond: () => pet === "dove" && (augCount["doveFlock"] || 0) + (augCount["doveHome"] || 0) >= 2,   // 비둘기 증강 2개 이상
       go: () => { aug.doveWhat = true; } },
     { id: "steelUmb",   ic: "☔", nm: "우산 로켓배송", ds: "우산이 없으면 저절로 배송된다",
       hidden: true, once: true,
@@ -2394,7 +2409,7 @@
         : "맞을 때 가끔 잔상만 남기고 피한다",
       go: () => { aug.dodge += augCount["afterimage"] ? 0.05 : 0.10; } },
     { id: "wak",        ic: "👊", nm: "고무고무노 피스톨", ds: "총알이 주먹이 된다. 맞은 똥은 튕겨 날아가 처음 부딪힌 똥과 함께 터진다",
-      hidden: true, once: true, cond: () => pet === "galaga",   // 갤러그 펫
+      hidden: true, once: true, cond: () => pet === "galaga" && aug.galaga >= 2,   // 갤러그 2대 이상
       go: () => { aug.wak = true; } },
     { id: "clone",      ic: "👯", nm: "벼랑 끝 분신술", ds: "작은 이재가 날아가 똥과 함께 자폭한다",
       hidden: true, once: true,
@@ -2622,7 +2637,7 @@
   const M_PX = 12, DOVE_EVERY = 80 * M_PX;   // 100m 에서 20% 줄여 80m 마다
   // 히든 '비둘기 무엇?' — 속도·크기·폭발은 1.5배, 출격은 3/4 거리마다
   function doveMul()   { return aug.doveWhat ? 1.5 : 1; }
-  function doveEvery() { return DOVE_EVERY * (aug.doveWhat ? 0.75 : 1); }
+  function doveEvery() { return DOVE_EVERY * (aug.doveWhat ? 0.75 : 1) * aug.doveFreq; }
   let inputHoldUntil = 0;          // 이 시각까지는 화면 터치를 조작으로 받지 않는다
   let roidT = 0;                   // 스테로이드 과다 복용: 남은 약발 시간(초)
   let hurtUntil = 0;               // 똥에 맞은 직후 (아픈 그림 표시)
@@ -3073,7 +3088,7 @@
     aug.dodge = 0; aug.wak = false; aug.dungy = false; aug.momMeal = false;
     rerolls = REROLLS; ghosts = []; wakBooms = [];
     aug.blackhole = false; aug.legion = false; roidT = 0;
-    aug.doveWhat = false;
+    aug.doveWhat = false; aug.doveFlock = 0; aug.doveFreq = 1;
     flyOn = false;
     aug.angryUmb = false; aug.goldChance = 0; aug.inter = false; aug.goldLord = false;
     augRound = 0;
@@ -3710,19 +3725,26 @@
         moveDist -= need;
         // 머리 위쪽에서 가장 가까운 똥을 노린다 (없으면 그냥 위로 날아간다)
         const py = player.y + player.hy;
-        let best = null, bd = -1e9;
-        for (const q of items) {
-          if (q.type !== "poop" || q.blast || q.dark) continue;
-          if (q.y > player.y - 40) continue;          // 이미 지나친 똥은 무시
-          /* 머리 위 부채꼴 안에서 '가장 멀리 있는' 똥을 노린다.
-             바로 앞 똥만 잡으면 금방 터져 버려서 날아가는 맛이 없다. */
-          const dy = py - q.y, dx = Math.abs(q.x - player.x);
-          if (dx > 90 + dy * 0.75) continue;
-          const d = dy - dx * 0.35;                   // 높이 있을수록, 옆으로 덜 치우칠수록
-          if (d > bd) { bd = d; best = q; }
+        /* 비둘기 떼 — 한 번에 여러 마리. 같은 똥에 몰리지 않게 이미 노린 똥은 빼고 고른다 */
+        const n = 1 + aug.doveFlock, taken = new Set(doves.map(c => c.t));
+        for (let m = 0; m < n; m++) {
+          const ox = n > 1 ? (m - (n - 1) / 2) * 26 : 0;   // 나란히 퍼져서 날아오른다
+          let best = null, bd = -1e9;
+          for (const q of items) {
+            if (q.type !== "poop" || q.blast || q.dark || taken.has(q)) continue;
+            if (q.y > player.y - 40) continue;          // 이미 지나친 똥은 무시
+            /* 머리 위 부채꼴 안에서 '가장 멀리 있는' 똥을 노린다.
+               바로 앞 똥만 잡으면 금방 터져 버려서 날아가는 맛이 없다. */
+            const dy = py - q.y, dx = Math.abs(q.x - player.x - ox);
+            if (dx > 90 + dy * 0.75 + (n - 1) * 30) continue;   // 떼가 클수록 부채꼴도 넓게
+            const d = dy - dx * 0.35;                   // 높이 있을수록, 옆으로 덜 치우칠수록
+            if (d > bd) { bd = d; best = q; }
+          }
+          if (best) taken.add(best);
+          // 몸이 아니라 머리 위쪽에서 날아오른다
+          doves.push({ x: player.x + ox, y: py - player.r * hitMul() - 26 - Math.abs(ox) * 0.4,
+                       t: best, ph: Math.random() * 6.28 });
         }
-        // 몸이 아니라 머리 위쪽에서 날아오른다
-        doves.push({ x: player.x, y: py - player.r * hitMul() - 26, t: best, ph: Math.random() * 6.28 });
         if (!sfx("dove")) { beep(1500, .06, "sine", .035); beep(1900, .07, "sine", .03); }
       }
     }
