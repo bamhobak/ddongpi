@@ -1035,7 +1035,7 @@
   const elTitle = document.getElementById("overTitle");
   const coinNote = document.getElementById("coinNote");
 
-  const GAME_VERSION = "v0.7.24";   // 코드를 고칠 때마다 뒤 두 자리를 올린다
+  const GAME_VERSION = "v0.7.25";   // 코드를 고칠 때마다 뒤 두 자리를 올린다
   document.getElementById("ver").textContent = GAME_VERSION;
 
   const LS_NAME = "epjpddongpi_name";
@@ -8193,6 +8193,40 @@
           { t: (q.secs == null ? "-" : q.secs + "초"), c: "num" }
         ])));
     }
+
+    /* 펫별 — 따로 만든 DB 함수(ddongpi_pet_stats)에서 받는다. 함수가 아직 없으면
+       증강 통계에 섞여 있는 'pet:<id>' 줄로 판수·평균점수만이라도 보여 준다. */
+    const petBox = document.createElement("div");
+    P.sum.appendChild(petBox);
+    const petName = id => id === "none" ? "펫 없음" : (PETS[id] ? PETS[id].ic + " " + PETS[id].nm : id);
+    const petTable = (rows, note) => {
+      petBox.innerHTML = "";
+      petBox.appendChild(devSection("펫별" + (note || ""),
+        ["펫", "판수", "평균점수", "최고점수", "평균생존"],
+        rows.length ? rows.map(q => [
+          petName(q.pet),
+          { t: q.runs, c: "num" },
+          { t: Number(q.avg || 0).toLocaleString(), c: "num" },
+          { t: q.best == null ? "-" : Number(q.best).toLocaleString(), c: "num" },
+          { t: (q.secs == null ? "-" : q.secs + "초"), c: "num" }
+        ]) : [["기록 없음", "", "", "", ""]]));
+    };
+    const fromAugs = (data.augs || []).filter(a => String(a.id).slice(0, 4) === "pet:")
+      .map(a => ({ pet: String(a.id).slice(4), runs: a.picks, avg: a.score, best: null, secs: null }));
+    petTable(fromAugs, " (불러오는 중…)");
+    (async () => {
+      try {
+        const res = await fetch(SB_URL + "/rest/v1/rpc/ddongpi_pet_stats", {
+          method: "POST",
+          headers: sbHeaders({ "Content-Type": "application/json" }),
+          body: JSON.stringify({ pw: devPwOK })
+        });
+        if (!res.ok) throw new Error("HTTP " + res.status);
+        petTable(await res.json());
+      } catch (e) {
+        petTable(fromAugs, " (최고점수·생존은 DB 함수 실행 후)");
+      }
+    })();
 
     const rec = data.recent || [];
     const recSec = devSection("최근 20판",
