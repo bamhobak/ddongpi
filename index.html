@@ -957,7 +957,7 @@
   const elTitle = document.getElementById("overTitle");
   const coinNote = document.getElementById("coinNote");
 
-  const GAME_VERSION = "v0.7.01";   // 코드를 고칠 때마다 뒤 두 자리를 올린다
+  const GAME_VERSION = "v0.7.02";   // 코드를 고칠 때마다 뒤 두 자리를 올린다
   document.getElementById("ver").textContent = GAME_VERSION;
 
   const LS_NAME = "epjpddongpi_name";
@@ -1968,7 +1968,11 @@
      브라우저의 loop 로 그냥 되감으면 mp3 앞뒤 여백만큼 소리가 비고 마디도 뚝 끊기는데,
      겹쳐 넘기면 그 자리가 크로스페이드로 메워진다. */
   const BGM_VOL = { menu: 0.42, play: 0.34, space: 0.36, blackhole: 0.40, fever: 0.42,
-                    rhythm: 0.38 };
+                    rhythm: 0.38,
+                    /* 직업 곡 — 곡마다 소리 크기(실효값)를 재서 play 와 같은 크기로 들리게 맞췄다.
+                       그대로 틀면 헬스걸 곡은 play 보다 10.8dB, 파워P 는 9dB 나 크다. */
+                    gambler: 0.15, levitator: 0.174, fit: 0.098, powerj: 0.395,
+                    powerp2: 0.121, powerp: 0.598, bangul: 0.252 };
   /* 곡마다 잰 박자와 첫 박 위치(초). 소리의 세기가 커지는 지점을 뽑아
      격자를 맞춰 구한 값이다 — 128·140·105·132 처럼 정수로 떨어져 믿을 만하다. */
   const BGM_BPM = { menu: 140, play: 128, space: 105, blackhole: 104, fever: 132,
@@ -2049,13 +2053,17 @@
     other.volume = V * (1 - k);
     if (left <= 0.06) { bgmFadeOut(bgmCur, 0.15); bgmCur = other; }
   }
+  /* 직업마다 제 곡 — 땅 위에서 뛸 때 흐른다. 우주·블랙홀·뚜니핑은 그 자리의 곡이 앞선다.
+     백수는 원래 곡(play) 그대로. */
+  const JOB_BGM = { gambler: "gambler", levitator: "levitator", fit: "fit", powerj: "powerj",
+                    powerp2: "powerp2", powerp: "powerp", bangul: "bangul" };
   function syncBgm() {
     const inGame = state === STATE.PLAY || state === STATE.AUG || state === STATE.PAUSE;
     // 리듬을 켜 두면 지대와 상관없이 리듬 전용 곡을 돌린다
     const want = (rhythmActive() && inGame) ? "rhythm"
       : inGame
       ? (feverBgm ? "fever"
-                  : (inBlackhole() ? "blackhole" : (inSpace() ? "space" : "play")))
+                  : (inBlackhole() ? "blackhole" : (inSpace() ? "space" : (JOB_BGM[job] || "play"))))
       : "menu";
     if (want === bgmName || bgmOff) return;
     if (bgmName === null && Date.now() < bgmRetryAt) return;   // 막힌 직후에는 잠깐 쉰다
