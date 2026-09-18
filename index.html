@@ -957,7 +957,7 @@
   const elTitle = document.getElementById("overTitle");
   const coinNote = document.getElementById("coinNote");
 
-  const GAME_VERSION = "v0.7.03";   // 코드를 고칠 때마다 뒤 두 자리를 올린다
+  const GAME_VERSION = "v0.7.04";   // 코드를 고칠 때마다 뒤 두 자리를 올린다
   document.getElementById("ver").textContent = GAME_VERSION;
 
   const LS_NAME = "epjpddongpi_name";
@@ -3037,8 +3037,9 @@
     const list = aug.giant > 0
       ? FEVER_SIZES.concat([{
           min: GIANT.min, max: GIANT.max,
-          score: GIANT.score * (aug.legion ? 2 : 1),
-          w: GIANT.w * aug.giant * (aug.legion ? 3 : 1),
+          /* 군단 — 대왕 비율 3.6% → 7.2% (비중 3 → 6.285), 점수 1.5배 */
+          score: GIANT.score * (aug.legion ? 1.5 : 1),
+          w: GIANT.w * aug.giant * (aug.legion ? 2.095 : 1),
           giant: true
         }])
       : FEVER_SIZES;
