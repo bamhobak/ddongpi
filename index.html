@@ -1035,7 +1035,7 @@
   const elTitle = document.getElementById("overTitle");
   const coinNote = document.getElementById("coinNote");
 
-  const GAME_VERSION = "v0.7.23";   // 코드를 고칠 때마다 뒤 두 자리를 올린다
+  const GAME_VERSION = "v0.7.24";   // 코드를 고칠 때마다 뒤 두 자리를 올린다
   document.getElementById("ver").textContent = GAME_VERSION;
 
   const LS_NAME = "epjpddongpi_name";
@@ -5052,15 +5052,25 @@
   let gambleGap = 3, gambleDir = 1;            // 도박 벽 — 지난 틈과 쓸리는 방향
   let bossPhase = -1, bossRoar = 0, bossHp = 1, bossWin = 0, bossWinNm = "";
   function patReset() {
-    patPtr = -1; patClock = 0; patLv = 0; gambleGap = 3; gambleDir = 1;
+    patPtr = -1; patClock = 0; patLv = 0; gambleGap = 3; gambleDir = 1; patVar = {};
     bossPhase = -1; bossRoar = 0; bossHp = 1; bossWin = 0;
   }
   // 채보 한 칸 — lead 초 뒤에 캐릭터 머리 높이의 그 칸에 닿도록 속도를 정한다
-  function spawnChart(lane, lead, st) {
+  /* 레벨마다 배치를 새로 뽑는다 — 패턴(박자·모양·개수)은 그대로 두고 자리만 바꾼다.
+       좌우 뒤집기(50%)와 칸 격자 전체를 옆으로 옮기기(±5%)는 칸 사이 거리를 그대로 두므로
+       예전 채보가 보장하던 '다 피할 수 있다'가 깨지지 않는다. 칸을 한 칸씩 섞으면 그게 깨진다. */
+  let patVar = {};
+  function patVarOf(lv) {
+    return patVar[lv] || (patVar[lv] = { mir: Math.random() < 0.5, off: (Math.random() * 2 - 1) * 0.05 * W });
+  }
+  function spawnChart(lane, lead, st, lv) {
     const r = 15 + Math.random() * 5;
     const startY = -r - 10;
     const targetY = player.y + player.hy;
-    const home = laneX(lane), gap = W * LANE_GAP;
+    const vr = patVarOf(lv || 1);
+    const gap = W * LANE_GAP;
+    // 칸 안에서도 조금씩 다른 자리에 선다 (±칸 간격의 12%)
+    const home = laneX(vr.mir ? 6 - lane : lane) + vr.off + (Math.random() * 2 - 1) * gap * 0.12;
     const wvA = gap * Math.min(WEAVE_CAP, st.wv || 0);      // 흔들림 — 정수 바퀴라 도착 때 제자리
     let tilt = gap * (st.tilt || 0);                          // 기울기 — 옆에서 비스듬히 들어온다
     let dir = Math.random() < 0.5 ? -1 : 1;
@@ -5105,13 +5115,13 @@
         let gg = gambleGap + (r < 0.55 ? gambleDir : (r < 0.8 ? 0 : -gambleDir));
         if (gg < 1 || gg > 5) { gambleDir = -gambleDir; gg = gambleGap + gambleDir; }
         gambleGap = Math.max(1, Math.min(5, gg));
-        for (let L = 1; L <= 5; L++) if (L !== gambleGap) spawnChart(L, lead2, st);
+        for (let L = 1; L <= 5; L++) if (L !== gambleGap) spawnChart(L, lead2, st, lv);
       } else if (ch === "X") {
-        for (let L = 1; L <= 5; L++) spawnChart(L, lead2, st);
+        for (let L = 1; L <= 5; L++) spawnChart(L, lead2, st, lv);
       } else if (FORK_GAP[ch]) {
-        for (let L = 1; L <= 5; L++) if (FORK_GAP[ch].indexOf(L) < 0) spawnChart(L, lead2, st);
+        for (let L = 1; L <= 5; L++) if (FORK_GAP[ch].indexOf(L) < 0) spawnChart(L, lead2, st, lv);
       } else {
-        for (const L of (PAT_GROUP[ch] || [+ch])) if (L >= 1 && L <= 5) spawnChart(L, lead2, st);
+        for (const L of (PAT_GROUP[ch] || [+ch])) if (L >= 1 && L <= 5) spawnChart(L, lead2, st, lv);
       }
     }
   }
