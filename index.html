@@ -1025,7 +1025,7 @@
   const elTitle = document.getElementById("overTitle");
   const coinNote = document.getElementById("coinNote");
 
-  const GAME_VERSION = "v0.6.98";   // 코드를 고칠 때마다 뒤 두 자리를 올린다
+  const GAME_VERSION = "v0.6.99";   // 코드를 고칠 때마다 뒤 두 자리를 올린다
   document.getElementById("ver").textContent = GAME_VERSION;
 
   const LS_NAME = "epjpddongpi_name";
@@ -5500,7 +5500,7 @@
   const HUGE_R = 50.35;        // 반지름 — 66 → 53 (20%) → 다시 5% 축소
   /* 까다로운 똥이 나올 확률 — 레벨 7에서 SPEC_BASE 로 시작해 레벨마다 SPEC_STEP 씩 오른다.
      상한 SPEC_CAP — 절반까지만. 나머지 절반은 언제나 평범한 똥이다. */
-  const SPEC_FROM = 7, SPEC_BASE = 0.023, SPEC_STEP = 0.04, SPEC_CAP = 0.5;
+  const SPEC_FROM = 7, SPEC_BASE = 0.016, SPEC_STEP = 0.028, SPEC_CAP = 0.5;   // 처음·오름폭 둘 다 30% 낮춤
   const LASER_WARN = 1;        // 예고 시간(초)
   const LASER_VY = 4500;       // 낙하 속도 — 똥이 아니라 레이저처럼 내리꽂힌다
   let warns = [];              // 예고 중인 레이저 자리
