@@ -957,7 +957,7 @@
   const elTitle = document.getElementById("overTitle");
   const coinNote = document.getElementById("coinNote");
 
-  const GAME_VERSION = "v0.7.07";   // 코드를 고칠 때마다 뒤 두 자리를 올린다
+  const GAME_VERSION = "v0.7.08";   // 코드를 고칠 때마다 뒤 두 자리를 올린다
   document.getElementById("ver").textContent = GAME_VERSION;
 
   const LS_NAME = "epjpddongpi_name";
@@ -1643,7 +1643,7 @@
   /* 무지개똥 — 똥 몸통에 비스듬한 무지개 띠를 깔고, 그 띠가 몸통을 따라 흘러간다.
      똥 그림에서 갈색 몸통만 골라 밝기(입체 그림자)를 남기고, 눈·입은 원래 그대로 얹는다.
      캔버스 필터를 쓰지 않아 아이폰(사파리)에서도 똑같이 보인다. */
-  const RB_COLORS = ["#ff5a3c", "#ffa23e", "#ffe65a", "#a6f25a", "#5fb8ff", "#9b46ff"];
+  const RB_COLORS = ["#f7a08e", "#f9c795", "#f6e7a2", "#bfe6a0", "#9ecdf2", "#c3a6ef"];   // 파스텔
   let RB = null;                          // null = 아직, false = 못 만듦(원래 그림으로)
   function rainbowPrep() {
     if (RB !== null) return RB || null;
@@ -1670,7 +1670,7 @@
         const body = sat > 0.35 && (h < 45 || h > 350) && mx > 0.12;
         if (body) {                       // 몸통 — 밝기만 남긴다 (0.19~0.6 → 0.67~1)
           const L = 0.299 * r + 0.587 * g + 0.114 * b;
-          const v = Math.round(255 * Math.max(0.58, Math.min(1, 0.84 + (L - 0.33) * 1.2)));
+          const v = Math.round(255 * Math.max(0.56, Math.min(0.97, 0.8 + (L - 0.33) * 1.15)));
           sd.data[i] = sd.data[i + 1] = sd.data[i + 2] = v; sd.data[i + 3] = al;
         } else {                          // 눈·입·테두리 — 그대로
           fd.data[i] = d[i]; fd.data[i + 1] = d[i + 1]; fd.data[i + 2] = d[i + 2]; fd.data[i + 3] = al;
@@ -1702,7 +1702,7 @@
     c.save();
     c.translate(S / 2, S / 2);
     c.rotate(1.05);                       // 왼쪽 아래 → 오른쪽 위로 기운 띠
-    const off = (now * R.cyc / 2600 + seed * 37) % R.cyc;   // 2.6초에 한 바퀴 흐른다
+    const off = (now * R.cyc / 6000 + seed * 37) % R.cyc;   // 6초에 한 바퀴 — 천천히 흐른다
     c.drawImage(R.str, -2 * R.cyc + off, -R.str.height / 2);
     c.restore();
     c.globalCompositeOperation = "multiply";        // 입체 그림자를 입히고
@@ -1715,7 +1715,7 @@
     if (puls > 0) {                       // 반짝 — 같은 그림을 밝게 한 번 더
       const op = ctx.globalCompositeOperation, al = ctx.globalAlpha;
       ctx.globalCompositeOperation = "lighter";
-      ctx.globalAlpha = al * puls * 0.22;
+      ctx.globalAlpha = al * puls * 0.09;
       ctx.drawImage(R.work, x, y, d, d);
       ctx.globalCompositeOperation = op; ctx.globalAlpha = al;
     }
@@ -1725,8 +1725,8 @@
   /* 무지개똥은 일반 똥과 헷갈리지 않게 무지갯빛으로 돌면서 번쩍인다.
      seed 를 섞어 서로 다른 색으로 떨어진다. */
   function goldFx(now, seed) {
-    const hue = (now * 0.42 + seed * 53) % 360;
-    const puls = 0.5 + 0.5 * Math.sin(now / 85 + seed);          // 0~1 로 오가는 번쩍임
+    const hue = (now * 0.12 + seed * 53) % 360;
+    const puls = 0.5 + 0.5 * Math.sin(now / 420 + seed);         // 0~1 로 천천히 오가는 반짝임
     return {
       hue: hue,
       puls: puls,
@@ -1864,9 +1864,9 @@
       if (q.kind === "gold") {
         const fx = goldFx(performance.now(), q.x);
         const gg = ctx.createRadialGradient(0, 0, 0, 0, 0, q.r * 1.9);
-        gg.addColorStop(0, "hsla(" + fx.hue + ",100%,72%," + (0.75 + fx.puls * 0.25).toFixed(2) + ")");
-        gg.addColorStop(0.45, "hsla(" + ((fx.hue + 60) % 360) + ",100%,60%,.4)");
-        gg.addColorStop(1, "hsla(" + ((fx.hue + 120) % 360) + ",100%,55%,0)");
+        gg.addColorStop(0, "hsla(" + fx.hue + ",80%,78%," + (0.5 + fx.puls * 0.12).toFixed(2) + ")");
+        gg.addColorStop(0.45, "hsla(" + ((fx.hue + 60) % 360) + ",75%,72%,.22)");
+        gg.addColorStop(1, "hsla(" + ((fx.hue + 120) % 360) + ",70%,72%,0)");
         ctx.fillStyle = gg;
         ctx.beginPath(); ctx.arc(0, 0, q.r * 1.9, 0, 6.283); ctx.fill();
       }
@@ -6904,11 +6904,11 @@
            바로 앞에 그린 구름의 반투명 흰색이 남아 있으면 똥까지 비쳐 보인다. */
         if (it.gold) {                       // 무지개똥 — 무지갯빛으로 돌며 번쩍인다
           const fx = goldFx(now, it.x);
-          const R = it.size * (0.95 + fx.puls * 0.18);
+          const R = it.size * (0.92 + fx.puls * 0.08);
           const gg = ctx.createRadialGradient(0, 0, 0, 0, 0, R);
-          gg.addColorStop(0, "hsla(" + fx.hue + ",100%,72%," + (0.75 + fx.puls * 0.25).toFixed(2) + ")");
-          gg.addColorStop(0.42, "hsla(" + ((fx.hue + 60) % 360) + ",100%,60%," + (0.34 + fx.puls * 0.2).toFixed(2) + ")");
-          gg.addColorStop(1, "hsla(" + ((fx.hue + 120) % 360) + ",100%,55%,0)");
+          gg.addColorStop(0, "hsla(" + fx.hue + ",80%,78%," + (0.5 + fx.puls * 0.12).toFixed(2) + ")");
+          gg.addColorStop(0.42, "hsla(" + ((fx.hue + 60) % 360) + ",75%,72%," + (0.22 + fx.puls * 0.08).toFixed(2) + ")");
+          gg.addColorStop(1, "hsla(" + ((fx.hue + 120) % 360) + ",70%,72%,0)");
           ctx.fillStyle = gg;
           ctx.beginPath(); ctx.arc(0, 0, R, 0, 6.283); ctx.fill();
         }
