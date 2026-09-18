@@ -995,7 +995,7 @@
   const elTitle = document.getElementById("overTitle");
   const coinNote = document.getElementById("coinNote");
 
-  const GAME_VERSION = "v0.7.13";   // 코드를 고칠 때마다 뒤 두 자리를 올린다
+  const GAME_VERSION = "v0.7.14";   // 코드를 고칠 때마다 뒤 두 자리를 올린다
   document.getElementById("ver").textContent = GAME_VERSION;
 
   const LS_NAME = "epjpddongpi_name";
@@ -2333,7 +2333,7 @@
       max: 4, cond: () => pet === "galaga",                    // 펫 1대 + 증강 4 = 최대 5대
       go: () => { aug.galaga++; } },
     { id: "doveFlock",  ic: "🐦", nm: "비둘기 떼", ds: "출격할 때 비둘기가 한 마리 더 날아오른다",
-      max: 3, cond: () => pet === "dove",
+      max: 4, cond: () => pet === "dove",                      // 펫 1마리 + 증강 4 = 한 번에 최대 5마리
       go: () => { aug.doveFlock++; } },
     { id: "doveHome",   ic: "📯", nm: "귀소 본능", ds: "비둘기가 더 자주 출격한다",
       max: 3, cond: () => pet === "dove",
