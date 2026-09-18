@@ -1025,7 +1025,7 @@
   const elTitle = document.getElementById("overTitle");
   const coinNote = document.getElementById("coinNote");
 
-  const GAME_VERSION = "v0.6.99";   // 코드를 고칠 때마다 뒤 두 자리를 올린다
+  const GAME_VERSION = "v0.7.00";   // 코드를 고칠 때마다 뒤 두 자리를 올린다
   document.getElementById("ver").textContent = GAME_VERSION;
 
   const LS_NAME = "epjpddongpi_name";
@@ -5971,6 +5971,19 @@
     fever = state === STATE.PLAY && now < powerUntil;
     if (state === STATE.PLAY) feverBgm = fever;   // 놀고 있을 때만 새로 쓴다
     if (!wasFever && fever) feverBanner = 1;      // 막 시작했다
+    /* 뚜니핑 타임에는 똥이 아예 안 보인다 — 뚜니핑만 쏟아진다.
+       켜지는 순간 하늘에 있던 똥을 펑 하고 거두고, 켜져 있는 동안 어디서 생긴 똥이든
+       (쪼개진 조각, 예고 중이던 레이저 등) 곧바로 거둔다. 무지개똥은 주우라고 남긴다. */
+    if (fever && !stageMode) {
+      const pop = !wasFever;
+      for (let k = items.length - 1; k >= 0; k--) {
+        const q = items[k];
+        if (q.type !== "poop" || q.skin === "fever" || q.gold) continue;
+        if (pop) burst(q.x, q.y, "#ffe9a8", 6);
+        items.splice(k, 1);
+      }
+      warns.length = 0;
+    }
     // 겹쳐 먹어 남은 시간이 한 번 분량을 넘으면 게이지가 넘치므로 1로 묶는다
     feverT = fever ? Math.min(1, (powerUntil - now) / feverDur) : 0;
     // 뚜니핑 타임 끝나는 순간엔 화면이 똥으로 가득 차 있으니 1초 무적으로 숨 돌릴 틈을 준다
