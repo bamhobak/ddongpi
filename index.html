@@ -1017,7 +1017,7 @@
   const elTitle = document.getElementById("overTitle");
   const coinNote = document.getElementById("coinNote");
 
-  const GAME_VERSION = "v0.7.18";   // 코드를 고칠 때마다 뒤 두 자리를 올린다
+  const GAME_VERSION = "v0.7.19";   // 코드를 고칠 때마다 뒤 두 자리를 올린다
   document.getElementById("ver").textContent = GAME_VERSION;
 
   const LS_NAME = "epjpddongpi_name";
@@ -1040,7 +1040,9 @@
   const JOBS = {
     none:    { nm: "쉬었음 청년", ic: "🏃",
                ds: "힘들때마다 차려지는 엄마의 따뜻한 밥상 · 코인이 2배로 나온다" },
-    gambler: { nm: "도박사", ic: "🎰", ds: "목숨 1개 + 우산 1개 시작 · 하트 안 나옴 · 모든 점수 2.5배" },
+    /* 점술가 — 도박사 자리를 이어받았다. 가끔 떨어지는 포춘쿠키를 먹으면 10초 동안 예언 하나가 이뤄진다.
+       (옛 도박사 기록은 순위표에 도박사로 그대로 남는다 — JOB_NAMES·JOB_IMG 에만 남겨 두었다) */
+    fortune: { nm: "점술가", ic: "🔮", ds: "가끔 포춘쿠키가 떨어진다 · 먹으면 10초 동안 예언이 이뤄진다 · 좋은 예언 넷, 나쁜 예언 하나" },
     levitator: { nm: "부양사", ic: "🎈", ds: "하늘 어디든 날 수 있다 · 높이 있을수록 점수 UP" },
     fit: { nm: "헬스걸", ic: "💪", ds: "목숨 5개로 시작 · 우산이 안 나온다 · 하트가 어마무시하게 잘 나온다 · 벌크업 좀 된 상태" },
     powerj: { nm: "파워J", ic: "📋", ds: "달이 잘 나온다 · 대신 증강은 계획대로 1개만" },
@@ -1052,7 +1054,7 @@
     bangul: { nm: "방울이", ic: "🫧", ds: "목숨 대신 오염도 · 비누방울이 한 대를 대신 맞고 터진다 · 잠시 뒤 다시 맺힌다", f: "이핑재핑보다 귀엽다" }
   };
   // 직업별 캐릭터 그림(오른쪽 이동 모습) — 직업 카드와 순위표에서 함께 쓴다
-  const JOB_IMG = { none: "player", gambler: "gambler", levitator: "levitator",
+  const JOB_IMG = { none: "player", fortune: "fortune", gambler: "gambler", levitator: "levitator",
                     fit: "fit", powerj: "powerj", powerp: "monk", powerp2: "powerp2",
                     bangul: "bangul" };
   function spdMul() { return job === "levitator" ? 2.5 : 1; }   // 이동 속도 배율 (부양사 2.5배)
@@ -1277,8 +1279,23 @@
     galaga: { nm: "갤러그", ic: "🚀", img: "assets/pet_galaga.png",
               ds: "우주선이 땅에서 총알을 쏘아 올린다" },
     dove:   { nm: "비둘기", ic: "🕊️", img: "assets/dove.png",
-              ds: "80m 움직일 때마다 날아올라 똥을 터뜨린다 (똥점수 5배)" }
+              ds: "80m 움직일 때마다 날아올라 똥을 터뜨린다 (똥점수 5배)" },
+    angel:  { nm: "수호천사", ic: "👼", img: "assets/pet_angel.png",
+              ds: "쓰러지면 한 번 되살려 주고, 10초 동안 다가오는 똥을 밀어낸다" },
+    gift:   { nm: "선물 요정", ic: "🧚", img: "assets/pet_fairy.png",
+              ds: "때때로 날아가 떨어지는 똥을 펑! 아이템으로 바꾼다" },
+    coincat: { nm: "코인 고양이", ic: "🐈", img: "assets/pet_cat.png",
+              ds: "때때로 코인을 물어다 떨어뜨린다 · 세 번째마다 5코인" },
+    eel:    { nm: "백만볼트 뱀장어", ic: "⚡", img: "assets/pet_eel.png",
+              ds: "때때로 가까운 똥에 번개를 쏘고, 번개가 옆 똥으로 옮겨붙는다" }
   };
+  // 게임 화면에 그릴 펫 그림 (카드 그림과 같은 파일)
+  const PET_IMG = {};
+  for (const id of ["angel", "gift", "coincat", "eel"]) {
+    const im = new Image();
+    im.onload = () => { PET_IMG[id] = im; };
+    im.src = PETS[id].img;
+  }
   const LS_PET = "epjpddongpi_pet";
   /* 해금 — '없음'만 기본, 나머지는 한 마리당 PET_PRICE 코인 */
   const LS_PET_OWN = "epjpddongpi_pets_owned";
@@ -1405,10 +1422,11 @@
   };
   /* 직업: 도박사 복장 (우주복 이전 구간에서만 입는다).
      head/cx/cy/adj 는 실측값 — 헬멧 대신 얼굴이 판정 기준이다. */
-  const SPR_GAMBLER = {
-    // 모자·머리숱이 커서 같은 몸높이면 작아 보인다 — 쉬었음 청년과 같은 크기(1.0배)로 맞췄다
-    right: { img: null, aspect: 0.522, head: 0.369, cx: 0.590, cy: 0.319, adj: 0.5446 },
-    hurt:  { img: null, aspect: 0.439, head: 0.415, cx: 0.487, cy: 0.347, adj: 0.6653 }
+  /* 점술가 — 도박사 그림에서 옷만 보랏빛 점술가 망토·베일·수정구로 바꿨다 (Ludo editImage).
+     머리 중심은 실루엣이 가장 두꺼운 자리, 아픈 그림은 베일이 두꺼워 얼굴 쪽으로 조금 올렸다. */
+  const SPR_FORTUNE = {
+    right: { img: null, aspect: 0.5333, head: 0.425, cx: 0.526, cy: 0.303, adj: 0.6275 },
+    hurt:  { img: null, aspect: 0.4333, head: 0.400, cx: 0.481, cy: 0.335, adj: 0.6416 }
   };
   const SPR_LEV = {
     right: { img: null, aspect: 0.606, head: 0.417, cx: 0.541, cy: 0.258, adj: 0.6157 },
@@ -1467,7 +1485,7 @@
   const SPACE_DIFF = 1.18;
   function spaceF() { return inSpace() ? Math.sqrt(SPACE_DIFF) : 1; }
   function inSpace() { return zoneIdx() >= SPACE_Z; }
-  const JOB_SPRS = { gambler: SPR_GAMBLER, levitator: SPR_LEV, fit: SPR_FIT, powerj: SPR_PJ,
+  const JOB_SPRS = { fortune: SPR_FORTUNE, levitator: SPR_LEV, fit: SPR_FIT, powerj: SPR_PJ,
                      powerp: SPR_MONK, powerp2: SPR_PP2, bangul: SPR_BANGUL };
   // 제 우주복이 있는 직업만. 나머지(파워P 포함)는 공용 우주복을 입는다.
   const JOB_SPRS_SPACE = { bangul: SPR_BANGUL_SPACE, powerp: SPR_MONK_SPACE };
@@ -1481,7 +1499,7 @@
   /* ---------- 강아지 모드 ----------
      로고의 '재피'를 눌러 시작하면 직업마다 그 직업에 맞는 강아지가 뛴다.
      '시작하기'로 들어가면 원래 그림 그대로. 게임 규칙은 둘이 똑같고 랭킹도 함께 쓴다.
-     쉬었음 청년 퍼그 · 도박사 도베르만 · 부양사 파피용 · 헬스걸 복서 · 파워J 보더콜리 ·
+     쉬었음 청년 퍼그 · 점술가 도베르만 · 부양사 파피용 · 헬스걸 복서 · 파워J 보더콜리 ·
      파워P 비글 · 무소유 진돗개. 방울이는 원래 강아지라 그대로 둔다.
      머리 중심(cx·cy)은 실루엣에서 가장 두꺼운 자리로 잰 값이고, 그림 크기 비율은 방울이와 같다. */
   let dogMode = false;               // 이번 판이 강아지로 뛰는 판인가
@@ -1491,11 +1509,12 @@
                 hurt:  { img: null, aspect: 0.8063, head: 0.577, cx: 0.512, cy: 0.359, adj: 0.6520 } },
       space:  { right: { img: null, aspect: 0.8375, head: 0.602, cx: 0.604, cy: 0.300, adj: 0.8127 },
                 hurt:  { img: null, aspect: 0.7344, head: 0.570, cx: 0.489, cy: 0.372, adj: 0.7125 } } },
-    gambler: {
-      ground: { right: { img: null, aspect: 0.9031, head: 0.433, cx: 0.678, cy: 0.394, adj: 0.5629 },
-                hurt:  { img: null, aspect: 0.6188, head: 0.429, cx: 0.490, cy: 0.406, adj: 0.4848 } },
-      space:  { right: { img: null, aspect: 0.9938, head: 0.664, cx: 0.620, cy: 0.320, adj: 0.8964 },
-                hurt:  { img: null, aspect: 0.8281, head: 0.645, cx: 0.472, cy: 0.378, adj: 0.8062 } } },
+    fortune: {
+      ground: { right: { img: null, aspect: 0.9250, head: 0.526, cx: 0.662, cy: 0.412, adj: 0.6833 },
+                hurt:  { img: null, aspect: 0.6062, head: 0.531, cx: 0.495, cy: 0.469, adj: 0.6003 } },
+      // 우주 달리기는 망토가 몸통을 두껍게 해서, 헬멧 자리를 도박사 우주 그림 값으로 잡았다 (같은 자세)
+      space:  { right: { img: null, aspect: 0.9594, head: 0.640, cx: 0.600, cy: 0.310, adj: 0.8640 },
+                hurt:  { img: null, aspect: 0.8281, head: 0.610, cx: 0.479, cy: 0.362, adj: 0.7619 } } },
     levitator: {
       ground: { right: { img: null, aspect: 0.6188, head: 0.316, cx: 0.720, cy: 0.520, adj: 0.4108 },
                 hurt:  { img: null, aspect: 0.9125, head: 0.338, cx: 0.514, cy: 0.591, adj: 0.3819 } },
@@ -1574,8 +1593,8 @@
     si.onload = () => { SPR_SPACE[key].img = si; };
     si.src = "assets/space_" + key + ".png";
     const gi = new Image();
-    gi.onload = () => { SPR_GAMBLER[key].img = gi; };
-    gi.src = "assets/gambler_" + key + ".png";
+    gi.onload = () => { SPR_FORTUNE[key].img = gi; };
+    gi.src = "assets/fortune_" + key + ".png";
     const li = new Image();
     li.onload = () => { SPR_LEV[key].img = li; };
     li.src = "assets/levitator_" + key + ".png";
@@ -1686,7 +1705,8 @@
                               ["umbrella", "umbrella"], ["star", "star"], ["heart", "red_heart"],
                               ["poop", "poop"], ["darkpoop", "dark_poop"],
                               ["droplet", "droplet"],
-                              ["coin", "coin"], ["coin3", "coin3"], ["coin5", "coin5"]]) {
+                              ["coin", "coin"], ["coin3", "coin3"], ["coin5", "coin5"],
+                              ["fortune", "fortune_cookie"]]) {
     const im = new Image();
     im.onload = () => { ITEM_IMG[type] = im; };
     im.src = "assets/item_" + file + ".png";
@@ -2160,7 +2180,7 @@
                     rhythm: 0.38,
                     /* 직업 곡 — 곡마다 소리 크기(실효값)를 재서 play 와 같은 크기로 들리게 맞췄다.
                        그대로 틀면 헬스걸 곡은 play 보다 10.8dB, 파워P 는 9dB 나 크다. */
-                    gambler: 0.15, levitator: 0.174, fit: 0.098, powerj: 0.395,
+                    fortune: 0.264, levitator: 0.174, fit: 0.098, powerj: 0.395,
                     powerp2: 0.121, powerp: 0.598, bangul: 0.252 };
   /* 곡마다 잰 박자와 첫 박 위치(초). 소리의 세기가 커지는 지점을 뽑아
      격자를 맞춰 구한 값이다 — 128·140·105·132 처럼 정수로 떨어져 믿을 만하다. */
@@ -2244,7 +2264,7 @@
   }
   /* 직업마다 제 곡 — 땅 위에서 뛸 때 흐른다. 우주·블랙홀·뚜니핑은 그 자리의 곡이 앞선다.
      쉬었음 청년은 원래 곡(play) 그대로. */
-  const JOB_BGM = { gambler: "gambler", levitator: "levitator", fit: "fit", powerj: "powerj",
+  const JOB_BGM = { fortune: "fortune", levitator: "levitator", fit: "fit", powerj: "powerj",
                     powerp2: "powerp2", powerp: "powerp", bangul: "bangul" };
   function syncBgm() {
     const inGame = state === STATE.PLAY || state === STATE.AUG || state === STATE.PAUSE;
@@ -2315,6 +2335,7 @@
     dodge: 0,           // 그건 제 잔상입니다만? — 맞을 때 피할 확률 (0~0.30)
     dungy: false,       // 방울이: 똥묻히기 (오염도만큼 모든 점수가 오른다)
     momMeal: false,     // 쉬었음 청년: 엄마는 우리 딸 믿어 (엄마의 밥상이 떨어진다)
+    chainZap: false,    // 히든: 연쇄 전류 (갤러그 총알이 옆 똥 두 개로 번진다)
     wak: false,         // 히든: 고무고무노 피스톨 (주먹이 똥을 튕겨 올리고, 부딪히면 같이 터진다)
     scoreMul: 1,        // 모든 점수에 곱해지는 배율
     maxLives: 5
@@ -2436,6 +2457,9 @@
         ? "더 자주 잔상만 남기고 피한다"
         : "맞을 때 가끔 잔상만 남기고 피한다",
       go: () => { aug.dodge += augCount["afterimage"] ? 0.05 : 0.10; } },
+    { id: "chainZap",   ic: "⚡", nm: "연쇄 전류", ds: "총알에 맞은 똥에서 번개가 튀어 옆 똥 두 개가 더 터진다",
+      hidden: true, once: true, cond: () => pet === "galaga",   // 갤러그 펫
+      go: () => { aug.chainZap = true; } },
     { id: "wak",        ic: "👊", nm: "고무고무노 피스톨", ds: "총알이 주먹이 된다. 맞은 똥은 튕겨 날아가 처음 부딪힌 똥과 함께 터진다",
       hidden: true, once: true, cond: () => pet === "galaga" && aug.galaga >= 2,   // 갤러그 2대 이상
       go: () => { aug.wak = true; } },
@@ -2645,6 +2669,28 @@
   /* 비둘기 펫 — 80m 움직일 때마다 머리 위에서 비둘기가 날아오른다.
      게임 안의 1m = 논리 좌표 12px 로 본다 (캐릭터 키가 대략 1.5m 쯤 되는 비율). */
   let doves = [], moveDist = 0;
+  /* ── 새 펫들 ──
+     수호천사: 한 판에 한 번 되살리고, 되살아난 뒤 ANGEL_SEC 동안 둘레 ANGEL_R 안의 똥을 밀어낸다.
+     선물 요정: GIFT_EVERY 마다 날아가 떨어지는 똥 하나를 펑 터뜨려 아이템으로 바꾼다.
+     코인 고양이: CAT_EVERY 마다 위에서 고개를 내밀어 코인을 떨어뜨린다 (세 번째마다 5코인).
+     백만볼트 뱀장어: EEL_EVERY 마다 가장 가까운 똥에 번개 — 옆 똥으로 EEL_CHAIN 개까지 옮겨붙는다. */
+  const ANGEL_SEC = 10, ANGEL_R = 118;
+  const GIFT_EVERY = 8, CAT_EVERY = 7, EEL_EVERY = 4.5, EEL_CHAIN = 4, EEL_HOP = 150;
+  let angelUsed = false, angelAura = 0, angelFx = 0;
+  let fairies = [], giftT = 0;
+  let cats = [], catT = 0, catN = 0;
+  let eelT = 0, bolts = [];
+  /* ── 점술가 ── 포춘쿠키는 평균 14초마다, 예언은 PROPH_SEC 동안 */
+  const FORTUNE_FIRST = 7, PROPH_SEC = 10;
+  const PROPHECIES = [
+    { id: "small",  nm: "똥이 작아진다",    c: "#9fe8ff" },
+    { id: "coin",   nm: "코인비가 내린다",   c: "#ffd23f" },
+    { id: "star",   nm: "별이 쏟아진다",    c: "#fff3a8" },
+    { id: "double", nm: "점수가 두 배",     c: "#ff9ede" },
+    { id: "fast",   nm: "똥이 빨라진다",    c: "#ff7b7b", bad: true }
+  ];
+  let prophecy = null, prophT = 0, prophRain = 0, fortuneT = 0;
+  function prophIs(id) { return prophecy && prophecy.id === id && prophT > 0; }
   let bullets = [], shipClock = 0;   // 갤러그: 날아가는 총알과 편대 공용 시계
   /* ── 리듬 실험 ──
      rhythmOn 이면 평소 생성기를 멈추고, 곡의 박자에 '도착' 하도록 떨어뜨린다.
@@ -3149,7 +3195,7 @@
     aug.feverBonus = 0; aug.starMul = 1; aug.timeMul = 1;
     aug.feverScoreMul = 1; aug.fallMul = 1; aug.hitboxMul = 1; aug.poopMul = 1;
     aug.steelUmb = false; aug.starburst = false; aug.scoreMul = 1;
-    aug.dodge = 0; aug.wak = false; aug.dungy = false; aug.momMeal = false;
+    aug.dodge = 0; aug.wak = false; aug.chainZap = false; aug.dungy = false; aug.momMeal = false;
     rerolls = REROLLS; ghosts = []; wakBooms = [];
     aug.blackhole = false; aug.legion = false; roidT = 0;
     aug.doveWhat = false; aug.doveFlock = 0; aug.doveFreq = 1;
@@ -3163,6 +3209,10 @@
     noHitSec = 0;
     clones = []; cloneTimer = 0;
     doves = []; moveDist = 0;
+    angelUsed = false; angelAura = 0; angelFx = 0;
+    fairies = []; giftT = GIFT_EVERY * 0.6;
+    cats = []; catT = CAT_EVERY * 0.7; catN = 0;
+    eelT = EEL_EVERY * 0.6; bolts = [];
     bullets = []; shipClock = 0; aug.galaga = 0;
     coinRun = 0; coinDebt = 0; coinSeen = 0; coinGot = 0; coinSeenV = 0; coinGotV = 0;
     monkStreak = 0; fullOwn = false; fullBanner = 0; fullFx = 0;
@@ -3181,12 +3231,8 @@
     aug.galaga = pet === "galaga" ? 1 : 0;
     if (pet !== "none") augCount["pet:" + pet] = 1;
     // ---- 직업 효과 ----
-    if (job === "gambler") {
-      lives = 1;
-      aug.maxLives = 1;               // 하트는 애초에 별로 대체되어 떨어진다
-      shields = 1;                    // 대신 우산 1개를 쥐여 준다
-      aug.scoreMul *= 2.5;            // 모든 점수 2.5배
-    }
+    prophecy = null; prophT = 0;
+    fortuneT = job === "fortune" ? FORTUNE_FIRST : 0;
     if (job === "levitator") {
       flyOn = true;                   // 처음부터 하늘을 난다 (몸 크기는 그대로)
       player.ty = groundY;
@@ -3391,7 +3437,7 @@
     // 뚜니핑 낙하물은 크기가 곧 점수라서 '작아진 똥'의 영향을 받지 않는다
     let r = cls ? cls.min + Math.random() * (cls.max - cls.min)
                 // 5% 줄이되 제일 작은 똥(12.6)보다 작아지지는 않는다
-                : Math.max(12.6, (12.6 + Math.random() * 11.7) * 0.95) * aug.poopMul;
+                : Math.max(12.6, (12.6 + Math.random() * 11.7) * 0.95) * aug.poopMul * (prophIs("small") ? 0.55 : 1);
     if (special === "huge") r = (HUGE_R + Math.random() * 10) * aug.poopMul;   // 초거대 똥
     r = Math.min(r, (W - 24) / 2);        // 화면보다 커지지 않게
     // 일반 똥은 레벨이 오를수록 빨라지지만, 뚜니핑 낙하물은 처음이나 나중이나 같은 속도로 떨어진다
@@ -3402,7 +3448,7 @@
     /* 뚜니핑 낙하물은 언제나 같은 속도로 떨어진다 — 레벨·지대·증강(느린 하늘·도파민)
        어느 것에도 영향받지 않는다. 화면 높이 보정(m)만 그대로 둔다. */
     let vy = inFever ? baseVy * m
-                     : baseVy * m * DIFF_F * spaceF() * bhDiff() * aug.fallMul * lateMul();
+                     : baseVy * m * DIFF_F * spaceF() * bhDiff() * aug.fallMul * lateMul() * (prophIs("fast") ? 1.4 : 1);
     if (special === "huge") vy *= 0.55;   // 덩치값 — 느릿느릿 굴러떨어진다
     let px = r + Math.random() * (W - r * 2);
     let pvx = (Math.random() - Math.random()) * vy * SPREAD_POOP;
@@ -3516,7 +3562,6 @@
        예전에는 레벨이 오를수록 잦아지고(최대 2배), 대신 Lv15부터 달만 뜸해졌다. */
     let mean = BONUS_BASE / (b.w / BONUS_W_TOTAL) * aug.itemRateMul;
     if (b.type === "heart" && job === "fit") mean /= 5;  // 헬스걸 — 하트 5배
-    if (b.type === "umbrella" && job === "gambler") mean /= 1.5;  // 도박사 — 우산 1.5배
     if ((b.type === "moon" || b.type === "fullmoon") && job === "powerj") mean /= 1.8;  // 파워J — 달 1.8배
     if (b.type === "star" && job === "powerp") mean /= 1.5;  // 무소유 — 별 1.5배
     return mean;
@@ -3563,7 +3608,6 @@
        (먹어도 아무 일이 없을 뿐, 하트처럼 별로 바뀌지는 않는다). */
     let asDrop = false;
     if (pick.type === "heart" && dirtJob()) asDrop = true;
-    if (pick.type === "heart" && job === "gambler") return;   // 도박사에겐 하트가 아예 안 나온다
     if (pick.type === "heart" && !asDrop && lives >= aug.maxLives) {
       pick = BONUS.find(b => b.type === "star");    // 목숨 꽉 차면 별로 대체
     }
@@ -3958,6 +4002,7 @@
              지그재그똥은 방향이 뒤집힌다 (예전에는 전부 통째로 사라졌다). */
           smashPoopsAround(bu.x, bu.y, 8);
           burst(bu.x, bu.y, "#9fe8ff", 10);
+          if (aug.chainZap) zapChain(bu.x, bu.y, 2, 170, null);   // 히든 '연쇄 전류' — 옆 똥 두 개로 번진다
         }
         hit = true;
         break;
@@ -4002,6 +4047,135 @@
         shake = Math.max(shake, 6);
         beep(300, .1, "square", .045);
         doves.splice(k, 1);
+      }
+    }
+
+    // ---- 수호천사 — 되살아난 뒤 둘레의 똥을 밖으로 밀어낸다 ----
+    if (angelFx > 0) angelFx = Math.max(0, angelFx - dt);
+    if (angelAura > 0) {
+      angelAura = Math.max(0, angelAura - dt);
+      const ax = player.x, ay = player.y + player.hy;
+      for (const q of items) {
+        if (q.type !== "poop" || q.bounced || q.skin === "fever" || q.gold) continue;
+        const dx = q.x - ax, dy = q.y - ay, d = Math.hypot(dx, dy);
+        if (d > ANGEL_R + q.r) continue;
+        /* 성난 우산처럼 바깥으로 날려 보낸다 — 날아가는 똥은 사람을 해치지 않고,
+           내려오던 다른 똥과 부딪히면 둘 다 터진다. 다크똥도 밀려난다(부서지지는 않는다). */
+        const ux = d > 1 ? dx / d : (Math.random() - .5), uy = d > 1 ? dy / d : -1;
+        const sp = 640;
+        q.vx = ux * sp; q.vy = Math.min(uy, -0.35) * sp - 120;
+        q.vr = (Math.random() - .5) * 10; q.swayA = 0; q.special = null;
+        q.bounced = true; q.blast = true;
+        burst(q.x, q.y, "#fff3c4", 6);
+        if (Math.random() < .5) beep(980 + Math.random() * 300, .04, "sine", .03);
+      }
+    }
+    // ---- 선물 요정 — 떨어지는 똥에 날아가 펑! 아이템으로 바꾼다 ----
+    if (pet === "gift" && state === STATE.PLAY) {
+      giftT -= dt * tsc;
+      if (giftT <= 0) {
+        const busy = new Set(fairies.map(f => f.t));
+        let best = null, bd = 1e9;
+        for (const q of items) {
+          if (q.type !== "poop" || q.dark || q.gold || q.bounced || q.blast || q.skin === "fever" || busy.has(q)) continue;
+          if (q.special === "laser" || q.y < H * 0.12 || q.y > H * 0.58) continue;
+          const d = Math.abs(q.x - player.x) + Math.abs(q.y - H * 0.35) * 0.4;   // 내 머리 위 쪽 똥부터
+          if (d < bd) { bd = d; best = q; }
+        }
+        if (best) {
+          fairies.push({ x: player.x, y: player.y - 70, t: best, st: 0, k: 0, ph: 0 });
+          giftT = GIFT_EVERY;
+          if (!sfx("helper", 0.6)) beep(1320, .08, "sine", .04);
+        } else giftT = 0.5;                  // 마땅한 똥이 없으면 잠깐 뒤 다시 본다
+      }
+    }
+    for (let k = fairies.length - 1; k >= 0; k--) {
+      const f = fairies[k];
+      f.ph += dt * 18;
+      if (f.st === 0) {                      // 날아가는 중
+        if (items.indexOf(f.t) < 0 || f.t.bounced) { f.st = 2; continue; }   // 표적이 사라졌다
+        const dx = f.t.x - f.x, dy = f.t.y - f.y, d = Math.hypot(dx, dy) || 1;
+        const v = 620 * dt;
+        if (d <= v + 30) { f.st = 3; f.k = 0; }   // 똥 옆에 붙어 요술봉을 휘두른다
+        else { f.x += dx / d * v; f.y += dy / d * v; f.fl = dx > 0; }
+      } else if (f.st === 3) {               // 요술 부리는 중 — 똥 옆을 따라다니며 반짝이를 뿌린다
+        if (items.indexOf(f.t) < 0 || f.t.bounced) { f.st = 2; f.k = 0; continue; }
+        f.k += dt / 0.35;
+        f.x = f.t.x - 30; f.y = f.t.y - 22; f.fl = true;
+        for (let m = 0; m < 2; m++) {
+          const a = Math.random() * 6.283, rr = f.t.r + 6;
+          particles.push({ x: f.t.x + Math.cos(a) * rr, y: f.t.y + Math.sin(a) * rr, vx: -Math.cos(a) * 40, vy: -Math.sin(a) * 40,
+                           life: .35, t: 0, c: Math.random() < .5 ? "#ffd6f5" : "#fff3a8", r: 1.5 + Math.random() * 2.5 });
+        }
+        if (f.k >= 1) {
+          // 펑! — 똥이 터지고 그 자리에 아이템이 생긴다
+          const q = f.t, ix = items.indexOf(q);
+          if (ix >= 0) items.splice(ix, 1);
+          giftItemAt(q.x, q.y);
+          burst(q.x, q.y, "#ffd6f5", 16); burst(q.x, q.y, "#fff3a8", 12); burst(q.x, q.y, "#9fe8ff", 10);
+          rings.push({ x: q.x, y: q.y, t: 0, life: 0.45, r1: 70, color: "#ffc2ec" });
+          popText(q.x, q.y - 34, "펑!", "#ffc2ec", 20);
+          shake = Math.max(shake, 5);
+          if (!sfx("burst", 0.8)) { beep(760, .06, "square", .04); beep(1180, .1, "triangle", .04); }
+          f.st = 1; f.k = 0;
+        }
+      } else {                               // 일을 마치고 반짝이며 사라진다
+        f.k += dt / (f.st === 1 ? 0.55 : 0.3);
+        f.y -= 120 * dt;
+        if (f.k >= 1) fairies.splice(k, 1);
+      }
+    }
+    // ---- 코인 고양이 — 위에서 고개를 내밀어 코인을 떨어뜨린다 ----
+    if (pet === "coincat" && state === STATE.PLAY) {
+      catT -= dt * tsc;
+      if (catT <= 0) {
+        catT = CAT_EVERY;
+        catN++;
+        const x = 40 + Math.random() * (W - 80);
+        cats.push({ x, t: 0, v: catN % 3 === 0 ? 5 : 1, dropped: false });
+      }
+    }
+    for (let k = cats.length - 1; k >= 0; k--) {
+      const c = cats[k];
+      c.t += dt;
+      if (!c.dropped && c.t >= 0.45) {
+        c.dropped = true;
+        makeCoinAt(c.x, 70, c.v);
+        if (!sfx("coin", 0.7)) beep(1500, .06, "triangle", .04);
+      }
+      if (c.t >= 1.4) cats.splice(k, 1);
+    }
+    // ---- 백만볼트 뱀장어 — 가까운 똥에 번개, 옆 똥으로 옮겨붙는다 ----
+    if (pet === "eel" && state === STATE.PLAY) {
+      eelT -= dt * tsc;
+      if (eelT <= 0) {
+        const ex = player.x - (facing === "right" ? 1 : -1) * 34, ey = player.y + player.hy - 48;
+        const n = zapChain(ex, ey, EEL_CHAIN, 9999, true);
+        eelT = n ? EEL_EVERY : 0.5;          // 똥이 없으면 잠깐 뒤 다시
+      }
+    }
+    for (let k = bolts.length - 1; k >= 0; k--) {
+      bolts[k].t += dt;
+      if (bolts[k].t >= bolts[k].life) bolts.splice(k, 1);
+    }
+    // ---- 점술가 — 포춘쿠키가 떨어지고, 먹으면 예언이 이뤄진다 ----
+    if (job === "fortune" && state === STATE.PLAY) {
+      if (prophT > 0) {
+        prophT = Math.max(0, prophT - dt);
+        if (prophIs("coin") || prophIs("star")) {
+          prophRain -= dt;
+          if (prophRain <= 0) {
+            if (prophIs("coin")) { spawnCoin(); prophRain = 0.5; }
+            else { spawnBonus(BONUS.find(b => b.type === "star")); prophRain = 0.45; }
+          }
+        }
+        if (prophT <= 0) prophecy = null;
+      } else if (!fever) {
+        fortuneT -= dt * tsc;
+        if (fortuneT <= 0) {
+          fortuneT = 11 + Math.random() * 6;
+          spawnFortune();
+        }
       }
     }
 
@@ -4427,7 +4601,11 @@
               burst(it.x, it.y, "#8a5a2b", 22);
               popText(player.x, player.y - 60, "으악!", "#ff5d5d");
               if (!sfx("hurt")) beep(140, .25, "sawtooth", .07);
-              if (dirtJob() ? dirt >= DIRT_MAX : lives <= 0) { items.splice(i, 1); return gameOver(); }
+              if (dirtJob() ? dirt >= DIRT_MAX : lives <= 0) {
+                items.splice(i, 1);
+                if (angelSave(now)) continue;      // 수호천사 — 한 번 되살린다
+                return gameOver();
+              }
             }
             items.splice(i, 1);
             continue;
@@ -4582,6 +4760,7 @@
                             beep(1480 + v * 80, .09, "triangle", .05); }
       }
     }
+    if (it.type === "fortune") startProphecy();
     if (it.type === "meal") {
       /* 엄마의 밥상 — 그 순간 점수의 10%. 판이 무르익을수록 한 상이 커진다.
          모든 점수에 곱하는 배율(scoreMul)은 얹지 않는다. 이미 배율이 반영된
@@ -4637,6 +4816,94 @@
   /* 정연핑이 지나간 자리의 똥을 부순다 (뚜니핑 낙하물은 제 점수를 그대로 준다)
      gainMul — 부순 것의 점수 배율. 비둘기는 5배를 준다
      (일반 똥·까다로운 똥·무지개똥·뚜니핑 낙하물에 모두 걸린다). */
+  /* 번개 — (x0,y0) 에서 가장 가까운 똥으로, 거기서 다시 가장 가까운 똥으로 n 번 옮겨붙는다.
+     first=true 면 첫 표적은 거리 제한 없이 화면에서 가장 가까운 것(뱀장어), 아니면 hop 안에서만.
+     부순 개수를 돌려준다. */
+  function zapChain(x0, y0, n, firstRange, first) {
+    const pts = [[x0, y0]], hit = new Set();
+    let cx = x0, cy = y0;
+    for (let k = 0; k < n; k++) {
+      let best = null, bd = 1e9;
+      const lim = k === 0 && first ? firstRange : (k === 0 ? firstRange : EEL_HOP);
+      for (const q of items) {
+        if (q.type !== "poop" || q.dark || q.bounced || q.blast || hit.has(q)) continue;
+        if (q.y < -10 || q.y > player.y + 30) continue;         // 화면 안, 내 발보다 위
+        const d = Math.hypot(q.x - cx, q.y - cy);
+        if (d < lim + q.r && d < bd) { bd = d; best = q; }
+      }
+      if (!best) break;
+      hit.add(best);
+      pts.push([best.x, best.y]);
+      cx = best.x; cy = best.y;
+    }
+    if (pts.length < 2) return 0;
+    bolts.push({ pts, t: 0, life: 0.3, seed: Math.random() * 1000 });
+    for (let k = 1; k < pts.length; k++) {
+      smashPoopsAround(pts[k][0], pts[k][1], 4);
+      burst(pts[k][0], pts[k][1], "#bfe9ff", 10);
+    }
+    shake = Math.max(shake, 4);
+    if (!sfx("laser", 0.5)) { beep(220, .08, "sawtooth", .035); beep(1600, .05, "square", .025); }
+    return pts.length - 1;
+  }
+  // 선물 요정이 똥을 바꾼 아이템 — 하트·우산·별·코인 중 하나 (직업 규칙은 그대로 따른다)
+  function giftItemAt(x, y) {
+    const r = Math.random() * 100;
+    let type = r < 25 ? "heart" : r < 50 ? "umbrella" : r < 80 ? "star" : "coin";
+    if (type === "coin") { makeCoinAt(x, y, 1); return; }
+    if (type === "umbrella" && job === "fit") type = "heart";        // 헬스걸은 우산 대신 하트
+    if (type === "heart" && (dirtJob() || lives >= aug.maxLives)) type = "star";
+    const b = BONUS.find(o => o.type === type);
+    const rr = 20 * 0.945;
+    items.push({ type, emoji: b.emoji, x, y, r: rr, vx: 0, vy: 150 * (H / BASE_H),
+                 rot: 0, vr: 0, size: rr * 2, bob: Math.random() * 6.28, born: elapsed });
+  }
+  // 정해진 자리에 코인 하나 (코인 고양이·선물 요정) — v 는 1/3/5
+  function makeCoinAt(x, y, v) {
+    const k = COIN_KINDS.find(c => c.v === v) || COIN_KINDS[0];
+    items.push({ type: "coin", emoji: k.emoji, img: k.img, coin: k.v,
+                 x: Math.max(COIN_R, Math.min(W - COIN_R, x)), y, r: COIN_R,
+                 vx: 0, vy: 130 * (H / BASE_H), rot: 0, vr: 0, size: COIN_R * 2,
+                 bob: Math.random() * 6.28, born: elapsed });
+    coinSeen++; coinSeenV += k.v;
+  }
+  // 수호천사 — 쓰러지는 순간 한 번 되살린다. 되살렸으면 true
+  function angelSave(now) {
+    if (pet !== "angel" || angelUsed || testMode) return false;
+    angelUsed = true;
+    if (dirtJob()) dirt = Math.round(DIRT_MAX * 0.4); else lives = 1;
+    invUntil = now + 2000; hurtUntil = 0;
+    angelAura = ANGEL_SEC; angelFx = 1.2;
+    feverFlash = Math.max(feverFlash, 0.8);
+    shake = Math.max(shake, 16);
+    burst(player.x, player.y, "#fff3c4", 40); burst(player.x, player.y, "#ffffff", 30);
+    rings.push({ x: player.x, y: player.y + player.hy, t: 0, life: 0.6, r1: 180, color: "#ffe9a8" });
+    popText(player.x, player.y - 90, "👼 수호천사가 지켜 줬다!", "#fff3c4", 22);
+    if (!sfx("gold")) { beep(880, .12, "triangle", .06); beep(1320, .2, "triangle", .05); }
+    if (navigator.vibrate) navigator.vibrate([30, 40, 80]);
+    return true;
+  }
+  // 점술가의 포춘쿠키 — 다른 아이템처럼 위에서 떨어진다
+  function spawnFortune() {
+    const r = 22;
+    const vy = (110 + level * 6) * (H / BASE_H) * (0.6 + Math.random() * 0.4);
+    items.push({ type: "fortune", emoji: "🥠", x: r + Math.random() * (W - r * 2), y: -r - 10, r,
+                 vx: (Math.random() - Math.random()) * vy * SPREAD_BONUS, vy,
+                 rot: 0, vr: 0, size: r * 2, bob: Math.random() * 6.28, born: elapsed });
+  }
+  function startProphecy() {
+    const pr = PROPHECIES[Math.floor(Math.random() * PROPHECIES.length)];
+    prophecy = pr; prophT = PROPH_SEC; prophRain = 0;
+    // 이미 떠 있는 똥에도 바로 먹힌다 — 먹는 순간 달라진 게 보여야 예언 같다
+    for (const q of items) {
+      if (q.type !== "poop" || q.skin === "fever" || q.bounced) continue;
+      if (pr.id === "small") { q.r *= 0.55; q.size *= 0.55; if (q.sz) q.sz *= 0.55; }
+      if (pr.id === "fast") q.vy *= 1.4;
+    }
+    popText(W / 2, H * 0.34, "🔮 예언: " + pr.nm + "!", pr.c, 26);
+    feverFlash = Math.max(feverFlash, pr.bad ? 0.3 : 0.5);
+    if (!sfx(pr.bad ? "hurt" : "aug", 0.8)) { beep(pr.bad ? 300 : 1100, .15, "triangle", .05); }
+  }
   function smashPoopsAround(x, y, radius, force, gainMul) {
     const gm = gainMul || 1;
     for (let i = items.length - 1; i >= 0; i--) {
@@ -4949,8 +5216,8 @@
   /* 순위표에 세울 캐릭터 그림.
      무소유(파워P)로 내되 풀소유까지 진화한 기록은 풀소유 모습으로 세운다. */
   function boardImg(row) {
-    const jb = row && row.job && JOBS[row.job] ? row.job : null;
-    if (jb && row.dog && DOG_SPRS[jb]) return "dogs/" + jb;   // 강아지로 뛴 판
+    const jb = row && row.job && JOB_IMG[row.job] ? row.job : null;   // 옛 도박사 기록도 제 그림으로
+    if (jb && row.dog && (DOG_SPRS[jb] || jb === "gambler")) return "dogs/" + jb;   // 강아지로 뛴 판
     if (jb === "powerp" && row.fullown) return "full";
     return JOB_IMG[jb || "none"];
   }
@@ -5189,7 +5456,7 @@
   AUG_NAMES.refill = "뚜니핑 무한리필(삭제됨)";
   AUG_NAMES.ghost = "유령화(삭제됨)";
   AUG_NAMES.subs = "뚜니핑 정기구독(삭제됨)";
-  const JOB_NAMES = { none: "쉬었음 청년", gambler: "도박사", levitator: "부양사", fit: "헬스걸", powerj: "파워J", powerp: "무소유", powerp2: "파워P", bangul: "방울이", "(none)": "(기록 없음)" };
+  const JOB_NAMES = { none: "쉬었음 청년", fortune: "점술가", gambler: "도박사", levitator: "부양사", fit: "헬스걸", powerj: "파워J", powerp: "무소유", powerp2: "파워P", bangul: "방울이", "(none)": "(기록 없음)" };
   const devScreen = document.getElementById("devScreen");
   const devPw     = document.getElementById("devPw");
   const devBody   = document.getElementById("devBody");
@@ -5717,7 +5984,7 @@
      한 번만 먹는 증강이고, 빗방울로 씻으면 배율도 같이 내려간다.
      (100% 는 곧 끝이라, 실제로 누리는 최대는 75% = 1.75배다) */
   function dungyMul() { return aug.dungy ? 1 + (dirt / DIRT_MAX) : 1; }
-  function scoreMul() { return SCORE_SCALE * aug.scoreMul * bhMul() * levMul() * monkMul() * dungyMul(); }
+  function scoreMul() { return SCORE_SCALE * aug.scoreMul * bhMul() * levMul() * monkMul() * dungyMul() * (prophIs("double") ? 2 : 1); }
 
   function zoneIdx() { return Math.min(LAST_Z, level - 1); }
   // 지금 단계와 다음 단계 사이의 진행도 — 색이 뚝 끊기지 않고 이어지도록
@@ -6688,6 +6955,123 @@
     ctx.restore();
   }
 
+  /* 새 펫 — 캐릭터 뒤쪽에 붙어 다니는 모습(수호천사·뱀장어)과 수호천사의 오라 */
+  function drawPetsBack(now) {
+    const t = now / 1000;
+    if (angelAura > 0) {                     // 되살아난 뒤의 오라 — 금빛 고리가 숨 쉬듯 커졌다 작아진다
+      const ax = player.x, ay = player.y + player.hy;
+      const fade = Math.min(1, angelAura / 1.2);
+      const pr = ANGEL_R * (0.94 + 0.06 * Math.sin(t * 6));
+      ctx.save();
+      ctx.globalAlpha = 0.55 * fade;
+      const g = ctx.createRadialGradient(ax, ay, pr * 0.35, ax, ay, pr);
+      g.addColorStop(0, "rgba(255,244,200,0)");
+      g.addColorStop(0.75, "rgba(255,232,150,.35)");
+      g.addColorStop(1, "rgba(255,255,255,.75)");
+      ctx.fillStyle = g;
+      ctx.beginPath(); ctx.arc(ax, ay, pr, 0, 6.283); ctx.fill();
+      ctx.globalAlpha = 0.9 * fade;
+      ctx.strokeStyle = "#fff1b8"; ctx.lineWidth = 3;
+      ctx.setLineDash([10, 8]); ctx.lineDashOffset = -t * 40;
+      ctx.beginPath(); ctx.arc(ax, ay, pr, 0, 6.283); ctx.stroke();
+      ctx.setLineDash([]);
+      ctx.restore();
+    }
+    // 수호천사 — 아직 쓰지 않았거나 오라가 도는 동안 어깨 위에 떠 있다
+    if (pet === "angel" && PET_IMG.angel && (!angelUsed || angelAura > 0)) {
+      const big = angelAura > 0 ? 1.35 : 1;
+      const sz = 34 * big;
+      const x = player.x - (facing === "right" ? 1 : -1) * 36, y = player.y + player.hy - 56 + Math.sin(t * 3) * 4;
+      ctx.save();
+      if (angelFx > 0) { ctx.shadowColor = "#fff3c4"; ctx.shadowBlur = 24 * angelFx; }
+      ctx.drawImage(PET_IMG.angel, x - sz / 2, y - sz / 2, sz, sz);
+      ctx.restore();
+    }
+    // 백만볼트 뱀장어 — 어깨 뒤에서 살랑거린다. 번개를 쏠 때 번쩍인다
+    if (pet === "eel" && PET_IMG.eel) {
+      const sz = 40;
+      const x = player.x - (facing === "right" ? 1 : -1) * 34, y = player.y + player.hy - 48 + Math.sin(t * 4) * 5;
+      ctx.save();
+      const zap = bolts.length && bolts[bolts.length - 1].t < 0.15;
+      if (zap) { ctx.shadowColor = "#bfe9ff"; ctx.shadowBlur = 22; }
+      ctx.translate(x, y); ctx.rotate(Math.sin(t * 4) * 0.12);
+      if (facing === "left") ctx.scale(-1, 1);
+      ctx.drawImage(PET_IMG.eel, -sz / 2, -sz / 2, sz, sz);
+      ctx.restore();
+    }
+  }
+  /* 앞쪽 — 날아다니는 선물 요정, 고개 내민 코인 고양이, 번개 */
+  function drawPetsFront(now) {
+    for (const b of bolts) {                 // 번개 — 지그재그 두 겹(굵은 빛 + 가는 심)
+      const k = b.t / b.life;
+      ctx.save();
+      ctx.globalAlpha = 1 - k;
+      ctx.lineJoin = "round"; ctx.lineCap = "round";
+      for (const [w, c] of [[9, "rgba(120,200,255,.45)"], [3.2, "#f4fbff"]]) {
+        ctx.strokeStyle = c; ctx.lineWidth = w;
+        ctx.beginPath();
+        let rs = b.seed + Math.floor(b.t * 30);            // 매 몇 프레임 모양이 바뀐다
+        const rnd = () => { rs = (rs * 9301 + 49297) % 233280; return rs / 233280 - 0.5; };
+        for (let i = 0; i < b.pts.length - 1; i++) {
+          const [x1, y1] = b.pts[i], [x2, y2] = b.pts[i + 1];
+          if (i === 0) ctx.moveTo(x1, y1);
+          const seg = 6;
+          for (let j = 1; j <= seg; j++) {
+            const f = j / seg, jit = j === seg ? 0 : 16;
+            ctx.lineTo(x1 + (x2 - x1) * f + rnd() * jit, y1 + (y2 - y1) * f + rnd() * jit);
+          }
+        }
+        ctx.stroke();
+      }
+      ctx.restore();
+    }
+    if (PET_IMG.gift) for (const f of fairies) {
+      const sz = 42;
+      const a = (f.st === 0 || f.st === 3) ? 1 : Math.max(0, 1 - f.k);
+      ctx.save();
+      ctx.globalAlpha = a;
+      ctx.translate(f.x, f.y + Math.sin(f.ph) * 3);
+      if (f.fl === false) ctx.scale(-1, 1);
+      ctx.shadowColor = "#ffc2ec"; ctx.shadowBlur = 14;
+      ctx.drawImage(PET_IMG.gift, -sz / 2, -sz / 2, sz, sz);
+      ctx.restore();
+      if (f.st === 0 && Math.random() < 0.5) particles.push({ x: f.x, y: f.y, vx: (Math.random() - .5) * 40, vy: 20,
+        life: .4, t: 0, c: Math.random() < .5 ? "#ffd6f5" : "#fff3a8", r: 1.5 + Math.random() * 2 });
+    }
+    if (PET_IMG.coincat) for (const c of cats) {
+      // 위에서 쏙 내려왔다가 코인을 놓고 다시 올라간다
+      const k = c.t < 0.3 ? c.t / 0.3 : c.t > 1.1 ? Math.max(0, 1 - (c.t - 1.1) / 0.3) : 1;
+      const sz = 56;
+      ctx.save();
+      ctx.translate(c.x, -sz * 0.6 + k * sz * 1.05);
+      ctx.rotate(Math.PI);                   // 거꾸로 매달려 내려다본다
+      ctx.drawImage(PET_IMG.coincat, -sz / 2, -sz / 2, sz, sz);
+      ctx.restore();
+      if (c.v === 5 && c.t < 0.45) {         // 5코인짜리는 미리 반짝
+        ctx.save(); ctx.globalAlpha = 0.6; ctx.fillStyle = "#ffc2ec";
+        ctx.beginPath(); ctx.arc(c.x, k * sz * 0.5, 10 + Math.sin(c.t * 20) * 3, 0, 6.283); ctx.fill(); ctx.restore();
+      }
+    }
+  }
+  // 점술가 — 예언이 이뤄지는 동안 화면 위 가운데에 무엇이 몇 초 남았는지
+  function drawProphecy() {
+    if (!prophecy || prophT <= 0) return;
+    const w = 190, h = 30, x = W / 2 - w / 2, y = 52;
+    ctx.save();
+    ctx.globalAlpha = Math.min(1, prophT / 0.4);
+    ctx.fillStyle = "rgba(40,16,70,.72)";
+    ctx.strokeStyle = prophecy.c; ctx.lineWidth = 2;
+    ctx.beginPath(); ctx.roundRect(x, y, w, h, 15); ctx.fill(); ctx.stroke();
+    ctx.fillStyle = prophecy.c;                // 남은 시간 막대
+    ctx.globalAlpha *= 0.35;
+    ctx.beginPath(); ctx.roundRect(x + 3, y + 3, (w - 6) * (prophT / PROPH_SEC), h - 6, 12); ctx.fill();
+    ctx.globalAlpha = Math.min(1, prophT / 0.4);
+    if (ITEM_IMG.fortune) ctx.drawImage(ITEM_IMG.fortune, x + 6, y + 3, 24, 24);
+    ctx.fillStyle = "#fff"; ctx.font = "800 14px NanumBarunGothic, system-ui, sans-serif";
+    ctx.textAlign = "center"; ctx.textBaseline = "middle";
+    ctx.fillText(prophecy.nm + "  " + Math.ceil(prophT) + "초", W / 2 + 12, y + h / 2 + 1);
+    ctx.restore();
+  }
   function drawHelpers() {
     if (!helperPic()) return;
     for (const hp of helpers) drawHelperAt(hp.x, hp.y, hp.vx, hp.vy);
@@ -7645,9 +8029,11 @@
       drawWarnings(now);
       drawItems(now);
       drawHelpers();
+      if (state !== STATE.OVER) drawPetsBack(now);
       if (state !== STATE.OVER) drawPlayer(now);
     }
     drawEffects();
+    if (state === STATE.PLAY || state === STATE.PAUSE) { drawPetsFront(now); drawProphecy(); }
     ctx.restore();
     if (state === STATE.PLAY || state === STATE.PAUSE) drawHud();
     if (dpad.classList.contains("on")) dpad.classList.toggle("noVert", !flyOn);
