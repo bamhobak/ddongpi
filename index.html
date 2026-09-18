@@ -269,19 +269,34 @@
     border-radius: 6px; padding: 6px 10px;
   }
   #jobTraits .tr .dot { flex: none; width: 5px; height: 5px; border-radius: 50%; background: #9fd8ff; }
-  /* ---- 펫 고르기 (직업 상세 안) ---- */
-  #petRow { width: 100%; display: flex; flex-direction: column; gap: 6px; }
-  #petHead { display: flex; align-items: baseline; gap: 8px; }
-  #petHead b { font-size: 13px; color: #ffd23f; }
-  #petDesc { font-size: 11.5px; color: #9fa5b8; flex: 1; text-align: left; min-height: 14px; }
-  #petList { display: flex; gap: 6px; width: 100%; }
-  #petList button {
-    flex: 1; padding: 8px 2px; font-size: 12.5px; border-radius: 10px; box-shadow: none;
-    background: rgba(255,255,255,.06); color: #b8bdcc; border: 1px solid rgba(255,255,255,.14);
+  /* ---- 직업 / 펫 탭 ---- */
+  #pickTabs { display: flex; gap: 6px; width: 100%; max-width: 340px; }
+  #pickTabs.hidden, #pickFoot.hidden { display: none; }
+  #pickTabs button {
+    flex: 1; padding: 9px 4px; font-size: 14.5px; border-radius: 10px 10px 4px 4px; box-shadow: none;
+    background: rgba(255,255,255,.06); color: #9fa5b8; border: 1px solid rgba(255,255,255,.12);
+    white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
   }
-  #petList button.sel {
-    background: rgba(255,210,63,.14); border-color: #ffd23f; color: #fff;
-    box-shadow: 0 0 12px rgba(255,210,63,.25);
+  #pickTabs button.on {
+    background: rgba(255,210,63,.16); color: #ffd23f; border-color: #ffd23f;
+  }
+  #pickTabs button small { font-weight: 400; font-size: 11.5px; color: #c9cede; margin-left: 4px; }
+  /* 펫 카드 — 직업 카드와 같은 모양 (#jobList 규칙을 같이 쓴다) */
+  #jobList .petNone { height: 78px; display: flex; align-items: center; justify-content: center;
+                      font-size: 40px; opacity: .55; }
+  #pickFoot { display: flex; flex-direction: column; align-items: center; gap: 8px; width: 100%; max-width: 340px; }
+  #pickDesc { font-size: 12px; color: #c9cede; text-align: center; min-height: 16px; }
+  #btnPickOk {
+    padding: 10px 40px; font-size: 17px; letter-spacing: 3px;
+    background: linear-gradient(180deg, #ffe07a, #ffc42e 55%, #f5a70f);
+    border: 1px solid rgba(255,243,196,.85);
+    box-shadow: 0 0 24px rgba(255,196,46,.55), 0 5px 0 #a8700a;
+  }
+  #jobPetLine {
+    width: 100%; display: flex; align-items: center; gap: 8px; text-align: left;
+    font-size: 12.5px; color: #ffe9a8;
+    background: rgba(255,210,63,.08); border: 1px solid rgba(255,210,63,.3);
+    border-radius: 6px; padding: 6px 10px;
   }
   #btnJobGo {
     padding: 10px 40px; font-size: 17px; letter-spacing: 3px;
@@ -879,19 +894,24 @@
 
     <div id="jobScreen" class="screen hidden">
       <h2>직업 선택</h2>
+      <div id="pickTabs">
+        <button id="tabJob" class="on">직업</button>
+        <button id="tabPet">펫</button>
+      </div>
       <div id="jobList"></div>
+      <div id="pickFoot">
+        <div id="pickDesc"></div>
+        <button id="btnPickOk">결정</button>
+      </div>
       <div id="jobDetail" class="hidden">
         <div id="jobCard">
           <img id="jobBig" alt="">
           <div id="jobName"></div>
           <div id="jobTraits"></div>
         </div>
-        <div id="petRow">
-          <div id="petHead"><b>펫</b><span id="petDesc"></span></div>
-          <div id="petList"></div>
-        </div>
+        <div id="jobPetLine"></div>
         <button id="btnJobGo">시작</button>
-        <button id="btnJobList">← 다른 직업 보기</button>
+        <button id="btnJobList">← 다시 고르기</button>
       </div>
       <button id="btnJobBack">← 메인으로 돌아가기</button>
     </div>
@@ -975,7 +995,7 @@
   const elTitle = document.getElementById("overTitle");
   const coinNote = document.getElementById("coinNote");
 
-  const GAME_VERSION = "v0.7.11";   // 코드를 고칠 때마다 뒤 두 자리를 올린다
+  const GAME_VERSION = "v0.7.12";   // 코드를 고칠 때마다 뒤 두 자리를 올린다
   document.getElementById("ver").textContent = GAME_VERSION;
 
   const LS_NAME = "epjpddongpi_name";
@@ -1229,10 +1249,13 @@
      직업과 별개로 하나를 데리고 나간다. 전에는 증강(정연핑·갤러그)이거나 직업 능력(도박사의 비둘기)
      이었던 것들 — 판 내내 따라다니며 제 몫을 한다. 펫에서 이어지는 히든 증강은 그 펫이 있을 때만 나온다. */
   const PETS = {
-    none:   { nm: "없음",   ic: "🚫", ds: "혼자 뛴다" },
-    helper: { nm: "정연핑", ic: "🦸", ds: "때때로 날아올라 지나간 자리의 똥을 부순다" },
-    galaga: { nm: "갤러그", ic: "🚀", ds: "우주선이 땅에서 총알을 쏘아 올린다" },
-    dove:   { nm: "비둘기", ic: "🕊️", ds: "80m 움직일 때마다 날아올라 똥을 터뜨린다 (똥점수 5배)" }
+    none:   { nm: "없음",   ic: "🚫", ds: "펫 없이 혼자 뛴다" },
+    helper: { nm: "정연핑", ic: "🦸", img: "assets/helper.png",
+              ds: "때때로 날아올라 지나간 자리의 똥을 부순다" },
+    galaga: { nm: "갤러그", ic: "🚀", img: "assets/pet_galaga.png",
+              ds: "우주선이 땅에서 총알을 쏘아 올린다" },
+    dove:   { nm: "비둘기", ic: "🕊️", img: "assets/dove.png",
+              ds: "80m 움직일 때마다 날아올라 똥을 터뜨린다 (똥점수 5배)" }
   };
   const LS_PET = "epjpddongpi_pet";
   let pet = "none";
@@ -2881,29 +2904,12 @@
     return dogMode && DOG_SPRS[id] ? "assets/dogs/" + id + "_right.png"
                                    : "assets/" + JOB_IMG[id] + "_right.png";
   }
-  /* 펫 고르기 — 직업 상세 아래 한 줄. 고른 것은 다음 판에도 기억한다 */
-  function renderPets() {
-    const list = document.getElementById("petList");
-    list.innerHTML = "";
-    for (const id in PETS) {
-      const b = document.createElement("button");
-      b.textContent = PETS[id].ic + " " + PETS[id].nm;
-      b.classList.toggle("sel", id === pet);
-      b.addEventListener("click", () => {
-        beep(760, .06, "square", .04);
-        pet = id;
-        try { localStorage.setItem(LS_PET, pet); } catch (e) {}
-        renderPets();
-      });
-      list.appendChild(b);
-    }
-    document.getElementById("petDesc").textContent = PETS[pet].ds;
-  }
   function showJobDetail(id) {
     job = id;
-    renderPets();
     try { localStorage.setItem(LS_JOB, job); } catch (e) {}
     const j = JOBS[id];
+    document.getElementById("jobPetLine").textContent =
+      "펫 · " + PETS[pet].ic + " " + PETS[pet].nm + (pet === "none" ? "" : " — " + PETS[pet].ds);
     document.getElementById("jobBig").src = jobPic(id);
     document.getElementById("jobBig").alt = j.nm;
     document.getElementById("jobName").textContent = j.nm;
@@ -2928,39 +2934,77 @@
       tr.appendChild(d);
     }
     jobList.classList.add("hidden");
+    pickTabs.classList.add("hidden"); pickFoot.classList.add("hidden");
+    document.querySelector("#jobScreen h2").textContent = "이대로 시작?";
     jobDetail.classList.remove("hidden");
     btnJobBack.hidden = true;              // 상세에서는 '다른 직업 보기'로만 빠져나간다
   }
+  /* 고르는 화면 — [직업] [펫] 탭. 카드를 누르면 '선택'만 되고, 아래 '결정'을 눌러야 다음으로 간다. */
+  const pickTabs = document.getElementById("pickTabs");
+  const pickFoot = document.getElementById("pickFoot");
+  const tabJob = document.getElementById("tabJob"), tabPet = document.getElementById("tabPet");
+  let pickTab = "job";
+  function pickCard(sel, pic, name, title, onPick) {
+    const card = document.createElement("button");
+    card.className = "augCard";
+    const tx = document.createElement("div"); tx.className = "tx";
+    const nm = document.createElement("div"); nm.className = "nm2"; nm.textContent = name;
+    if (title) card.title = title;
+    if (sel) card.classList.add("sel");
+    tx.append(nm);
+    card.append(pic, tx);
+    card.addEventListener("click", () => { beep(900, .08, "square", .05); onPick(); renderPick(); });
+    return card;
+  }
+  function renderPick() {
+    tabJob.classList.toggle("on", pickTab === "job");
+    tabPet.classList.toggle("on", pickTab === "pet");
+    document.querySelector("#jobScreen h2").textContent = pickTab === "job" ? "직업 선택" : "펫 선택";
+    // 탭에 지금 고른 것을 같이 적어 둔다 — 다른 탭에 있어도 무엇을 골랐는지 보이게
+    tabJob.innerHTML = "직업<small></small>"; tabJob.lastChild.textContent = JOBS[job].nm;
+    tabPet.innerHTML = "펫<small></small>";   tabPet.lastChild.textContent = PETS[pet].nm;
+    jobList.innerHTML = "";
+    if (pickTab === "job") {
+      // 카드 앞에는 이모지 대신 그 직업의 이재(오른쪽 이동 모습)를 보여준다
+      for (const id in JOBS) {
+        const ic = document.createElement("img"); ic.className = "ic";
+        ic.src = jobPic(id); ic.alt = JOBS[id].ic;
+        jobList.appendChild(pickCard(id === job, ic, JOBS[id].nm, JOBS[id].ds, () => {
+          job = id;
+          try { localStorage.setItem(LS_JOB, job); } catch (e) {}
+        }));
+      }
+      document.getElementById("pickDesc").textContent = "";
+    } else {
+      for (const id in PETS) {
+        let ic;
+        if (PETS[id].img) { ic = document.createElement("img"); ic.className = "ic"; ic.src = PETS[id].img; ic.alt = PETS[id].ic; }
+        else { ic = document.createElement("div"); ic.className = "petNone"; ic.textContent = PETS[id].ic; }
+        jobList.appendChild(pickCard(id === pet, ic, PETS[id].nm, PETS[id].ds, () => {
+          pet = id;
+          try { localStorage.setItem(LS_PET, pet); } catch (e) {}
+        }));
+      }
+      document.getElementById("pickDesc").textContent = PETS[pet].ds;
+    }
+  }
+  tabJob.addEventListener("click", () => { beep(640, .05, "square", .04); pickTab = "job"; renderPick(); });
+  tabPet.addEventListener("click", () => { beep(640, .05, "square", .04); pickTab = "pet"; renderPick(); });
+  // 결정 — 고른 직업·펫을 확인하는 상세 화면으로
+  document.getElementById("btnPickOk").addEventListener("click", () => {
+    beep(900, .08, "square", .05);
+    showJobDetail(job);
+  });
   function showJobList() {
     jobDetail.classList.add("hidden");
     jobList.classList.remove("hidden");
+    pickTabs.classList.remove("hidden"); pickFoot.classList.remove("hidden");
     btnJobBack.hidden = false;
-    for (const c of jobList.children) c.classList.toggle("sel", c.dataset.job === job);
+    renderPick();
   }
   function openJobSelect(test) {           // test === true 면 고른 뒤 테스트 모드로 시작
-    const list = document.getElementById("jobList");
-    list.innerHTML = "";
-    // 카드 앞에는 이모지 대신 그 직업의 이재(오른쪽 이동 모습)를 보여준다
-    for (const id in JOBS) {
-      const j = JOBS[id];
-      const card = document.createElement("button");
-      card.className = "augCard";
-      const ic = document.createElement("img"); ic.className = "ic";
-      ic.src = jobPic(id); ic.alt = j.ic;
-      const tx = document.createElement("div"); tx.className = "tx";
-      const nm = document.createElement("div"); nm.className = "nm2"; nm.textContent = j.nm;
-      card.title = j.ds;                       // 설명은 눌러 보기 전 도움말로만
-      if (id === job) card.classList.add("sel");
-      tx.append(nm);
-      card.append(ic, tx);
-      card.dataset.job = id;
-      card.addEventListener("click", () => {
-        beep(900, .08, "square", .05);
-        showJobDetail(id);               // 바로 시작하지 않고 먼저 보여 준다
-      });
-      list.appendChild(card);
-    }
     jobTestMode = test === true;
+    pickTab = "job";
     showJobList();
     startScreen.classList.add("hidden");
     overScreen.classList.add("hidden");
