@@ -1035,7 +1035,7 @@
   const elTitle = document.getElementById("overTitle");
   const coinNote = document.getElementById("coinNote");
 
-  const GAME_VERSION = "v0.7.27";   // 코드를 고칠 때마다 뒤 두 자리를 올린다
+  const GAME_VERSION = "v0.7.28";   // 코드를 고칠 때마다 뒤 두 자리를 올린다
   document.getElementById("ver").textContent = GAME_VERSION;
 
   const LS_NAME = "epjpddongpi_name";
@@ -8176,24 +8176,22 @@
   //      v1.3.01~99 는 'v1.3' 한 줄로, v1.2.01~99 는 'v1.2' 한 줄로 합친다.
   //  v1.5 가 나오면 v1.4 가 자동으로 묶인다(따로 고칠 필요 없음).
   //  평균생존은 판수로 가중평균해서 합친다(단순 평균은 판수 1판짜리가 과대반영됨).
+  //  2026-09 에 번호를 v1.5.97 → v0.6 으로 새로 매겼다. 그래서 v1.x 는 '옛 번호'(더 오래된 판)이고,
+  //  숫자 크기가 아니라 시대로 줄을 세운다 — 새 번호(v0.x)가 위, 옛 번호(v1.x)는 맨 아래.
   function groupVers(list) {
     const parse = (t) => {
-      const m = /^v?(\d+)\.(\d+)\.(\d+)/.exec(String(t || ""));
-      return m ? { maj: +m[1], min: +m[2], pat: +m[3] } : null;
+      const m = /^v?(\d+)\.(\d+)(?:\.(\d+))?/.exec(String(t || ""));
+      return m ? { maj: +m[1], min: +m[2], pat: m[3] === undefined ? 999 : +m[3] } : null;
     };
-    let top = null;                       // 가장 높은 마이너 버전(= 현재 버전대)
-    for (const v of list) {
-      const p = parse(v.ver);
-      if (!p) continue;
-      if (!top || p.maj > top.maj || (p.maj === top.maj && p.min > top.min)) top = p;
-    }
+    const oldEra = p => p.maj >= 1;       // 번호를 새로 매기기 전
+    const top = parse(GAME_VERSION);      // 지금 쓰는 마이너 버전대 (예: v0.7)
     if (!top) return list;
     const keep = [], bucket = new Map();
     for (const v of list) {
       const p = parse(v.ver);
       if (!p) { keep.push(v); continue; }               // '(없음)' 같은 건 그대로
-      if (p.maj === top.maj && p.min === top.min) { keep.push(v); continue; }
-      const key = "v" + p.maj + "." + p.min;
+      if (p.maj === top.maj && p.min === top.min && p.pat !== 999) { keep.push(v); continue; }
+      const key = "v" + p.maj + "." + p.min + (oldEra(p) ? " (옛 번호)" : "");
       const b = bucket.get(key) || { ver: key, runs: 0, secs: 0, score: 0, _w: 0 };
       const runs = Number(v.runs) || 0;
       b.runs += runs;
@@ -8210,9 +8208,8 @@
     }
     const rank = (v) => {
       const p = parse(v.ver);
-      if (p) return p.maj * 1e6 + p.min * 1e3 + p.pat;
-      const m2 = /^v?(\d+)\.(\d+)$/.exec(String(v.ver || ""));
-      return m2 ? +m2[1] * 1e6 + +m2[2] * 1e3 + 999 : -1;   // 묶음은 그 마이너의 맨 위
+      if (!p) return -1;
+      return (oldEra(p) ? 0 : 1e9) + p.maj * 1e6 + p.min * 1e3 + p.pat;   // 새 번호가 늘 위, 묶음은 그 마이너의 맨 위
     };
     return keep.sort((a, b) => rank(b) - rank(a));
   }
