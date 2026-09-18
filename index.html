@@ -1037,7 +1037,7 @@
   const elTitle = document.getElementById("overTitle");
   const coinNote = document.getElementById("coinNote");
 
-  const GAME_VERSION = "v0.7.35";   // 코드를 고칠 때마다 뒤 두 자리를 올린다
+  const GAME_VERSION = "v0.7.36";   // 코드를 고칠 때마다 뒤 두 자리를 올린다
   document.getElementById("ver").textContent = GAME_VERSION;
 
   const LS_NAME = "epjpddongpi_name";
@@ -6069,7 +6069,7 @@
     // 뚜니핑 낙하물은 크기가 곧 점수라서 '작아진 똥'의 영향을 받지 않는다
     let r = cls ? cls.min + Math.random() * (cls.max - cls.min)
                 // 5% 줄이되 제일 작은 똥(12.6)보다 작아지지는 않는다
-                : Math.max(12.6, (12.6 + Math.random() * 11.7) * 0.95) * aug.poopMul * (prophIs("small") ? 0.55 : prophIs("big") ? 1.5 : 1);
+                : Math.max(12.6, (12.6 + Math.random() * 11.7) * 0.95) * aug.poopMul * (prophIs("small") ? 0.55 : prophIs("big") ? 1.3 : 1);
     if (special === "huge") r = (HUGE_R + Math.random() * 10) * aug.poopMul;   // 초거대 똥
     r = Math.min(r, (W - 24) / 2);        // 화면보다 커지지 않게
     // 일반 똥은 레벨이 오를수록 빨라지지만, 뚜니핑 낙하물은 처음이나 나중이나 같은 속도로 떨어진다
@@ -6080,7 +6080,7 @@
     /* 뚜니핑 낙하물은 언제나 같은 속도로 떨어진다 — 레벨·지대·증강(느린 하늘·도파민)
        어느 것에도 영향받지 않는다. 화면 높이 보정(m)만 그대로 둔다. */
     let vy = inFever ? baseVy * m
-                     : baseVy * m * DIFF_F * spaceF() * bhDiff() * aug.fallMul * lateMul() * (prophIs("fast") ? 1.4 : prophIs("slow") ? 0.7 : 1);
+                     : baseVy * m * DIFF_F * spaceF() * bhDiff() * aug.fallMul * lateMul() * (prophIs("fast") ? 1.3 : prophIs("slow") ? 0.7 : 1);
     if (special === "huge") vy *= 0.55;   // 덩치값 — 느릿느릿 굴러떨어진다
     let px = r + Math.random() * (W - r * 2);
     let pvx = (Math.random() - Math.random()) * vy * SPREAD_POOP;
@@ -7549,8 +7549,8 @@
     for (const q of items) {
       if (q.type !== "poop" || q.skin === "fever" || q.bounced) continue;
       if (pr.id === "small") { q.r *= 0.55; q.size *= 0.55; if (q.sz) q.sz *= 0.55; }
-      if (pr.id === "big")   { q.r *= 1.5;  q.size *= 1.5;  if (q.sz) q.sz *= 1.5; }
-      if (pr.id === "fast") q.vy *= 1.4;
+      if (pr.id === "big")   { q.r *= 1.3;  q.size *= 1.3;  if (q.sz) q.sz *= 1.3; }
+      if (pr.id === "fast") q.vy *= 1.3;
       if (pr.id === "slow") q.vy *= 0.7;
     }
     if (pr.id === "shield") {                // 수호의 별 — 우산 하나 (헬스걸은 우산이 없는 직업이라 하트)
