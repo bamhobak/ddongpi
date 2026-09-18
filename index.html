@@ -957,7 +957,7 @@
   const elTitle = document.getElementById("overTitle");
   const coinNote = document.getElementById("coinNote");
 
-  const GAME_VERSION = "v0.7.09";   // 코드를 고칠 때마다 뒤 두 자리를 올린다
+  const GAME_VERSION = "v0.7.10";   // 코드를 고칠 때마다 뒤 두 자리를 올린다
   document.getElementById("ver").textContent = GAME_VERSION;
 
   const LS_NAME = "epjpddongpi_name";
@@ -978,7 +978,7 @@
   /* ---------- 직업 ---------- */
   const LS_JOB = "epjpddongpi_job";
   const JOBS = {
-    none:    { nm: "백수",   ic: "🏃",
+    none:    { nm: "쉬었음 청년", ic: "🏃",
                ds: "힘들때마다 차려지는 엄마의 따뜻한 밥상 · 코인이 2배로 나온다" },
     gambler: { nm: "도박사", ic: "🎰", ds: "목숨 1개 + 우산 1개 시작 · 비둘기 출격 · 하트 안 나옴 · 모든 점수 2.5배" },
     levitator: { nm: "부양사", ic: "🎈", ds: "하늘 어디든 날 수 있다 · 높이 있을수록 점수 UP" },
@@ -1325,7 +1325,7 @@
   /* 직업: 도박사 복장 (우주복 이전 구간에서만 입는다).
      head/cx/cy/adj 는 실측값 — 헬멧 대신 얼굴이 판정 기준이다. */
   const SPR_GAMBLER = {
-    // 모자·머리숱이 커서 같은 몸높이면 작아 보인다 — 백수와 같은 크기(1.0배)로 맞췄다
+    // 모자·머리숱이 커서 같은 몸높이면 작아 보인다 — 쉬었음 청년과 같은 크기(1.0배)로 맞췄다
     right: { img: null, aspect: 0.522, head: 0.369, cx: 0.590, cy: 0.319, adj: 0.5446 },
     hurt:  { img: null, aspect: 0.439, head: 0.415, cx: 0.487, cy: 0.347, adj: 0.6653 }
   };
@@ -1342,7 +1342,7 @@
     hurt:  { img: null, aspect: 0.506, head: 0.414, cx: 0.500, cy: 0.264, adj: 0.6641 }
   };
   const SPR_MONK = {
-    // 백수와 같은 크기(1.0배)
+    // 쉬었음 청년과 같은 크기(1.0배)
     right: { img: null, aspect: 0.619, head: 0.306, cx: 0.552, cy: 0.181, adj: 0.4514 },
     hurt:  { img: null, aspect: 0.472, head: 0.291, cx: 0.512, cy: 0.231, adj: 0.4667 }
   };
@@ -1354,7 +1354,7 @@
   };
   /* 방울이 — 옆 프로젝트에서 가져온 강아지. 사람과 몸 비율이 달라
      (가로가 넓다) 높이를 그대로 맞추면 훨씬 커 보인다. adj 는 보이는 넓이가
-     백수와 비슷해지도록 잡았다: 높이 = 판정지름 × 1.30 (피격 1.13). */
+     쉬었음 청년과 비슷해지도록 잡았다: 높이 = 판정지름 × 1.30 (피격 1.13). */
   /* bcx·bcy·brr = 비누방울의 중심과 반지름. 몸이 실제로 차지한 칸을 재서 넣었다
      (bcx 는 그림 가로, bcy·brr 은 그림 세로에 대한 비율). */
   const SPR_BANGUL = {
@@ -1400,7 +1400,7 @@
   /* ---------- 강아지 모드 ----------
      로고의 '재피'를 눌러 시작하면 직업마다 그 직업에 맞는 강아지가 뛴다.
      '시작하기'로 들어가면 원래 그림 그대로. 게임 규칙은 둘이 똑같고 랭킹도 함께 쓴다.
-     백수 퍼그 · 도박사 도베르만 · 부양사 파피용 · 헬스걸 복서 · 파워J 보더콜리 ·
+     쉬었음 청년 퍼그 · 도박사 도베르만 · 부양사 파피용 · 헬스걸 복서 · 파워J 보더콜리 ·
      파워P 비글 · 무소유 진돗개. 방울이는 원래 강아지라 그대로 둔다.
      머리 중심(cx·cy)은 실루엣에서 가장 두꺼운 자리로 잰 값이고, 그림 크기 비율은 방울이와 같다. */
   let dogMode = false;               // 이번 판이 강아지로 뛰는 판인가
@@ -2162,7 +2162,7 @@
     if (left <= 0.06) { bgmFadeOut(bgmCur, 0.15); bgmCur = other; }
   }
   /* 직업마다 제 곡 — 땅 위에서 뛸 때 흐른다. 우주·블랙홀·뚜니핑은 그 자리의 곡이 앞선다.
-     백수는 원래 곡(play) 그대로. */
+     쉬었음 청년은 원래 곡(play) 그대로. */
   const JOB_BGM = { gambler: "gambler", levitator: "levitator", fit: "fit", powerj: "powerj",
                     powerp2: "powerp2", powerp: "powerp", bangul: "bangul" };
   function syncBgm() {
@@ -2231,7 +2231,7 @@
     doveWhat: false,    // 히든: 비둘기 무엇? (도박사 — 비둘기가 세지고 자주 나온다)
     dodge: 0,           // 그건 제 잔상입니다만? — 맞을 때 피할 확률 (0~0.30)
     dungy: false,       // 방울이: 똥묻히기 (오염도만큼 모든 점수가 오른다)
-    momMeal: false,     // 백수: 엄마는 우리 딸 믿어 (엄마의 밥상이 떨어진다)
+    momMeal: false,     // 쉬었음 청년: 엄마는 우리 딸 믿어 (엄마의 밥상이 떨어진다)
     wak: false,         // 히든: 고무고무노 피스톨 (주먹이 똥을 튕겨 올리고, 부딪히면 같이 터진다)
     scoreMul: 1,        // 모든 점수에 곱해지는 배율
     maxLives: 5
@@ -2594,7 +2594,7 @@
      그대로 쓰면 달을 먹을 때마다 곡이 갈아탔다가 돌아와 처음부터 다시 시작한다. */
   let feverBgm = false;
   let feverBanner = 0;               // 뚜니핑 타임 시작 알림 (1 → 0, 1.1초)
-  /* 백수로 시작할 때 뜨는 엄마의 한마디 — 남은 시간(초). 뚜니핑 알림과 달리
+  /* 쉬었음 청년으로 시작할 때 뜨는 엄마의 한마디 — 남은 시간(초). 뚜니핑 알림과 달리
      글자가 길어 두 줄로 띄우고, 아케이드투가 아니라 따뜻한 색으로 쓴다. */
   const MOM_SEC = 5;
   const MOM_LINES = ["이재야.. 엄마는 우리 딸 믿어.", "파이팅"];
@@ -2972,7 +2972,7 @@
     invUntil = 0; powerUntil = 0; hurtUntil = 0; shields = 0;
     shake = 0; flash = 0; feverFlash = 0; fever = false; feverBgm = false;
     feverT = 0; feverBanner = 0;
-    momMsg = (job === "none") ? MOM_SEC : 0;   // 백수에게만
+    momMsg = (job === "none") ? MOM_SEC : 0;   // 쉬었음 청년에게만
     scoreShown = 0; scorePunch = 0; prevScore = 0; rings = []; bubPops = [];
     scoreSrc = {};
     bubbleOn = (job === "bangul"); bubbleT = 0;   // 방울이는 방울을 두르고 시작한다
@@ -3000,7 +3000,7 @@
     monkStreak = 0; fullOwn = false; fullBanner = 0; fullFx = 0;
     shieldTimer = UMB_SEC;
     aug.itemRateMul = 1; aug.feverRateMul = 1; aug.giant = 0; aug.magnet = 0;
-    /* 백수는 '엄마는 우리 딸 믿어' 를 기본으로 깔고 시작한다.
+    /* 쉬었음 청년은 '엄마는 우리 딸 믿어' 를 기본으로 깔고 시작한다.
        타이머를 잡기 전에 켜 두어야 엄마의 밥상 시계가 제대로 돌아간다
        (꺼져 있으면 평균 간격이 무한이라 영영 안 떨어진다). */
     aug.momMeal = (job === "none");
@@ -3088,8 +3088,8 @@
      그림은 96px 로 미리 줄여 두었다 (256 짜리를 매 프레임 줄이면 테두리가 자글거린다). */
   const COIN_R = 13.86;
   const COIN_RATIO = 0.02;        // 똥 백 개당 코인 두 개
-  /* 백수와 무소유는 코인이 기본 두 배로 나온다.
-     (백수는 모으는 직업이라, 무소유는 쥘지 말지를 자주 고르게 하려고.)
+  /* 쉬었음 청년과 무소유는 코인이 기본 두 배로 나온다.
+     (쉬었음 청년은 모으는 직업이라, 무소유는 쥘지 말지를 자주 고르게 하려고.)
      풀소유가 되면 거기서 다시 7.5 배 — 일반 직업의 열다섯 배가 쏟아진다.
      값은 그대로고 개수만 는다. */
   function coinRatio() {
@@ -4989,7 +4989,7 @@
   AUG_NAMES.refill = "뚜니핑 무한리필(삭제됨)";
   AUG_NAMES.ghost = "유령화(삭제됨)";
   AUG_NAMES.subs = "뚜니핑 정기구독(삭제됨)";
-  const JOB_NAMES = { none: "백수", gambler: "도박사", levitator: "부양사", fit: "헬스걸", powerj: "파워J", powerp: "무소유", powerp2: "파워P", bangul: "방울이", "(none)": "(기록 없음)" };
+  const JOB_NAMES = { none: "쉬었음 청년", gambler: "도박사", levitator: "부양사", fit: "헬스걸", powerj: "파워J", powerp: "무소유", powerp2: "파워P", bangul: "방울이", "(none)": "(기록 없음)" };
   const devScreen = document.getElementById("devScreen");
   const devPw     = document.getElementById("devPw");
   const devBody   = document.getElementById("devBody");
