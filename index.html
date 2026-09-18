@@ -1035,7 +1035,7 @@
   const elTitle = document.getElementById("overTitle");
   const coinNote = document.getElementById("coinNote");
 
-  const GAME_VERSION = "v0.7.20";   // 코드를 고칠 때마다 뒤 두 자리를 올린다
+  const GAME_VERSION = "v0.7.21";   // 코드를 고칠 때마다 뒤 두 자리를 올린다
   document.getElementById("ver").textContent = GAME_VERSION;
 
   const LS_NAME = "epjpddongpi_name";
@@ -1454,11 +1454,11 @@
   };
   /* 직업: 도박사 복장 (우주복 이전 구간에서만 입는다).
      head/cx/cy/adj 는 실측값 — 헬멧 대신 얼굴이 판정 기준이다. */
-  /* 점술가 — 도박사 그림에서 옷만 보랏빛 점술가 망토·베일·수정구로 바꿨다 (Ludo editImage).
-     머리 중심은 실루엣이 가장 두꺼운 자리, 아픈 그림은 베일이 두꺼워 얼굴 쪽으로 조금 올렸다. */
+  /* 점술가 — 원본 astrologer-2(달리기, 수정구)·astrologer-3(아픔, 타로 카드).
+     머리 중심은 실루엣이 가장 두꺼운 자리. 아픈 그림은 카드 쪽으로 끌려가서 얼굴 자리로 옮겼다. */
   const SPR_FORTUNE = {
-    right: { img: null, aspect: 0.5333, head: 0.425, cx: 0.526, cy: 0.303, adj: 0.6275 },
-    hurt:  { img: null, aspect: 0.4333, head: 0.400, cx: 0.481, cy: 0.335, adj: 0.6416 }
+    right: { img: null, aspect: 0.5944, head: 0.455, cx: 0.570, cy: 0.289, adj: 0.6711 },
+    hurt:  { img: null, aspect: 0.6611, head: 0.420, cx: 0.400, cy: 0.310, adj: 0.6737 }
   };
   const SPR_LEV = {
     right: { img: null, aspect: 0.606, head: 0.417, cx: 0.541, cy: 0.258, adj: 0.6157 },
