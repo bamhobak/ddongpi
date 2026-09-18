@@ -1037,7 +1037,7 @@
   const elTitle = document.getElementById("overTitle");
   const coinNote = document.getElementById("coinNote");
 
-  const GAME_VERSION = "v0.7.31";   // 코드를 고칠 때마다 뒤 두 자리를 올린다
+  const GAME_VERSION = "v0.7.32";   // 코드를 고칠 때마다 뒤 두 자리를 올린다
   document.getElementById("ver").textContent = GAME_VERSION;
 
   const LS_NAME = "epjpddongpi_name";
@@ -1384,7 +1384,7 @@
     return { x: player.x + off, y: player.y + FOOT - sh + sh * spr.bcy, r: sh * spr.brr };
   }
   // 판정·그림 크기 배율 — 스테로이드 약발 중에는 두 배
-  function hitMul() { return aug.hitboxMul * (roidT > 0 ? 2 : 1); }
+  function hitMul() { return aug.hitboxMul * (roidT > 0 ? 2 : 1) * (prophIs("heavy") ? 1.3 : 1); }
   function spriteHeight(spr) { return (player.r * 2 * hitMul()) / spr.head * spr.adj; }
   function headOffset(spr) { return spr ? FOOT - spriteHeight(spr) * (1 - spr.cy) : 0; }  // 실제 크기 = 도안의 80%
 
@@ -2739,14 +2739,26 @@
   let eelT = 0, bolts = [];
   /* ── 점술가 ── 포춘쿠키는 평균 14초마다, 예언은 PROPH_SEC 동안 */
   const FORTUNE_FIRST = 2, PROPH_SEC = 10;   // 판 시작 2초 뒤 첫 예언, 그다음부터 10초마다 바뀐다
+  /* 예언 — 10초마다 하나씩 저절로 바뀐다. good 좋은 것 · bad 나쁜 것 · both 양면.
+     noTower: 똥탑등반(점수 대신 m, 레벨 시계가 뚜니핑 동안 멈춤)에서는 안 나오는 예언 */
   const PROPHECIES = [
-    { id: "small",  nm: "똥이 작아진다",    c: "#9fe8ff" },
-    { id: "coin",   nm: "코인비가 내린다",   c: "#ffd23f" },
-    { id: "star",   nm: "별이 쏟아진다",    c: "#fff3a8" },
-    { id: "double", nm: "점수가 두 배",     c: "#ff9ede" },
-    { id: "fast",   nm: "똥이 빨라진다",    c: "#ff7b7b", bad: true }
+    { id: "small",   nm: "똥이 작아진다",      c: "#9fe8ff" },
+    { id: "slow",    nm: "똥이 느려진다",      c: "#b6f5a8" },
+    { id: "coin",    nm: "코인비가 내린다",     c: "#ffd23f" },
+    { id: "double",  nm: "점수가 두 배",       c: "#ff9ede", noTower: true },
+    { id: "shield",  nm: "수호의 별",          c: "#7ec8ff" },
+    { id: "fever",   nm: "뚜니핑이 온다",      c: "#ffb86b", noTower: true },
+    { id: "magnet",  nm: "복이 굴러온다",      c: "#ffe28a" },
+    { id: "fast",    nm: "똥이 빨라진다",      c: "#ff7b7b", bad: true },
+    { id: "big",     nm: "똥이 커진다",        c: "#ff9a6b", bad: true },
+    { id: "dark",    nm: "먹구름",            c: "#b58cff", bad: true },
+    { id: "heavy",   nm: "몸이 무거워진다",     c: "#d4a373", bad: true },
+    { id: "reverse", nm: "거꾸로 가는 날",      c: "#ff8ad8", bad: true },
+    { id: "fog",     nm: "짙은 안개",          c: "#c9d3e0", bad: true },
+    { id: "wind",    nm: "옆바람",            c: "#a8e6ff", bad: true },
+    { id: "dice",    nm: "운명의 주사위 — 점수 3배, 똥 1.5배", c: "#ffd23f", both: true, noTower: true }
   ];
-  let prophecy = null, prophT = 0, prophRain = 0, fortuneT = 0;
+  let prophecy = null, prophT = 0, prophRain = 0, fortuneT = 0, prophWind = 0;
   function prophIs(id) { return prophecy && prophecy.id === id && prophT > 0; }
   let bullets = [], shipClock = 0;   // 갤러그: 날아가는 총알과 편대 공용 시계
   /* ── 리듬 실험 ──
@@ -5364,7 +5376,8 @@
        화면이 닫힌 뒤 브라우저가 같은 자리에 흉내내는 마우스 이벤트를 흘려보낸다. */
     if (performance.now() < inputHoldUntil) { if (e.cancelable) e.preventDefault(); return; }
     if (ctrlMode === "pad") { if (e.cancelable) e.preventDefault(); return; }
-    player.tx = Math.max(player.r, Math.min(W - player.r, pointerX(e)));
+    const px0 = prophIs("reverse") ? W - pointerX(e) : pointerX(e);   // 거꾸로 가는 날 — 손가락 반대편으로
+    player.tx = Math.max(player.r, Math.min(W - player.r, px0));
     if (flyOn) {
       /* 캐릭터가 손가락·커서보다 위에 떠 있도록 한다.
          손에 캐릭터가 가려지지 않아 조작감이 훨씬 낫다. */
@@ -6056,7 +6069,7 @@
     // 뚜니핑 낙하물은 크기가 곧 점수라서 '작아진 똥'의 영향을 받지 않는다
     let r = cls ? cls.min + Math.random() * (cls.max - cls.min)
                 // 5% 줄이되 제일 작은 똥(12.6)보다 작아지지는 않는다
-                : Math.max(12.6, (12.6 + Math.random() * 11.7) * 0.95) * aug.poopMul * (prophIs("small") ? 0.55 : 1);
+                : Math.max(12.6, (12.6 + Math.random() * 11.7) * 0.95) * aug.poopMul * (prophIs("small") ? 0.55 : prophIs("big") ? 1.5 : 1);
     if (special === "huge") r = (HUGE_R + Math.random() * 10) * aug.poopMul;   // 초거대 똥
     r = Math.min(r, (W - 24) / 2);        // 화면보다 커지지 않게
     // 일반 똥은 레벨이 오를수록 빨라지지만, 뚜니핑 낙하물은 처음이나 나중이나 같은 속도로 떨어진다
@@ -6067,7 +6080,7 @@
     /* 뚜니핑 낙하물은 언제나 같은 속도로 떨어진다 — 레벨·지대·증강(느린 하늘·도파민)
        어느 것에도 영향받지 않는다. 화면 높이 보정(m)만 그대로 둔다. */
     let vy = inFever ? baseVy * m
-                     : baseVy * m * DIFF_F * spaceF() * bhDiff() * aug.fallMul * lateMul() * (prophIs("fast") ? 1.4 : 1);
+                     : baseVy * m * DIFF_F * spaceF() * bhDiff() * aug.fallMul * lateMul() * (prophIs("fast") ? 1.4 : prophIs("slow") ? 0.7 : 1);
     if (special === "huge") vy *= 0.55;   // 덩치값 — 느릿느릿 굴러떨어진다
     let px = r + Math.random() * (W - r * 2);
     let pvx = (Math.random() - Math.random()) * vy * SPREAD_POOP;
@@ -6432,8 +6445,9 @@
     // 패드는 민 정도만큼 속도가 붙는다 (키보드는 늘 최고 속도)
     const kx = kSpeed * (ctrlMode === "pad" ? padAmpX : 1);
     const ky = kSpeed * (ctrlMode === "pad" ? padAmpY : 1);
-    if (keys.ArrowLeft  || keys.a || keys.A) player.tx -= kx;
-    if (keys.ArrowRight || keys.d || keys.D) player.tx += kx;
+    const kd = prophIs("reverse") ? -1 : 1;           // 거꾸로 가는 날 — 좌우가 바뀐다
+    if (keys.ArrowLeft  || keys.a || keys.A) player.tx -= kx * kd;
+    if (keys.ArrowRight || keys.d || keys.D) player.tx += kx * kd;
     player.tx = Math.max(player.r, Math.min(W - player.r, player.tx));
     if (flyOn) {
       if (keys.ArrowUp   || keys.w || keys.W) player.ty -= ky;
@@ -6783,17 +6797,14 @@
     if (job === "fortune" && state === STATE.PLAY) {
       if (fortuneT > 0) {                    // 판 시작 직후 잠깐 쉬었다가 첫 예언
         fortuneT -= dt;
-        if (fortuneT <= 0) startProphecy();
+        if (fortuneT <= 0) startProphecy(now);
       } else {
         prophT = Math.max(0, prophT - dt);
-        if (prophIs("coin") || prophIs("star")) {
+        if (prophIs("coin")) {
           prophRain -= dt;
-          if (prophRain <= 0) {
-            if (prophIs("coin")) { spawnCoin(); prophRain = 0.5; }
-            else { spawnBonus(BONUS.find(b => b.type === "star")); prophRain = 0.45; }
-          }
+          if (prophRain <= 0) { spawnCoin(); prophRain = 0.5; }
         }
-        if (prophT <= 0) startProphecy();
+        if (prophT <= 0) startProphecy(now);
       }
     }
 
@@ -6949,7 +6960,8 @@
             spawnPoop(1, kind);
           }
         }
-        spawnTimer = spawnGap() / DIFF_F / spaceF() / bhDiff() * widthFactor * (0.7 + Math.random() * 0.6);
+        spawnTimer = spawnGap() / DIFF_F / spaceF() / bhDiff() * widthFactor * (0.7 + Math.random() * 0.6)
+                   / (prophIs("dice") ? 1.5 : 1);        // 운명의 주사위 — 똥 1.5배
       }
     }
     /* 쌓인 몫만큼 코인을 떨어뜨린다. 몫은 똥 하나가 나올 때마다 spawnPoop 에서
@@ -7010,6 +7022,7 @@
       if (it.wak) it.vy += 760 * dt * tsc;
       it.x += it.vx * dt * tsc;
       it.y += it.vy * dt * tsc;
+      if (prophIs("wind") && it.type === "poop" && !it.bounced && !it.chart && !it.ring) it.x += prophWind * dt * tsc;   // 옆바람
       if (it.ring && !it.bounced) {         // 고리 — 한가운데로 조여든다
         it.rad -= it.rv * dt * tsc;
         it.x = it.rcx + Math.cos(it.ang) * it.rad;
@@ -7046,8 +7059,8 @@
       }
       /* 부양사는 자석이 없어도 기본 흡인(자석의 약 20%)을 갖고 시작한다.
          자석 증강을 먹으면 온전한 자석으로 덮어쓴다. 반경 110 → 121 (10% 확장). */
-      const magR = aug.magnet > 0 ? aug.magnet : (job === "levitator" ? 121 : 0);
-      const magF = aug.magnet > 0 ? 1 : 0.45;
+      const magR = prophIs("magnet") ? 2400 : aug.magnet > 0 ? aug.magnet : (job === "levitator" ? 121 : 0);
+      const magF = prophIs("magnet") ? 1.8 : aug.magnet > 0 ? 1 : 0.45;   // 복이 굴러온다 — 화면 어디서든 끌려온다
       if (magR > 0 && (it.type !== "poop" || it.gold)) {
         const d = Math.hypot(dx, dy);
         /* 무지개똥과 코인은 아이템의 절반 반경·절반 힘.
@@ -7396,7 +7409,7 @@
                             beep(1480 + v * 80, .09, "triangle", .05); }
       }
     }
-    if (it.type === "fortune") startProphecy();
+    if (it.type === "fortune") startProphecy(now);
     if (it.type === "meal") {
       /* 엄마의 밥상 — 그 순간 점수의 10%. 판이 무르익을수록 한 상이 커진다.
          모든 점수에 곱하는 배율(scoreMul)은 얹지 않는다. 이미 배율이 반영된
@@ -7527,18 +7540,32 @@
                  vx: (Math.random() - Math.random()) * vy * SPREAD_BONUS, vy,
                  rot: 0, vr: 0, size: r * 2, bob: Math.random() * 6.28, born: elapsed });
   }
-  function startProphecy() {
-    // 방금 것과 같은 예언이 연달아 나오지 않게 — 바뀌는 게 보여야 한다
-    const pool = PROPHECIES.filter(q => q !== prophecy);
+  function startProphecy(now) {
+    // 방금 것과 같은 예언이 연달아 나오지 않게 — 바뀌는 게 보여야 한다. 똥탑등반에선 점수·뚜니핑 예언 빼고
+    const pool = PROPHECIES.filter(q => q !== prophecy && !(noItem() && q.noTower));
     const pr = pool[Math.floor(Math.random() * pool.length)];
     prophecy = pr; prophT = PROPH_SEC; prophRain = 0;
-    // 이미 떠 있는 똥에도 바로 먹힌다 — 먹는 순간 달라진 게 보여야 예언 같다
+    // 이미 떠 있는 똥에도 바로 먹힌다 — 바뀌는 순간 달라진 게 보여야 예언 같다
     for (const q of items) {
       if (q.type !== "poop" || q.skin === "fever" || q.bounced) continue;
       if (pr.id === "small") { q.r *= 0.55; q.size *= 0.55; if (q.sz) q.sz *= 0.55; }
+      if (pr.id === "big")   { q.r *= 1.5;  q.size *= 1.5;  if (q.sz) q.sz *= 1.5; }
       if (pr.id === "fast") q.vy *= 1.4;
+      if (pr.id === "slow") q.vy *= 0.7;
     }
-    popText(W / 2, H * 0.34, "🔮 예언: " + pr.nm + "!", pr.c, 26);
+    if (pr.id === "shield") {                // 수호의 별 — 우산 하나 (헬스걸은 우산이 없는 직업이라 하트)
+      if (job === "fit") lives = Math.min(aug.maxLives, lives + 1);
+      else shields = Math.min(shields + 1, 5);
+    }
+    if (pr.id === "fever") {                 // 뚜니핑이 온다 — 3초 바로 (뚜니핑 연장 증강은 안 붙는다)
+      const t0 = now || performance.now();
+      powerUntil = Math.max(powerUntil, t0) + 3000;
+      feverDur = Math.max(3000, powerUntil - t0);
+      feverFlash = 1;
+      if (!sfx("fever")) { beep(700, .1, "square", .05); beep(1100, .12, "square", .05); }
+    }
+    if (pr.id === "wind") prophWind = (Math.random() < 0.5 ? -1 : 1) * 120;   // 옆바람 — 방향은 그때그때
+    popText(W / 2, H * 0.34, "🔮 예언: " + pr.nm + "!", pr.c, pr.both ? 20 : 26);
     feverFlash = Math.max(feverFlash, pr.bad ? 0.3 : 0.5);
     if (!sfx(pr.bad ? "hurt" : "aug", 0.8)) { beep(pr.bad ? 300 : 1100, .15, "triangle", .05); }
   }
@@ -8683,6 +8710,7 @@
   // 기존 대비 5% 상향 — 0.08 / 0.06 / 0.85 에 각각 1.05 를 곱했다
   const DARK_BASE = 0.084, DARK_STEP = 0.063, DARK_CAP = 0.8925;
   function darkChance() {
+    if (prophIs("dark")) return Math.max(0.3, inBlackhole() ? Math.min(DARK_CAP, DARK_BASE + DARK_STEP * (level - 1 - BH_Z)) : 0);   // 먹구름
     if (!inBlackhole()) return 0;
     return Math.min(DARK_CAP, DARK_BASE + DARK_STEP * (level - 1 - BH_Z));
   }
@@ -8714,7 +8742,7 @@
      한 번만 먹는 증강이고, 빗방울로 씻으면 배율도 같이 내려간다.
      (100% 는 곧 끝이라, 실제로 누리는 최대는 75% = 1.75배다) */
   function dungyMul() { return aug.dungy ? 1 + (dirt / DIRT_MAX) : 1; }
-  function scoreMul() { return SCORE_SCALE * aug.scoreMul * bhMul() * levMul() * monkMul() * dungyMul() * (prophIs("double") ? 2 : 1); }
+  function scoreMul() { return SCORE_SCALE * aug.scoreMul * bhMul() * levMul() * monkMul() * dungyMul() * (prophIs("double") ? 2 : prophIs("dice") ? 3 : 1); }
 
   function zoneIdx() { return Math.min(LAST_Z, level - 1); }
   // 지금 단계와 다음 단계 사이의 진행도 — 색이 뚝 끊기지 않고 이어지도록
@@ -9788,6 +9816,28 @@
   // 점술가 — 예언이 이뤄지는 동안 화면 위 가운데에 무엇이 몇 초 남았는지
   function drawProphecy() {
     if (!prophecy || prophT <= 0) return;
+    const fin = Math.min(1, (PROPH_SEC - prophT) / 0.6) * Math.min(1, prophT / 0.6);   // 서서히 들어왔다 나간다
+    if (prophIs("fog")) {                    // 짙은 안개 — 화면 위쪽이 뿌옇게, 똥이 늦게 보인다
+      ctx.save();
+      const g = ctx.createLinearGradient(0, 0, 0, H * 0.62);
+      g.addColorStop(0, "rgba(214,222,232," + (0.97 * fin).toFixed(2) + ")");
+      g.addColorStop(0.7, "rgba(214,222,232," + (0.85 * fin).toFixed(2) + ")");
+      g.addColorStop(1, "rgba(214,222,232,0)");
+      ctx.fillStyle = g; ctx.fillRect(0, 0, W, H * 0.62);
+      ctx.restore();
+    }
+    if (prophIs("wind")) {                   // 옆바람 — 흘러가는 바람 줄기
+      ctx.save();
+      ctx.globalAlpha = 0.35 * fin;
+      ctx.strokeStyle = "#ffffff"; ctx.lineWidth = 2; ctx.lineCap = "round";
+      const tt = performance.now() / 1000, dir = prophWind > 0 ? 1 : -1;
+      for (let k = 0; k < 9; k++) {
+        const y = H * (0.12 + k * 0.09) + Math.sin(tt * 2 + k) * 8;
+        const x = ((tt * 260 * dir + k * 173) % (W + 160) + (W + 160)) % (W + 160) - 80;
+        ctx.beginPath(); ctx.moveTo(x, y); ctx.lineTo(x - dir * 60, y); ctx.stroke();
+      }
+      ctx.restore();
+    }
     const w = 190, h = 30, x = W / 2 - w / 2, y = 52;
     ctx.save();
     ctx.globalAlpha = Math.min(1, prophT / 0.4);
