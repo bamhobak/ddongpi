@@ -1037,7 +1037,7 @@
   const elTitle = document.getElementById("overTitle");
   const coinNote = document.getElementById("coinNote");
 
-  const GAME_VERSION = "v0.7.32";   // 코드를 고칠 때마다 뒤 두 자리를 올린다
+  const GAME_VERSION = "v0.7.33";   // 코드를 고칠 때마다 뒤 두 자리를 올린다
   document.getElementById("ver").textContent = GAME_VERSION;
 
   const LS_NAME = "epjpddongpi_name";
@@ -7565,7 +7565,7 @@
       if (!sfx("fever")) { beep(700, .1, "square", .05); beep(1100, .12, "square", .05); }
     }
     if (pr.id === "wind") prophWind = (Math.random() < 0.5 ? -1 : 1) * 120;   // 옆바람 — 방향은 그때그때
-    popText(W / 2, H * 0.34, "🔮 예언: " + pr.nm + "!", pr.c, pr.both ? 20 : 26);
+    // 가운데에 큰 글자는 띄우지 않는다 — 예언 막대(화면 가운데, 뚜니핑 막대 아래)가 바뀌는 것으로 알린다
     feverFlash = Math.max(feverFlash, pr.bad ? 0.3 : 0.5);
     if (!sfx(pr.bad ? "hurt" : "aug", 0.8)) { beep(pr.bad ? 300 : 1100, .15, "triangle", .05); }
   }
@@ -9838,7 +9838,8 @@
       }
       ctx.restore();
     }
-    const w = 190, h = 30, x = W / 2 - w / 2, y = 52;
+    /* 화면 가운데쯤 — 뚜니핑 타임 막대(가운데, 높이 20)와 안 겹치게 그 바로 아래에 둔다 */
+    const w = Math.min(W - 40, prophecy.both ? 250 : 190), h = 30, x = W / 2 - w / 2, y = Math.round(H / 2 + 20);
     ctx.save();
     ctx.globalAlpha = Math.min(1, prophT / 0.4);
     ctx.fillStyle = "rgba(40,16,70,.72)";
