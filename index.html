@@ -1035,7 +1035,7 @@
   const elTitle = document.getElementById("overTitle");
   const coinNote = document.getElementById("coinNote");
 
-  const GAME_VERSION = "v0.7.26";   // 코드를 고칠 때마다 뒤 두 자리를 올린다
+  const GAME_VERSION = "v0.7.27";   // 코드를 고칠 때마다 뒤 두 자리를 올린다
   document.getElementById("ver").textContent = GAME_VERSION;
 
   const LS_NAME = "epjpddongpi_name";
@@ -7730,7 +7730,7 @@
     return "초기화까지 " + remain;
   }
 
-  async function fetchRange(fromMs, toMs, limit, jb) {
+  async function fetchRange(fromMs, toMs, limit, jb, mdWant) {
     // 기기별 최고 기록만 남기는 건 SQL 함수 쪽에서 처리한다 (한 사람이 순위를 도배하지 않도록)
     // jb 가 있으면 그 직업으로 낸 기록 중 기기별 최고 (ddongpi_top_job)
     try {
@@ -7740,7 +7740,7 @@
         lim: limit
       };
       if (jb) body.jb = jb;
-      const md = gameMode === "noitem" ? "noitem" : null;   // 아이템전은 인자 없이 (옛 함수와도 맞는다)
+      const md = (mdWant || gameMode) === "noitem" ? "noitem" : null;   // 아이템전은 인자 없이 (옛 함수와도 맞는다)
       if (md) body.md = md;
       const res = await fetch(SB_URL + "/rest/v1/rpc/" + (jb ? "ddongpi_top_job" : "ddongpi_top"), {
         method: "POST",
@@ -7749,7 +7749,7 @@
       });
       if (res.ok) return await res.json();
       if (jb || md) throw new Error("HTTP " + res.status);   // 직업별·노템전은 함수가 없으면 대체 경로가 없다
-    } catch (e) { if (jb || gameMode === "noitem") throw e; /* 아래 방식으로 넘어간다 */ }
+    } catch (e) { if (jb || (mdWant || gameMode) === "noitem") throw e; /* 아래 방식으로 넘어간다 */ }
     // 함수가 아직 없으면 예전처럼 표에서 바로 읽는다 (기기 중복 제거는 안 됨)
     let url = SB_URL + "/rest/v1/" + SB_TABLE +
       "?select=name,score,level,created_at" +
@@ -8275,28 +8275,53 @@
       }
     })();
 
+    /* 최근 판 — 아이템전·노템전을 따로. 모드별 최근 20판은 따로 만든 DB 함수(ddongpi_recent_mode)에서 받고,
+       함수가 아직 없으면 요약에 딸려 온 최근 20판을 모드로 갈라 보여 준다. */
+    const isNo = r => !!(r.augs && r.augs["mode:noitem"]);
+    const recTable = (rows, md, note) => {
+      const pane = md === "noitem" ? P.nrec : P.rec;
+      pane.innerHTML = "";
+      const no = md === "noitem";
+      const sec = devSection((no ? "노템전 " : "") + "최근 " + rows.length + "판" + (note || ""),
+        no ? ["이름", "직업", "거리", "생존", "펫·증강"] : ["이름", "직업", "점수", "생존", "증강"],
+        rows.length ? rows.map(r => [
+          r.name || "-",
+          r.job ? (JOB_NAMES[r.job] || r.job) : "-",
+          no ? { t: Math.floor((r.secs || 0) / LEVEL_SEC_NOITEM * 100).toLocaleString() + "m", c: "num" }   // 레벨 하나(8초) = 100m
+             : { t: Number(r.score || 0).toLocaleString(), c: "num" },
+          { t: (r.secs || 0) + "초", c: "num" },
+          { t: augLabel(Object.fromEntries(Object.entries(r.augs || {}).filter(([k]) => k !== "mode:noitem"))), c: "lft" }
+        ]) : [["기록 없음", "", "", "", ""]]);
+      sec.querySelector("table").classList.add("tbRecent");
+      pane.appendChild(sec);
+    };
     const rec = data.recent || [];
-    const recSec = devSection("최근 20판",
-      ["이름", "직업", "점수", "생존", "증강"],
-      rec.length ? rec.map(r => [
-        r.name || "-",
-        r.job ? (JOB_NAMES[r.job] || r.job) : "-",
-        { t: Number(r.score || 0).toLocaleString(), c: "num" },
-        { t: (r.secs || 0) + "초", c: "num" },
-        { t: augLabel(r.augs), c: "lft" }
-      ]) : [["기록 없음", "", "", "", ""]]);
-    recSec.querySelector("table").classList.add("tbRecent");
-    P.rec.appendChild(recSec);
+    recTable(rec.filter(r => !isNo(r)), "item", " (불러오는 중…)");
+    recTable(rec.filter(isNo), "noitem", " (불러오는 중…)");
+    for (const md of ["item", "noitem"]) (async () => {
+      try {
+        const res = await fetch(SB_URL + "/rest/v1/rpc/ddongpi_recent_mode", {
+          method: "POST",
+          headers: sbHeaders({ "Content-Type": "application/json" }),
+          body: JSON.stringify({ pw: devPwOK, md: md })
+        });
+        if (!res.ok) throw new Error("HTTP " + res.status);
+        recTable(await res.json() || [], md);
+      } catch (e) {
+        recTable(rec.filter(r => (md === "noitem") === isNo(r)), md, " (최근 20판 중에서 — DB 함수 실행 전)");
+      }
+    })();
 
   }
 
   let devPwOK = "";          // 인증에 성공한 비밀번호 (삭제할 때 다시 쓴다)
 
   // 이번 주 기록을 원본 그대로(중복 포함) 불러온다 — 지울 대상을 고르기 위해
-  async function devFetchRaw() {
+  async function devFetchRaw(md) {
     const url = SB_URL + "/rest/v1/" + SB_TABLE +
       "?select=id,name,score,level,created_at" +
       "&created_at=gte." + encodeURIComponent(new Date(weekStartMs(0)).toISOString()) +
+      (md === "noitem" ? "&mode=eq.noitem" : "&or=(mode.is.null,mode.eq.item)") +
       "&order=score.desc&limit=200";
     const res = await fetch(url, { headers: sbHeaders() });
     if (!res.ok) throw new Error("HTTP " + res.status);
@@ -8327,20 +8352,22 @@
     devDeleteIds([id], btn, "삭제");
   }
 
-  async function devRenderRaw() {
-    const old = document.getElementById("devRawSec");
+  async function devRenderRaw(md) {
+    if (!md) { await devRenderRaw("item"); await devRenderRaw("noitem"); return; }   // 둘 다 새로
+    const no = md === "noitem";
+    const old = document.getElementById(no ? "devRawSecN" : "devRawSec");
     if (old) old.remove();
     let rows = [];
-    try { rows = await devFetchRaw(); } catch (e) { /* 아래에서 안내 */ }
-    const box = devSection("이번 주 기록 (지우기)",
-      ["이름", "점수", "Lv", ""],
+    try { rows = await devFetchRaw(md); } catch (e) { /* 아래에서 안내 */ }
+    const box = devSection((no ? "노템전 " : "") + "이번 주 기록 (지우기)",
+      ["이름", no ? "거리" : "점수", "Lv", ""],
       rows.length ? rows.map(r => [
         r.name,
-        { t: Number(r.score || 0).toLocaleString(), c: "num" },
+        { t: Number(r.score || 0).toLocaleString() + (no ? "m" : ""), c: "num" },
         { t: r.level == null ? "-" : r.level, c: "num" },
         { t: "", c: "" }
       ]) : [["기록 없음", "", "", ""]]);
-    box.id = "devRawSec";
+    box.id = no ? "devRawSecN" : "devRawSec";
     // 랭킹 탭에 붙인다 (삭제 후 다시 그릴 때도 같은 자리)
     if (rows.length) {                      // 제목 옆에 일괄 삭제 버튼
       const all = document.createElement("button");
@@ -8348,7 +8375,7 @@
       all.style.marginLeft = "8px";
       all.textContent = "전체 " + rows.length + "건 삭제";
       all.addEventListener("click", () => {
-        if (!confirm("이번 주 기록 " + rows.length + "건을 모두 지울까요? 되돌릴 수 없습니다.")) return;
+        if (!confirm((no ? "노템전 " : "") + "이번 주 기록 " + rows.length + "건을 모두 지울까요? 되돌릴 수 없습니다.")) return;
         devDeleteIds(rows.map(r => r.id), all, "전체 삭제");
       });
       box.querySelector("h4").appendChild(all);
@@ -8364,12 +8391,13 @@
       btn.addEventListener("click", () => devDelete(r.id, btn));
       tr.lastChild.appendChild(btn);
     });
-    (devPanes.rank || devBody).appendChild(box);
+    ((no ? devPanes.nrank : devPanes.rank) || devBody).appendChild(box);
   }
 
   /* ---------- 개발자 화면 탭 ----------
      섹션이 많아져서 성격별로 묶는다. 탭 버튼을 누르면 해당 판만 보인다. */
-  const DEV_TABS = [["요약", "sum"], ["증강", "aug"], ["최근 판", "rec"], ["랭킹", "rank"]];
+  const DEV_TABS = [["요약", "sum"], ["증강", "aug"], ["최근 판", "rec"], ["랭킹", "rank"],
+                    ["노템 최근 판", "nrec"], ["노템 랭킹", "nrank"]];
   let devPanes = {};
   function devInitTabs() {
     const bar = document.getElementById("devTabs");
@@ -8413,24 +8441,27 @@
       document.getElementById("devPwRow").style.display = "none";   // 들어왔으면 비번창은 치운다
       devInitTabs();
       renderDevStats(await res.json());
-      // 이번 주 랭킹은 별도 테이블이라 따로 불러와 랭킹 탭 맨 위에 붙인다
-      try {
-        const rows = await fetchRange(weekStartMs(0), null, TOP_N);
-        const topSec = devSection("이번 주 TOP " + TOP_N,
-          ["#", "이름", "직업", "점수", "Lv", "증강"],
-          rows.length ? rows.map((r, i) => [
-            (i + 1) + "",
-            r.name,
-            r.job ? (JOB_NAMES[r.job] || r.job) : "-",
-            { t: Number(r.score || 0).toLocaleString(), c: "num" },
-            { t: r.level == null ? "-" : r.level, c: "num" },
-            { t: augLabel(r.augs), c: "lft" }
-          ]) : [["", "기록 없음", "", "", "", ""]]);
-        topSec.querySelector("table").classList.add("tbTop");
-        devPanes.rank.appendChild(topSec);
-      } catch (e) {
-        devPanes.rank.appendChild(devSection("이번 주 TOP " + TOP_N, null,
-          [["랭킹을 불러오지 못했습니다", ""]]));
+      // 이번 주 랭킹은 별도 테이블이라 따로 불러와 랭킹 탭 맨 위에 붙인다 (아이템전 · 노템전 따로)
+      for (const md of ["item", "noitem"]) {
+        const no = md === "noitem", pane = no ? devPanes.nrank : devPanes.rank;
+        const ttl = (no ? "노템전 " : "") + "이번 주 TOP " + TOP_N;
+        try {
+          const rows = await fetchRange(weekStartMs(0), null, TOP_N, null, md);
+          const topSec = devSection(ttl,
+            ["#", "이름", "직업", no ? "거리" : "점수", "Lv", no ? "펫" : "증강"],
+            rows.length ? rows.map((r, i) => [
+              (i + 1) + "",
+              r.name,
+              r.job ? (JOB_NAMES[r.job] || r.job) : "-",
+              { t: Number(r.score || 0).toLocaleString() + (no ? "m" : ""), c: "num" },
+              { t: r.level == null ? "-" : r.level, c: "num" },
+              { t: augLabel(Object.fromEntries(Object.entries(r.augs || {}).filter(([k]) => k !== "mode:noitem"))), c: "lft" }
+            ]) : [["", "기록 없음", "", "", "", ""]]);
+          topSec.querySelector("table").classList.add("tbTop");
+          pane.appendChild(topSec);
+        } catch (e) {
+          pane.appendChild(devSection(ttl, null, [["랭킹을 불러오지 못했습니다", ""]]));
+        }
       }
       await devRenderRaw();
     } catch (e) {
