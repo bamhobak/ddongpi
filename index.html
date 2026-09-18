@@ -957,7 +957,7 @@
   const elTitle = document.getElementById("overTitle");
   const coinNote = document.getElementById("coinNote");
 
-  const GAME_VERSION = "v0.7.02";   // 코드를 고칠 때마다 뒤 두 자리를 올린다
+  const GAME_VERSION = "v0.7.03";   // 코드를 고칠 때마다 뒤 두 자리를 올린다
   document.getElementById("ver").textContent = GAME_VERSION;
 
   const LS_NAME = "epjpddongpi_name";
@@ -1451,10 +1451,23 @@
     }
   }
 
+  /* 강아지 무소유가 풀소유로 진화하면 — 진돗개가 금목걸이·바로크 재킷·쇼핑백 차림이 된다.
+     사람 풀소유처럼 우주에서는 우주복이 먼저다. */
+  const DOG_FULL = {
+    right: { img: null, aspect: 0.9219, head: 0.482, cx: 0.688, cy: 0.331, adj: 0.6266 },
+    hurt:  { img: null, aspect: 0.7000, head: 0.371, cx: 0.491, cy: 0.247, adj: 0.4192 }
+  };
+  for (const key of ["right", "hurt"]) {
+    const im = new Image();
+    im.onload = () => { DOG_FULL[key].img = im; };
+    im.src = "assets/dogs/powerp_full_" + key + ".png";
+  }
+
   function sprSet() {
     const jb = state === STATE.READY ? introJob : job;
     // 강아지 모드 — 직업 강아지 (그림이 아직 안 왔으면 원래 그림으로)
     if (dogMode && state !== STATE.READY && DOG_SPRS[jb]) {
+      if (jb === "powerp" && fullOwn && !inSpace() && DOG_FULL.right.img) return DOG_FULL;
       const D = DOG_SPRS[jb][inSpace() ? "space" : "ground"];
       if (D.right.img) return D;
     }
