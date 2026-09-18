@@ -1037,7 +1037,7 @@
   const elTitle = document.getElementById("overTitle");
   const coinNote = document.getElementById("coinNote");
 
-  const GAME_VERSION = "v0.7.33";   // 코드를 고칠 때마다 뒤 두 자리를 올린다
+  const GAME_VERSION = "v0.7.34";   // 코드를 고칠 때마다 뒤 두 자리를 올린다
   document.getElementById("ver").textContent = GAME_VERSION;
 
   const LS_NAME = "epjpddongpi_name";
@@ -9852,7 +9852,7 @@
     if (ITEM_IMG.fortune) ctx.drawImage(ITEM_IMG.fortune, x + 6, y + 3, 24, 24);
     ctx.fillStyle = "#fff"; ctx.font = "800 14px NanumBarunGothic, system-ui, sans-serif";
     ctx.textAlign = "center"; ctx.textBaseline = "middle";
-    ctx.fillText(prophecy.nm + "  " + Math.ceil(prophT) + "초", W / 2 + 12, y + h / 2 + 1);
+    ctx.fillText(prophecy.nm, W / 2 + 12, y + h / 2 + 1);   // 남은 시간은 글자 대신 막대로만
     ctx.restore();
   }
   function drawHelpers() {
