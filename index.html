@@ -957,7 +957,7 @@
   const elTitle = document.getElementById("overTitle");
   const coinNote = document.getElementById("coinNote");
 
-  const GAME_VERSION = "v0.7.05";   // 코드를 고칠 때마다 뒤 두 자리를 올린다
+  const GAME_VERSION = "v0.7.06";   // 코드를 고칠 때마다 뒤 두 자리를 올린다
   document.getElementById("ver").textContent = GAME_VERSION;
 
   const LS_NAME = "epjpddongpi_name";
@@ -4361,8 +4361,11 @@
           if (!sfx("hurt")) beep(140, .25, "sawtooth", .07);
         }
       } else {
-        popText(it.x, it.y, it.emoji + " +" + v,
+        /* 코인 이모지(🪙)는 아이폰 캔버스에서 까만 지구본으로 깨진다 — 코인 그림을 직접 그린다 */
+        const ci = ITEM_IMG[it.img] || ITEM_IMG.coin;
+        popText(it.x, it.y, ci ? "+" + v : it.emoji + " +" + v,
                 v >= 5 ? "#ff9ede" : (v >= 3 ? "#8fd8ff" : "#ffd23f"), 18 + v * 2);
+        if (ci) floats[floats.length - 1].img = ci;
         if (!sfx("coin")) { beep(1100 + v * 60, .06, "triangle", .056);
                             beep(1480 + v * 80, .09, "triangle", .05); }
       }
@@ -7330,7 +7333,14 @@
       ctx.lineWidth = f.tier >= 1 ? 6 : 4;
       ctx.lineJoin = "round";
       ctx.strokeStyle = "rgba(0,0,0,.42)";
-      ctx.strokeText(f.text, 0, 0);
+      let tx = 0;
+      if (f.img) {                             // 글자 앞에 그림 (코인)
+        const isz = f.size * 1.15, tw = ctx.measureText(f.text).width;
+        const left = -(isz + 3 + tw) / 2;
+        ctx.drawImage(f.img, left, -isz / 2, isz, isz);
+        tx = left + isz + 3 + tw / 2;
+      }
+      ctx.strokeText(f.text, tx, 0);
       if (f.tier >= 1) {                       // 큰 것만 금빛이 흐른다
         const tg = ctx.createLinearGradient(0, -f.size * 0.6, 0, f.size * 0.6);
         tg.addColorStop(0, "#fffdf0");
@@ -7339,7 +7349,7 @@
       } else {
         ctx.fillStyle = f.color;
       }
-      ctx.fillText(f.text, 0, 0);
+      ctx.fillText(f.text, tx, 0);
       ctx.restore();
     }
     ctx.globalAlpha = 1;
