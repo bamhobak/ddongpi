@@ -957,7 +957,7 @@
   const elTitle = document.getElementById("overTitle");
   const coinNote = document.getElementById("coinNote");
 
-  const GAME_VERSION = "v0.7.08";   // 코드를 고칠 때마다 뒤 두 자리를 올린다
+  const GAME_VERSION = "v0.7.09";   // 코드를 고칠 때마다 뒤 두 자리를 올린다
   document.getElementById("ver").textContent = GAME_VERSION;
 
   const LS_NAME = "epjpddongpi_name";
@@ -1643,7 +1643,7 @@
   /* 무지개똥 — 똥 몸통에 비스듬한 무지개 띠를 깔고, 그 띠가 몸통을 따라 흘러간다.
      똥 그림에서 갈색 몸통만 골라 밝기(입체 그림자)를 남기고, 눈·입은 원래 그대로 얹는다.
      캔버스 필터를 쓰지 않아 아이폰(사파리)에서도 똑같이 보인다. */
-  const RB_COLORS = ["#f7a08e", "#f9c795", "#f6e7a2", "#bfe6a0", "#9ecdf2", "#c3a6ef"];   // 파스텔
+  const RB_COLORS = ["#fb7d65", "#fcb46a", "#fae67e", "#b2ec7d", "#7ec2f8", "#af76f7"];   // 원색과 파스텔 사이
   let RB = null;                          // null = 아직, false = 못 만듦(원래 그림으로)
   function rainbowPrep() {
     if (RB !== null) return RB || null;
