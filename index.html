@@ -269,6 +269,20 @@
     border-radius: 6px; padding: 6px 10px;
   }
   #jobTraits .tr .dot { flex: none; width: 5px; height: 5px; border-radius: 50%; background: #9fd8ff; }
+  /* ---- 펫 고르기 (직업 상세 안) ---- */
+  #petRow { width: 100%; display: flex; flex-direction: column; gap: 6px; }
+  #petHead { display: flex; align-items: baseline; gap: 8px; }
+  #petHead b { font-size: 13px; color: #ffd23f; }
+  #petDesc { font-size: 11.5px; color: #9fa5b8; flex: 1; text-align: left; min-height: 14px; }
+  #petList { display: flex; gap: 6px; width: 100%; }
+  #petList button {
+    flex: 1; padding: 8px 2px; font-size: 12.5px; border-radius: 10px; box-shadow: none;
+    background: rgba(255,255,255,.06); color: #b8bdcc; border: 1px solid rgba(255,255,255,.14);
+  }
+  #petList button.sel {
+    background: rgba(255,210,63,.14); border-color: #ffd23f; color: #fff;
+    box-shadow: 0 0 12px rgba(255,210,63,.25);
+  }
   #btnJobGo {
     padding: 10px 40px; font-size: 17px; letter-spacing: 3px;
     background: linear-gradient(180deg, #ffe07a, #ffc42e 55%, #f5a70f);
@@ -872,6 +886,10 @@
           <div id="jobName"></div>
           <div id="jobTraits"></div>
         </div>
+        <div id="petRow">
+          <div id="petHead"><b>펫</b><span id="petDesc"></span></div>
+          <div id="petList"></div>
+        </div>
         <button id="btnJobGo">시작</button>
         <button id="btnJobList">← 다른 직업 보기</button>
       </div>
@@ -957,7 +975,7 @@
   const elTitle = document.getElementById("overTitle");
   const coinNote = document.getElementById("coinNote");
 
-  const GAME_VERSION = "v0.7.10";   // 코드를 고칠 때마다 뒤 두 자리를 올린다
+  const GAME_VERSION = "v0.7.11";   // 코드를 고칠 때마다 뒤 두 자리를 올린다
   document.getElementById("ver").textContent = GAME_VERSION;
 
   const LS_NAME = "epjpddongpi_name";
@@ -980,7 +998,7 @@
   const JOBS = {
     none:    { nm: "쉬었음 청년", ic: "🏃",
                ds: "힘들때마다 차려지는 엄마의 따뜻한 밥상 · 코인이 2배로 나온다" },
-    gambler: { nm: "도박사", ic: "🎰", ds: "목숨 1개 + 우산 1개 시작 · 비둘기 출격 · 하트 안 나옴 · 모든 점수 2.5배" },
+    gambler: { nm: "도박사", ic: "🎰", ds: "목숨 1개 + 우산 1개 시작 · 하트 안 나옴 · 모든 점수 2.5배" },
     levitator: { nm: "부양사", ic: "🎈", ds: "하늘 어디든 날 수 있다 · 높이 있을수록 점수 UP" },
     fit: { nm: "헬스걸", ic: "💪", ds: "목숨 5개로 시작 · 우산이 안 나온다 · 하트가 어마무시하게 잘 나온다 · 벌크업 좀 된 상태" },
     powerj: { nm: "파워J", ic: "📋", ds: "달이 잘 나온다 · 대신 증강은 계획대로 1개만" },
@@ -1207,6 +1225,18 @@
   }
   let job = "none";
   try { const j = localStorage.getItem(LS_JOB); if (JOBS[j]) job = j; } catch (e) {}
+  /* ---------- 펫 ----------
+     직업과 별개로 하나를 데리고 나간다. 전에는 증강(정연핑·갤러그)이거나 직업 능력(도박사의 비둘기)
+     이었던 것들 — 판 내내 따라다니며 제 몫을 한다. 펫에서 이어지는 히든 증강은 그 펫이 있을 때만 나온다. */
+  const PETS = {
+    none:   { nm: "없음",   ic: "🚫", ds: "혼자 뛴다" },
+    helper: { nm: "정연핑", ic: "🦸", ds: "때때로 날아올라 지나간 자리의 똥을 부순다" },
+    galaga: { nm: "갤러그", ic: "🚀", ds: "우주선이 땅에서 총알을 쏘아 올린다" },
+    dove:   { nm: "비둘기", ic: "🕊️", ds: "80m 움직일 때마다 날아올라 똥을 터뜨린다 (똥점수 5배)" }
+  };
+  const LS_PET = "epjpddongpi_pet";
+  let pet = "none";
+  try { const q = localStorage.getItem(LS_PET); if (PETS[q]) pet = q; } catch (e) {}
   // hy = 발을 바닥에 고정했을 때 머리(판정 중심)가 player.y 에서 얼마나 떨어지는지.
   // 그림마다 머리·다리 비율이 달라서 이 값으로 보정해야 그림자 높이와 판정이 어긋나지 않는다.
   /* 좌우 그림이 서로 머리 크기·자세가 달라 어색해서, 오른쪽 그림 하나만 쓰고
@@ -1624,7 +1654,7 @@
   { const fi = new Image(); fi.onload = () => { feverSky = fi; }; fi.src = "assets/bg/fever.webp"; }
   { const fs = new Image(); fs.onload = () => { feverSkySpace = fs; };
     fs.src = "assets/bg/fever_space.webp"; }
-  // 도박사의 비둘기 그림 (없으면 아래 도안으로 그린다)
+  // 비둘기 펫 그림 (없으면 아래 도안으로 그린다)
   let doveImg = null;
   { const di = new Image(); di.onload = () => { doveImg = di; }; di.src = "assets/dove.png"; }
 
@@ -2214,21 +2244,21 @@
     timeMul: 1,         // 생존 점수 배율
     feverScoreMul: 1,   // 뚜니핑 낙하물 점수 배율
     fallMul: 1,         // 낙하 속도 배율
-    galaga: 0,          // 갤러그 우주선 수
+    galaga: 0,          // 갤러그 우주선 수 (펫이면 1)
     hitboxMul: 1,       // 피격 판정 + 캐릭터 크기 배율
     poopMul: 1,         // 똥 크기 배율
     itemRateMul: 1,     // 아이템 등장 간격 배율(작을수록 자주)
     feverRateMul: 1,    // 뚜니핑 낙하 간격 배율(작을수록 많이 쏟아짐)
     giant: 0,           // 대왕 뚜니핑 등장 스택
     magnet: 0,          // 아이템 자석 반경 (1회 한정 증강)
-    helper: 0,          // 도와줘 정연핑 인원 (증강을 겹칠수록 1명씩 증가)
+    helper: 0,          // 정연핑 인원 (펫이면 1)
     helperRush: false,  // 히든: 정연핑 대폭주 (크기 확대)
     hungry: false,      // 히든: 배고픈 정연핑 (아이템을 대신 먹어준다)
     steelUmb: false,    // 히든: 강철 우산 (방패가 없으면 6.5초마다 하나 생긴다)
     starburst: false,   // 히든: 별똥별 (별을 먹으면 화면의 똥이 전부 사라진다)
     blackhole: false,   // 히든: 블랙홀 (자석 강화 + 뚜니핑 낙하물도 조금 끌어당김)
     legion: false,      // 히든: 대왕 뚜니핑 군단 (대왕 등장·점수 강화)
-    doveWhat: false,    // 히든: 비둘기 무엇? (도박사 — 비둘기가 세지고 자주 나온다)
+    doveWhat: false,    // 히든: 비둘기 무엇? (비둘기 펫이 세지고 자주 나온다)
     dodge: 0,           // 그건 제 잔상입니다만? — 맞을 때 피할 확률 (0~0.30)
     dungy: false,       // 방울이: 똥묻히기 (오염도만큼 모든 점수가 오른다)
     momMeal: false,     // 쉬었음 청년: 엄마는 우리 딸 믿어 (엄마의 밥상이 떨어진다)
@@ -2270,22 +2300,18 @@
       cond: () => job !== "fit" && shields < 10,   // 헬스걸은 방패가 없는 직업 — 미등장
       noCount: true,              // 방패 수는 화면에 우산으로 보이니 보유 뱃지는 생략
       go: () => { shields = Math.min(shields + 3, 10); } },   // 증강으로는 최대 10개까지
-    { id: "galaga",     ic: "🚀", nm: "갤러그", ds: "우주선이 총알을 쏘아 올린다 · 늘어날수록 각자 느긋해진다",
-      cond: () => inSpace(),   // 우주복으로 갈아입은 뒤부터 나온다
-      go: () => { aug.galaga++; } },
-    { id: "helper",     ic: "🦸", nm: "도와줘 정연핑", ds: "정연핑이 지나가는 자리의 똥을 부순다",
-      go: () => { aug.helper++; helperTimer = Math.min(helperTimer, 0.6); } },
+    /* 갤러그·도와줘 정연핑은 펫으로 옮겨 갔다 (PETS). 아래 히든들은 그 펫이 있을 때만 나온다. */
     { id: "helperRush", ic: "💥", nm: "정연핑 대폭주", ds: "정연핑!!!?? 무엇!!?!",
-      hidden: true, once: true, cond: () => aug.helper >= 2,   // 정연핑 2개 이상
+      hidden: true, once: true, cond: () => pet === "helper",   // 정연핑 펫
       go: () => { aug.helperRush = true; } },
     { id: "hungry",     ic: "😋", nm: "마운자로를 이겨낸 정연핑", ds: "정연핑이 아이템을 대신 먹어준다",
-      hidden: true, once: true, cond: () => aug.helper > 0 && aug.magnet > 0,   // 정연핑 + 자석
+      hidden: true, once: true, cond: () => pet === "helper" && aug.magnet > 0,   // 정연핑 펫 + 자석
       go: () => { aug.hungry = true; } },
     { id: "roid",       ic: "💉", nm: "스테로이드 과다 복용", ds: "7초 동안 몸이 2배로 부풀고, 모든 똥을 튕겨낸다",
       max: 99, noCount: true, cond: () => job === "fit" && level >= 7,   // 헬스걸 전용 — 우산 다발 자리
       go: () => { roidT = 7; } },
     { id: "doveWhat",   ic: "🕊️", nm: "비둘기 무엇?", ds: "비둘기가 1.5배 빠르고 커진다 · 더 자주 출격",
-      hidden: true, once: true, cond: () => job === "gambler",   // 도박사 전용
+      hidden: true, once: true, cond: () => pet === "dove",   // 비둘기 펫
       go: () => { aug.doveWhat = true; } },
     { id: "steelUmb",   ic: "☔", nm: "우산 로켓배송", ds: "우산이 없으면 저절로 배송된다",
       hidden: true, once: true,
@@ -2345,7 +2371,7 @@
         : "맞을 때 가끔 잔상만 남기고 피한다",
       go: () => { aug.dodge += augCount["afterimage"] ? 0.05 : 0.10; } },
     { id: "wak",        ic: "👊", nm: "고무고무노 피스톨", ds: "총알이 주먹이 된다. 맞은 똥은 튕겨 날아가 처음 부딪힌 똥과 함께 터진다",
-      hidden: true, once: true, cond: () => aug.galaga >= 2,   // 갤러그 2대 이상
+      hidden: true, once: true, cond: () => pet === "galaga",   // 갤러그 펫
       go: () => { aug.wak = true; } },
     { id: "clone",      ic: "👯", nm: "벼랑 끝 분신술", ds: "작은 이재가 날아가 똥과 함께 자폭한다",
       hidden: true, once: true,
@@ -2550,7 +2576,7 @@
   let bulletT = 0, interTimer = 8;// 인터스텔라: 불릿타임 남은 시간 / 다음 발동까지
   let noHitSec = 0;                // 마지막 피격 이후 버틴 시간 (무소유 배율용)
   let clones = [], cloneTimer = 0; // 벼랑 끝 분신술: 날아가는 작은 이재들
-  /* 도박사 — 80m 움직일 때마다 머리 위에서 비둘기가 날아오른다.
+  /* 비둘기 펫 — 80m 움직일 때마다 머리 위에서 비둘기가 날아오른다.
      게임 안의 1m = 논리 좌표 12px 로 본다 (캐릭터 키가 대략 1.5m 쯤 되는 비율). */
   let doves = [], moveDist = 0;
   let bullets = [], shipClock = 0;   // 갤러그: 날아가는 총알과 편대 공용 시계
@@ -2855,8 +2881,27 @@
     return dogMode && DOG_SPRS[id] ? "assets/dogs/" + id + "_right.png"
                                    : "assets/" + JOB_IMG[id] + "_right.png";
   }
+  /* 펫 고르기 — 직업 상세 아래 한 줄. 고른 것은 다음 판에도 기억한다 */
+  function renderPets() {
+    const list = document.getElementById("petList");
+    list.innerHTML = "";
+    for (const id in PETS) {
+      const b = document.createElement("button");
+      b.textContent = PETS[id].ic + " " + PETS[id].nm;
+      b.classList.toggle("sel", id === pet);
+      b.addEventListener("click", () => {
+        beep(760, .06, "square", .04);
+        pet = id;
+        try { localStorage.setItem(LS_PET, pet); } catch (e) {}
+        renderPets();
+      });
+      list.appendChild(b);
+    }
+    document.getElementById("petDesc").textContent = PETS[pet].ds;
+  }
   function showJobDetail(id) {
     job = id;
+    renderPets();
     try { localStorage.setItem(LS_JOB, job); } catch (e) {}
     const j = JOBS[id];
     document.getElementById("jobBig").src = jobPic(id);
@@ -3008,6 +3053,10 @@
     aug.helper = 0; aug.helperRush = false; aug.hungry = false; aug.galaga = 0;
     helpers = []; fetchers = [];
     helperTimer = 0; helperQueue = 0; helperGap = 0; fetchRest = 0; aug.maxLives = 5;
+    // ---- 펫 ---- 판 내내 한 마리. 기록에는 증강 목록에 'pet:<id>' 로 함께 남긴다
+    aug.helper = pet === "helper" ? 1 : 0;
+    aug.galaga = pet === "galaga" ? 1 : 0;
+    if (pet !== "none") augCount["pet:" + pet] = 1;
     // ---- 직업 효과 ----
     if (job === "gambler") {
       lives = 1;
@@ -3610,7 +3659,7 @@
     const want = (player.tx - player.x) * Math.min(1, dt * 20);
     const maxStep = PLAYER_MAX_SPEED * spdMul() * dt;
     player.x += Math.max(-maxStep, Math.min(maxStep, want));
-    if (job === "gambler" && state === STATE.PLAY) {
+    if (pet === "dove" && state === STATE.PLAY) {
       moveDist += Math.abs(player.x - prev);
       const need = doveEvery();
       if (moveDist >= need) {
@@ -3786,7 +3835,7 @@
       if (hit || bu.y < -20) bullets.splice(k, 1);
     }
 
-    // ---- 도박사의 비둘기 — 목표에 부딪히면 반경 50px 로 터진다 ----
+    // ---- 비둘기 펫 — 목표에 부딪히면 반경 50px 로 터진다 ----
     for (let k = doves.length - 1; k >= 0; k--) {
       const c = doves[k];
       c.ph += dt * tsc * 14;                            // 날갯짓
@@ -4984,6 +5033,7 @@
   const AUG_NAMES = {};
   const AUG_HIDDEN = {};
   for (const a of AUGMENTS) { AUG_NAMES[a.id] = a.nm; AUG_HIDDEN[a.id] = !!a.hidden; }
+  for (const id in PETS) if (id !== "none") AUG_NAMES["pet:" + id] = PETS[id].ic + " 펫 " + PETS[id].nm;
   AUG_NAMES.gamble = "도박꾼(삭제됨)";   // 옛 기록 표시용
   AUG_NAMES.fly = "초전도 이재(삭제됨)";
   AUG_NAMES.refill = "뚜니핑 무한리필(삭제됨)";
@@ -7300,7 +7350,7 @@
       const sy = H - GROUND_H * 0.55, tn = performance.now();   // drawEffects 에는 now 가 없다
       for (let k = 0; k < aug.galaga; k++) drawShip(shipX(k, aug.galaga), sy, tn + k * 137);
     }
-    // 도박사의 비둘기
+    // 비둘기 펫
     for (const c of doves) drawDove(c.x, c.y, c.ph, c.t);
     for (const p of particles) {
       ctx.globalAlpha = Math.max(0, 1 - p.t / p.life);
