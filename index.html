@@ -1037,7 +1037,7 @@
   const elTitle = document.getElementById("overTitle");
   const coinNote = document.getElementById("coinNote");
 
-  const GAME_VERSION = "v0.7.34";   // 코드를 고칠 때마다 뒤 두 자리를 올린다
+  const GAME_VERSION = "v0.7.35";   // 코드를 고칠 때마다 뒤 두 자리를 올린다
   document.getElementById("ver").textContent = GAME_VERSION;
 
   const LS_NAME = "epjpddongpi_name";
@@ -9819,9 +9819,11 @@
     const fin = Math.min(1, (PROPH_SEC - prophT) / 0.6) * Math.min(1, prophT / 0.6);   // 서서히 들어왔다 나간다
     if (prophIs("fog")) {                    // 짙은 안개 — 화면 위쪽이 뿌옇게, 똥이 늦게 보인다
       ctx.save();
+      /* 위쪽 35%는 완전히 막는다 — 똥이 비쳐 보이면 안개가 아니다. 그 아래 62%까지 옅어진다 */
       const g = ctx.createLinearGradient(0, 0, 0, H * 0.62);
-      g.addColorStop(0, "rgba(214,222,232," + (0.97 * fin).toFixed(2) + ")");
-      g.addColorStop(0.7, "rgba(214,222,232," + (0.85 * fin).toFixed(2) + ")");
+      g.addColorStop(0, "rgba(214,222,232," + fin.toFixed(2) + ")");
+      g.addColorStop(0.565, "rgba(214,222,232," + fin.toFixed(2) + ")");   // 0.35H 까지 불투명
+      g.addColorStop(0.8, "rgba(214,222,232," + (0.6 * fin).toFixed(2) + ")");
       g.addColorStop(1, "rgba(214,222,232,0)");
       ctx.fillStyle = g; ctx.fillRect(0, 0, W, H * 0.62);
       ctx.restore();
