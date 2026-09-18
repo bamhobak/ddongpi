@@ -1035,7 +1035,7 @@
   const elTitle = document.getElementById("overTitle");
   const coinNote = document.getElementById("coinNote");
 
-  const GAME_VERSION = "v0.7.25";   // 코드를 고칠 때마다 뒤 두 자리를 올린다
+  const GAME_VERSION = "v0.7.26";   // 코드를 고칠 때마다 뒤 두 자리를 올린다
   document.getElementById("ver").textContent = GAME_VERSION;
 
   const LS_NAME = "epjpddongpi_name";
@@ -2667,8 +2667,8 @@
   /* 레벨은 매 프레임 levelTime 에서 다시 세기 때문에 level 만 바꿔 두면 곧 되돌아간다.
      levelTime 을 통째로 옮겨야 한다. 지대·난이도·다크똥 확률이 함께 따라온다. */
   function testJumpLevel(d) {
-    const want = Math.max(1, (1 + Math.floor(levelTime / LEVEL_SEC)) + d);
-    levelTime = (want - 1) * LEVEL_SEC + 0.01;
+    const want = Math.max(1, (1 + Math.floor(levelTime / lvSec())) + d);
+    levelTime = (want - 1) * lvSec() + 0.01;
     level = want;
     lvNow.textContent = "Lv " + want;
     popText(W / 2, H * 0.30, "Lv " + want + " · " + ZONES[zoneIdx()].nm, "#9fd8ff", 26);
@@ -2687,6 +2687,11 @@
   function dirtJob() { return job === "bangul"; }
   let levelTime = 0;               // 레벨이 오르는 시계 — 뚜니핑 타임에는 멈춰 있다
   const LEVEL_SEC = 13;            // 레벨 한 칸의 길이(초). 지대 하나의 길이이기도 하다
+  const LEVEL_SEC_NOITEM = 8;      // 노템전은 레벨이 8초 — 패턴 하나가 8초
+  // 시작 화면의 배경 여행(인트로)은 늘 13초 기준 — 판이 돌 때만 노템전 8초
+  function lvSec() { return runMode === "noitem" && state !== STATE.READY ? LEVEL_SEC_NOITEM : LEVEL_SEC; }
+  /* 노템전 기록 — 점수가 아니라 올라간 거리. 레벨 하나 = 100m, 레벨 안에서도 흐른 만큼 오른다. */
+  function meters() { return Math.floor(levelTime / lvSec() * 100); }
   let spawnTimer = 0;
   let invUntil = 0, powerUntil = 0;
   let magNear = 0;                 // 자석에 끌리는 정도 (0~1) — 소리 크기에 쓴다
@@ -5000,13 +5005,14 @@
 
   /* ── 공통 스테이지 ──
      노템전은 어떤 직업이든 똑같은 순서로 흐른다 — 레벨만 보고 정해진다 (기록 비교가 공정하도록).
-     레벨 하나(LEVEL_SEC 13초) = 패턴 하나 = 채보 7줄. 칸 하나의 길이를 13초 ÷ 112 로 고정해
+     레벨 하나(노템전은 8초) = 패턴 하나 = 채보 4줄. 칸 하나의 길이를 8초 ÷ 64 로 고정해
      레벨이 오르는 순간 다음 패턴의 첫 줄이 닿는다.
-       · 채보는 일곱 벌(부양사 고리는 나는 캐릭만 피할 수 있어 뺐다)을 레벨마다 돌려 가며 쓴다
-       · 판(1~7)은 세 레벨마다 한 칸씩 어려워지고, 7판까지 다 쓰면 4~7판을 돌린다
-       · 한 판(32줄)을 네 도막(7줄씩)으로 나눠 도막도 돌려 쓴다
-       · 볼 틈(lead)은 레벨마다 줄어든다: 2.2초 → 최소 0.95초
-     8레벨마다 보스 — 예전 여덟 판째(보스 판) 채보가 흐르고, 보스가 화면 위에 앉는다. */
+       · 채보는 일곱 벌(부양사 고리는 나는 캐릭만 피할 수 있어 뺐다) × 여덟 판 × 여덟 도막(4줄씩)
+       · 어느 도막을 쓸지는 레벨 번호로 정해진 섞기 — 누구나 같은 레벨엔 같은 패턴
+       · 판(1~8)은 두 레벨마다 한 칸씩 어려워지고, 8판까지 가면 5~8판에서 섞어 뽑는다
+       · 볼 틈(lead)은 레벨마다 줄어든다: 1.9초 → 최소 0.8초, 휘는 폭·기울기도 커진다
+     8레벨마다 보스 — 보스 판에서 가장 빽빽한 도막 + 볼 틈 15% 짧게 + 보스가 캐릭터를 겨눠 똥을 던진다.
+     기록은 점수가 아니라 올라간 거리(레벨 하나 = 100m). */
   const PAT_SETS = [STAGES_NONE, STAGES_POWERJ, STAGES_FIT, STAGES_POWERP2, STAGES_GAMBLER, STAGES_POWERP, STAGES_BANGUL];
   const PAT_GROUP = {
     A: [1, 5], B: [2, 4], C: [1, 3, 5], D: [1, 2], E: [4, 5],
@@ -5014,8 +5020,8 @@
     P: [2, 3, 4, 5], Q: [1, 3, 4, 5], R: [1, 2, 4, 5], S: [1, 2, 3, 5], T: [1, 2, 3, 4],
     K: [3, 4, 5], L: [1, 4, 5], M: [1, 2, 5], N: [1, 2, 3]
   };
-  const PAT_ROWS = 7;                          // 레벨 하나에 채보 몇 줄
-  const PAT_SLOT = LEVEL_SEC / (PAT_ROWS * 16);  // 칸 하나의 길이 (약 0.116초)
+  const PAT_ROWS = 4;                          // 레벨 하나(8초)에 채보 네 줄
+  function patSlot() { return lvSec() / (PAT_ROWS * 16); }   // 칸 하나의 길이 (0.125초)
   const BOSS_EVERY = 8;
   const LANE_GAP = 0.18;           // 칸 사이 간격 (놀이판 가로에 대한 비율)
   const WEAVE_CAP = 0.40;          // 휘는 폭 한계 — 옆 칸에 선 사람과 38px 은 벌어져야 안 맞는다
@@ -5033,21 +5039,38 @@
     im.onload = () => { BOSS_IMG[bs.img] = im; };
     im.src = "assets/boss_" + bs.img + ".png";
   }
-  // 레벨 lv 의 패턴 — { st: 판(채보·흔들림), rows: 7줄, boss }
+  /* 레벨마다 고르는 도막은 '레벨 번호로 정해진 섞기'다 — 누가 뛰어도 같은 레벨엔 같은 패턴,
+     그러면서도 일곱 벌 × 여덟 판 × 여덟 도막(4줄씩) 가운데서 골고루 뽑혀 같은 모양이 잘 안 겹친다. */
+  function patHash(n) { n = (n ^ 61) ^ (n >>> 16); n = (n + (n << 3)) | 0; n ^= n >>> 4; n = Math.imul(n, 0x27d4eb2d); return (n ^ (n >>> 15)) >>> 0; }
+  const PAT_SEGS = 8;                          // 한 판(32줄)을 4줄씩 여덟 도막
+  // 레벨 lv 의 패턴 — { st: 판(채보·흔들림), rows: 4줄, boss }
   function patOf(lv) {
     if (lv % BOSS_EVERY === 0) {
+      /* 보스 — 보스 판(여덟 번째)에서 가장 빽빽한 도막 */
       const k = lv / BOSS_EVERY - 1, bs = BOSSES[k % BOSSES.length];
       const st = PAT_SETS[bs.set][7];
-      const seg = 1 + (k % 3);                         // 보스 판의 가운데 도막들을 돌려 쓴다
-      return { st, rows: st.chart.slice(seg * PAT_ROWS, seg * PAT_ROWS + PAT_ROWS), boss: Object.assign({ img: bs.img }, st.boss) };
+      let seg = 0, most = -1;
+      for (let q = 0; q < PAT_SEGS; q++) {
+        const n = st.chart.slice(q * PAT_ROWS, q * PAT_ROWS + PAT_ROWS).join("").replace(/[.v-z]/g, "").length;
+        if (n > most) { most = n; seg = q; }
+      }
+      return { st, rows: st.chart.slice(seg * PAT_ROWS, seg * PAT_ROWS + PAT_ROWS), boss: Object.assign({ img: bs.img, k }, st.boss) };
     }
     const nb = lv - 1 - Math.floor(lv / BOSS_EVERY);   // 보스가 아닌 레벨 중 몇 번째인지 (0부터)
-    const tier = nb < 21 ? Math.floor(nb / 3) : 3 + ((nb - 21) % 4);
-    const st = PAT_SETS[nb % PAT_SETS.length][tier];
-    const seg = Math.floor(nb / PAT_SETS.length) % 4;
+    /* 두 레벨마다 한 판씩 어려워진다 (1~8판). 여덟 판까지 가면 5~8판에서 섞어 뽑는다. */
+    const h = patHash(lv * 7919 + 17);
+    const tier = nb < 16 ? Math.floor(nb / 2) : 4 + (h % 4);
+    const st = PAT_SETS[(h >>> 3) % PAT_SETS.length][tier];
+    const seg = (h >>> 7) % PAT_SEGS;
     return { st, rows: st.chart.slice(seg * PAT_ROWS, seg * PAT_ROWS + PAT_ROWS), boss: null };
   }
-  function patLead(lv) { return Math.max(0.95, 2.2 - 0.06 * (lv - 1)); }
+  // 볼 틈 — 1.9초에서 레벨마다 0.07초씩, 최소 0.8초. 보스는 15% 더 짧다
+  function patLead(lv) { return Math.max(0.8, 1.9 - 0.07 * (lv - 1)) * (lv % BOSS_EVERY === 0 ? 0.85 : 1); }
+  // 휘는 폭·기울기도 레벨이 오를수록 세진다 (반쯤 내려오면 제 칸에 서는 건 그대로라 피할 수는 있다)
+  function patWeave(st, lv) {
+    const up = Math.min(1, (lv - 1) / 24);
+    return { wv: Math.max(st.wv || 0, 0.12 + 0.26 * up), wvK: st.wvK || 2, tilt: Math.max(st.tilt || 0, 0.15 + 0.45 * up) };
+  }
   let patPtr = -1, patClock = 0, patLv = 0;
   let gambleGap = 3, gambleDir = 1;            // 도박 벽 — 지난 틈과 쓸리는 방향
   let bossPhase = -1, bossRoar = 0, bossHp = 1, bossWin = 0, bossWinNm = "";
@@ -5069,6 +5092,7 @@
     const targetY = player.y + player.hy;
     const vr = patVarOf(lv || 1);
     const gap = W * LANE_GAP;
+    st = patWeave(st, lv || 1);
     // 칸 안에서도 조금씩 다른 자리에 선다 (±칸 간격의 12%)
     const home = laneX(vr.mir ? 6 - lane : lane) + vr.off + (Math.random() * 2 - 1) * gap * 0.12;
     const wvA = gap * Math.min(WEAVE_CAP, st.wv || 0);      // 흔들림 — 정수 바퀴라 도착 때 제자리
@@ -5096,13 +5120,14 @@
      시계가 뒤로 가면(테스트 모드 레벨 내리기) 그 자리부터 다시 센다. */
   function patTick() {
     const t = levelTime;
-    if (t < patClock - 0.5) patPtr = Math.floor(t / PAT_SLOT) - 1;
+    const SL = patSlot();
+    if (t < patClock - 0.5) patPtr = Math.floor(t / SL) - 1;
     patClock = t;
     for (;;) {
       const g = patPtr + 1, lv = slotLv(g), lead = patLead(lv);
-      if (g * PAT_SLOT - lead > t) break;
+      if (g * SL - lead > t) break;
       patPtr = g;
-      const lead2 = g * PAT_SLOT - t;
+      const lead2 = g * SL - t;
       if (lead2 < lead * 0.7) continue;      // 제 몫의 시간을 못 받은 칸은 거른다 (억울하게 맞지 않게)
       const pt = patOf(lv), j = g % (PAT_ROWS * 16);
       const row = pt.rows[Math.floor(j / 16)];
@@ -5144,21 +5169,42 @@
   }
   function bossDefeat(bs) {
     if (!bs) return;
-    const gain = Math.round(poopGain() * 60);  // 똥 60개 값
-    score += sc("똥", gain);
     bossWin = 1.8; bossWinNm = bs.nm;
-    popGain(W / 2, H * 0.22, gain, "👑 " + bs.nm + " 격파!", "#ffd23f");
+    popGain(W / 2, H * 0.22, poopGain() * 60, "👑 " + bs.nm + " 격파!", "#ffd23f");
     burst(W / 2, H * 0.17, "#ffd23f", 50); burst(W / 2, H * 0.17, "#ffffff", 30); burst(W / 2, H * 0.17, "#ff9ede", 24);
     feverFlash = Math.max(feverFlash, 0.9); shake = Math.max(shake, 26);
     if (!sfx("giant")) { beep(784, .16, "triangle", .06); beep(1047, .22, "triangle", .06); }
     if (navigator.vibrate) navigator.vibrate([40, 60, 40, 60, 140]);
   }
   // 보스 레벨 동안 — 레벨이 흐른 만큼 체력이 깎이고, 3분의 1 씩 깎일 때마다 한마디
+  /* 보스가 던지는 똥 — 보스 자리에서 캐릭터가 지금 선 자리를 겨눠 곧장 날아온다.
+     닿기까지 0.95초라 움직이면 피할 수 있다. 보스를 거듭 만날수록 더 자주 던진다. */
+  let bossThrowT = 0;
+  function bossThrow(k) {
+    const x0 = W / 2, y0 = H * 0.17 + 40;
+    const tx = player.x + (Math.random() - 0.5) * 20, ty = player.y + player.hy;
+    const T = 0.95, r = 17;
+    items.push({
+      type: "poop", emoji: "💩", x: x0, y: y0, r: r * 0.82,
+      vx: (tx - x0) / T, vy: (ty - y0) / T, rot: 0, vr: (Math.random() - 0.5) * 10,
+      swayA: 0, swayW: 1, swayP: 0, size: r * 2, sz: r, fast: true, thrown: true,
+      skin: "poop", space: inSpace(), gold: false, dark: false, special: null,
+      bumpCd: 0, phase: 0, splitAt: 1e9, sz0: 0,
+      face: 2, eye: randEye(), mouth: randMouth(), gain: 0, giant: false
+    });
+    burst(x0, y0 + 20, "#ff8a8a", 8);
+    if (!sfx("boing", 0.5)) beep(300, .05, "square", .03);
+  }
   function bossTick(dt) {
     if (bossWin > 0) bossWin = Math.max(0, bossWin - dt);
     const pt = noItem() ? patOf(level) : null;
-    if (!pt || !pt.boss) return;
-    const prog = Math.max(0, Math.min(1, levelTime / LEVEL_SEC - (level - 1)));
+    if (!pt || !pt.boss) { bossThrowT = 0.8; return; }
+    bossThrowT -= dt;
+    if (bossThrowT <= 0) {
+      bossThrow(pt.boss.k);
+      bossThrowT = Math.max(0.55, 1.1 - 0.08 * pt.boss.k) * (0.85 + Math.random() * 0.3);
+    }
+    const prog = Math.max(0, Math.min(1, levelTime / lvSec() - (level - 1)));
     bossHp = 1 - prog;
     if (bossRoar > 0) bossRoar = Math.max(0, bossRoar - dt);
     const ph = Math.min(2, Math.floor(prog * 3));
@@ -6330,7 +6376,7 @@
     if (!fever) levelTime += dt;
     /* 스테이지는 자리가 고정이다 — 한 판 내내 같은 하늘에서 이어진다.
        판마다 다른 자리라 스테이지가 올라갈수록 풍경도 올라간다. */
-    level = 1 + Math.floor(levelTime / LEVEL_SEC);
+    level = 1 + Math.floor(levelTime / lvSec());
     if (noItem()) patLevel(level);          // 노템전 — 패턴 이름 · 보스 등장/격파
     if (testMode && lvNow.textContent !== "Lv " + level) lvNow.textContent = "Lv " + level;
     score += sc("생존", dt * 50 * level * aug.timeMul * scoreMul());   // 생존 점수: 초당 50 × 레벨
@@ -6957,7 +7003,7 @@
         it.swayP += dt * tsc * it.swayW;
         it.rot = (it.rot0 === undefined ? (it.rot0 = it.rot) : it.rot0) + Math.sin(it.swayP) * it.swayA;
       } else it.rot += it.vr * dt * tsc;
-      if (!(it.ring && !it.bounced) && it.special !== "laser" && (!it.bounced || it.wak)) {   // 레이저·튕긴 똥·고리는 벽에 막히지 않는다 (주먹에 맞은 똥은 벽에 튕긴다)
+      if (!(it.ring && !it.bounced) && !it.thrown && it.special !== "laser" && (!it.bounced || it.wak)) {   // 레이저·튕긴 똥·고리는 벽에 막히지 않는다 (주먹에 맞은 똥은 벽에 튕긴다)
         if (it.x < it.r) { it.x = it.r; it.vx = Math.abs(it.vx); }
         if (it.x > W - it.r) { it.x = W - it.r; it.vx = -Math.abs(it.vx); }
       }
@@ -7552,16 +7598,17 @@
     }
     // 이번 판에 지갑으로 들어간 코인
     coinNote.textContent = "🪙 " + coinRun.toLocaleString() + " coin";
-    const s = Math.floor(score);
+    // 노템전 기록은 올라간 거리(m) — 순위표에도 이 값이 오른다
+    const s = noItem() ? meters() : Math.floor(score);
     burst(player.x, player.y, "#8a5a2b", 40);
     shake = 30;
-    elFinal.textContent = s.toLocaleString();
+    elFinal.textContent = s.toLocaleString() + (noItem() ? " m" : "");
     elTitle.textContent = "게임 오버!";
     overScreen.classList.remove("hidden");
     if (!sfx("over")) beep(220, .4, "sawtooth", .06);
     if (navigator.vibrate) navigator.vibrate(120);
 
-    logRun(s);                 // 증강 통계 수집 (화면에는 아무것도 보이지 않는다)
+    logRun(Math.floor(score));  // 증강 통계 수집 (화면에는 아무것도 보이지 않는다 — 노템전도 속 점수로)
 
     // 전체 랭킹: 최신 TOP 10을 다시 받아보고 진입했으면 이름 입력을 띄운다
     pendingScore = s; pendingLevel = level; pendingFull = fullOwn; pendingDog = dogMode; pendingMode = runMode;
@@ -7739,7 +7786,7 @@
         const nm = document.createElement("span");
         nm.textContent = medal[i] + " " + r.name;
         const sc = document.createElement("b");
-        sc.textContent = short(Number(r.score) || 0);
+        sc.textContent = gameMode === "noitem" ? Number(r.score).toLocaleString() + "m" : short(Number(r.score) || 0);
         chip.append(nm, sc);
         row.appendChild(chip);
       });
@@ -7849,7 +7896,7 @@
       sc.appendChild(im);
       const pt3 = boardPet(row);
       if (pt3) { im.classList.add("withPet"); sc.appendChild(petIcon(pt3)); }
-      sc.appendChild(document.createTextNode(row ? Number(row.score).toLocaleString() : "-"));
+      sc.appendChild(document.createTextNode(row ? Number(row.score).toLocaleString() + (gameMode === "noitem" ? "m" : "") : "-"));
       li.append(rk, nm, sc);
       el.appendChild(li);
     });
@@ -7874,7 +7921,7 @@
       mn.appendChild(document.createTextNode(row ? row.name : ""));
       const ms = document.createElement("span");
       ms.className = "ms";
-      ms.textContent = row ? shortScore(Number(row.score) || 0) : "-";
+      ms.textContent = row ? (gameMode === "noitem" ? Number(row.score).toLocaleString() + "m" : shortScore(Number(row.score) || 0)) : "-";
       chip.append(jw, mn, ms);
       return chip;
     };
@@ -8610,7 +8657,7 @@
   function zoneFrac() {
     const i = level - 1;
     if (i >= LAST_Z) return 0;
-    return Math.max(0, Math.min(1, levelTime / LEVEL_SEC - i));
+    return Math.max(0, Math.min(1, levelTime / lvSec() - i));
   }
   // 두 단계 사이를 이어 구한 값 (색이면 rgb 문자열, 숫자면 숫자)
   function zv(key, i) {
@@ -10178,7 +10225,8 @@
     ctx.textBaseline = "top";
     ctx.font = "700 21px NanumBarunGothic, system-ui, sans-serif";
     // 100점 단위로만 바뀐다 — 생존 점수 때문에 뒷자리가 계속 떨리는 것을 막는다
-    const stxt = (Math.floor(scoreShown / 100) * 100).toLocaleString();
+    // 노템전은 점수가 아니라 올라간 거리
+    const stxt = noItem() ? meters().toLocaleString() + " m" : (Math.floor(scoreShown / 100) * 100).toLocaleString();
     const pk = scorePunch;
     ctx.save();
     ctx.translate(16, top);
