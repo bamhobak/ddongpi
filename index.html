@@ -957,7 +957,7 @@
   const elTitle = document.getElementById("overTitle");
   const coinNote = document.getElementById("coinNote");
 
-  const GAME_VERSION = "v0.7.06";   // 코드를 고칠 때마다 뒤 두 자리를 올린다
+  const GAME_VERSION = "v0.7.07";   // 코드를 고칠 때마다 뒤 두 자리를 올린다
   document.getElementById("ver").textContent = GAME_VERSION;
 
   const LS_NAME = "epjpddongpi_name";
@@ -1640,52 +1640,86 @@
       return x.getImageData(0, 0, 1, 1).data[0] > 200;
     } catch (e) { return false; }
   })();
-  /* 필터가 없는 브라우저용 무지개똥 — 똥 그림을 15도 간격 24가지 색으로 미리 물들여 둔다.
-     크롬의 'sepia · saturate(9) · hue-rotate · contrast(1.35)' 를 흉내 낸다:
-     밝기만 남기고 대비를 올린 뒤, 그 밝기로 한 가지 색을 아주 진하게 칠한다. */
-  const GOLD_TINTS = [];
-  let goldTintTried = false;
-  function hslRgb(h, s, l) {
-    const k = n => (n + h / 30) % 12, a = s * Math.min(l, 1 - l);
-    const f = n => l - a * Math.max(-1, Math.min(k(n) - 3, 9 - k(n), 1));
-    return [Math.round(f(0) * 255), Math.round(f(8) * 255), Math.round(f(4) * 255)];
-  }
-  function goldTint(hue) {
-    if (canvasFilterOk) return null;
-    if (!GOLD_TINTS.length) {
-      const img = ITEM_IMG.poop;
-      if (!img || goldTintTried) return null;
-      goldTintTried = true;
-      try {
-        const w = img.naturalWidth, h = img.naturalHeight;
-        const base = document.createElement("canvas"); base.width = w; base.height = h;
-        const bx = base.getContext("2d"); bx.drawImage(img, 0, 0);
-        const d = bx.getImageData(0, 0, w, h).data;
-        for (let k = 0; k < 24; k++) {
-          const c = document.createElement("canvas"); c.width = w; c.height = h;
-          const cx = c.getContext("2d"), out = cx.createImageData(w, h), o = out.data;
-          for (let i = 0; i < d.length; i += 4) {
-            if (!d[i + 3]) continue;
-            let L = (0.299 * d[i] + 0.587 * d[i + 1] + 0.114 * d[i + 2]) / 255;
-            L = Math.max(0, Math.min(1, (L - 0.5) * 1.35 + 0.62));    // 대비 1.35 · 살짝 밝게
-            const rgb = hslRgb(k * 15, 1, 0.14 + L * 0.70);
-            o[i] = rgb[0]; o[i + 1] = rgb[1]; o[i + 2] = rgb[2]; o[i + 3] = d[i + 3];
-          }
-          cx.putImageData(out, 0, 0);
-          GOLD_TINTS.push(c);
+  /* 무지개똥 — 똥 몸통에 비스듬한 무지개 띠를 깔고, 그 띠가 몸통을 따라 흘러간다.
+     똥 그림에서 갈색 몸통만 골라 밝기(입체 그림자)를 남기고, 눈·입은 원래 그대로 얹는다.
+     캔버스 필터를 쓰지 않아 아이폰(사파리)에서도 똑같이 보인다. */
+  const RB_COLORS = ["#ff5a3c", "#ffa23e", "#ffe65a", "#a6f25a", "#5fb8ff", "#9b46ff"];
+  let RB = null;                          // null = 아직, false = 못 만듦(원래 그림으로)
+  function rainbowPrep() {
+    if (RB !== null) return RB || null;
+    const img = ITEM_IMG.poop;
+    if (!img) return null;
+    RB = false;
+    try {
+      const S = img.naturalWidth;
+      const mk = (w, h) => { const c = document.createElement("canvas"); c.width = w; c.height = h; return c; };
+      const base = mk(S, S), bx = base.getContext("2d");
+      bx.drawImage(img, 0, 0, S, S);
+      const src = bx.getImageData(0, 0, S, S), d = src.data;
+      const shade = mk(S, S), face = mk(S, S);
+      const sx = shade.getContext("2d"), fx = face.getContext("2d");
+      const sd = sx.createImageData(S, S), fd = fx.createImageData(S, S);
+      for (let i = 0; i < d.length; i += 4) {
+        const al = d[i + 3];
+        if (!al) continue;
+        const r = d[i] / 255, g = d[i + 1] / 255, b = d[i + 2] / 255;
+        const mx = Math.max(r, g, b), mn = Math.min(r, g, b), dl = mx - mn;
+        const sat = mx > 0 ? dl / mx : 0;
+        let h = 0;
+        if (dl > 0) h = (mx === r ? ((g - b) / dl + 6) % 6 : mx === g ? (b - r) / dl + 2 : (r - g) / dl + 4) * 60;
+        const body = sat > 0.35 && (h < 45 || h > 350) && mx > 0.12;
+        if (body) {                       // 몸통 — 밝기만 남긴다 (0.19~0.6 → 0.67~1)
+          const L = 0.299 * r + 0.587 * g + 0.114 * b;
+          const v = Math.round(255 * Math.max(0.58, Math.min(1, 0.84 + (L - 0.33) * 1.2)));
+          sd.data[i] = sd.data[i + 1] = sd.data[i + 2] = v; sd.data[i + 3] = al;
+        } else {                          // 눈·입·테두리 — 그대로
+          fd.data[i] = d[i]; fd.data[i + 1] = d[i + 1]; fd.data[i + 2] = d[i + 2]; fd.data[i + 3] = al;
         }
-      } catch (e) { GOLD_TINTS.length = 0; return null; }   // 그림을 못 읽으면 원래대로
-    }
-    return GOLD_TINTS[Math.round(((hue % 360) + 360) % 360 / 15) % 24];
+      }
+      sx.putImageData(sd, 0, 0); fx.putImageData(fd, 0, 0);
+      /* 띠 한 바퀴(여섯 색) 길이 — 똥 한 개에 일곱 줄 남짓 보이게 */
+      const cyc = Math.round(S * 0.9);
+      const str = mk(cyc * 3, Math.round(S * 1.6)), tx = str.getContext("2d");
+      const gr = tx.createLinearGradient(0, 0, cyc * 3, 0), n = RB_COLORS.length * 3;
+      for (let k = 0; k < n; k++) {       // 색끼리 살짝만 번지게 — 경계가 또렷한 띠
+        const c = RB_COLORS[k % RB_COLORS.length];
+        gr.addColorStop(k / n + 0.12 / n, c);
+        gr.addColorStop((k + 1) / n - 0.12 / n, c);
+      }
+      tx.fillStyle = gr; tx.fillRect(0, 0, str.width, str.height);
+      const work = mk(S, S);
+      RB = { S, cyc, shade, face, str, work, wx: work.getContext("2d") };
+    } catch (e) { RB = false; }           // 그림을 못 읽으면(파일로 열었을 때 등) 원래 똥
+    return RB || null;
   }
-  /* 물들인 무지개똥을 그리고, 번쩍임(밝기 펄스)은 같은 그림을 'lighter' 로 한 번 더 얹어 낸다 */
-  function drawGoldTint(tint, fx, x, y, d) {
-    ctx.drawImage(tint, x, y, d, d);
-    const op = ctx.globalCompositeOperation, al = ctx.globalAlpha;
-    ctx.globalCompositeOperation = "lighter";
-    ctx.globalAlpha = al * (0.15 + fx.puls * 0.35);
-    ctx.drawImage(tint, x, y, d, d);
-    ctx.globalCompositeOperation = op; ctx.globalAlpha = al;
+  /* 무지개똥 한 개를 (x, y) 에 d 크기로 그린다. 그렸으면 true */
+  function drawRainbowPoop(now, seed, x, y, d, puls) {
+    const R = rainbowPrep();
+    if (!R) return false;
+    const c = R.wx, S = R.S;
+    c.globalCompositeOperation = "source-over";
+    c.clearRect(0, 0, S, S);
+    c.save();
+    c.translate(S / 2, S / 2);
+    c.rotate(1.05);                       // 왼쪽 아래 → 오른쪽 위로 기운 띠
+    const off = (now * R.cyc / 2600 + seed * 37) % R.cyc;   // 2.6초에 한 바퀴 흐른다
+    c.drawImage(R.str, -2 * R.cyc + off, -R.str.height / 2);
+    c.restore();
+    c.globalCompositeOperation = "multiply";        // 입체 그림자를 입히고
+    c.drawImage(R.shade, 0, 0);
+    c.globalCompositeOperation = "destination-in";  // 몸통 모양으로 오려 내고
+    c.drawImage(R.shade, 0, 0);
+    c.globalCompositeOperation = "source-over";     // 눈·입을 얹는다
+    c.drawImage(R.face, 0, 0);
+    ctx.drawImage(R.work, x, y, d, d);
+    if (puls > 0) {                       // 반짝 — 같은 그림을 밝게 한 번 더
+      const op = ctx.globalCompositeOperation, al = ctx.globalAlpha;
+      ctx.globalCompositeOperation = "lighter";
+      ctx.globalAlpha = al * puls * 0.22;
+      ctx.drawImage(R.work, x, y, d, d);
+      ctx.globalCompositeOperation = op; ctx.globalAlpha = al;
+    }
+    return true;
   }
 
   /* 무지개똥은 일반 똥과 헷갈리지 않게 무지갯빛으로 돌면서 번쩍인다.
@@ -1835,14 +1869,13 @@
         gg.addColorStop(1, "hsla(" + ((fx.hue + 120) % 360) + ",100%,55%,0)");
         ctx.fillStyle = gg;
         ctx.beginPath(); ctx.arc(0, 0, q.r * 1.9, 0, 6.283); ctx.fill();
-        if (canvasFilterOk) ctx.filter = fx.css;
       }
       const qi = q.kind === "star" ? ITEM_IMG.star : ITEM_IMG.poop;
-      const qt = q.kind === "gold" ? goldTint(goldFx(performance.now(), q.x).hue) : null;
       if (qi) {
         const d = q.r * 2 * ITEM_IMG_SCALE;
-        if (qt) drawGoldTint(qt, goldFx(performance.now(), q.x), -d / 2, -d / 2, d);
-        else ctx.drawImage(qi, -d / 2, -d / 2, d, d);
+        if (!(q.kind === "gold" && drawRainbowPoop(performance.now(), q.x, -d / 2, -d / 2, d,
+                                                   goldFx(performance.now(), q.x).puls)))
+          ctx.drawImage(qi, -d / 2, -d / 2, d, d);
       } else {
         ctx.fillStyle = "#fff";
         ctx.font = (q.r * 2) + "px serif";
@@ -6833,7 +6866,6 @@
     }
   }
 
-  let goldFx_ = null;                  // 지금 그리는 무지개똥의 색 (필터가 없는 브라우저용)
   function drawItems(now) {
     ctx.textAlign = "center";
     ctx.textBaseline = "middle";
@@ -6847,7 +6879,6 @@
       ctx.shadowColor = "rgba(0,0,0,0)";
       if (canvasFilterOk) ctx.filter = "none";
       const bob = it.bob !== undefined ? Math.sin(it.bob) * 4 : 0;
-      goldFx_ = null;
       ctx.translate(it.x, it.y + bob);
       if (it.special === "laser") {
         ctx.rotate(Math.atan2(it.vx, it.vy));   // 굴러떨어지지 않고 진행 방향으로 눕는다
@@ -6880,8 +6911,6 @@
           gg.addColorStop(1, "hsla(" + ((fx.hue + 120) % 360) + ",100%,55%,0)");
           ctx.fillStyle = gg;
           ctx.beginPath(); ctx.arc(0, 0, R, 0, 6.283); ctx.fill();
-          if (canvasFilterOk) ctx.filter = fx.css;
-          else goldFx_ = fx;                 // 필터가 없으면 아래에서 물들인 그림으로
         }
         if (it.dark) {
           /* 다크똥 — 뒤에 보랏빛 기운을 얹는다. 몸이 검어서 어두운 배경에 묻히므로,
@@ -6904,13 +6933,12 @@
         // 똥도 같은 3D 그림 (무지개똥 필터는 그림에도 먹는다). 다크똥만 제 그림을 쓴다.
         const ii = it.dark ? (ITEM_IMG.darkpoop || ITEM_IMG[it.type])
                  : (it.img ? (ITEM_IMG[it.img] || ITEM_IMG[it.type]) : ITEM_IMG[it.type]);
-        const tint = it.gold && goldFx_ ? goldTint(goldFx_.hue) : null;
         if (ii) {
           const d = it.size * ITEM_IMG_SCALE;
           // 무지개똥은 저 혼자 번쩍여서 테두리가 필요 없다
           if ((rp > 0.03 || it.dark) && !it.gold) drawRim(ii, d, rp, it.dark);
-          if (tint) drawGoldTint(tint, goldFx_, -d / 2, -d / 2, d);
-          else ctx.drawImage(ii, -d / 2, -d / 2, d, d);
+          if (!(it.gold && drawRainbowPoop(now, it.x, -d / 2, -d / 2, d, goldFx(now, it.x).puls)))
+            ctx.drawImage(ii, -d / 2, -d / 2, d, d);
         } else {
           ctx.fillStyle = "#fff";
           ctx.font = it.size + "px serif";
