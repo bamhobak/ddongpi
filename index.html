@@ -124,7 +124,7 @@
   }
   .board .mini img.jic2 { width: 22px; height: 28px; object-fit: contain; }
   /* 그 판에서 데리고 간 펫 — 캐릭터 오른쪽 발치에 조그맣게 */
-  .board img.pic { width: 14px; height: 14px; object-fit: contain; vertical-align: -8px;
+  .board img.pic { width: 11px; height: 11px; object-fit: contain; vertical-align: -8px;
                    margin: 0 5px 0 -3px; filter: drop-shadow(0 1px 2px rgba(0,0,0,.6)); }
   .board .sc img.jic.withPet { margin-right: 1px; }
   .board .mini .jw { display: flex; align-items: flex-end; justify-content: center; }
@@ -1001,7 +1001,7 @@
   const elTitle = document.getElementById("overTitle");
   const coinNote = document.getElementById("coinNote");
 
-  const GAME_VERSION = "v0.7.16";   // 코드를 고칠 때마다 뒤 두 자리를 올린다
+  const GAME_VERSION = "v0.7.17";   // 코드를 고칠 때마다 뒤 두 자리를 올린다
   document.getElementById("ver").textContent = GAME_VERSION;
 
   const LS_NAME = "epjpddongpi_name";
@@ -6737,7 +6737,7 @@
     const g = c.getContext("2d");
     g.drawImage(img, 0, 0);
     g.globalCompositeOperation = "source-in";   // 그림이 있는 자리만 한 가지 색으로
-    g.fillStyle = dark ? "#07030f" : "#ffffff";
+    g.fillStyle = dark ? "#c98bff" : "#ffffff";   // 다크똥은 밝은 보라 테두리
     g.fillRect(0, 0, c.width, c.height);
     cache.set(img, c);
     return c;
@@ -6753,9 +6753,9 @@
     return Math.max(0, Math.min(1, (0.52 - l) / 0.28));
   }
   function drawRim(img, d, rp, dark) {
-    const k = Math.max(2, d * (dark ? 0.065 : 0.05));   // 검은 테두리는 조금 더 두껍게
+    const k = Math.max(2, d * (dark ? 0.06 : 0.05));    // 다크똥 테두리는 조금 더 두껍게
     ctx.save();
-    ctx.globalAlpha *= dark ? Math.max(rp, 0.9) : rp * 0.85;
+    ctx.globalAlpha *= dark ? 0.95 : rp * 0.85;
     ctx.drawImage(rimOf(img, dark), -d / 2 - k, -d / 2 - k, d + k * 2, d + k * 2);
     ctx.restore();
   }
@@ -7058,11 +7058,11 @@
           /* 다크똥 — 뒤에 보랏빛 기운을 얹는다. 몸이 검어서 어두운 배경에 묻히므로,
              안쪽부터 진하게 깔아 큰 놈(대왕 다크똥)도 확실히 눈에 들게 한다. */
           const pu = 0.5 + 0.5 * Math.sin(now / 260 + it.phase);
-          const R = it.size * (0.86 + pu * 0.10);
-          const dg = ctx.createRadialGradient(0, 0, R * 0.52, 0, 0, R);
-          dg.addColorStop(0, "rgba(178,102,255," + (0.55 + pu * 0.25).toFixed(2) + ")");
-          dg.addColorStop(0.75, "rgba(120,40,220," + (0.26 + pu * 0.16).toFixed(2) + ")");
-          dg.addColorStop(1, "rgba(60,0,130,0)");
+          const R = it.size * (0.98 + pu * 0.12);
+          const dg = ctx.createRadialGradient(0, 0, R * 0.45, 0, 0, R);
+          dg.addColorStop(0, "rgba(200,130,255," + (0.8 + pu * 0.2).toFixed(2) + ")");
+          dg.addColorStop(0.7, "rgba(150,60,245," + (0.42 + pu * 0.2).toFixed(2) + ")");
+          dg.addColorStop(1, "rgba(90,0,180,0)");
           ctx.fillStyle = dg;
           ctx.beginPath(); ctx.arc(0, 0, R, 0, 6.283); ctx.fill();
         }
