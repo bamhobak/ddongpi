@@ -123,6 +123,12 @@
     border-radius: 3px; padding: 4px 3px;
   }
   .board .mini img.jic2 { width: 22px; height: 28px; object-fit: contain; }
+  /* 그 판에서 데리고 간 펫 — 캐릭터 오른쪽 발치에 조그맣게 */
+  .board img.pic { width: 14px; height: 14px; object-fit: contain; vertical-align: -8px;
+                   margin: 0 5px 0 -3px; filter: drop-shadow(0 1px 2px rgba(0,0,0,.6)); }
+  .board .sc img.jic.withPet { margin-right: 1px; }
+  .board .mini .jw { display: flex; align-items: flex-end; justify-content: center; }
+  .board .mini .jw img.pic { margin: 0 0 0 -2px; vertical-align: 0; }
   .board li.five .mini img.jic2 { width: 20px; height: 25px; }
   .board .mini .mn {
     max-width: 100%; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
@@ -995,7 +1001,7 @@
   const elTitle = document.getElementById("overTitle");
   const coinNote = document.getElementById("coinNote");
 
-  const GAME_VERSION = "v0.7.14";   // 코드를 고칠 때마다 뒤 두 자리를 올린다
+  const GAME_VERSION = "v0.7.15";   // 코드를 고칠 때마다 뒤 두 자리를 올린다
   document.getElementById("ver").textContent = GAME_VERSION;
 
   const LS_NAME = "epjpddongpi_name";
@@ -4891,6 +4897,20 @@
     return JOB_IMG[jb || "none"];
   }
 
+  /* 그 판에서 데리고 간 펫 — 증강 기록에 'pet:<id>' 로 남아 있다 (펫 없이 뛴 판·예전 판은 없음) */
+  function boardPet(row) {
+    if (!row || !row.augs) return null;
+    for (const k in row.augs) {
+      const id = k.slice(0, 4) === "pet:" ? k.slice(4) : null;
+      if (id && PETS[id] && PETS[id].img) return id;
+    }
+    return null;
+  }
+  function petIcon(id) {
+    const pi = document.createElement("img");
+    pi.className = "pic"; pi.src = PETS[id].img; pi.alt = PETS[id].ic; pi.title = "펫 " + PETS[id].nm;
+    return pi;
+  }
   function renderBoard(el, list, msg) {
     el.innerHTML = "";
     const rows = (list || []).slice(0, 10);
@@ -4922,6 +4942,8 @@
       im.alt = jb3 ? JOBS[jb3].ic : "";
       if (!jb3) im.style.visibility = "hidden";
       sc.appendChild(im);
+      const pt3 = boardPet(row);
+      if (pt3) { im.classList.add("withPet"); sc.appendChild(petIcon(pt3)); }
       sc.appendChild(document.createTextNode(row ? Number(row.score).toLocaleString() : "-"));
       li.append(rk, nm, sc);
       el.appendChild(li);
@@ -4936,6 +4958,10 @@
       im.src = "assets/" + boardImg(row) + "_right.png";
       im.alt = JOBS[jb].ic;
       if (!row) im.style.visibility = "hidden";  // 자리는 잡되 캐릭터는 비운다
+      const jw = document.createElement("span"); jw.className = "jw";
+      jw.appendChild(im);
+      const ptm = boardPet(row);
+      if (ptm) jw.appendChild(petIcon(ptm));
       const mn = document.createElement("span");
       mn.className = "mn";
       const b = document.createElement("b"); b.textContent = rank;
@@ -4944,7 +4970,7 @@
       const ms = document.createElement("span");
       ms.className = "ms";
       ms.textContent = row ? shortScore(Number(row.score) || 0) : "-";
-      chip.append(im, mn, ms);
+      chip.append(jw, mn, ms);
       return chip;
     };
     for (const [from, to, cls] of [[3, 6, "duo"], [6, 10, "five"]]) {
