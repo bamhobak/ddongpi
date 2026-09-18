@@ -1037,7 +1037,7 @@
   const elTitle = document.getElementById("overTitle");
   const coinNote = document.getElementById("coinNote");
 
-  const GAME_VERSION = "v0.7.29";   // 코드를 고칠 때마다 뒤 두 자리를 올린다
+  const GAME_VERSION = "v0.7.30";   // 코드를 고칠 때마다 뒤 두 자리를 올린다
   document.getElementById("ver").textContent = GAME_VERSION;
 
   const LS_NAME = "epjpddongpi_name";
@@ -1062,7 +1062,7 @@
                ds: "힘들때마다 차려지는 엄마의 따뜻한 밥상 · 코인이 2배로 나온다" },
     /* 점술가 — 도박사 자리를 이어받았다. 가끔 떨어지는 포춘쿠키를 먹으면 10초 동안 예언 하나가 이뤄진다.
        (옛 도박사 기록은 순위표에 도박사로 그대로 남는다 — JOB_NAMES·JOB_IMG 에만 남겨 두었다) */
-    fortune: { nm: "점술가", ic: "🔮", ds: "가끔 포춘쿠키가 떨어진다 · 먹으면 10초 동안 예언이 이뤄진다 · 좋은 예언 넷, 나쁜 예언 하나" },
+    fortune: { nm: "점술가", ic: "🔮", ds: "10초마다 예언이 저절로 바뀐다 · 좋은 예언 넷, 나쁜 예언 하나" },
     levitator: { nm: "부양사", ic: "🎈", ds: "하늘 어디든 날 수 있다 · 높이 있을수록 점수 UP" },
     fit: { nm: "헬스걸", ic: "💪", ds: "목숨 5개로 시작 · 우산이 안 나온다 · 하트가 어마무시하게 잘 나온다 · 벌크업 좀 된 상태" },
     powerj: { nm: "파워J", ic: "📋", ds: "달이 잘 나온다 · 대신 증강은 계획대로 1개만" },
@@ -2723,7 +2723,7 @@
   let cats = [], catT = 0, catN = 0;
   let eelT = 0, bolts = [];
   /* ── 점술가 ── 포춘쿠키는 평균 14초마다, 예언은 PROPH_SEC 동안 */
-  const FORTUNE_FIRST = 7, PROPH_SEC = 10;
+  const FORTUNE_FIRST = 2, PROPH_SEC = 10;   // 판 시작 2초 뒤 첫 예언, 그다음부터 10초마다 바뀐다
   const PROPHECIES = [
     { id: "small",  nm: "똥이 작아진다",    c: "#9fe8ff" },
     { id: "coin",   nm: "코인비가 내린다",   c: "#ffd23f" },
@@ -6763,9 +6763,12 @@
       bolts[k].t += dt;
       if (bolts[k].t >= bolts[k].life) bolts.splice(k, 1);
     }
-    // ---- 점술가 — 포춘쿠키가 떨어지고, 먹으면 예언이 이뤄진다 ----
+    // ---- 점술가 — 아이템 없이 10초마다 예언이 저절로 바뀐다 (하나가 끝나면 곧바로 다음 예언) ----
     if (job === "fortune" && state === STATE.PLAY) {
-      if (prophT > 0) {
+      if (fortuneT > 0) {                    // 판 시작 직후 잠깐 쉬었다가 첫 예언
+        fortuneT -= dt;
+        if (fortuneT <= 0) startProphecy();
+      } else {
         prophT = Math.max(0, prophT - dt);
         if (prophIs("coin") || prophIs("star")) {
           prophRain -= dt;
@@ -6774,13 +6777,7 @@
             else { spawnBonus(BONUS.find(b => b.type === "star")); prophRain = 0.45; }
           }
         }
-        if (prophT <= 0) prophecy = null;
-      } else if (!fever) {
-        fortuneT -= dt * tsc;
-        if (fortuneT <= 0) {
-          fortuneT = 11 + Math.random() * 6;
-          spawnFortune();
-        }
+        if (prophT <= 0) startProphecy();
       }
     }
 
@@ -7515,7 +7512,9 @@
                  rot: 0, vr: 0, size: r * 2, bob: Math.random() * 6.28, born: elapsed });
   }
   function startProphecy() {
-    const pr = PROPHECIES[Math.floor(Math.random() * PROPHECIES.length)];
+    // 방금 것과 같은 예언이 연달아 나오지 않게 — 바뀌는 게 보여야 한다
+    const pool = PROPHECIES.filter(q => q !== prophecy);
+    const pr = pool[Math.floor(Math.random() * pool.length)];
     prophecy = pr; prophT = PROPH_SEC; prophRain = 0;
     // 이미 떠 있는 똥에도 바로 먹힌다 — 먹는 순간 달라진 게 보여야 예언 같다
     for (const q of items) {
