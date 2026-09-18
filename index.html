@@ -803,6 +803,17 @@
   #nameBox .who b { color: #35f0ff; text-shadow: 0 0 10px rgba(53,240,255,.6); }
   #nameBox button, #nameEdit button { border-radius: 3px; }
 
+  /* 스테이지 고르기 — 시작 버튼 바로 위 */
+  #modeBox { display: flex; flex-direction: column; align-items: center; gap: 5px; }
+  #modeSeg { display: inline-flex; gap: 4px; padding: 3px; border-radius: 8px;
+             background: rgba(255,255,255,.06); border: 1px solid rgba(255,255,255,.14); }
+  #modeSeg button {
+    padding: 6px 16px; font-size: 14px; border-radius: 6px; box-shadow: none;
+    background: transparent; color: #9fb4d0; letter-spacing: .5px;
+  }
+  #modeSeg button.on { background: #35f0ff; color: #05060d; box-shadow: 0 0 12px rgba(53,240,255,.5); }
+  #modeDesc { font-size: 11.5px; color: #9fb4d0; min-height: 15px; text-align: center; }
+
   /* 시작 버튼 */
   #btnStart {
     margin-top: 0;
@@ -885,6 +896,13 @@
         </div>
       </div>
 
+      <div id="modeBox">
+        <div id="modeSeg" role="radiogroup" aria-label="스테이지">
+          <button data-mode="item" role="radio">🎁 아이템전</button>
+          <button data-mode="noitem" role="radio">⚔️ 노템전</button>
+        </div>
+        <div id="modeDesc"></div>
+      </div>
       <button id="btnStart">시작하기</button>
     </div>
 
@@ -1017,7 +1035,7 @@
   const elTitle = document.getElementById("overTitle");
   const coinNote = document.getElementById("coinNote");
 
-  const GAME_VERSION = "v0.7.19";   // 코드를 고칠 때마다 뒤 두 자리를 올린다
+  const GAME_VERSION = "v0.7.20";   // 코드를 고칠 때마다 뒤 두 자리를 올린다
   document.getElementById("ver").textContent = GAME_VERSION;
 
   const LS_NAME = "epjpddongpi_name";
@@ -1305,6 +1323,20 @@
   function hasPet(id) { return petOwned.has(id); }
   let pet = "none";
   try { const q = localStorage.getItem(LS_PET); if (PETS[q] && hasPet(q)) pet = q; } catch (e) {}   // 안 산 펫은 없음으로
+  /* ---------- 스테이지 ----------
+     item   — 아이템전: 지금까지의 게임 그대로
+     noitem — 노템전: 아이템(달·보름달·두루마리·우산·별·하트)이 안 나온다. 그래서 증강도 없다.
+              코인은 나온다. 직업 능력(엄마의 밥상·포춘쿠키·방울)과 펫 능력은 그대로 — 캐릭터와 펫만으로 겨룬다.
+     순위표도 스테이지마다 따로 선다. */
+  const MODES = {
+    item:   { nm: "아이템전", ds: "아이템·증강이 다 나오는 기본 스테이지" },
+    noitem: { nm: "노템전",   ds: "아이템·증강 없이 캐릭터와 펫만으로 겨룬다 (코인은 나온다)" }
+  };
+  const LS_MODE = "epjpddongpi_mode";
+  let gameMode = "item";
+  try { const m = localStorage.getItem(LS_MODE); if (MODES[m]) gameMode = m; } catch (e) {}
+  let runMode = gameMode;            // 지금 판이 어느 스테이지인가 (판 도중에 안 바뀐다)
+  function noItem() { return runMode === "noitem"; }
   // hy = 발을 바닥에 고정했을 때 머리(판정 중심)가 player.y 에서 얼마나 떨어지는지.
   // 그림마다 머리·다리 비율이 달라서 이 값으로 보정해야 그림자 높이와 판정이 어긋나지 않는다.
   /* 좌우 그림이 서로 머리 크기·자세가 달라 어색해서, 오른쪽 그림 하나만 쓰고
@@ -3155,6 +3187,25 @@
     state = STATE.READY;                 // 시작화면 데모가 다시 돌게
   });
 
+  function syncMode() {
+    for (const b of document.querySelectorAll("#modeSeg button")) {
+      const on = b.dataset.mode === gameMode;
+      b.classList.toggle("on", on);
+      b.setAttribute("aria-checked", on ? "true" : "false");
+    }
+    document.getElementById("modeDesc").textContent = MODES[gameMode].ds;
+  }
+  for (const b of document.querySelectorAll("#modeSeg button")) b.addEventListener("click", () => {
+    if (gameMode === b.dataset.mode) return;
+    beep(640, .05, "square", .04);
+    gameMode = b.dataset.mode;
+    try { localStorage.setItem(LS_MODE, gameMode); } catch (e) {}
+    syncMode();
+    syncBoardTitle();
+    refreshBoards(boardStart);                // 순위표도 그 스테이지 것으로
+    refreshLastWeek();
+  });
+  syncMode();
   document.getElementById("btnStart").addEventListener("click", () => {
     dogMode = false;                                 // 시작하기 — 원래 캐릭터
     if (!savedName()) { startEditName(); return; }   // 이름부터 정하고 시작
@@ -3209,6 +3260,8 @@
     noHitSec = 0;
     clones = []; cloneTimer = 0;
     doves = []; moveDist = 0;
+    runMode = gameMode;
+    if (noItem()) augCount["mode:noitem"] = 1;   // 통계(판 기록)에서 노템전 판을 가려낼 수 있게
     angelUsed = false; angelAura = 0; angelFx = 0;
     fairies = []; giftT = GIFT_EVERY * 0.6;
     cats = []; catT = CAT_EVERY * 0.7; catN = 0;
@@ -4340,7 +4393,8 @@
       for (const b of BONUS) {           // 종류별로 따로 세다가 각자 때가 되면 떨어진다
         b.t -= dt * tsc;
         if (b.t <= 0) {
-          spawnBonus(Math.random() < bonusSwap() ? pickBonus() : b);
+          if (!noItem()) spawnBonus(Math.random() < bonusSwap() ? pickBonus() : b);
+          else if (b.type === "meal") spawnBonus(b);     // 노템전 — 쉬었음 청년의 밥상은 직업 능력이라 남긴다
           b.t = bonusInterval(b);
         }
       }
@@ -4997,7 +5051,7 @@
     logRun(s);                 // 증강 통계 수집 (화면에는 아무것도 보이지 않는다)
 
     // 전체 랭킹: 최신 TOP 10을 다시 받아보고 진입했으면 이름 입력을 띄운다
-    pendingScore = s; pendingLevel = level; pendingFull = fullOwn; pendingDog = dogMode;
+    pendingScore = s; pendingLevel = level; pendingFull = fullOwn; pendingDog = dogMode; pendingMode = runMode;
     myRowKey = null;
     nameRow.classList.remove("on");
     btnSave.disabled = false;
@@ -5126,14 +5180,16 @@
         lim: limit
       };
       if (jb) body.jb = jb;
+      const md = gameMode === "noitem" ? "noitem" : null;   // 아이템전은 인자 없이 (옛 함수와도 맞는다)
+      if (md) body.md = md;
       const res = await fetch(SB_URL + "/rest/v1/rpc/" + (jb ? "ddongpi_top_job" : "ddongpi_top"), {
         method: "POST",
         headers: sbHeaders({ "Content-Type": "application/json" }),
         body: JSON.stringify(body)
       });
       if (res.ok) return await res.json();
-      if (jb) throw new Error("HTTP " + res.status);   // 직업별은 함수가 없으면 대체 경로가 없다
-    } catch (e) { if (jb) throw e; /* 아래 방식으로 넘어간다 */ }
+      if (jb || md) throw new Error("HTTP " + res.status);   // 직업별·노템전은 함수가 없으면 대체 경로가 없다
+    } catch (e) { if (jb || gameMode === "noitem") throw e; /* 아래 방식으로 넘어간다 */ }
     // 함수가 아직 없으면 예전처럼 표에서 바로 읽는다 (기기 중복 제거는 안 됨)
     let url = SB_URL + "/rest/v1/" + SB_TABLE +
       "?select=name,score,level,created_at" +
@@ -5189,6 +5245,17 @@
     };
     /* 아래 두 값은 나중에 추가한 컬럼이라 DB에 아직 없을 수 있다.
        컬럼이 없으면 요청 전체가 거부되므로, 실패하면 기본 항목만으로 다시 보낸다. */
+    /* 노템전 기록은 mode 칸이 있어야만 올린다 — 칸이 없는 서버에 그냥 올리면 아이템전 순위에 섞인다 */
+    if (pendingMode === "noitem") {
+      const res = await fetch(SB_URL + "/rest/v1/" + SB_TABLE, {
+        method: "POST",
+        headers: sbHeaders({ "Content-Type": "application/json", Prefer: "return=minimal" }),
+        body: JSON.stringify(Object.assign({}, base, { device: deviceId, augs: augCount, job: job,
+                                                        fullown: pendingFull, dog: pendingDog, mode: "noitem" }))
+      });
+      if (res.ok) return;
+      throw new Error("노템전 순위판 준비 중 (HTTP " + res.status + ")");
+    }
     const tries = [
       Object.assign({}, base, { device: deviceId, augs: augCount, job: job, fullown: pendingFull, dog: pendingDog }),
       Object.assign({}, base, { device: deviceId, augs: augCount, job: job, fullown: pendingFull }),
@@ -5349,12 +5416,14 @@
     }
   }
   buildJobTabs();
+  syncBoardTitle();                      // 저장된 스테이지가 노템전이면 제목부터 맞춘다
   // 탭을 바꾸고(두 화면 모두) 목록을 다시 그린다
   /* 제목에 지금 보고 있는 직업을 넣는다 — 전체일 때는 넣지 않는다 */
   function syncBoardTitle() {
     const nm = boardJob !== "all" && JOBS[boardJob] ? JOBS[boardJob].nm + " " : "";
+    const md = gameMode === "noitem" ? "노템전 " : "";
     for (const h of document.querySelectorAll(".boardTitle"))
-      h.textContent = "🏆 이번 주 " + nm + "TOP 10";
+      h.textContent = "🏆 이번 주 " + md + nm + "TOP 10";
   }
   function setBoardJob(key, els) {
     boardJob = key;
@@ -5373,7 +5442,8 @@
       try {
         jobLists[boardJob] = await fetchRange(weekStartMs(0), null, TOP_N, boardJob);
       } catch (e) {
-        els.forEach(el => renderBoard(el, null, "직업별 랭킹을 불러오지 못했습니다"));
+        els.forEach(el => renderBoard(el, null, gameMode === "noitem"
+          ? "노템전 순위판 준비 중입니다" : "직업별 랭킹을 불러오지 못했습니다"));
         return;
       }
     }
@@ -5394,7 +5464,8 @@
       jobLists = {};                       // 새 기록이 있을 수 있으니 직업별 캐시도 비운다
       await showBoards(els);
     } catch (e) {
-      els.forEach(el => renderBoard(el, null, "랭킹을 불러오지 못했습니다 (오프라인?)"));
+      els.forEach(el => renderBoard(el, null, gameMode === "noitem"
+        ? "노템전 순위판 준비 중입니다" : "랭킹을 불러오지 못했습니다 (오프라인?)"));
     }
   }
 
@@ -5451,6 +5522,7 @@
   const AUG_HIDDEN = {};
   for (const a of AUGMENTS) { AUG_NAMES[a.id] = a.nm; AUG_HIDDEN[a.id] = !!a.hidden; }
   for (const id in PETS) if (id !== "none") AUG_NAMES["pet:" + id] = PETS[id].ic + " 펫 " + PETS[id].nm;
+  AUG_NAMES["mode:noitem"] = "⚔️ 노템전";
   AUG_NAMES.gamble = "도박꾼(삭제됨)";   // 옛 기록 표시용
   AUG_NAMES.fly = "초전도 이재(삭제됨)";
   AUG_NAMES.refill = "뚜니핑 무한리필(삭제됨)";
@@ -5892,7 +5964,7 @@
     btnSave.textContent = "등록";
   }
 
-  let pendingScore = 0, pendingLevel = 1, pendingFull = false, pendingDog = false;
+  let pendingScore = 0, pendingLevel = 1, pendingFull = false, pendingDog = false, pendingMode = "item";
   btnSave.addEventListener("click", saveMyScore);
   nameInput.addEventListener("keydown", e => {
     e.stopPropagation();
