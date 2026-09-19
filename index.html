@@ -1054,7 +1054,7 @@
   const elTitle = document.getElementById("overTitle");
   const coinNote = document.getElementById("coinNote");
 
-  const GAME_VERSION = "v0.7.66";   // 코드를 고칠 때마다 뒤 두 자리를 올린다
+  const GAME_VERSION = "v0.7.67";   // 코드를 고칠 때마다 뒤 두 자리를 올린다
   document.getElementById("ver").textContent = GAME_VERSION;
 
   const LS_NAME = "epjpddongpi_name";
@@ -2252,6 +2252,14 @@
   const BGM_OFF = { menu: 0.424, play: 0.006, space: 0.003, blackhole: 0.517, fever: 0.232,
                     rhythm: 0.467 };
   const BGM_LOOP_X = 3.5;            // 곡 끝과 처음을 겹치는 시간(초)
+  /* 곡 안의 되돌이 자리 — b 에 닿으면 a 로 건너뛴다(처음으로 안 돌아가고 인트로는 한 번만).
+     두 자리 앞뒤 소리가 거의 같은 곳을 골라 짧게만 겹친다. menu 는 32박(8마디) 간격, 스펙트럼 상관 0.94 */
+  const BGM_LOOPPT = { menu: { a: 27.548 - 32 * 60 / 140, b: 27.548 } };
+  const BGM_LOOPPT_X = 0.35;         // 되돌이 자리에서 겹치는 시간(초)
+  /* 다음 벌은 겹치기 BGM_LOOPPT_PRE 초 전부터 소리 없이 미리 튼다. 튼 직후엔 기기마다 수십 ms 늦게 나오므로
+     소리 없는 동안 어긋남을 재서 한 번 바로잡고, 그 늦음(bgmLag)을 기억해 다음 바퀴부터 미리 당겨 튼다 */
+  const BGM_LOOPPT_PRE = 0.7;
+  let bgmLag = 0, bgmFixed = false;
   const BGM_SWAP_X = 0.45;           // 다른 곡으로 갈아탈 때 겹치는 시간(초)
   const bgmPair = {};                // 이름 -> 같은 곡 두 벌
   let bgmName = null;                // 지금 울려야 할 곡 이름
@@ -2273,11 +2281,11 @@
   function bgmUnfade(el) {
     for (let i = bgmOut.length - 1; i >= 0; i--) if (bgmOut[i].el === el) bgmOut.splice(i, 1);
   }
-  function bgmStart(a) {
+  function bgmStart(a, at) {
     /* 물러나는 중이던 것을 다시 트는 경우 — 예약을 취소하지 않으면 시간이 되어
        pause() 가 불리고, 방금 튼 소리가 그대로 멎은 채 곡이 바뀔 때까지 조용해진다. */
     bgmUnfade(a);
-    try { a.currentTime = 0; } catch (e) {}
+    try { a.currentTime = at || 0; } catch (e) {}
     a.volume = 0;
     const pr = a.play();
     /* 브라우저는 사용자가 화면을 한 번 만지기 전에는 소리를 막는다.
@@ -2312,15 +2320,31 @@
     const V = BGM_VOL[bgmName] || 0.4;
     const d = bgmCur.duration;
     if (!d || !isFinite(d)) { bgmCur.volume = V; return; }   // 아직 길이를 모른다
-    const left = d - bgmCur.currentTime;
-    if (left > BGM_LOOP_X) {
+    const LP = BGM_LOOPPT[bgmName];
+    const X = LP ? BGM_LOOPPT_X : BGM_LOOP_X;
+    const left = (LP ? Math.min(d, LP.b) : d) - bgmCur.currentTime;
+    if (LP) {
+      const pair = bgmPair[bgmName];
+      const other = pair[0] === bgmCur ? pair[1] : pair[0];
+      if (left <= X + BGM_LOOPPT_PRE && left > X) {
+        if (other.paused) { bgmStart(other, LP.a - left + bgmLag); bgmFixed = false; }
+        else if (!bgmFixed && left < X + BGM_LOOPPT_PRE * 0.5 && other.currentTime > 0) {
+          const err = (LP.a - left) - other.currentTime;     // + 면 다음 벌이 늦다
+          bgmLag = Math.max(-0.2, Math.min(0.3, bgmLag + err));
+          if (Math.abs(err) > 0.012) { try { other.currentTime += err; } catch (e) {} }
+          bgmFixed = true;
+        }
+        other.volume = 0;
+      }
+    }
+    if (left > X) {
       bgmCur.volume = Math.min(V, bgmCur.volume + dt / BGM_SWAP_X * V);
       return;
     }
     const pair = bgmPair[bgmName];
     const other = pair[0] === bgmCur ? pair[1] : pair[0];
-    if (other.paused) bgmStart(other);
-    const k = Math.max(0, left / BGM_LOOP_X);      // 1 에서 0 으로
+    if (other.paused) bgmStart(other, LP ? LP.a - left : 0);   // 되돌이 곡은 같은 박자 자리에서 겹쳐 들어간다
+    const k = Math.max(0, left / X);               // 1 에서 0 으로
     bgmCur.volume = V * k;
     other.volume = V * (1 - k);
     if (left <= 0.06) { bgmFadeOut(bgmCur, 0.15); bgmCur = other; }
