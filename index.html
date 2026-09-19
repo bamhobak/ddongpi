@@ -853,6 +853,17 @@
   }
 
   .big { font-size: clamp(38px, 11vw, 48px); font-weight: 800; color: #ffd23f; }
+  /* 게임오버 — 이번 판 이야기 */
+  #overStory { font-size: 13px; color: #cfd6e4; margin-top: 4px; }
+  #overBest { font-size: 14px; font-weight: 700; color: #ffe08a; margin-top: 3px; min-height: 1em; }
+  #overBest.new { color: #ff9ede; font-size: 16px; }
+  #overAugs { display: flex; flex-wrap: wrap; justify-content: center; gap: 2px 7px;
+              max-width: 330px; margin: 4px auto 0; font-size: 17px; line-height: 1.3; }
+  #overAugs b { font-size: 10px; color: #ffd23f; margin-left: 1px; }
+  #overAugs[hidden] { display: none; }
+  #retryRow { display: flex; gap: 8px; justify-content: center; align-items: center; }
+  #btnRetryJob { font-size: 13px; padding: 9px 12px; opacity: .85; }
+  #btnRetryJob[hidden] { display: none; }
   .sub { font-size: 14px; color: #9aa0ae; }
 </style>
 </head>
@@ -995,6 +1006,9 @@
       <h2 id="overTitle">게임 오버!</h2>
       <div class="big" id="finalScore">0</div>
       <div id="coinNote">🪙 0 coin</div>
+      <div id="overStory"></div>
+      <div id="overBest"></div>
+      <div id="overAugs" hidden></div>
 
       <div id="nameRow">
         <div class="tag" id="nameTag">🎉 TOP 10 진입! 이름을 남기세요</div>
@@ -1012,7 +1026,10 @@
         <div class="note" id="noteOver"></div>
       </div>
 
-      <button id="btnRetry">다시 하기</button>
+      <div id="retryRow">
+        <button id="btnRetry">다시 하기</button>
+        <button id="btnRetryJob" hidden>직업 바꾸기</button>
+      </div>
     </div>
   </div>
 </div>
@@ -1053,7 +1070,7 @@
   const elTitle = document.getElementById("overTitle");
   const coinNote = document.getElementById("coinNote");
 
-  const GAME_VERSION = "v0.7.71";
+  const GAME_VERSION = "v0.7.72";
   /* 제작사 스플래시(bamhobak friends 로고) — 2026-09-20 끔. 다시 켜려면 true */
   const SPLASH_USE = false;   // 코드를 고칠 때마다 뒤 두 자리를 올린다
   document.getElementById("ver").textContent = GAME_VERSION;
@@ -2621,7 +2638,14 @@
     if (hurtUntil > 0) hurtUntil += paused;
     // 멈춰 있던 똥이 코앞에 있을 수 있으니 0.5초 무적으로 빠져나갈 틈을 준다
     invUntil = Math.max(invUntil, performance.now() + 500);
+    /* '준비' 한 박자 — 카드를 누르던 손가락을 옮길 틈. 일시정지를 풀 때의 3-2-1 과 같은 장치를 짧게(0.6초) 쓴다.
+       멈춘 동안의 시간은 finishResume 이 무적·뚜니핑 마감에서 빼 준다 */
+    state = STATE.PAUSE;
+    pauseAt = performance.now();
+    resumeCountEnd = pauseAt + READY_MS;
+    readyBeat = true;
   }
+  const READY_MS = 600;
 
   function showAugmentPick() {
     augRound++;                        // 이번이 몇 번째 선택 차례인지
@@ -2732,6 +2756,9 @@
   }
 
   let score = 0, lives = 3, level = 1, elapsed = 0, starCount = 0;
+  let lvSeen = 0, lvGlow = 0;              // 레벨 오름 신호
+  let fairLog = [], specSeen = {};         // 공정한 배치 기록 · 이번 판에 소개한 까다로운 똥
+  let hitStop = 0, dying = 0, deathScore = 0, deathLvT = 0, readyBeat = false;   // 맞은 순간 정지 · 쓰러지는 느린 화면 · 증강 뒤 준비
   /* 방울이 전용 — 목숨 대신 오염도로 버틴다. 0 에서 시작해 맞을 때마다 DIRT_HIT 씩
      차오르고 100 이면 끝. 빗방울을 먹으면 DIRT_WASH 만큼 씻긴다. */
   const DIRT_MAX = 100, DIRT_HIT = 25, DIRT_WASH = 35;
@@ -5508,25 +5535,57 @@
     const cy = (e.touches && e.touches[0] ? e.touches[0].clientY : e.clientY) - r.top;
     return cy / r.height * H;
   }
-  function movePointer(e) {
-    if (state !== STATE.PLAY) return;
+  /* 터치 조작 — 화면 어디를 누르든 그 자리가 기준점이 되고, 손가락을 끄는 만큼 캐릭터가 따라 움직인다
+     (누른 자리로 순간이동하지 않는다). 좌우는 누구나, 위아래는 날 수 있을 때만.
+     손가락을 떼면 기준점이 풀리고, 다시 누르면 그 자리가 새 기준점. PC 는 마우스를 누른 채 끈다.
+     화면 끝에 닿으면 기준점을 끌어와서, 반대로 돌리는 순간 바로 따라온다. */
+  const DRAG_GAIN = 1.25;            // 손가락이 움직인 거리 × 이만큼 (엄지를 조금만 움직여도 되게)
+  let drag = null;                   // { fx, fy, px, py } 기준점의 손가락·캐릭터 자리
+  function dragBlocked(e) {
+    if (state !== STATE.PLAY || dying > 0) return true;
     /* 화면(증강·직업 선택)을 누른 손가락이 그대로 게임 조작으로 새는 걸 막는다.
        화면이 닫힌 뒤 브라우저가 같은 자리에 흉내내는 마우스 이벤트를 흘려보낸다. */
-    if (performance.now() < inputHoldUntil) { if (e.cancelable) e.preventDefault(); return; }
-    if (ctrlMode === "pad") { if (e.cancelable) e.preventDefault(); return; }
-    const px0 = prophIs("reverse") ? W - pointerX(e) : pointerX(e);   // 거꾸로 가는 날 — 손가락 반대편으로
-    player.tx = Math.max(player.r, Math.min(W - player.r, px0));
+    if (performance.now() < inputHoldUntil) return true;
+    if (ctrlMode === "pad") return true;
+    return false;
+  }
+  function dragAnchor(e) {
+    drag = { fx: pointerX(e), fy: pointerY(e), px: player.tx, py: flyOn ? player.ty : groundY };
+  }
+  function dragStart(e) {
+    if (dragBlocked(e)) { drag = null; if (e.cancelable) e.preventDefault(); return; }
+    dragAnchor(e);
+    if (e.cancelable) e.preventDefault();
+  }
+  function dragMove(e) {
+    if (dragBlocked(e)) { drag = null; if (e.cancelable) e.preventDefault(); return; }
+    if (!drag) { dragAnchor(e); if (e.cancelable) e.preventDefault(); return; }   // 막혀 있던 손가락은 여기서 기준점을 잡는다
+    const kd = prophIs("reverse") ? -1 : 1;           // 거꾸로 가는 날 — 끄는 방향과 반대로
+    const wantX = drag.px + (pointerX(e) - drag.fx) * DRAG_GAIN * kd;
+    const x = Math.max(player.r, Math.min(W - player.r, wantX));
+    if (x !== wantX) drag.px += x - wantX;            // 끝에 닿으면 기준점을 끌어온다
+    player.tx = x;
     if (flyOn) {
-      /* 캐릭터가 손가락·커서보다 위에 떠 있도록 한다.
-         손에 캐릭터가 가려지지 않아 조작감이 훨씬 낫다. */
-      const want = pointerY(e) - 90;
-      player.ty = Math.max(H * FLY_TOP, Math.min(groundY, want));
+      const top = H * FLY_TOP;
+      const wantY = drag.py + (pointerY(e) - drag.fy) * DRAG_GAIN;
+      const y = Math.max(top, Math.min(groundY, wantY));
+      if (y !== wantY) drag.py += y - wantY;
+      player.ty = y;
     }
     if (e.cancelable) e.preventDefault();
   }
-  cv.addEventListener("mousemove", movePointer);
-  cv.addEventListener("touchstart", movePointer, { passive: false });
-  cv.addEventListener("touchmove", movePointer, { passive: false });
+  function dragEnd(e) {
+    // 여러 손가락 중 하나만 뗐으면 남은 손가락으로 기준점을 다시 잡는다
+    if (e.touches && e.touches.length) { if (!dragBlocked(e)) dragAnchor(e); return; }
+    drag = null;
+  }
+  cv.addEventListener("touchstart", dragStart, { passive: false });
+  cv.addEventListener("touchmove", dragMove, { passive: false });
+  cv.addEventListener("touchend", dragEnd);
+  cv.addEventListener("touchcancel", dragEnd);
+  cv.addEventListener("mousedown", e => { if (e.button === 0) dragStart(e); });
+  cv.addEventListener("mousemove", e => { if (e.buttons & 1) dragMove(e); });
+  window.addEventListener("mouseup", () => { drag = null; });
 
   /* ---------- 조작 방식: 터치 따라가기 / 십자패드 ----------
      십자패드는 누르고 있는 동안 키보드 방향키와 같은 신호를 낸다. */
@@ -5693,6 +5752,7 @@
   syncSoundUI();
 
   document.getElementById("btnResume").addEventListener("click", () => {
+    readyBeat = false;
     pauseScreen.classList.add("hidden");
     resumeCountEnd = performance.now() + 3000;   // 3초 세고 나서 재개
     beep(700, .08, "sine", .04);
@@ -5716,7 +5776,7 @@
     appHidden = true;
     if (state === STATE.PLAY) doPause();
     else if (state === STATE.PAUSE && resumeCountEnd > 0) {
-      resumeCountEnd = 0;
+      resumeCountEnd = 0; readyBeat = false;
       pauseScreen.classList.remove("hidden");
     }
     bgmHeld = [];
@@ -5736,6 +5796,7 @@
   window.addEventListener("pageshow", () => { if (!document.hidden) onAppShow(); });
 
   function finishResume(now) {
+    readyBeat = false;
     const paused = now - pauseAt;
     if (powerUntil > 0) powerUntil += paused;
     if (invUntil  > 0) invUntil  += paused;
@@ -6005,9 +6066,16 @@
     if (!savedName()) { startEditName(); return; }   // 이름부터 정하고 시작
     openJobSelect();
   });
-  document.getElementById("btnRetry").addEventListener("click", () => {
-    openJobSelect();                                 // 강아지로 뛰었으면 다시 해도 강아지
+  const btnRetry = document.getElementById("btnRetry");
+  const btnRetryJob = document.getElementById("btnRetryJob");
+  btnRetry.addEventListener("click", () => {
+    if (jobLocked()) { openJobSelect(); return; }   // 맨몸대결·똥탑등반은 원래 곧장 시작
+    /* 똥대잔치 — 같은 직업·펫으로 곧장 한 판 더 (강아지로 뛰었으면 다시 해도 강아지) */
+    overScreen.classList.add("hidden");
+    beep(900, .08, "square", .05);
+    reset(false);
   });
+  btnRetryJob.addEventListener("click", () => openJobSelect());
   // 로고의 '재피' — 시작하기와 똑같이 들어가되 강아지로 뛴다
   document.getElementById("stageDot").addEventListener("click", () => {
     beep(1000, .08, "triangle", .05);
@@ -6038,6 +6106,7 @@
     scoreSrc = {};
     bubbleOn = (job === "bangul" && !jobLocked()); bubbleT = 0;   // 방울이는 방울을 두르고 시작한다 (맨몸대결·똥탑등반은 방울 없이)
     zoneShown = -1;
+    lvSeen = 0; lvGlow = 0; specSeen = {}; fairLog = []; dying = 0; hitStop = 0; readyBeat = false;
     augCount = {};
     aug.feverBonus = 0; aug.starMul = 1; aug.timeMul = 1;
     aug.feverScoreMul = 1; aug.fallMul = 1; aug.hitboxMul = 1; aug.poopMul = 1;
@@ -6277,6 +6346,63 @@
   // 눈을 통째로 덮는 장식(선글라스·X눈·하트눈·별눈·안대)이면 눈 변형은 건너뛴다
   const EYE_COVER = { 3: 1, 4: 1, 8: 1, 9: 1, 12: 1 };
 
+  /* 공정한 배치 — 똥대잔치·맨몸대결. 머리 높이에 거의 같은 때(±FAIR_WIN 초) 닿는 똥들이
+     가로로 벽을 이뤄 캐릭터가 설 자리가 없어지려 하면, 새 똥을 옆으로 옮겨 틈을 남긴다.
+     옮길 자리가 끝내 없으면 그 한 개는 내보내지 않는다. 지그재그·분열처럼 자리가 바뀌는 똥은 따지지 않는다.
+     똥탑등반은 손으로 짠 패턴이라 이미 공정하다. */
+  const FAIR_WIN = 0.28, FAIR_NEED = 20;
+  function fairGap(list) {                  // 캐릭터 몸 한가운데가 설 수 있는 가장 넓은 빈 폭
+    const pr = player.r * 0.632 * hitMul(), L0 = player.r, L1 = W - player.r;
+    const iv = list.map(o => [o.x - o.r - pr, o.x + o.r + pr]).sort((a, b) => a[0] - b[0]);
+    let lo = L0, best = 0;
+    for (const [a, b] of iv) {
+      if (a > lo) best = Math.max(best, Math.min(a, L1) - lo);
+      lo = Math.max(lo, b);
+      if (lo >= L1) break;
+    }
+    return Math.max(best, L1 - lo);
+  }
+  function fairNote(t, x, r) { fairLog.push({ t, x, r }); }
+  // 새 똥의 출발 x 를 돌려준다 (옮길 곳이 없으면 null). 옆 벽에 튕기는 것까지 셈에 넣는다
+  function fairPlace(px, r, vx, vy, y0) {
+    if (noItem()) return px;
+    const now = elapsed;
+    fairLog = fairLog.filter(o => o.t > now - FAIR_WIN);
+    const dist = Math.max(1, player.y + player.hy - y0);
+    const T = now + dist / vy, dx = vx * dist / vy;
+    const a = r, span = Math.max(1, W - 2 * r);
+    const land = x0 => {                      // 벽에 튕기며 머리 높이에 닿는 자리
+      let u = (x0 + dx - a) % (2 * span); if (u < 0) u += 2 * span;
+      return a + (u <= span ? u : 2 * span - u);
+    };
+    const near = fairLog.filter(o => Math.abs(o.t - T) < FAIR_WIN);
+    const ok = ax => fairGap(near.concat([{ x: ax, r }])) >= FAIR_NEED;
+    let ax = land(px);
+    if (near.length && !ok(ax)) {
+      let found = null;
+      for (let st = 10; st < W && found === null; st += 10) {
+        for (const sg of [-1, 1]) {
+          const c0 = px + sg * st;
+          if (c0 < r || c0 > W - r) continue;
+          if (ok(land(c0))) { found = c0; break; }
+        }
+      }
+      if (found === null) return null;
+      px = found; ax = land(px);
+    }
+    fairNote(T, ax, r);
+    return px;
+  }
+  /* 까다로운 똥이 처음 나올 때 한 줄로 소개한다 (판마다 한 번씩) */
+  const SPEC_INTRO = { split: "✂️ 갈라지는 똥 등장!", zigzag: "🌀 지그재그 똥 등장!",
+                       huge: "💩 초거대 똥 등장!", laser: "⚡ 레이저 똥 등장!" };
+  function specIntro(kind) {
+    if (specSeen[kind] || !SPEC_INTRO[kind]) return;
+    specSeen[kind] = 1;
+    popText(W / 2, H * 0.30, SPEC_INTRO[kind], "#ffb86b", 22);
+    floats[floats.length - 1].life = 2.2;
+    beep(660, .08, "triangle", .04); beep(990, .1, "triangle", .035);
+  }
   function spawnPoop(mul, special, forceX, forceAng, forceDark) {
     if (spawnHold > 0) return;              // 성난 우산 직후에는 똥이 나오지 않는다
     const m = (mul || 1) * (H / BASE_H);   // 화면이 길면 그만큼 빨리 떨어져야 체감이 같다
@@ -6311,6 +6437,13 @@
     if (special === "huge") vy *= 0.55;   // 덩치값 — 느릿느릿 굴러떨어진다
     let px = r + Math.random() * (W - r * 2);
     let pvx = (Math.random() - Math.random()) * vy * SPREAD_POOP;
+    // 틈 지키기 — 뚜니핑 낙하물·무지개똥은 막는 똥이 아니고, 지그재그·분열은 자리가 바뀌어 빼고 본다
+    if (!inFever && !gold && special !== "laser" && special !== "zigzag" && special !== "split") {
+      const fx = fairPlace(px, r * (special === "huge" ? 0.70 : 0.82), pvx, vy, -r - 10);
+      if (fx === null) return;
+      px = fx;
+    }
+    if (special && special !== "laser") specIntro(special);
     if (special === "laser") {                // 예고한 선을 그대로 따라 내려온다
       px = forceX;
       const sp = LASER_VY * (H / BASE_H) * aug.fallMul;
@@ -6594,6 +6727,7 @@
     if (shake > 0) shake = Math.max(0, shake - dt * 40);
     if (flash > 0) flash = Math.max(0, flash - dt * 3);
     if (feverFlash > 0) feverFlash = Math.max(0, feverFlash - dt * 2.5);
+    if (lvGlow > 0) lvGlow = Math.max(0, lvGlow - dt * 1.3);
     if (feverBanner > 0) feverBanner = Math.max(0, feverBanner - dt / 1.1);
     if (momMsg > 0 && state === STATE.PLAY) momMsg = Math.max(0, momMsg - dt);
     if (fullBanner > 0 && state === STATE.PLAY) fullBanner = Math.max(0, fullBanner - dt);
@@ -6633,7 +6767,7 @@
       /* 대왕 뚜니핑도 다른 낙하물처럼 그대로 남겨 둔다. 뚜니핑 낙하물은
          타임이 끝나도 피해를 주지 않으니(dmg 판정에서 fever 껍질은 빠진다)
          떠 있는 동안 마저 먹을 수 있다. */
-      beep(520, .12, "triangle", .04);          // 무적이 걸렸다는 건 소리로만 알린다
+      beep(520, .12, "triangle", .04);          // 무적 — 소리와 함께 캐릭터 둘레에 옅은 빛(drawInvGlow)
     }
 
     if (state === STATE.READY) {
@@ -6664,6 +6798,12 @@
 
     // 한 단계 올라설 때마다 어디에 도착했는지 알려준다
     const zi = zoneIdx();
+    const lvUp = lvSeen > 0 && level > lvSeen;
+    if (level !== lvSeen) lvSeen = level;
+    if (lvUp) lvGlow = 1;                    // 레벨이 오를 때마다 테두리가 한 번 반짝인다
+    if (lvUp && zi === zoneShown) {          // 지대 글자가 안 뜨는 레벨(마지막 지대 뒤)에는 작은 소리로
+      beep(880, .07, "triangle", .035); beep(1320, .09, "triangle", .03);
+    }
     if (zi !== zoneShown) {
       if (zoneShown >= 0) {
         popText(W / 2, H * 0.40, ZONES[zi].ic + " " + ZONES[zi].nm, "#cfe4ff", 30);
@@ -7208,6 +7348,8 @@
               const wt = lerp(1.6, 0.9, specK());     // 예고 1.6초 → 0.9초
               warns.push({ x: ex, ang: Math.atan((tx - ex) / L), t: wt, t0: wt,
                            dark: Math.random() < darkChance() });
+              fairNote(elapsed + wt, tx, 20);    // 레이저가 꽂힐 자리도 벽의 일부로 친다
+              specIntro("laser");
               if (!sfx("laser")) beep(1500, .06, "sine", .03);
             }
           } else {
@@ -7345,6 +7487,7 @@
       }
       /* 맞는 판정은 줍는 판정보다 좁다. 아이템은 잘 잡히면서 똥은 살짝 스쳐도 넘어가도록
          맞는 쪽만 줄여 뒀다 (.78 → .702 → .632). */
+      if (dying > 0) continue;               // 쓰러지는 중 — 느린 화면으로 보여 주기만 한다
       const dmg = it.type === "poop" && !powered && it.skin !== "fever";
       // 끝점만 보면 빠른 똥이 캐릭터를 뛰어넘을 수 있어서, 이번 프레임에 지나온 선분과의 거리를 본다
       const hit = !it.bounced && !it.ghost && segDist(player.x, cy, prevX, prevY, it.x, it.y)
@@ -7465,6 +7608,7 @@
             if (shields > 0) {
               shields--;                     // 우산이 막아준 건 '맞은 것'으로 치지 않는다
               invUntil = now + 1000;        // 목숨을 잃었을 때와 같은 무적 시간
+              hitStop = Math.max(hitStop, HITSTOP_SEC * 0.6);
               shake = Math.max(shake, 14);
               burst(it.x, it.y, "#7ec8ff", 20);
               popText(player.x, player.y - 60, "☂️ 방어!", "#7ec8ff");
@@ -7509,13 +7653,14 @@
               invUntil = now + 1000;
               hurtUntil = now + 1000;   // 무적 시간 동안 아픈 그림으로
               shake = 22; flash = 1;
+              hitStop = Math.max(hitStop, HITSTOP_SEC);   // 아주 잠깐 멈췄다가 흔들린다 (타격감)
               burst(it.x, it.y, "#8a5a2b", 22);
               popText(player.x, player.y - 60, "으악!", "#ff5d5d");
               if (!sfx("hurt")) beep(140, .25, "sawtooth", .07);
+              if (navigator.vibrate) navigator.vibrate(70);
               if (dirtJob() ? dirt >= DIRT_MAX : lives <= 0) {
-                items.splice(i, 1);
-                if (angelSave(now)) continue;      // 수호천사 — 한 번 되살린다
-                return gameOver();
+                if (angelSave(now)) { items.splice(i, 1); continue; }   // 수호천사 — 한 번 되살린다
+                return startDeath();               // 마지막 똥은 남겨 둔 채 느린 화면으로
               }
             }
             items.splice(i, 1);
@@ -7917,8 +8062,64 @@
   }
 
 
+  /* 쓰러지는 순간 — 잠깐 멈췄다가 0.55초 동안 느린 화면(1/4 배속)으로 마지막 똥을 보여 준 뒤 게임오버.
+     그 사이에 흐른 점수·거리는 쓰러진 순간 값으로 되돌린다. */
+  const HITSTOP_SEC = 0.06, DEATH_SEC = 0.55, DEATH_SLOW = 0.25;
+  function startDeath() {
+    dying = DEATH_SEC; deathScore = score; deathLvT = levelTime;
+    hitStop = Math.max(hitStop, 0.09);
+    if (navigator.vibrate) navigator.vibrate([60, 60, 120]);
+  }
+  function endDeath() {
+    dying = 0;
+    score = deathScore; levelTime = deathLvT;
+    level = 1 + Math.floor(levelTime / lvSec());
+    gameOver();
+  }
+  /* 게임오버 화면의 이번 판 이야기 — 버틴 시간·도달 지대, 내 최고 기록과의 차이, 고른 증강 */
+  const LS_BEST = "epjpddongpi_best_";
+  function fmtSec(t) { t = Math.floor(t); const m = Math.floor(t / 60), ss = t % 60; return m ? m + "분 " + ss + "초" : ss + "초"; }
+  function overStory(s) {
+    const z = ZONES[zoneIdx()];
+    document.getElementById("overStory").textContent =
+      "⏱️ " + fmtSec(elapsed) + " 버팀 · " + z.ic + " " + z.nm + (noItem() ? "" : " (Lv " + level + ")");
+    const unit = noItem() ? " m" : "점";
+    const bestEl = document.getElementById("overBest");
+    bestEl.classList.remove("new");
+    if (testMode) { bestEl.textContent = ""; }
+    else {
+      let best = 0;
+      try { best = +localStorage.getItem(LS_BEST + runMode) || 0; } catch (e) {}
+      if (s > best) {
+        bestEl.textContent = best > 0 ? "🎉 신기록! (전 기록 " + best.toLocaleString() + unit + ")" : "🎉 첫 기록!";
+        bestEl.classList.add("new");
+        try { localStorage.setItem(LS_BEST + runMode, String(s)); } catch (e) {}
+      } else {
+        bestEl.textContent = s === best ? "내 최고 기록과 같아요!"
+          : "내 최고 기록까지 " + (best - s).toLocaleString() + unit;
+      }
+    }
+    const box = document.getElementById("overAugs");
+    box.innerHTML = "";
+    const owned = AUGMENTS.filter(a => augCount[a.id] && !a.noCount);
+    for (const a of owned) {
+      const sp = document.createElement("span");
+      sp.title = a.nm;
+      sp.textContent = a.ic;
+      if (augCount[a.id] > 1) {
+        const n = document.createElement("b"); n.textContent = "x" + augCount[a.id]; sp.appendChild(n);
+      }
+      box.appendChild(sp);
+    }
+    box.hidden = !owned.length;
+    // 다시 하기 — 똥대잔치는 같은 직업으로 바로(큰 버튼) + 직업 바꾸기(작은 버튼)
+    const locked = jobLocked();
+    btnRetry.textContent = locked ? "다시 하기" : "🔁 같은 직업으로 바로";
+    btnRetryJob.hidden = locked;
+  }
   function gameOver() {
     state = STATE.OVER;
+    dying = 0; hitStop = 0;
     btnPause.classList.remove("on"); syncPad();
     augScreen.classList.add("hidden");
     /* 무소유 — 끝내 손대지 않고 흘려보낸 코인 값만큼 점수가 늘어난다
@@ -7936,6 +8137,7 @@
     shake = 30;
     elFinal.textContent = s.toLocaleString() + (noItem() ? " m" : "");
     elTitle.textContent = "게임 오버!";
+    overStory(s);
     overScreen.classList.remove("hidden");
     if (!sfx("over")) beep(220, .4, "sawtooth", .06);
     if (navigator.vibrate) navigator.vibrate(120);
@@ -10947,6 +11149,25 @@
     ctx.restore();
   }
 
+  /* 무적인 동안 캐릭터 둘레에 옅은 빛 테두리 — 소리를 끄고 해도 무적인 줄 알 수 있게.
+     뚜니핑 뒤 1.5초, 증강 고른 뒤 0.5초, 맞은 뒤 1초 모두 같은 표시 */
+  function drawInvGlow(now) {
+    if (now >= invUntil || dying > 0 || fever) return;
+    const g = bubbleGeom(now);
+    const a = Math.min(1, (invUntil - now) / 250) * (0.6 + 0.25 * Math.sin(now / 80));
+    const R = g.r * 1.4;
+    ctx.save();
+    const rg = ctx.createRadialGradient(g.x, g.y, g.r * 0.55, g.x, g.y, R);
+    rg.addColorStop(0, "rgba(255,244,190,0)");
+    rg.addColorStop(0.72, "rgba(255,236,150," + (0.30 * a).toFixed(3) + ")");
+    rg.addColorStop(1, "rgba(255,236,150,0)");
+    ctx.fillStyle = rg;
+    ctx.beginPath(); ctx.arc(g.x, g.y, R, 0, 6.283); ctx.fill();
+    ctx.strokeStyle = "rgba(255,250,215," + (0.65 * a).toFixed(3) + ")";
+    ctx.lineWidth = 2;
+    ctx.beginPath(); ctx.arc(g.x, g.y, g.r * 1.06, 0, 6.283); ctx.stroke();
+    ctx.restore();
+  }
   function drawEffects() {
     // 성난 우산 폭발 — 퍼져 나가는 파동
     if (umbBlast) {
@@ -11095,6 +11316,22 @@
       ctx.fillStyle = "rgba(255,240,180," + (feverFlash * .6) + ")";
       ctx.fillRect(0, 0, W, H);
     }
+    if (lvGlow > 0.01) {                    // 레벨이 올랐다 — 가장자리가 하늘빛으로 한 번 반짝인다
+      const k = lvGlow * lvGlow;
+      const g = ctx.createRadialGradient(W / 2, H / 2, H * 0.28, W / 2, H / 2, H * 0.74);
+      g.addColorStop(0, "rgba(140,220,255,0)");
+      g.addColorStop(1, "rgba(140,220,255," + (k * 0.5).toFixed(3) + ")");
+      ctx.fillStyle = g;
+      ctx.fillRect(0, 0, W, H);
+    }
+    if (dying > 0) {                        // 쓰러지는 중 — 가장자리가 어두워진다
+      const k = 1 - dying / DEATH_SEC;
+      const g = ctx.createRadialGradient(W / 2, H * 0.7, H * 0.2, W / 2, H * 0.7, H * 0.8);
+      g.addColorStop(0, "rgba(0,0,0,0)");
+      g.addColorStop(1, "rgba(0,0,0," + (0.55 * k).toFixed(3) + ")");
+      ctx.fillStyle = g;
+      ctx.fillRect(0, 0, W, H);
+    }
     if (beatPulse > 0.01) {                 // 박자마다 가장자리가 한 번 밝아진다
       const k = beatPulse * beatPulse;
       const g = ctx.createRadialGradient(W / 2, H / 2, H * 0.25, W / 2, H / 2, H * 0.72);
@@ -11131,7 +11368,15 @@
     }
 
     if (state === STATE.PLAY) fxTune(dt);
-    update(dt, now);
+    if (hitStop > 0 && state === STATE.PLAY) {
+      hitStop -= dt;                         // 맞은 순간 — 한 박 멈춘다 (그리기만 한다)
+    } else if (dying > 0 && state === STATE.PLAY) {
+      dying -= dt;
+      update(dt * DEATH_SLOW, now);          // 쓰러지는 중 — 느린 화면
+      if (dying <= 0 && state === STATE.PLAY) endDeath();
+    } else {
+      update(dt, now);
+    }
     magHum(state === STATE.PLAY ? magNear * magNear : 0);   // 가까울수록 가파르게 커진다
     syncBgm();                 // 화면이 바뀌면 배경음악도 따라 바뀐다
     bgmTick(dt);               // 곡이 끝나갈 때 처음과 겹쳐 이어 붙인다
@@ -11139,7 +11384,7 @@
     ctx.setTransform(baseScale, 0, 0, baseScale, 0, 0);
     ctx.clearRect(0, 0, W, H);
     ctx.save();
-    if (shake > 0) ctx.translate((Math.random() - .5) * shake, (Math.random() - .5) * shake);
+    if (shake > 0 && hitStop <= 0) ctx.translate((Math.random() - .5) * shake, (Math.random() - .5) * shake);
     drawBackground(now);
     if (state === STATE.READY) {
       if (!titleArt && titleGaveUp) drawIntro(now);   // 정말 못 받았을 때만 예전 인트로로
@@ -11151,6 +11396,7 @@
       drawHelpers();
       if (state !== STATE.OVER) drawPetsBack(now);
       if (state !== STATE.OVER) drawPlayer(now);
+      if (state !== STATE.OVER) drawInvGlow(now);
     }
     drawEffects();
     if (state === STATE.PLAY || state === STATE.PAUSE) { drawPetsFront(now); drawProphecy(); }
@@ -11163,6 +11409,18 @@
       const leftMs = resumeCountEnd - now;
       if (leftMs <= 0) {
         finishResume(now);
+      } else if (readyBeat) {                             // 증강 뒤 '준비' — 숫자 대신 한 마디
+        const frac = 1 - leftMs / READY_MS;
+        ctx.save();
+        ctx.setTransform(baseScale, 0, 0, baseScale, 0, 0);
+        ctx.fillStyle = "rgba(0,0,0,.18)";
+        ctx.fillRect(0, 0, W, H);
+        ctx.globalAlpha = Math.min(1, (1 - frac) * 2.2);
+        ctx.fillStyle = "#ffd23f";
+        ctx.font = "800 " + Math.round(46 + frac * 14) + "px NanumBarunGothic, system-ui, sans-serif";
+        ctx.textAlign = "center"; ctx.textBaseline = "middle";
+        ctx.fillText("준비!", W / 2, H * 0.45);
+        ctx.restore();
       } else {
         const n = Math.ceil(leftMs / 1000);
         const frac = 1 - ((leftMs % 1000) / 1000);        // 숫자마다 커졌다 사라진다
