@@ -1051,7 +1051,7 @@
   const elTitle = document.getElementById("overTitle");
   const coinNote = document.getElementById("coinNote");
 
-  const GAME_VERSION = "v0.7.48";   // 코드를 고칠 때마다 뒤 두 자리를 올린다
+  const GAME_VERSION = "v0.7.49";   // 코드를 고칠 때마다 뒤 두 자리를 올린다
   document.getElementById("ver").textContent = GAME_VERSION;
 
   const LS_NAME = "epjpddongpi_name";
@@ -6090,12 +6090,12 @@
   /* 까다로운 똥이 나올 확률 — 레벨 7에서 SPEC_BASE 로 시작해 레벨마다 SPEC_STEP 씩 오른다.
      상한 SPEC_CAP — 절반까지만. 나머지 절반은 언제나 평범한 똥이다. */
   const SPEC_FROM = 7, SPEC_BASE = 0.016, SPEC_STEP = 0.028, SPEC_CAP = 0.5;   // 처음·오름폭 둘 다 30% 낮춤
-  /* 특수똥의 '독한 정도' — 처음 나오는 레벨(7)에서 0, 12레벨 뒤(19)에 1. 똥마다 태어날 때 값을 기억한다.
+  /* 특수똥의 '독한 정도' — 처음 나오는 레벨(7)에서 0, 8레벨 뒤(15)에 1 (예전 강도). 똥마다 태어날 때 값을 기억한다.
        초거대: 반지름 30 남짓(평범한 똥보다 조금 큼) → 50~60
        레이저: 예고 1.6초·동시 1개 → 예고 0.9초·동시 3개
        지그재그: 좁고 느리게 흔들림 → 넓고 빠르게
        분열: 높은 곳에서 좁게 갈라짐(피할 틈이 넉넉) → 낮은 곳에서 넓게 */
-  const SPEC_RAMP = 12;
+  const SPEC_RAMP = 8;
   function specK() { return Math.max(0, Math.min(1, (level - SPEC_FROM) / SPEC_RAMP)); }
   function lerp(a, b, k) { return a + (b - a) * k; }
   const LASER_WARN = 1;        // 예고 시간(초)
