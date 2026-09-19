@@ -1054,7 +1054,7 @@
   const elTitle = document.getElementById("overTitle");
   const coinNote = document.getElementById("coinNote");
 
-  const GAME_VERSION = "v0.7.52";   // 코드를 고칠 때마다 뒤 두 자리를 올린다
+  const GAME_VERSION = "v0.7.53";   // 코드를 고칠 때마다 뒤 두 자리를 올린다
   document.getElementById("ver").textContent = GAME_VERSION;
 
   const LS_NAME = "epjpddongpi_name";
@@ -5855,6 +5855,14 @@
   }
   function openJobSelect(test) {           // test === true 면 고른 뒤 테스트 모드로 시작
     jobTestMode = test === true;
+    if (jobLocked()) {                     // 맨몸대결·똥탑등반 — 방울이·펫 없음으로 정해져 있어 고를 게 없다, 곧장 시작
+      startScreen.classList.add("hidden");
+      overScreen.classList.add("hidden");
+      jobScreen.classList.add("hidden");
+      beep(900, .08, "square", .05);
+      reset(jobTestMode);
+      return;
+    }
     pickTab = "job";
     showJobList();
     startScreen.classList.add("hidden");
