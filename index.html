@@ -1054,7 +1054,7 @@
   const elTitle = document.getElementById("overTitle");
   const coinNote = document.getElementById("coinNote");
 
-  const GAME_VERSION = "v0.7.54";   // 코드를 고칠 때마다 뒤 두 자리를 올린다
+  const GAME_VERSION = "v0.7.55";   // 코드를 고칠 때마다 뒤 두 자리를 올린다
   document.getElementById("ver").textContent = GAME_VERSION;
 
   const LS_NAME = "epjpddongpi_name";
@@ -10386,20 +10386,11 @@
         if (it.chart) lx = it.homeX;
         else if (it.special === "zigzag" || !it.vy) lx = it.x;
         else lx = Math.max(it.r, Math.min(W - it.r, it.x + it.vx * (L - it.y) / it.vy));
-        const halfW = Math.max(10, it.r * 0.9);
-        const g = ctx.createLinearGradient(0, it.y, 0, L);
-        g.addColorStop(0, it.dark ? "rgba(150,60,255,.10)" : "rgba(255,60,60,.06)");
-        g.addColorStop(1, it.dark ? "rgba(150,60,255,.30)" : "rgba(255,60,60,.22)");
-        ctx.fillStyle = g;
-        ctx.beginPath();                     // 똥에서 떨어질 자리까지 좁아지는 띠
-        ctx.moveTo(it.x - halfW * 0.4, it.y); ctx.lineTo(it.x + halfW * 0.4, it.y);
-        ctx.lineTo(lx + halfW, L); ctx.lineTo(lx - halfW, L); ctx.closePath(); ctx.fill();
-        ctx.strokeStyle = it.dark ? "rgba(210,150,255,.55)" : "rgba(255,90,90,.55)";
-        ctx.lineWidth = 1.5; ctx.setLineDash([6, 6]);
+        /* 배경 띠 없이 가운데 선만 — 똥 색으로 (다크똥은 제 색인 검보라) */
+        ctx.strokeStyle = it.dark ? "rgba(120,70,170,.75)" : "rgba(138,90,43,.8)";
+        ctx.lineWidth = 2; ctx.setLineDash([6, 6]);
         ctx.beginPath(); ctx.moveTo(it.x, it.y); ctx.lineTo(lx, L); ctx.stroke();
         ctx.setLineDash([]);
-        ctx.fillStyle = it.dark ? "rgba(200,140,255,.8)" : "rgba(255,90,90,.8)";   // 땅에 닿을 자리
-        ctx.beginPath(); ctx.ellipse(lx, L, halfW, 4, 0, 0, 6.283); ctx.fill();
       }
       ctx.restore();
     }
