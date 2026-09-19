@@ -1054,7 +1054,7 @@
   const elTitle = document.getElementById("overTitle");
   const coinNote = document.getElementById("coinNote");
 
-  const GAME_VERSION = "v0.7.56";   // 코드를 고칠 때마다 뒤 두 자리를 올린다
+  const GAME_VERSION = "v0.7.58";   // 코드를 고칠 때마다 뒤 두 자리를 올린다
   document.getElementById("ver").textContent = GAME_VERSION;
 
   const LS_NAME = "epjpddongpi_name";
@@ -6788,7 +6788,7 @@
              지그재그똥은 방향이 뒤집힌다 (예전에는 전부 통째로 사라졌다). */
           smashPoopsAround(bu.x, bu.y, 8);
           burst(bu.x, bu.y, "#9fe8ff", 10);
-          if (aug.chainZap) zapChain(bu.x, bu.y, 2, 95, null, 95);   // 히든 '연쇄 전류' — 바로 옆(95px 안) 똥 두 개까지만 번진다
+          if (aug.chainZap) zapChain(bu.x, bu.y, 2, 120, null, 120);   // 히든 '연쇄 전류' — 가까운(120px 안) 똥 두 개까지만 번진다
         }
         hit = true;
         break;
