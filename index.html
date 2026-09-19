@@ -1054,7 +1054,7 @@
   const elTitle = document.getElementById("overTitle");
   const coinNote = document.getElementById("coinNote");
 
-  const GAME_VERSION = "v0.7.55";   // 코드를 고칠 때마다 뒤 두 자리를 올린다
+  const GAME_VERSION = "v0.7.56";   // 코드를 고칠 때마다 뒤 두 자리를 올린다
   document.getElementById("ver").textContent = GAME_VERSION;
 
   const LS_NAME = "epjpddongpi_name";
@@ -2747,7 +2747,7 @@
      코인 고양이: CAT_EVERY 마다 위에서 고개를 내밀어 코인을 떨어뜨린다 (세 번째마다 5코인).
      백만볼트 뱀장어: EEL_EVERY 마다 가장 가까운 똥에 번개 — 옆 똥으로 EEL_CHAIN 개까지 옮겨붙는다. */
   const ANGEL_SEC = 10, ANGEL_R = 118;
-  const GIFT_EVERY = 8, CAT_EVERY = 7, EEL_EVERY = 4.5, EEL_CHAIN = 4, EEL_HOP = 150;
+  const GIFT_EVERY = 8, CAT_EVERY = 7, EEL_EVERY = 4.5, EEL_CHAIN = 4, EEL_HOP = 120;   // 뱀장어 옮겨붙는 거리 150 → 120
   let angelUsed = false, angelAura = 0, angelFx = 0;
   /* 어깨 위 펫(수호천사·뱀장어)의 자리 — 캐릭터 뒤쪽 어깨를 목표로 부드럽게 쫓아간다.
      방향을 바꾸면 반대편 어깨로 순간이동하지 않고, 머리 위로 살짝 떠올라 건너간다. */
@@ -6788,7 +6788,7 @@
              지그재그똥은 방향이 뒤집힌다 (예전에는 전부 통째로 사라졌다). */
           smashPoopsAround(bu.x, bu.y, 8);
           burst(bu.x, bu.y, "#9fe8ff", 10);
-          if (aug.chainZap) zapChain(bu.x, bu.y, 2, 170, null);   // 히든 '연쇄 전류' — 옆 똥 두 개로 번진다
+          if (aug.chainZap) zapChain(bu.x, bu.y, 2, 95, null, 95);   // 히든 '연쇄 전류' — 바로 옆(95px 안) 똥 두 개까지만 번진다
         }
         hit = true;
         break;
@@ -7640,12 +7640,13 @@
   /* 번개 — (x0,y0) 에서 가장 가까운 똥으로, 거기서 다시 가장 가까운 똥으로 n 번 옮겨붙는다.
      first=true 면 첫 표적은 거리 제한 없이 화면에서 가장 가까운 것(뱀장어), 아니면 hop 안에서만.
      부순 개수를 돌려준다. */
-  function zapChain(x0, y0, n, firstRange, first) {
+  function zapChain(x0, y0, n, firstRange, first, hop) {
+    const HOP = hop || EEL_HOP;              // 옆 똥으로 건너갈 수 있는 거리
     const pts = [[x0, y0]], hit = new Set();
     let cx = x0, cy = y0;
     for (let k = 0; k < n; k++) {
       let best = null, bd = 1e9;
-      const lim = k === 0 && first ? firstRange : (k === 0 ? firstRange : EEL_HOP);
+      const lim = k === 0 ? firstRange : HOP;
       for (const q of items) {
         if (q.type !== "poop" || q.dark || q.bounced || q.blast || hit.has(q)) continue;
         if (q.y < -10 || q.y > player.y + 30) continue;         // 화면 안, 내 발보다 위
