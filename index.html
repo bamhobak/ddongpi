@@ -1051,7 +1051,7 @@
   const elTitle = document.getElementById("overTitle");
   const coinNote = document.getElementById("coinNote");
 
-  const GAME_VERSION = "v0.7.44";   // 코드를 고칠 때마다 뒤 두 자리를 올린다
+  const GAME_VERSION = "v0.7.45";   // 코드를 고칠 때마다 뒤 두 자리를 올린다
   document.getElementById("ver").textContent = GAME_VERSION;
 
   const LS_NAME = "epjpddongpi_name";
@@ -2232,7 +2232,8 @@
      한 곡을 두 벌 만들어 두고, 끝나기 3.5초 전부터 다른 벌을 처음부터 겹쳐 튼다.
      브라우저의 loop 로 그냥 되감으면 mp3 앞뒤 여백만큼 소리가 비고 마디도 뚝 끊기는데,
      겹쳐 넘기면 그 자리가 크로스페이드로 메워진다. */
-  const BGM_VOL = { menu: 0.42, play: 0.34, space: 0.36, blackhole: 0.40, fever: 0.42,
+  // menu — 2026-09-19 새 곡(Suno)으로 교체, 옛 곡보다 2.4dB 커서 0.42 → 0.32 로 맞췄다
+  const BGM_VOL = { menu: 0.32, play: 0.34, space: 0.36, blackhole: 0.40, fever: 0.42,
                     rhythm: 0.38,
                     /* 직업 곡 — 곡마다 소리 크기(실효값)를 재서 play 와 같은 크기로 들리게 맞췄다.
                        그대로 틀면 헬스걸 곡은 play 보다 10.8dB, 파워P 는 9dB 나 크다. */
