@@ -1051,7 +1051,7 @@
   const elTitle = document.getElementById("overTitle");
   const coinNote = document.getElementById("coinNote");
 
-  const GAME_VERSION = "v0.7.49";   // 코드를 고칠 때마다 뒤 두 자리를 올린다
+  const GAME_VERSION = "v0.7.50";   // 코드를 고칠 때마다 뒤 두 자리를 올린다
   document.getElementById("ver").textContent = GAME_VERSION;
 
   const LS_NAME = "epjpddongpi_name";
@@ -5103,7 +5103,29 @@
   /* 난이도 레벨 — 레벨 번호(배경·보스 순서)와 따로 센다. 은하수(13레벨) 무렵이 제일 짜릿해서
      그 난이도가 빨리 오도록: 1레벨은 워밍업, 2~5레벨은 세 칸씩 뛰어 5레벨에 은하수 난이도(13),
      그 뒤로는 한 칸씩 (6레벨 = 14 …). */
-  function patDiff(lv) { return lv <= 5 ? 1 + (lv - 1) * 3 : lv + 8; }
+  function patDiff(lv) { return lv <= 4 ? 4 + (lv - 1) * 3 : lv + 9; }   // 1레벨 4 → 4레벨 13(은하수) → 한 칸씩
+  /* 만든 패턴 — 옛 채보 말고 새로 짠 두 가지. 글자는 막는 칸 셋(빈 칸 둘):
+       K=345(빈 12) · L=145(빈 23) · M=125(빈 34) · N=123(빈 45)
+       굽잇길: 빈 길이 한 칸씩 좌우로 쓸려 다닌다 (계단)
+       널뛰기: 빈 길이 왼쪽 끝과 오른쪽 끝을 오간다 */
+  const GAP_LETTER = { 1: "K", 2: "L", 3: "M", 4: "N" };
+  function genRows(kind, dl, h) {
+    const cells = new Array(PAT_ROWS * 16).fill(".");
+    const step = dl < 8 ? 4 : dl < 16 ? 3 : 2;         // 벽이 오는 간격(칸) — 어려울수록 촘촘
+    let g = 1 + (h % 4), dir = (h >> 2) & 1 ? 1 : -1;
+    for (let i = 0; i < cells.length; i += step) {
+      if (kind === "hop") {
+        g = (Math.floor(i / (step * 2)) + (h & 1)) % 2 ? 1 : 4;   // 두 벽마다 반대쪽 끝으로
+      } else {
+        if (g + dir < 1 || g + dir > 4) dir = -dir;
+        g += dir;
+      }
+      cells[i] = GAP_LETTER[g];
+    }
+    const rows = [];
+    for (let r = 0; r < PAT_ROWS; r++) rows.push(cells.slice(r * 16, r * 16 + 16).join(""));
+    return rows;
+  }
   function patOf(lv) {
     if (lv % BOSS_EVERY === 0) {
       /* 보스 — 보스 판(여덟 번째)에서 가장 빽빽한 도막 */
@@ -5120,6 +5142,13 @@
     const nb = dl - 1 - Math.floor(dl / BOSS_EVERY);   // 난이도로 친 '보스가 아닌 레벨 중 몇 번째' (0부터)
     /* 두 레벨마다 한 판씩 어려워진다 (1~8판). 여덟 판까지 가면 5~8판에서 섞어 뽑는다. */
     const h = patHash(lv * 7919 + 17);
+    // 열에 넷은 새로 짠 패턴 (굽잇길 20% · 널뛰기 20%), 나머지는 옛 채보
+    const pick = (h >>> 11) % 10;
+    if (pick >= 6) {
+      const kind = pick >= 8 ? "hop" : "sweep";
+      return { st: { nm: kind === "hop" ? "널뛰기" : "굽잇길", wv: 0.1, wvK: 2, tilt: 0.2 },
+               rows: genRows(kind, dl, h >>> 15), boss: null };
+    }
     const tier = nb < 16 ? Math.floor(nb / 2) : 4 + (h % 4);
     const st = PAT_SETS[(h >>> 3) % PAT_SETS.length][tier];
     const seg = (h >>> 7) % PAT_SEGS;
@@ -5136,7 +5165,7 @@
   let gambleGap = 3, gambleDir = 1;            // 도박 벽 — 지난 틈과 쓸리는 방향
   let bossPhase = -1, bossRoar = 0, bossHp = 1, bossWin = 0, bossWinNm = "";
   function patReset() {
-    patPtr = -1; patClock = 0; patLv = 0; gambleGap = 3; gambleDir = 1; patVar = {};
+    patPtr = -1; patClock = 0; patLv = 0; gambleGap = 3; gambleDir = 1; patVar = {}; patFree = [1, 2, 3, 4, 5];
     bossPhase = -1; bossRoar = 0; bossHp = 1; bossWin = 0;
   }
   // 채보 한 칸 — lead 초 뒤에 캐릭터 머리 높이의 그 칸에 닿도록 속도를 정한다
@@ -5145,7 +5174,9 @@
        예전 채보가 보장하던 '다 피할 수 있다'가 깨지지 않는다. 칸을 한 칸씩 섞으면 그게 깨진다. */
   let patVar = {};
   function patVarOf(lv) {
-    return patVar[lv] || (patVar[lv] = { mir: Math.random() < 0.5, off: (Math.random() * 2 - 1) * 0.05 * W });
+    return patVar[lv] || (patVar[lv] = { mir: Math.random() < 0.5, off: (Math.random() * 2 - 1) * 0.05 * W,
+      /* 사선 — 1레벨은 곧게, 그 뒤로는 절반쯤의 레벨에서 비스듬히. 기울기는 1~2칸 거리 */
+      diag: lv >= 2 && Math.random() < 0.55 ? (Math.random() < 0.5 ? -1 : 1) * (1 + Math.random()) : 0 });
   }
   function spawnChart(lane, lead, st, lv) {
     const r = 15 + Math.random() * 5;
@@ -5159,13 +5190,15 @@
     const wvA = gap * Math.min(WEAVE_CAP, st.wv || 0);      // 흔들림 — 정수 바퀴라 도착 때 제자리
     let tilt = gap * (st.tilt || 0);                          // 기울기 — 옆에서 비스듬히 들어온다
     let dir = Math.random() < 0.5 ? -1 : 1;
-    if (home + dir * (tilt + wvA) < r + 6) dir = 1;
-    if (home + dir * (tilt + wvA) > W - r - 6) dir = -1;
+    const diag = !!vr.diag;
+    if (diag) { tilt = gap * Math.abs(vr.diag); dir = vr.diag > 0 ? 1 : -1; }   // 사선 — 레벨 전체가 한 방향으로
+    if (home + dir * (tilt + (diag ? 0 : wvA)) < r + 6) dir = 1;
+    if (home + dir * (tilt + (diag ? 0 : wvA)) > W - r - 6) dir = -1;
     tilt *= dir;
     items.push({
       type: "poop", emoji: "💩",
       x: home + tilt, y: startY, r: r * 0.82, vx: 0, vy: (targetY - startY) / lead,
-      chart: true, homeX: home, y0: startY, yT: targetY, wvA, wvK: st.wvK || 0, tilt0: tilt,
+      chart: true, homeX: home, y0: startY, yT: targetY, wvA: diag ? 0 : wvA, wvK: st.wvK || 0, tilt0: tilt, diag,
       rot: (Math.random() - Math.random()) * 1.571, vr: 0,
       swayA: 0.32 + Math.random() * 0.14, swayW: 5.4 + Math.random() * 2.6, swayP: Math.random() * 6.28,
       size: r * 2, sz: r, fast: false,
@@ -5195,21 +5228,38 @@
       const ch = row ? row[j % 16] : ".";
       if (!ch || ch === "." || BONE_LANE[ch]) continue;   // 뼈다귀·하트·코인 칸은 아이템이라 비운다
       const st = pt.st;
-      if (ch === "V") {                      // 도박 벽 — 틈이 지금 정해진다 (지난 틈에서 한 칸 안)
+      if (ch === "V" || ch === "X") {        // 도박 벽 — 틈이 지금 정해진다 (틈 없는 벽 X 도 똥탑등반에선 도박 벽으로)
         if (Math.random() < 0.22) gambleDir = -gambleDir;
         const r = Math.random();
         let gg = gambleGap + (r < 0.55 ? gambleDir : (r < 0.8 ? 0 : -gambleDir));
         if (gg < 1 || gg > 5) { gambleDir = -gambleDir; gg = gambleGap + gambleDir; }
         gambleGap = Math.max(1, Math.min(5, gg));
         for (let L = 1; L <= 5; L++) if (L !== gambleGap) spawnChart(L, lead2, st, lv);
-      } else if (ch === "X") {
-        for (let L = 1; L <= 5; L++) spawnChart(L, lead2, st, lv);
-      } else if (FORK_GAP[ch]) {
-        for (let L = 1; L <= 5; L++) if (FORK_GAP[ch].indexOf(L) < 0) spawnChart(L, lead2, st, lv);
+        patFree = [gambleGap];
       } else {
-        for (const L of (PAT_GROUP[ch] || [+ch])) if (L >= 1 && L <= 5) spawnChart(L, lead2, st, lv);
+        let lanes = FORK_GAP[ch] ? [1, 2, 3, 4, 5].filter(L => FORK_GAP[ch].indexOf(L) < 0)
+                                 : (PAT_GROUP[ch] || [+ch]).filter(L => L >= 1 && L <= 5);
+        lanes = patDensify(lanes);
+        for (const L of lanes) spawnChart(L, lead2, st, lv);
       }
     }
+  }
+  /* 한 줄에 똥이 셋보다 적으면 칸을 더 막는다 — 단 바로 앞 줄의 빈 칸에서 한 칸 안에
+     빈 칸이 꼭 남게 (한 박 안에 옮겨 설 수 있게). 못 찾으면 그대로 둔다. */
+  let patFree = [1, 2, 3, 4, 5];
+  function patDensify(lanes) {
+    const reach = free => free.some(f => patFree.some(q => Math.abs(f - q) <= 1));
+    const freeOf = ls => [1, 2, 3, 4, 5].filter(L => ls.indexOf(L) < 0);
+    if (lanes.length < 3) {
+      const cand = freeOf(lanes);
+      for (let tries = 0; tries < 12; tries++) {
+        const pick = cand.slice().sort(() => Math.random() - 0.5).slice(0, 3 - lanes.length);
+        const next = lanes.concat(pick);
+        if (reach(freeOf(next))) { lanes = next; break; }
+      }
+    }
+    patFree = freeOf(lanes);
+    return lanes;
   }
   /* 레벨이 바뀔 때 — 패턴 이름을 띄우고, 보스 레벨이 끝났으면 격파 */
   function patLevel(lv) {
@@ -7095,9 +7145,12 @@
       if (it.chart && !it.bounced) {
         /* 채보 똥 — 위쪽에서 좌우로 휘다가 절반쯤 내려오면 제 칸에 선다 (끝까지 흔들면 읽을 수가 없다) */
         const pr = Math.max(0, Math.min(1, (it.y - it.y0) / (it.yT - it.y0)));
+        if (it.diag) { it.x = it.homeX + it.tilt0 * (1 - pr); }   // 사선 — 곧은 비탈을 따라 머리 높이에서 제 칸
+        else {
         const u = Math.max(0, Math.min(1, (0.50 - pr) / 0.35));
         const env = u * u * (3 - 2 * u);
         it.x = it.homeX + env * (it.tilt0 + (it.wvA ? it.wvA * Math.sin(6.2832 * it.wvK * pr) : 0));
+        }
       }
       if (it.swayA) {                       // 살랑임 — 처음 각도를 중심으로 오간다
         it.swayP += dt * tsc * it.swayW;
