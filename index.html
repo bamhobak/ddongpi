@@ -292,6 +292,7 @@
                       font-size: 40px; opacity: .55; }
   /* 잠긴 펫 카드 */
   #jobList .augCard.locked .ic, #jobList .augCard.locked .petNone { filter: grayscale(1) brightness(.55); }
+  #jobList .augCard.locked .nm2 { opacity: .5; }
   #jobList .augCard .lock {
     position: absolute; top: 6px; right: 6px; font-size: 11.5px; font-weight: 700;
     padding: 2px 7px; border-radius: 999px; background: rgba(0,0,0,.55); color: #ffd23f;
@@ -1050,7 +1051,7 @@
   const elTitle = document.getElementById("overTitle");
   const coinNote = document.getElementById("coinNote");
 
-  const GAME_VERSION = "v0.7.40";   // 코드를 고칠 때마다 뒤 두 자리를 올린다
+  const GAME_VERSION = "v0.7.42";   // 코드를 고칠 때마다 뒤 두 자리를 올린다
   document.getElementById("ver").textContent = GAME_VERSION;
 
   const LS_NAME = "epjpddongpi_name";
@@ -1316,7 +1317,7 @@
     angel:  { nm: "수호천사", ic: "👼", img: "assets/pet_angel.png",
               ds: "쓰러지면 한 번 되살려 주고, 10초 동안 다가오는 똥을 밀어낸다" },
     gift:   { nm: "선물 요정", ic: "🧚", img: "assets/pet_fairy.png",
-              ds: "때때로 날아가 떨어지는 똥을 펑! 아이템으로 바꾼다" },
+              ds: "때때로 날아가 떨어지는 똥을 펑! 3코인이나 5코인으로 바꾼다" },
     coincat: { nm: "코인 고양이", ic: "🐈", img: "assets/pet_cat.png",
               ds: "때때로 코인을 물어다 떨어뜨린다 · 세 번째마다 5코인" },
     eel:    { nm: "백만볼트 뱀장어", ic: "⚡", img: "assets/pet_eel.png",
@@ -1357,6 +1358,9 @@
   let runMode = gameMode;            // 지금 판이 어느 스테이지인가 (판 도중에 안 바뀐다)
   function noItem() { return runMode === "noitem"; }                        // 똥탑등반 (패턴·보스·m 기록)
   function itemsOff() { return runMode === "noitem" || runMode === "pure"; }   // 아이템·증강이 안 나오는 판 (코인은 나온다)
+  /* 맨몸대결·똥탑등반은 방울이만 뛴다 (비누방울 없이). 고른 직업(LS_JOB)은 그대로 두고,
+     똥대잔치로 돌아오면 원래 직업으로 되돌린다. */
+  function jobLocked() { return gameMode !== "item"; }
   // hy = 발을 바닥에 고정했을 때 머리(판정 중심)가 player.y 에서 얼마나 떨어지는지.
   // 그림마다 머리·다리 비율이 달라서 이 값으로 보정해야 그림자 높이와 판정이 어긋나지 않는다.
   /* 좌우 그림이 서로 머리 크기·자세가 달라 어색해서, 오른쪽 그림 하나만 쓰고
@@ -5615,7 +5619,8 @@
   }
   function showJobDetail(id) {
     job = id;
-    try { localStorage.setItem(LS_JOB, job); } catch (e) {}
+    // 맨몸대결·똥탑등반의 방울이는 '고른 직업'으로 저장하지 않는다 (똥대잔치로 돌아오면 원래 직업)
+    if (!jobLocked()) try { localStorage.setItem(LS_JOB, job); } catch (e) {}
     const j = JOBS[id];
     document.getElementById("jobPetLine").textContent =
       "펫 · " + PETS[pet].ic + " " + PETS[pet].nm + (pet === "none" ? "" : " — " + PETS[pet].ds);
@@ -5631,6 +5636,15 @@
       dot.className = "dot";
       d.appendChild(dot);
       d.appendChild(document.createTextNode(line));   // textContent → HTML 삽입 불가
+      tr.appendChild(d);
+    }
+    if (jobLocked()) {                        // 맨몸대결·똥탑등반 — 비누방울 없이
+      const d = document.createElement("div");
+      d.className = "tr";
+      const dot = document.createElement("span");
+      dot.className = "dot";
+      d.appendChild(dot);
+      d.appendChild(document.createTextNode(MODES[gameMode].nm + "에서는 비누방울 없이 뛴다"));
       tr.appendChild(d);
     }
     if (j.f) {                                // 직업마다 붙는 한마디 — 모양은 위와 같게
@@ -5666,6 +5680,7 @@
     return card;
   }
   function renderPick() {
+    if (jobLocked()) job = "bangul";          // 맨몸대결·똥탑등반 — 탭 글자부터 방울이로
     tabJob.classList.toggle("on", pickTab === "job");
     tabPet.classList.toggle("on", pickTab === "pet");
     document.querySelector("#jobScreen h2").textContent = pickTab === "job" ? "직업 선택" : "펫 선택";
@@ -5674,16 +5689,25 @@
     tabPet.innerHTML = "펫<small></small>";   tabPet.lastChild.textContent = PETS[pet].nm;
     jobList.innerHTML = "";
     if (pickTab === "job") {
+      const lockJ = jobLocked();
       // 카드 앞에는 이모지 대신 그 직업의 이재(오른쪽 이동 모습)를 보여준다
       for (const id in JOBS) {
         const ic = document.createElement("img"); ic.className = "ic";
         ic.src = jobPic(id); ic.alt = JOBS[id].ic;
-        jobList.appendChild(pickCard(id === job, ic, JOBS[id].nm, JOBS[id].ds, () => {
+        const card = pickCard(id === job, ic, JOBS[id].nm, JOBS[id].ds, () => {
+          if (lockJ) return;                  // 맨몸대결·똥탑등반은 방울이만
           job = id;
           try { localStorage.setItem(LS_JOB, job); } catch (e) {}
-        }));
+        });
+        if (lockJ && id !== "bangul") {
+          card.classList.add("locked");
+          const lk = document.createElement("span"); lk.className = "lock"; lk.textContent = "🔒";
+          card.appendChild(lk);
+        }
+        jobList.appendChild(card);
       }
-      document.getElementById("pickDesc").textContent = "";
+      document.getElementById("pickDesc").textContent = lockJ
+        ? MODES[gameMode].nm + "은 방울이만 뛸 수 있어요 (비누방울 없이)" : "";
     } else {
       if (!PETS[petView]) petView = pet;
       for (const id in PETS) {
@@ -5786,6 +5810,7 @@
   }
   function setMode(m) {
     gameMode = m;
+    if (m === "item") { try { const j = localStorage.getItem(LS_JOB); job = JOBS[j] ? j : "none"; } catch (e) {} }
     try { localStorage.setItem(LS_MODE, gameMode); } catch (e) {}
     syncMode();
     syncBoardTitle();
@@ -5817,6 +5842,7 @@
 
   function reset(test) {
     testMode = (test === true);    // 정확히 true 일 때만 테스트 모드 (이벤트 객체가 새어들지 않게)
+    if (jobLocked()) job = "bangul";         // 맨몸대결·똥탑등반은 방울이만
     btnTestEnd.classList.toggle("on", testMode);
     testLv.classList.toggle("on", testMode);
     lvNow.textContent = "Lv 1";
@@ -5833,7 +5859,7 @@
     momMsg = (job === "none") ? MOM_SEC : 0;   // 쉬었음 청년에게만
     scoreShown = 0; scorePunch = 0; prevScore = 0; rings = []; bubPops = [];
     scoreSrc = {};
-    bubbleOn = (job === "bangul"); bubbleT = 0;   // 방울이는 방울을 두르고 시작한다
+    bubbleOn = (job === "bangul" && !jobLocked()); bubbleT = 0;   // 방울이는 방울을 두르고 시작한다 (맨몸대결·똥탑등반은 방울 없이)
     zoneShown = -1;
     augCount = {};
     aug.feverBonus = 0; aug.starMul = 1; aug.timeMul = 1;
@@ -6371,7 +6397,7 @@
     if (fullBanner > 0 && state === STATE.PLAY) fullBanner = Math.max(0, fullBanner - dt);
     if (fullFx > 0 && state === STATE.PLAY) fullFx = Math.max(0, fullFx - dt);
     // 방울이 — 터진 방울이 다시 맺힌다
-    if (job === "bangul" && state === STATE.PLAY && !bubbleOn) {
+    if (job === "bangul" && state === STATE.PLAY && !bubbleOn && !itemsOff()) {   // 맨몸대결·똥탑등반은 방울이 다시 맺히지 않는다
       bubbleT += dt;
       if (bubbleT >= BUBBLE_SEC) {
         bubbleT = 0; bubbleOn = true;
@@ -7512,6 +7538,9 @@
   }
   // 선물 요정이 똥을 바꾼 아이템 — 하트·우산·별·코인 중 하나 (직업 규칙은 그대로 따른다)
   function giftItemAt(x, y) {
+    /* 선물 요정 — 아이템 대신 코인 (3코인 70% · 5코인 30%) */
+    makeCoinAt(x, y, Math.random() < 0.7 ? 3 : 5);
+    return;
     const r = Math.random() * 100;
     let type = r < 25 ? "heart" : r < 50 ? "umbrella" : r < 80 ? "star" : "coin";
     if (type === "coin") { makeCoinAt(x, y, 1); return; }
@@ -8346,11 +8375,12 @@
     const isNo = r => !!(r.augs && r.augs["mode:noitem"]);
     const isPure = r => !!(r.augs && r.augs["mode:pure"]);
     const recTable = (rows, md, note) => {
-      if (md !== "noitem") rows = rows.filter(r => !isPure(r));   // 맨몸대결 판은 똥대잔치 목록에 섞지 않는다
-      const pane = md === "noitem" ? P.nrec : P.rec;
+      if (md === "item") rows = rows.filter(r => !isPure(r) && !isNo(r));   // 똥대잔치 목록에는 다른 맵 판을 섞지 않는다
+      if (md === "pure") rows = rows.filter(isPure);
+      const pane = md === "noitem" ? P.nrec : md === "pure" ? P.prec : P.rec;
       pane.innerHTML = "";
       const no = md === "noitem";
-      const sec = devSection((no ? "똥탑등반 " : "") + "최근 " + rows.length + "판" + (note || ""),
+      const sec = devSection((md !== "item" ? MODES[md].nm + " " : "") + "최근 " + rows.length + "판" + (note || ""),
         no ? ["이름", "직업", "거리", "생존", "펫·증강"] : ["이름", "직업", "점수", "생존", "증강"],
         rows.length ? rows.map(r => [
           r.name || "-",
@@ -8358,7 +8388,7 @@
           no ? { t: Math.floor((r.secs || 0) / LEVEL_SEC_NOITEM * 100).toLocaleString() + "m", c: "num" }   // 레벨 하나(8초) = 100m
              : { t: Number(r.score || 0).toLocaleString(), c: "num" },
           { t: (r.secs || 0) + "초", c: "num" },
-          { t: augLabel(Object.fromEntries(Object.entries(r.augs || {}).filter(([k]) => k !== "mode:noitem"))), c: "lft" }
+          { t: augLabel(Object.fromEntries(Object.entries(r.augs || {}).filter(([k]) => k.slice(0, 5) !== "mode:"))), c: "lft" }
         ]) : [["기록 없음", "", "", "", ""]]);
       sec.querySelector("table").classList.add("tbRecent");
       pane.appendChild(sec);
@@ -8366,7 +8396,8 @@
     const rec = data.recent || [];
     recTable(rec.filter(r => !isNo(r)), "item", " (불러오는 중…)");
     recTable(rec.filter(isNo), "noitem", " (불러오는 중…)");
-    for (const md of ["item", "noitem"]) (async () => {
+    recTable(rec, "pure", " (불러오는 중…)");
+    for (const md of ["item", "noitem", "pure"]) (async () => {
       try {
         const res = await fetch(SB_URL + "/rest/v1/rpc/ddongpi_recent_mode", {
           method: "POST",
@@ -8376,7 +8407,7 @@
         if (!res.ok) throw new Error("HTTP " + res.status);
         recTable(await res.json() || [], md);
       } catch (e) {
-        recTable(rec.filter(r => (md === "noitem") === isNo(r)), md, " (최근 20판 중에서 — DB 함수 실행 전)");
+        recTable(md === "noitem" ? rec.filter(isNo) : rec, md, " (최근 20판 중에서 — DB 함수 실행 전)");
       }
     })();
 
@@ -8389,7 +8420,7 @@
     const url = SB_URL + "/rest/v1/" + SB_TABLE +
       "?select=id,name,score,level,created_at" +
       "&created_at=gte." + encodeURIComponent(new Date(weekStartMs(0)).toISOString()) +
-      (md === "noitem" ? "&mode=eq.noitem" : "&or=(mode.is.null,mode.eq.item)") +
+      (md && md !== "item" ? "&mode=eq." + md : "&or=(mode.is.null,mode.eq.item)") +
       "&order=score.desc&limit=200";
     const res = await fetch(url, { headers: sbHeaders() });
     if (!res.ok) throw new Error("HTTP " + res.status);
@@ -8421,13 +8452,14 @@
   }
 
   async function devRenderRaw(md) {
-    if (!md) { await devRenderRaw("item"); await devRenderRaw("noitem"); return; }   // 둘 다 새로
+    if (!md) { await devRenderRaw("item"); await devRenderRaw("noitem"); await devRenderRaw("pure"); return; }   // 셋 다 새로
     const no = md === "noitem";
-    const old = document.getElementById(no ? "devRawSecN" : "devRawSec");
+    const secId = md === "noitem" ? "devRawSecN" : md === "pure" ? "devRawSecP" : "devRawSec";
+    const old = document.getElementById(secId);
     if (old) old.remove();
     let rows = [];
     try { rows = await devFetchRaw(md); } catch (e) { /* 아래에서 안내 */ }
-    const box = devSection((no ? "똥탑등반 " : "") + "이번 주 기록 (지우기)",
+    const box = devSection((md !== "item" ? MODES[md].nm + " " : "") + "이번 주 기록 (지우기)",
       ["이름", no ? "거리" : "점수", "Lv", ""],
       rows.length ? rows.map(r => [
         r.name,
@@ -8435,7 +8467,7 @@
         { t: r.level == null ? "-" : r.level, c: "num" },
         { t: "", c: "" }
       ]) : [["기록 없음", "", "", ""]]);
-    box.id = no ? "devRawSecN" : "devRawSec";
+    box.id = secId;
     // 랭킹 탭에 붙인다 (삭제 후 다시 그릴 때도 같은 자리)
     if (rows.length) {                      // 제목 옆에 일괄 삭제 버튼
       const all = document.createElement("button");
@@ -8443,7 +8475,7 @@
       all.style.marginLeft = "8px";
       all.textContent = "전체 " + rows.length + "건 삭제";
       all.addEventListener("click", () => {
-        if (!confirm((no ? "똥탑등반 " : "") + "이번 주 기록 " + rows.length + "건을 모두 지울까요? 되돌릴 수 없습니다.")) return;
+        if (!confirm((md !== "item" ? MODES[md].nm + " " : "") + "이번 주 기록 " + rows.length + "건을 모두 지울까요? 되돌릴 수 없습니다.")) return;
         devDeleteIds(rows.map(r => r.id), all, "전체 삭제");
       });
       box.querySelector("h4").appendChild(all);
@@ -8459,13 +8491,14 @@
       btn.addEventListener("click", () => devDelete(r.id, btn));
       tr.lastChild.appendChild(btn);
     });
-    ((no ? devPanes.nrank : devPanes.rank) || devBody).appendChild(box);
+    ((no ? devPanes.nrank : md === "pure" ? devPanes.prank : devPanes.rank) || devBody).appendChild(box);
   }
 
   /* ---------- 개발자 화면 탭 ----------
      섹션이 많아져서 성격별로 묶는다. 탭 버튼을 누르면 해당 판만 보인다. */
   const DEV_TABS = [["요약", "sum"], ["증강", "aug"], ["최근 판", "rec"], ["랭킹", "rank"],
-                    ["똥탑 최근 판", "nrec"], ["똥탑 랭킹", "nrank"]];
+                    ["똥탑 최근 판", "nrec"], ["똥탑 랭킹", "nrank"],
+                    ["맨몸 최근 판", "prec"], ["맨몸 랭킹", "prank"]];
   let devPanes = {};
   function devInitTabs() {
     const bar = document.getElementById("devTabs");
@@ -8510,9 +8543,9 @@
       devInitTabs();
       renderDevStats(await res.json());
       // 이번 주 랭킹은 별도 테이블이라 따로 불러와 랭킹 탭 맨 위에 붙인다 (아이템전 · 노템전 따로)
-      for (const md of ["item", "noitem"]) {
-        const no = md === "noitem", pane = no ? devPanes.nrank : devPanes.rank;
-        const ttl = (no ? "똥탑등반 " : "") + "이번 주 TOP " + TOP_N;
+      for (const md of ["item", "noitem", "pure"]) {
+        const no = md === "noitem", pane = no ? devPanes.nrank : md === "pure" ? devPanes.prank : devPanes.rank;
+        const ttl = (md !== "item" ? MODES[md].nm + " " : "") + "이번 주 TOP " + TOP_N;
         try {
           const rows = await fetchRange(weekStartMs(0), null, TOP_N, null, md);
           const topSec = devSection(ttl,
@@ -8523,7 +8556,7 @@
               r.job ? (JOB_NAMES[r.job] || r.job) : "-",
               { t: Number(r.score || 0).toLocaleString() + (no ? "m" : ""), c: "num" },
               { t: r.level == null ? "-" : r.level, c: "num" },
-              { t: augLabel(Object.fromEntries(Object.entries(r.augs || {}).filter(([k]) => k !== "mode:noitem"))), c: "lft" }
+              { t: augLabel(Object.fromEntries(Object.entries(r.augs || {}).filter(([k]) => k.slice(0, 5) !== "mode:"))), c: "lft" }
             ]) : [["", "기록 없음", "", "", "", ""]]);
           topSec.querySelector("table").classList.add("tbTop");
           pane.appendChild(topSec);

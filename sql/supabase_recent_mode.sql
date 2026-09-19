@@ -1,5 +1,7 @@
 -- Latest 20 runs for one stage mode, for the developer page ("recent runs" tabs).
--- md = 'noitem' -> runs whose augs carry the key 'mode:noitem'; anything else -> the other runs (item mode).
+-- md = 'item'   -> runs that carry no 'mode:*' key (the default stage)
+-- md = 'noitem' -> runs whose augs carry 'mode:noitem' (tower climb)
+-- md = 'pure'   -> runs whose augs carry 'mode:pure' (bare-hands duel)
 -- Separate function on purpose: ddongpi_stats is left untouched.
 -- Paste the whole file into Supabase -> SQL Editor and Run. Safe to run twice.
 
@@ -21,7 +23,9 @@ begin
     into result
     from (
       select * from ddongpi_runs r
-       where (md = 'noitem') = coalesce(r.augs ? 'mode:noitem', false)
+       where case when md = 'item'
+                  then not (coalesce(r.augs ? 'mode:noitem', false) or coalesce(r.augs ? 'mode:pure', false))
+                  else coalesce(r.augs ? ('mode:' || md), false) end
        order by r.created_at desc
        limit 20
     ) q;
