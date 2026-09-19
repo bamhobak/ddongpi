@@ -1054,7 +1054,7 @@
   const elTitle = document.getElementById("overTitle");
   const coinNote = document.getElementById("coinNote");
 
-  const GAME_VERSION = "v0.7.64";   // 코드를 고칠 때마다 뒤 두 자리를 올린다
+  const GAME_VERSION = "v0.7.65";   // 코드를 고칠 때마다 뒤 두 자리를 올린다
   document.getElementById("ver").textContent = GAME_VERSION;
 
   const LS_NAME = "epjpddongpi_name";
@@ -5179,7 +5179,7 @@
   let gambleGap = 3, gambleDir = 1;            // 도박 벽 — 지난 틈과 쓸리는 방향
   let bossPhase = -1, bossRoar = 0, bossHp = 1, bossWin = 0, bossWinNm = "";
   function patReset() {
-    patPtr = -1; patClock = 0; patLv = 0; gambleGap = 3; gambleDir = 1; patVar = {}; patFree = [1, 2, 3, 4, 5];
+    patPtr = -1; patClock = 0; patLv = 0; gambleGap = 3; gambleDir = 1; patVar = {}; patFree = [1, 2, 3, 4, 5]; patLastArr = -9;
     bossPhase = -1; bossRoar = 0; bossHp = 1; bossWin = 0;
   }
   // 채보 한 칸 — lead 초 뒤에 캐릭터 머리 높이의 그 칸에 닿도록 속도를 정한다
@@ -5242,7 +5242,7 @@
   function patTick() {
     const t = levelTime;
     const SL = patSlot();
-    if (t < patClock - 0.5) patPtr = Math.floor(t / SL) - 1;
+    if (t < patClock - 0.5) { patPtr = Math.floor(t / SL) - 1; patLastArr = -9; }
     patClock = t;
     for (;;) {
       const g = patPtr + 1, lv = slotLv(g), lead = patLead(lv);
@@ -5254,6 +5254,11 @@
       const row = pt.rows[Math.floor(j / 16)];
       const ch = row ? row[j % 16] : ".";
       if (!ch || ch === "." || BONE_LANE[ch]) continue;   // 뼈다귀·하트·코인 칸은 아이템이라 비운다
+      /* 옛 채보에는 한 칸(0.125초) 간격 연타가 있어 두 줄이 붙어 보였다 — 앞 줄과 너무 가까운 줄은 건너뛴다.
+         초반(1~4레벨)은 0.4초, 그 뒤로는 0.25초. 레벨 경계를 넘어서도 잰다 */
+      const arrT = g * SL, minGap = lv <= 4 ? 0.4 : 0.25;
+      if (arrT - patLastArr < minGap) continue;
+      patLastArr = arrT;
       const st = pt.st;
       if (ch === "V" || ch === "X") {        // 도박 벽 — 틈이 지금 정해진다 (틈 없는 벽 X 도 똥탑등반에선 도박 벽으로)
         if (Math.random() < 0.22) gambleDir = -gambleDir;
@@ -5274,6 +5279,7 @@
   /* 한 줄에 똥이 셋보다 적으면 칸을 더 막는다 — 단 바로 앞 줄의 빈 칸에서 한 칸 안에
      빈 칸이 꼭 남게 (한 박 안에 옮겨 설 수 있게). 못 찾으면 그대로 둔다. */
   let patFree = [1, 2, 3, 4, 5];
+  let patLastArr = -9;                       // 마지막으로 내보낸 줄이 닿는 시각
   function patDensify(lanes, lv) {
     const need = (lv || 1) <= 4 ? 2 : 3;     // 초반(1~4레벨)은 최소 2개, 5레벨부터 3개
     const reach = free => free.some(f => patFree.some(q => Math.abs(f - q) <= 1));
