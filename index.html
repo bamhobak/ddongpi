@@ -1051,7 +1051,7 @@
   const elTitle = document.getElementById("overTitle");
   const coinNote = document.getElementById("coinNote");
 
-  const GAME_VERSION = "v0.7.43";   // 코드를 고칠 때마다 뒤 두 자리를 올린다
+  const GAME_VERSION = "v0.7.44";   // 코드를 고칠 때마다 뒤 두 자리를 올린다
   document.getElementById("ver").textContent = GAME_VERSION;
 
   const LS_NAME = "epjpddongpi_name";
@@ -2713,7 +2713,11 @@
   const LEVEL_SEC = 13;            // 레벨 한 칸의 길이(초). 지대 하나의 길이이기도 하다
   const LEVEL_SEC_NOITEM = 8;      // 노템전은 레벨이 8초 — 패턴 하나가 8초
   // 시작 화면의 배경 여행(인트로)은 늘 13초 기준 — 판이 돌 때만 노템전 8초
-  function lvSec() { return runMode === "noitem" && state !== STATE.READY ? LEVEL_SEC_NOITEM : LEVEL_SEC; }
+  const LEVEL_SEC_PURE = 6.5;       // 맨몸대결은 레벨이 두 배 빨리 오른다
+  function lvSec() {
+    if (state === STATE.READY) return LEVEL_SEC;
+    return runMode === "noitem" ? LEVEL_SEC_NOITEM : runMode === "pure" ? LEVEL_SEC_PURE : LEVEL_SEC;
+  }
   /* 노템전 기록 — 점수가 아니라 올라간 거리. 레벨 하나 = 100m, 레벨 안에서도 흐른 만큼 오른다. */
   function meters() { return Math.floor(levelTime / lvSec() * 100); }
   let spawnTimer = 0;
@@ -7102,16 +7106,20 @@
          자석 증강을 먹으면 온전한 자석으로 덮어쓴다. 반경 110 → 121 (10% 확장). */
       const magR = prophIs("magnet") ? 2400 : aug.magnet > 0 ? aug.magnet : (job === "levitator" ? 121 : 0);
       const magF = prophIs("magnet") ? 1.8 : aug.magnet > 0 ? 1 : 0.45;   // 복이 굴러온다 — 화면 어디서든 끌려온다
-      if (magR > 0 && (it.type !== "poop" || it.gold)) {
+      /* 코인은 자석이 없어도 늘 끌려온다 — 자석 증강의 절반(반경 110 · 힘 0.5).
+         자석·복이 굴러온다가 있으면 둘 중 센 쪽을 쓴다. */
+      const COIN_R0 = 110, COIN_F0 = 0.5;
+      if ((magR > 0 && (it.type !== "poop" || it.gold)) || it.type === "coin") {
         const d = Math.hypot(dx, dy);
         /* 무지개똥과 코인은 아이템의 절반 반경·절반 힘.
            (무지개똥은 수집가를 먹으면 그 2배가 되어 아이템과 같아진다) */
         const goldF = it.gold ? (aug.goldLord ? 1 : 0.5)
                     : (it.type === "coin" ? 0.5 : 1);
-        const R = magR * goldF;
+        const R = it.type === "coin" ? Math.max(magR * goldF, COIN_R0) : magR * goldF;
+        const F = it.type === "coin" ? Math.max(magF * goldF, COIN_F0) : magF * goldF;
         if (d < R && d > 1) {
           const near = 1 - d / R;              // 가장자리 0, 코앞 1
-          const pull = (676 * near + 78) * dt * magF * goldF;
+          const pull = (676 * near + 78) * dt * F;
           it.x -= dx / d * pull;
           it.y -= dy / d * pull * 0.55;
           // 가장 가까이 끌려오는 것 하나가 소리 크기를 정한다
