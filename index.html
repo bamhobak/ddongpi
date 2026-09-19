@@ -1054,7 +1054,7 @@
   const elTitle = document.getElementById("overTitle");
   const coinNote = document.getElementById("coinNote");
 
-  const GAME_VERSION = "v0.7.59";   // 코드를 고칠 때마다 뒤 두 자리를 올린다
+  const GAME_VERSION = "v0.7.60";   // 코드를 고칠 때마다 뒤 두 자리를 올린다
   document.getElementById("ver").textContent = GAME_VERSION;
 
   const LS_NAME = "epjpddongpi_name";
@@ -5166,7 +5166,8 @@
     return { st, rows: st.chart.slice(seg * PAT_ROWS, seg * PAT_ROWS + PAT_ROWS), boss: null };
   }
   // 볼 틈 — 1.9초에서 레벨마다 0.07초씩, 최소 0.8초. 보스는 15% 더 짧다
-  function patLead(lv) { return Math.max(0.8, 1.9 - 0.07 * (patDiff(lv) - 1)) * (lv % BOSS_EVERY === 0 ? 0.85 : 1); }
+  // 볼 틈 — 전체 15% 넉넉하게(떨어지는 속도가 그만큼 느리다)
+  function patLead(lv) { return Math.max(0.8, 1.9 - 0.07 * (patDiff(lv) - 1)) * (lv % BOSS_EVERY === 0 ? 0.85 : 1) * 1.15; }
   // 휘는 폭·기울기도 레벨이 오를수록 세진다 (반쯤 내려오면 제 칸에 서는 건 그대로라 피할 수는 있다)
   function patWeave(st, lv) {
     const up = Math.min(1, (patDiff(lv) - 1) / 24);
@@ -5184,10 +5185,16 @@
        좌우 뒤집기(50%)와 칸 격자 전체를 옆으로 옮기기(±5%)는 칸 사이 거리를 그대로 두므로
        예전 채보가 보장하던 '다 피할 수 있다'가 깨지지 않는다. 칸을 한 칸씩 섞으면 그게 깨진다. */
   let patVar = {};
+  function patDiag(lv) {
+    if (lv <= 1) return false;
+    if (lv === 3) return true;               // 초반에 한 번은 꼭 사선을 맛보게
+    return patHash(lv * 977 + 3) % 100 < 55;
+  }
   function patVarOf(lv) {
     return patVar[lv] || (patVar[lv] = { mir: Math.random() < 0.5, off: (Math.random() * 2 - 1) * 0.05 * W,
-      /* 사선 — 1레벨은 곧게, 그 뒤로는 절반쯤의 레벨에서 비스듬히. 기울기는 1~2칸 거리 */
-      diag: lv >= 2 && Math.random() < 0.55 ? (Math.random() < 0.5 ? -1 : 1) * (1 + Math.random()) : 0 });
+      /* 사선 — 어느 레벨이 사선인지는 레벨 번호로 정해진다 (판마다 들쭉날쭉하지 않게, 누구나 같은 레벨에서).
+         1레벨은 곧게, 2·3레벨 중 하나는 꼭 사선, 그 뒤로는 절반쯤. 기울기 크기는 레벨로, 방향만 판마다 */
+      diag: patDiag(lv) ? (Math.random() < 0.5 ? -1 : 1) * (1 + (patHash(lv * 131 + 7) % 100) / 100) : 0 });
   }
   function spawnChart(lane, lead, st, lv) {
     const r = 15 + Math.random() * 5;
