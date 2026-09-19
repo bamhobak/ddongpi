@@ -1051,7 +1051,7 @@
   const elTitle = document.getElementById("overTitle");
   const coinNote = document.getElementById("coinNote");
 
-  const GAME_VERSION = "v0.7.46";   // 코드를 고칠 때마다 뒤 두 자리를 올린다
+  const GAME_VERSION = "v0.7.47";   // 코드를 고칠 때마다 뒤 두 자리를 올린다
   document.getElementById("ver").textContent = GAME_VERSION;
 
   const LS_NAME = "epjpddongpi_name";
@@ -5100,6 +5100,10 @@
   function patHash(n) { n = (n ^ 61) ^ (n >>> 16); n = (n + (n << 3)) | 0; n ^= n >>> 4; n = Math.imul(n, 0x27d4eb2d); return (n ^ (n >>> 15)) >>> 0; }
   const PAT_SEGS = 8;                          // 한 판(32줄)을 4줄씩 여덟 도막
   // 레벨 lv 의 패턴 — { st: 판(채보·흔들림), rows: 4줄, boss }
+  /* 난이도 레벨 — 레벨 번호(배경·보스 순서)와 따로 센다. 은하수(13레벨) 무렵이 제일 짜릿해서
+     그 난이도가 빨리 오도록: 1레벨은 워밍업, 2~5레벨은 세 칸씩 뛰어 5레벨에 은하수 난이도(13),
+     그 뒤로는 한 칸씩 (6레벨 = 14 …). */
+  function patDiff(lv) { return lv <= 5 ? 1 + (lv - 1) * 3 : lv + 8; }
   function patOf(lv) {
     if (lv % BOSS_EVERY === 0) {
       /* 보스 — 보스 판(여덟 번째)에서 가장 빽빽한 도막 */
@@ -5112,7 +5116,8 @@
       }
       return { st, rows: st.chart.slice(seg * PAT_ROWS, seg * PAT_ROWS + PAT_ROWS), boss: Object.assign({ img: bs.img, k }, st.boss) };
     }
-    const nb = lv - 1 - Math.floor(lv / BOSS_EVERY);   // 보스가 아닌 레벨 중 몇 번째인지 (0부터)
+    const dl = patDiff(lv);
+    const nb = dl - 1 - Math.floor(dl / BOSS_EVERY);   // 난이도로 친 '보스가 아닌 레벨 중 몇 번째' (0부터)
     /* 두 레벨마다 한 판씩 어려워진다 (1~8판). 여덟 판까지 가면 5~8판에서 섞어 뽑는다. */
     const h = patHash(lv * 7919 + 17);
     const tier = nb < 16 ? Math.floor(nb / 2) : 4 + (h % 4);
@@ -5121,10 +5126,10 @@
     return { st, rows: st.chart.slice(seg * PAT_ROWS, seg * PAT_ROWS + PAT_ROWS), boss: null };
   }
   // 볼 틈 — 1.9초에서 레벨마다 0.07초씩, 최소 0.8초. 보스는 15% 더 짧다
-  function patLead(lv) { return Math.max(0.8, 1.9 - 0.07 * (lv - 1)) * (lv % BOSS_EVERY === 0 ? 0.85 : 1); }
+  function patLead(lv) { return Math.max(0.8, 1.9 - 0.07 * (patDiff(lv) - 1)) * (lv % BOSS_EVERY === 0 ? 0.85 : 1); }
   // 휘는 폭·기울기도 레벨이 오를수록 세진다 (반쯤 내려오면 제 칸에 서는 건 그대로라 피할 수는 있다)
   function patWeave(st, lv) {
-    const up = Math.min(1, (lv - 1) / 24);
+    const up = Math.min(1, (patDiff(lv) - 1) / 24);
     return { wv: Math.max(st.wv || 0, 0.12 + 0.26 * up), wvK: st.wvK || 2, tilt: Math.max(st.tilt || 0, 0.15 + 0.45 * up) };
   }
   let patPtr = -1, patClock = 0, patLv = 0;
