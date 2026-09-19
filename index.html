@@ -355,6 +355,9 @@
     position: relative;
   }
   .board.withTabs h3 { grid-area: h; }
+  /* 맨몸대결·똥탑등반은 모두 방울이라 직업 탭이 쓸모없다 — 탭 칸을 접고 목록을 넓게 */
+  .board.withTabs.noTabs { grid-template-columns: minmax(0, 1fr); grid-template-areas: "h" "list"; }
+  .board.withTabs.noTabs .jobTabs { display: none; }
   .board.withTabs ol { grid-area: list; min-width: 0; }
   .board.withTabs li { min-width: 0; }
   /* 자릿수가 많은 점수는 글자를 줄여 오른쪽이 잘리지 않게 */
@@ -1051,7 +1054,7 @@
   const elTitle = document.getElementById("overTitle");
   const coinNote = document.getElementById("coinNote");
 
-  const GAME_VERSION = "v0.7.51";   // 코드를 고칠 때마다 뒤 두 자리를 올린다
+  const GAME_VERSION = "v0.7.52";   // 코드를 고칠 때마다 뒤 두 자리를 올린다
   document.getElementById("ver").textContent = GAME_VERSION;
 
   const LS_NAME = "epjpddongpi_name";
@@ -1361,6 +1364,9 @@
   /* 맨몸대결·똥탑등반은 방울이만 뛴다 (비누방울 없이). 고른 직업(LS_JOB)은 그대로 두고,
      똥대잔치로 돌아오면 원래 직업으로 되돌린다. */
   function jobLocked() { return gameMode !== "item"; }
+  /* 펫도 같다 — 맨몸대결·똥탑등반은 펫 없이 (파괴형 펫·수호천사가 맞는 횟수를 최대 절반까지 줄여 실력 대결이 안 됐다).
+     저장한 펫(LS_PET)은 그대로 두고, 똥대잔치로 돌아오면 되돌린다. */
+  function petLocked() { return gameMode !== "item"; }
   // hy = 발을 바닥에 고정했을 때 머리(판정 중심)가 player.y 에서 얼마나 떨어지는지.
   // 그림마다 머리·다리 비율이 달라서 이 값으로 보정해야 그림자 높이와 판정이 어긋나지 않는다.
   /* 좌우 그림이 서로 머리 크기·자세가 달라 어색해서, 오른쪽 그림 하나만 쓰고
@@ -5746,6 +5752,7 @@
   }
   function renderPick() {
     if (jobLocked()) job = "bangul";          // 맨몸대결·똥탑등반 — 탭 글자부터 방울이로
+    if (petLocked()) { pet = "none"; petView = "none"; }
     tabJob.classList.toggle("on", pickTab === "job");
     tabPet.classList.toggle("on", pickTab === "pet");
     document.querySelector("#jobScreen h2").textContent = pickTab === "job" ? "직업 선택" : "펫 선택";
@@ -5780,13 +5787,18 @@
         if (PETS[id].img) { ic = document.createElement("img"); ic.className = "ic"; ic.src = PETS[id].img; ic.alt = PETS[id].ic; }
         else { ic = document.createElement("div"); ic.className = "petNone"; ic.textContent = PETS[id].ic; }
         const card = pickCard(id === petView, ic, PETS[id].nm, PETS[id].ds, () => {
+          if (petLocked()) return;          // 맨몸대결·똥탑등반은 펫 없이
           petView = id;                     // 잠긴 펫은 보기만 — 데리고 가는 펫은 그대로
           if (hasPet(id)) {
             pet = id;
             try { localStorage.setItem(LS_PET, pet); } catch (e) {}
           }
         });
-        if (!hasPet(id)) {
+        if (petLocked() && id !== "none") {
+          card.classList.add("locked");
+          const lk = document.createElement("span"); lk.className = "lock"; lk.textContent = "🔒";
+          card.appendChild(lk);
+        } else if (!hasPet(id)) {
           card.classList.add("locked");
           const lk = document.createElement("span"); lk.className = "lock";
           lk.textContent = "🔒 " + PET_PRICE;
@@ -5795,6 +5807,11 @@
         jobList.appendChild(card);
       }
       const locked = !hasPet(petView);
+      if (petLocked()) {
+        document.getElementById("pickDesc").textContent = MODES[gameMode].nm + "은 펫 없이 뛰어요";
+        buy.hidden = true;
+        return;
+      }
       document.getElementById("pickDesc").textContent =
         (locked ? "🔒 " : "") + PETS[petView].ds + "";
       buy.hidden = !locked;
@@ -5873,9 +5890,19 @@
     }
     document.getElementById("modeDesc").textContent = MODES[gameMode].ds;
   }
+  function syncBoardTabs() {
+    const hide = gameMode !== "item";
+    for (const b of document.querySelectorAll(".board.withTabs")) b.classList.toggle("noTabs", hide);
+    if (hide && boardJob !== "all") {           // 직업 탭을 보던 중이면 전체로
+      boardJob = "all";
+      for (const t of document.querySelectorAll(".jobTab")) t.classList.toggle("on", t.dataset.job === "all");
+    }
+  }
   function setMode(m) {
     gameMode = m;
-    if (m === "item") { try { const j = localStorage.getItem(LS_JOB); job = JOBS[j] ? j : "none"; } catch (e) {} }
+    syncBoardTabs();
+    if (m === "item") { try { const j = localStorage.getItem(LS_JOB); job = JOBS[j] ? j : "none";
+                              const q = localStorage.getItem(LS_PET); pet = PETS[q] && hasPet(q) ? q : "none"; } catch (e) {} }
     try { localStorage.setItem(LS_MODE, gameMode); } catch (e) {}
     syncMode();
     syncBoardTitle();
@@ -5908,6 +5935,7 @@
   function reset(test) {
     testMode = (test === true);    // 정확히 true 일 때만 테스트 모드 (이벤트 객체가 새어들지 않게)
     if (jobLocked()) job = "bangul";         // 맨몸대결·똥탑등반은 방울이만
+    if (petLocked()) pet = "none";           // 펫도 없이
     btnTestEnd.classList.toggle("on", testMode);
     testLv.classList.toggle("on", testMode);
     lvNow.textContent = "Lv 1";
@@ -8178,6 +8206,7 @@
     }
   }
   buildJobTabs();
+  syncBoardTabs();                       // 맨몸대결로 저장돼 있으면 직업 탭부터 접는다
   syncBoardTitle();                      // 저장된 스테이지가 노템전이면 제목부터 맞춘다
   // 탭을 바꾸고(두 화면 모두) 목록을 다시 그린다
   /* 제목에 지금 보고 있는 직업을 넣는다 — 전체일 때는 넣지 않는다 */
