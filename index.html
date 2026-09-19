@@ -499,8 +499,18 @@
     padding: 4px 6px 4px 12px; border-radius: 4px;
     background: rgba(53,240,255,.06); border: 1px solid rgba(53,240,255,.28);
   }
-  /* 조작과 소리를 한 줄에 나란히 — 좁으면 저절로 두 줄로 접힌다 */
-  #optRow { display: flex; gap: 7px; align-items: stretch; justify-content: center; flex-wrap: wrap; }
+  /* 이름 · 조작 · 소리를 한 줄에 나란히 — 폰 폭(375)에 들어가게 알약을 줄였다. 더 좁으면 저절로 접힌다 */
+  #optRow { display: flex; gap: 6px; align-items: stretch; justify-content: center; flex-wrap: wrap; }
+  #optRow #nameBox { padding: 3px 4px 3px 10px; gap: 5px; }
+  #optRow #nameBox .who b { font-size: 13px; max-width: 72px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; display: inline-block; vertical-align: middle; }
+  #optRow #nameBox button { padding: 4px 7px; font-size: 12px; }
+  #optRow #nameEdit { gap: 5px; }
+  #optRow #startName { width: 70px; font-size: 13px; padding: 5px 7px; border-radius: 6px; }
+  #optRow #nameEdit button { padding: 5px 8px; font-size: 12px; }
+  #optRow #ctrlBox { padding: 3px 4px 3px 4px; gap: 4px; }
+  #optRow #ctrlBox .ctrlBtn { padding: 5px 8px; }
+  #optRow #sndBox { padding: 3px 4px; gap: 4px; }
+  #optRow #sndBox .ctrlBtn { font-size: 15px; padding: 3px 9px; }
   #sndBox { padding: 4px 6px; }
   #pauseSnd { display: flex; gap: 8px; justify-content: center; margin: 2px 0 6px; }
   #sndBox .ctrlBtn, #pauseSnd .ctrlBtn { font-size: 17px; padding: 5px 14px; line-height: 1.25; }
@@ -878,16 +888,16 @@
         <h3 id="lastTitle">👑 지난주 명예의 전당</h3>
         <div id="boardLast" class="lastRow"></div>
       </div>
-      <div id="nameBox">
-        <span class="who">플레이어 <b id="myName">-</b></span>
-        <button id="btnEditName">수정</button>
-      </div>
-      <div id="nameEdit">
-        <input id="startName" type="text" maxlength="5" placeholder="이름 (최대 5자)"
-               autocomplete="off" autocorrect="off" spellcheck="false">
-        <button id="btnSaveName">저장</button>
-      </div>
       <div id="optRow">
+        <div id="nameBox">
+          <span class="who"><b id="myName">-</b></span>
+          <button id="btnEditName" title="이름 수정" aria-label="이름 수정">✏️</button>
+        </div>
+        <div id="nameEdit">
+          <input id="startName" type="text" maxlength="5" placeholder="이름 (5자)"
+                 autocomplete="off" autocorrect="off" spellcheck="false">
+          <button id="btnSaveName">저장</button>
+        </div>
         <div id="ctrlBox">
           <button class="ctrlBtn" data-ctrl="touch">👆 터치</button>
           <button class="ctrlBtn" data-ctrl="pad">🎮 패드</button>
@@ -1037,7 +1047,7 @@
   const elTitle = document.getElementById("overTitle");
   const coinNote = document.getElementById("coinNote");
 
-  const GAME_VERSION = "v0.7.37";   // 코드를 고칠 때마다 뒤 두 자리를 올린다
+  const GAME_VERSION = "v0.7.38";   // 코드를 고칠 때마다 뒤 두 자리를 올린다
   document.getElementById("ver").textContent = GAME_VERSION;
 
   const LS_NAME = "epjpddongpi_name";
