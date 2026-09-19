@@ -1054,7 +1054,7 @@
   const elTitle = document.getElementById("overTitle");
   const coinNote = document.getElementById("coinNote");
 
-  const GAME_VERSION = "v0.7.53";   // 코드를 고칠 때마다 뒤 두 자리를 올린다
+  const GAME_VERSION = "v0.7.54";   // 코드를 고칠 때마다 뒤 두 자리를 올린다
   document.getElementById("ver").textContent = GAME_VERSION;
 
   const LS_NAME = "epjpddongpi_name";
@@ -1356,8 +1356,8 @@
   let gameMode = "item";
   /* 똥탑등반은 아직 개발 중이라 잠가 둔다 — 누르면 개발자 비밀번호를 묻고, 맞으면 이번 접속 동안만 열린다.
      (지난번에 똥탑등반을 골라 두었더라도 새로 들어오면 똥대잔치로 시작한다) */
-  let towerOpen = false;
-  try { const m = localStorage.getItem(LS_MODE); if (MODES[m] && m !== "noitem") gameMode = m; } catch (e) {}
+  let towerOpen = true;              // 2026-09-19 모두에게 열었다 (잠그려면 false — 누르면 개발자 비밀번호)
+  try { const m = localStorage.getItem(LS_MODE); if (MODES[m] && (towerOpen || m !== "noitem")) gameMode = m; } catch (e) {}
   let runMode = gameMode;            // 지금 판이 어느 스테이지인가 (판 도중에 안 바뀐다)
   function noItem() { return runMode === "noitem"; }                        // 똥탑등반 (패턴·보스·m 기록)
   function itemsOff() { return runMode === "noitem" || runMode === "pure"; }   // 아이템·증강이 안 나오는 판 (코인은 나온다)
