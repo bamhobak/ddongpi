@@ -1054,7 +1054,7 @@
   const elTitle = document.getElementById("overTitle");
   const coinNote = document.getElementById("coinNote");
 
-  const GAME_VERSION = "v0.7.60";   // 코드를 고칠 때마다 뒤 두 자리를 올린다
+  const GAME_VERSION = "v0.7.61";   // 코드를 고칠 때마다 뒤 두 자리를 올린다
   document.getElementById("ver").textContent = GAME_VERSION;
 
   const LS_NAME = "epjpddongpi_name";
@@ -5190,11 +5190,18 @@
     if (lv === 3) return true;               // 초반에 한 번은 꼭 사선을 맛보게
     return patHash(lv * 977 + 3) % 100 < 55;
   }
+  /* 사선 기울기 — 방향·크기 모두 레벨 번호로 정해져 누구나 같다. 레벨이 오를수록 가팔라진다:
+     옆으로 비켜 들어오는 거리 = 0.9칸 + 레벨마다 0.1칸 (최대 2.6칸) */
+  function patDiagAmt(lv) {
+    if (!patDiag(lv)) return 0;
+    const dir = patHash(lv * 131 + 7) % 2 ? 1 : -1;
+    return dir * Math.min(2.6, 0.9 + 0.1 * (lv - 1));
+  }
   function patVarOf(lv) {
     return patVar[lv] || (patVar[lv] = { mir: Math.random() < 0.5, off: (Math.random() * 2 - 1) * 0.05 * W,
       /* 사선 — 어느 레벨이 사선인지는 레벨 번호로 정해진다 (판마다 들쭉날쭉하지 않게, 누구나 같은 레벨에서).
          1레벨은 곧게, 2·3레벨 중 하나는 꼭 사선, 그 뒤로는 절반쯤. 기울기 크기는 레벨로, 방향만 판마다 */
-      diag: patDiag(lv) ? (Math.random() < 0.5 ? -1 : 1) * (1 + (patHash(lv * 131 + 7) % 100) / 100) : 0 });
+      diag: patDiagAmt(lv) });
   }
   function spawnChart(lane, lead, st, lv) {
     const r = 15 + Math.random() * 5;
