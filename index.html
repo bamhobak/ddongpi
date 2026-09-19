@@ -1051,7 +1051,7 @@
   const elTitle = document.getElementById("overTitle");
   const coinNote = document.getElementById("coinNote");
 
-  const GAME_VERSION = "v0.7.50";   // 코드를 고칠 때마다 뒤 두 자리를 올린다
+  const GAME_VERSION = "v0.7.51";   // 코드를 고칠 때마다 뒤 두 자리를 올린다
   document.getElementById("ver").textContent = GAME_VERSION;
 
   const LS_NAME = "epjpddongpi_name";
@@ -2773,6 +2773,8 @@
     { id: "shield",  nm: "수호의 별",          c: "#7ec8ff" },
     { id: "fever",   nm: "뚜니핑이 온다",      c: "#ffb86b", noTower: true },
     { id: "magnet",  nm: "복이 굴러온다",      c: "#ffe28a" },
+    { id: "sight",   nm: "천리안",            c: "#ff9a9a" },
+    { id: "spot",    nm: "명당",              c: "#ffe066", noTower: true },
     { id: "fast",    nm: "똥이 빨라진다",      c: "#ff7b7b", bad: true },
     { id: "big",     nm: "똥이 커진다",        c: "#ff9a6b", bad: true },
     { id: "dark",    nm: "먹구름",            c: "#b58cff", bad: true },
@@ -2783,6 +2785,9 @@
     { id: "dice",    nm: "운명의 주사위 — 점수 3배, 똥 1.5배", c: "#ffd23f", both: true, noTower: true }
   ];
   let prophecy = null, prophT = 0, prophRain = 0, fortuneT = 0, prophWind = 0;
+  /* 명당 — 땅 위 빛나는 자리. 그 위에 서 있는 동안 생존 점수의 SPOT_MUL 배가 흐른다. 예언 절반쯤에 한 번 옮겨 간다 */
+  const SPOT_MUL = 4, SPOT_HALF = 38;
+  let spotX = 0, spotOn = 0, spotMoved = false;
   function prophIs(id) { return prophecy && prophecy.id === id && prophT > 0; }
   let bullets = [], shipClock = 0;   // 갤러그: 날아가는 총알과 편대 공용 시계
   /* ── 리듬 실험 ──
@@ -6915,6 +6920,16 @@
           prophRain -= dt;
           if (prophRain <= 0) { spawnCoin(); prophRain = 0.5; }
         }
+        if (prophIs("spot")) {
+          if (!spotMoved && prophT < PROPH_SEC / 2) { spotX = spotPick(); spotMoved = true; }   // 절반쯤에 한 번 옮겨 간다
+          const on = Math.abs(player.x - spotX) < SPOT_HALF;
+          spotOn += ((on ? 1 : 0) - spotOn) * Math.min(1, dt * 8);
+          if (on) {
+            score += sc("명당", dt * 50 * level * aug.timeMul * scoreMul() * SPOT_MUL);
+            if (Math.random() < dt * 14) particles.push({ x: player.x + (Math.random() - .5) * 40, y: player.y + player.hy + 20,
+              vx: (Math.random() - .5) * 30, vy: -80 - Math.random() * 60, life: .7, t: 0, c: Math.random() < .5 ? "#ffe066" : "#fff6c4", r: 2 + Math.random() * 2 });
+          }
+        }
         if (prophT <= 0) startProphecy(now);
       }
     }
@@ -7569,10 +7584,10 @@
 
   /* 점수를 항목별로도 모은다. 테스트 모드에서는 화면에 띄우고,
      실제 플레이에서는 판이 끝날 때 비중만 익명으로 남겨 통계에 쓴다. */
-  const SRC_KEYS = ["별", "별핑별", "뚜니핑", "무지개똥", "똥", "생존"];
+  const SRC_KEYS = ["별", "별핑별", "뚜니핑", "무지개똥", "똥", "생존", "명당"];
   // 서버에는 한글 대신 짧은 영문 키로 보낸다 (칸 이름이 지저분해지지 않게)
   const SRC_CODE = { "별": "star", "별핑별": "burst", "뚜니핑": "fever",
-                     "무지개똥": "gold", "똥": "poop", "생존": "time" };
+                     "무지개똥": "gold", "똥": "poop", "생존": "time", "명당": "spot" };
   let scoreSrc = {};
   function sc(key, v) {
     scoreSrc[key] = (scoreSrc[key] || 0) + v;
@@ -7664,6 +7679,14 @@
                  vx: (Math.random() - Math.random()) * vy * SPREAD_BONUS, vy,
                  rot: 0, vr: 0, size: r * 2, bob: Math.random() * 6.28, born: elapsed });
   }
+  // 명당 자리 — 캐릭터 바로 발밑은 피해서, 조금 움직여야 닿는 곳
+  function spotPick() {
+    for (let k = 0; k < 8; k++) {
+      const x = 50 + Math.random() * (W - 100);
+      if (Math.abs(x - player.x) > 90) return x;
+    }
+    return player.x > W / 2 ? 60 : W - 60;
+  }
   function startProphecy(now) {
     // 방금 것과 같은 예언이 연달아 나오지 않게 — 바뀌는 게 보여야 한다. 똥탑등반에선 점수·뚜니핑 예언 빼고
     const pool = PROPHECIES.filter(q => q !== prophecy && !(noItem() && q.noTower));
@@ -7689,6 +7712,8 @@
       if (!sfx("fever")) { beep(700, .1, "square", .05); beep(1100, .12, "square", .05); }
     }
     if (pr.id === "wind") prophWind = (Math.random() < 0.5 ? -1 : 1) * 120;   // 옆바람 — 방향은 그때그때
+    if (pr.id === "spot") { spotX = spotPick(); spotMoved = false; spotOn = 0; }
+
     // 가운데에 큰 글자는 띄우지 않는다 — 예언 막대(화면 가운데, 뚜니핑 막대 아래)가 바뀌는 것으로 알린다
     feverFlash = Math.max(feverFlash, pr.bad ? 0.3 : 0.5);
     if (!sfx(pr.bad ? "hurt" : "aug", 0.8)) { beep(pr.bad ? 300 : 1100, .15, "triangle", .05); }
@@ -8329,7 +8354,7 @@
     const srcRows = data.src || [];
     if (srcRows.length) {
       const SRC_LABEL = { star: "별", burst: "별핑별", fever: "뚜니핑",
-                          gold: "무지개똥", poop: "똥", time: "생존" };
+                          gold: "무지개똥", poop: "똥", time: "생존", spot: "명당" };
       P.sum.appendChild(devSection("오브젝트별 점수 비중 (판마다의 평균)",
         ["오브젝트", "평균 비중", "판수"],
         srcRows.map(r => [
@@ -10308,6 +10333,57 @@
     return warnInk;
   }
 
+  /* 점술가 예언 — 똥 뒤에 깔리는 것들 */
+  function drawProphGround(now) {
+    if (!prophecy || prophT <= 0) return;
+    const fin = Math.min(1, (PROPH_SEC - prophT) / 0.4) * Math.min(1, prophT / 0.4);
+    if (prophIs("sight")) {
+      /* 천리안 — 모든 똥의 떨어질 자리를 레이저 예고선처럼 보여 준다.
+         곧게·비스듬히 떨어지는 똥은 궤적 그대로, 채보 똥은 머리 높이에서 설 칸으로. 지그재그는 그 자리에서 곧장 아래로 */
+      const L = H - GROUND_H;
+      ctx.save();
+      ctx.globalAlpha = fin;
+      for (const it of items) {
+        if (it.type !== "poop" || it.bounced || it.skin === "fever" || it.ring || it.thrown || it.y > L) continue;
+        let lx;
+        if (it.chart) lx = it.homeX;
+        else if (it.special === "zigzag" || !it.vy) lx = it.x;
+        else lx = Math.max(it.r, Math.min(W - it.r, it.x + it.vx * (L - it.y) / it.vy));
+        const halfW = Math.max(10, it.r * 0.9);
+        const g = ctx.createLinearGradient(0, it.y, 0, L);
+        g.addColorStop(0, it.dark ? "rgba(150,60,255,.10)" : "rgba(255,60,60,.06)");
+        g.addColorStop(1, it.dark ? "rgba(150,60,255,.30)" : "rgba(255,60,60,.22)");
+        ctx.fillStyle = g;
+        ctx.beginPath();                     // 똥에서 떨어질 자리까지 좁아지는 띠
+        ctx.moveTo(it.x - halfW * 0.4, it.y); ctx.lineTo(it.x + halfW * 0.4, it.y);
+        ctx.lineTo(lx + halfW, L); ctx.lineTo(lx - halfW, L); ctx.closePath(); ctx.fill();
+        ctx.strokeStyle = it.dark ? "rgba(210,150,255,.55)" : "rgba(255,90,90,.55)";
+        ctx.lineWidth = 1.5; ctx.setLineDash([6, 6]);
+        ctx.beginPath(); ctx.moveTo(it.x, it.y); ctx.lineTo(lx, L); ctx.stroke();
+        ctx.setLineDash([]);
+        ctx.fillStyle = it.dark ? "rgba(200,140,255,.8)" : "rgba(255,90,90,.8)";   // 땅에 닿을 자리
+        ctx.beginPath(); ctx.ellipse(lx, L, halfW, 4, 0, 0, 6.283); ctx.fill();
+      }
+      ctx.restore();
+    }
+    if (prophIs("spot")) {
+      /* 명당 — 땅 위에 빛나는 자리. 서 있으면 더 밝게 타오른다 */
+      const gy = groundY + 4, pulse = 0.5 + 0.5 * Math.sin(now / 180);
+      ctx.save();
+      ctx.globalAlpha = fin;
+      const lit = spotOn;
+      const cg = ctx.createRadialGradient(spotX, gy - 30, 4, spotX, gy - 30, 90);   // 위로 올라가는 빛기둥
+      cg.addColorStop(0, "rgba(255,236,140," + (0.35 + lit * 0.35) + ")");
+      cg.addColorStop(1, "rgba(255,220,90,0)");
+      ctx.fillStyle = cg;
+      ctx.fillRect(spotX - SPOT_HALF - 10, gy - 150, (SPOT_HALF + 10) * 2, 150);
+      ctx.fillStyle = "rgba(255,230,110," + (0.55 + pulse * 0.25 + lit * 0.2) + ")";
+      ctx.beginPath(); ctx.ellipse(spotX, gy, SPOT_HALF, 9, 0, 0, 6.283); ctx.fill();
+      ctx.strokeStyle = "rgba(255,255,255," + (0.6 + pulse * 0.3) + ")"; ctx.lineWidth = 2;
+      ctx.beginPath(); ctx.ellipse(spotX, gy, SPOT_HALF + 4 + pulse * 3, 11 + pulse, 0, 0, 6.283); ctx.stroke();
+      ctx.restore();
+    }
+  }
   // 레이저가 떨어질 자리를 미리 깜빡여 알려준다 (막판일수록 빠르게)
   function drawWarnings(now) {
     const L = H - GROUND_H;
@@ -10945,6 +11021,7 @@
       if (!titleArt && titleGaveUp) drawIntro(now);   // 정말 못 받았을 때만 예전 인트로로
     } else {
       drawWarnings(now);
+      if (state !== STATE.OVER) drawProphGround(now);   // 천리안 예고선 · 명당 자리 (똥 뒤)
       if (state !== STATE.OVER) drawBoss(now);   // 보스는 똥 뒤에
       drawItems(now);
       drawHelpers();
