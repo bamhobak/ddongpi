@@ -510,7 +510,9 @@
   #optRow #ctrlBox { padding: 3px 4px 3px 4px; gap: 4px; }
   #optRow #ctrlBox .ctrlBtn { padding: 5px 8px; }
   #optRow #sndBox { padding: 3px 4px; gap: 4px; }
-  #optRow #sndBox .ctrlBtn { font-size: 15px; padding: 3px 9px; }
+  /* 소리 버튼은 정사각형 — 옆 조작 버튼과 높이를 맞춘다 */
+  #optRow #sndBox .ctrlBtn { font-size: 14px; padding: 0; width: 28px; height: 28px;
+                             display: inline-flex; align-items: center; justify-content: center; line-height: 1; }
   #sndBox { padding: 4px 6px; }
   #pauseSnd { display: flex; gap: 8px; justify-content: center; margin: 2px 0 6px; }
   #sndBox .ctrlBtn, #pauseSnd .ctrlBtn { font-size: 17px; padding: 5px 14px; line-height: 1.25; }
@@ -1047,7 +1049,7 @@
   const elTitle = document.getElementById("overTitle");
   const coinNote = document.getElementById("coinNote");
 
-  const GAME_VERSION = "v0.7.38";   // 코드를 고칠 때마다 뒤 두 자리를 올린다
+  const GAME_VERSION = "v0.7.39";   // 코드를 고칠 때마다 뒤 두 자리를 올린다
   document.getElementById("ver").textContent = GAME_VERSION;
 
   const LS_NAME = "epjpddongpi_name";
