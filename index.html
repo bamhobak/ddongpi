@@ -1070,7 +1070,7 @@
   const elTitle = document.getElementById("overTitle");
   const coinNote = document.getElementById("coinNote");
 
-  const GAME_VERSION = "v0.7.72";
+  const GAME_VERSION = "v0.7.73";
   /* 제작사 스플래시(bamhobak friends 로고) — 2026-09-20 끔. 다시 켜려면 true */
   const SPLASH_USE = false;   // 코드를 고칠 때마다 뒤 두 자리를 올린다
   document.getElementById("ver").textContent = GAME_VERSION;
@@ -5539,7 +5539,7 @@
      (누른 자리로 순간이동하지 않는다). 좌우는 누구나, 위아래는 날 수 있을 때만.
      손가락을 떼면 기준점이 풀리고, 다시 누르면 그 자리가 새 기준점. PC 는 마우스를 누른 채 끈다.
      화면 끝에 닿으면 기준점을 끌어와서, 반대로 돌리는 순간 바로 따라온다. */
-  const DRAG_GAIN = 1.25;            // 손가락이 움직인 거리 × 이만큼 (엄지를 조금만 움직여도 되게)
+  const DRAG_GAIN = 1.5;             // 손가락이 움직인 거리 × 이만큼 (엄지를 조금만 움직여도 되게)
   let drag = null;                   // { fx, fy, px, py } 기준점의 손가락·캐릭터 자리
   function dragBlocked(e) {
     if (state !== STATE.PLAY || dying > 0) return true;
