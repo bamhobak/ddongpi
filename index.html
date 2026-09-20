@@ -1070,7 +1070,7 @@
   const elTitle = document.getElementById("overTitle");
   const coinNote = document.getElementById("coinNote");
 
-  const GAME_VERSION = "v0.7.73";
+  const GAME_VERSION = "v0.7.74";
   /* 제작사 스플래시(bamhobak friends 로고) — 2026-09-20 끔. 다시 켜려면 true */
   const SPLASH_USE = false;   // 코드를 고칠 때마다 뒤 두 자리를 올린다
   document.getElementById("ver").textContent = GAME_VERSION;
@@ -1460,7 +1460,10 @@
     stage.style.setProperty("--lbx", ((bw - cssW) / 2) + "px");
     stage.style.setProperty("--lby", ((bh - cssH) / 2) + "px");
 
-    const dpr = Math.min(window.devicePixelRatio || 1, 2);   // 2 를 넘겨도 화질 차이는 거의 없고 발열만 커진다
+    /* 그리는 촘촘함 — 놀이판은 늘 405x720 이지만 화면에는 그보다 크게(cssH) 늘려 그린다.
+       기기 배율만 쓰면 그 늘린 만큼이 빠져서 흐려진다 (PC: 720 을 1100 으로 늘려 1.53배 흐림).
+       늘린 배율까지 곱해서 실제 깔리는 픽셀에 맞춘다. 상한은 그대로 2 — 넘겨도 차이는 거의 없고 발열만 커진다. */
+    const dpr = Math.min((window.devicePixelRatio || 1) * (cssH / H), 2);
     cv.width  = Math.round(W * dpr);
     cv.height = Math.round(H * dpr);
     ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
