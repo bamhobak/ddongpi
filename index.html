@@ -861,8 +861,10 @@
               max-width: 330px; margin: 4px auto 0; font-size: 17px; line-height: 1.3; }
   #overAugs b { font-size: 10px; color: #ffd23f; margin-left: 1px; }
   #overAugs[hidden] { display: none; }
-  #retryRow { display: flex; gap: 8px; justify-content: center; align-items: center; }
-  #btnRetryJob { font-size: 13px; padding: 9px 12px; opacity: .85; }
+  #retryRow { display: flex; gap: 8px; justify-content: center; align-items: center; flex-wrap: wrap; }
+  #btnRetryJob, #btnHome { font-size: 13px; padding: 9px 12px; opacity: .85; }
+  /* 메인으로는 판을 뜨는 버튼이라 한 김에 또 하기(노랑)와 색을 달리 둔다 — 잘못 누르지 않게 */
+  #btnHome { background: #33405e; color: #dfe6f5; }
   #btnRetryJob[hidden] { display: none; }
   .sub { font-size: 14px; color: #9aa0ae; }
 </style>
@@ -1029,6 +1031,7 @@
       <div id="retryRow">
         <button id="btnRetry">다시 하기</button>
         <button id="btnRetryJob" hidden>직업 바꾸기</button>
+        <button id="btnHome">🏠 메인으로</button>
       </div>
     </div>
   </div>
@@ -1070,7 +1073,7 @@
   const elTitle = document.getElementById("overTitle");
   const coinNote = document.getElementById("coinNote");
 
-  const GAME_VERSION = "v0.7.78";
+  const GAME_VERSION = "v0.7.79";
   /* 제작사 스플래시(bamhobak friends 로고) — 2026-09-20 끔. 다시 켜려면 true */
   const SPLASH_USE = false;   // 코드를 고칠 때마다 뒤 두 자리를 올린다
   document.getElementById("ver").textContent = GAME_VERSION;
@@ -6108,14 +6111,22 @@
     showJobList();
   });
 
-  // 직업을 고르지 않고 시작화면으로 되돌아간다 (테스트 종료와 같은 길)
-  btnJobBack.addEventListener("click", () => {
+  /* 시작화면으로 되돌아간다 — 직업 선택의 [뒤로], 게임오버의 [메인으로] 가 같은 길을 쓴다.
+     배경음은 state 를 보고 저절로 메뉴 곡으로 돌아가고, 코인·순위표는 이미 갱신돼 있다. */
+  function goHome() {
     beep(520, .06, "square", .04);
     jobScreen.classList.add("hidden");
     overScreen.classList.add("hidden");
+    augScreen.classList.add("hidden");
+    pauseScreen.classList.add("hidden");
+    nameRow.classList.remove("on");       // 이름 등록 줄은 닫고 나간다
+    btnPause.classList.remove("on"); syncPad();
     startScreen.classList.remove("hidden");
     state = STATE.READY;                 // 시작화면 데모가 다시 돌게
-  });
+  }
+  // 직업을 고르지 않고 시작화면으로 되돌아간다 (테스트 종료와 같은 길)
+  btnJobBack.addEventListener("click", goHome);
+  document.getElementById("btnHome").addEventListener("click", goHome);
 
   function syncMode() {
     for (const b of document.querySelectorAll("#modeSeg button")) {
