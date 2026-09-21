@@ -1070,7 +1070,7 @@
   const elTitle = document.getElementById("overTitle");
   const coinNote = document.getElementById("coinNote");
 
-  const GAME_VERSION = "v0.7.77";
+  const GAME_VERSION = "v0.7.78";
   /* 제작사 스플래시(bamhobak friends 로고) — 2026-09-20 끔. 다시 켜려면 true */
   const SPLASH_USE = false;   // 코드를 고칠 때마다 뒤 두 자리를 올린다
   document.getElementById("ver").textContent = GAME_VERSION;
@@ -5500,6 +5500,10 @@
      일반 게임에는 한 톨도 새지 않도록, 쓰는 곳마다 이 문을 지난다. */
   function rhythmActive() { return rhythmOn && testMode; }
   let ghosts = [];                   // 그건 제 잔상입니다만? — 피한 자리에 남는 잔상
+  /* 아슬! — 똥을 스쳐 보낸 순간 캐릭터 머리에서 튀는 땀방울.
+     놀란 건 캐릭터지 똥이 아니라서, 효과를 똥이 아니라 몸에 붙인다. */
+  let sweats = [];
+  const SWEAT_MAX = 24;
   let wakBooms = [];                 // 고무고무노 피스톨 — 똥끼리 부딪혀 터진 자리의 고리
   /* 우주선 한 대가 다시 쏘기까지. 대수가 늘수록 각자 느긋해진다 —
      1대 0.6초 · 2대 0.8초 · 3대 1.0초 … (겹칠수록 총 화력의 상승폭이 줄어든다) */
@@ -6199,7 +6203,7 @@
     aug.feverScoreMul = 1; aug.fallMul = 1; aug.hitboxMul = 1; aug.poopMul = 1;
     aug.steelUmb = false; aug.starburst = false; aug.scoreMul = 1;
     aug.dodge = 0; aug.wak = false; aug.chainZap = false; aug.dungy = false; aug.momMeal = false;
-    rerolls = REROLLS; ghosts = []; wakBooms = [];
+    rerolls = REROLLS; ghosts = []; wakBooms = []; sweats = [];
     aug.blackhole = false; aug.legion = false; roidT = 0;
     aug.doveWhat = false; aug.doveFlock = 0; aug.doveFreq = 1;
     flyOn = false;
@@ -7015,6 +7019,12 @@
 
     if (spawnHold > 0) spawnHold -= dt * tsc;
     if (umbBlast) { umbBlast.t -= dt * tsc; if (umbBlast.t <= 0) umbBlast = null; }
+    for (let k = sweats.length - 1; k >= 0; k--) {
+      const w = sweats[k];
+      w.t += dt; w.vy += 900 * dt;
+      w.x += w.vx * dt; w.y += w.vy * dt;
+      if (w.t >= w.life) sweats.splice(k, 1);
+    }
     for (let k = ghosts.length - 1; k >= 0; k--) {
       ghosts[k].t += dt;
       if (ghosts[k].t >= ghosts[k].life) ghosts.splice(k, 1);
@@ -8014,15 +8024,30 @@
   /* 스친 순간 바로 알려 준다 — 점수는 그 똥이 바닥에 닿을 때 들어오지만,
      짜릿한 건 스치는 그 순간이라 신호를 여기서 낸다.
      글자('아슬!')와 짧은 느린 화면은 한 판에 수십 번 나와 시끄러워서 뺐다.
-     남은 건 작은 반짝임 하나와 소리뿐이고, 소리만 겹쳐 울리지 않게 쉬는 시간을 둔다. */
+     남은 건 캐릭터 머리에서 튀는 땀방울과 소리뿐이고, 소리만 겹쳐 울리지 않게 쉬는 시간을 둔다. */
   const GRAZE_FX_CD = 0.25;
   function onGraze(it) {
     grazeCount++;
-    burst(it.x, it.y, "#fff3b0", 4);                    // 작은 반짝임 — 스칠 때마다
+    /* 똥이 지나간 반대쪽으로 땀이 튄다 — 스친 쪽으로 몸이 움찔한 것처럼 보인다 */
+    const side = it.x > player.x ? -1 : 1;
+    popSweat(side);
+    if (Math.random() < 0.55) popSweat(side);           // 가끔 두 방울
     if (grazeFxCd <= 0) {
       grazeFxCd = GRAZE_FX_CD;
       if (!sfx("graze")) beep(2000, .04, "triangle", .025);
     }
+  }
+  /* 땀방울 하나 — 머리 옆에서 비스듬히 위로 튀어 올랐다가 중력에 떨어진다 */
+  function popSweat(side) {
+    if (sweats.length >= SWEAT_MAX) sweats.shift();
+    sweats.push({
+      x: player.x + side * player.r * (0.55 + Math.random() * 0.3),
+      y: player.y + player.hy - player.r * (0.35 + Math.random() * 0.45),
+      vx: side * (68 + Math.random() * 58),        // 너무 멀리 날아가면 몸에서 난 것으로 안 읽힌다
+      vy: -(160 + Math.random() * 110),
+      r: 3.8 + Math.random() * 2.4,
+      t: 0, life: 0.5 + Math.random() * 0.22
+    });
   }
 
   /* ---------- 방귀 대시 ----------
@@ -11425,6 +11450,27 @@
       ctx.globalAlpha = Math.max(0, 1 - p.t / p.life);
       ctx.fillStyle = p.c;
       ctx.beginPath(); ctx.arc(p.x, p.y, p.r, 0, 6.283); ctx.fill();
+    }
+    /* 아슬! 땀방울 — 날아가는 쪽으로 꼬리가 길게 늘어진 물방울꼴.
+       동그라미만 그리면 입자와 구분이 안 되어 땀으로 읽히지 않는다. */
+    for (const w of sweats) {
+      const k = w.t / w.life;
+      ctx.globalAlpha = Math.max(0, 1 - k * k);
+      const r = w.r * (1 - 0.22 * k);
+      ctx.save();
+      ctx.translate(w.x, w.y);
+      ctx.rotate(Math.atan2(w.vy, w.vx));
+      ctx.fillStyle = "#bfe9ff";
+      ctx.beginPath();
+      ctx.arc(0, 0, r, 0, 6.283);                  // 머리
+      ctx.moveTo(-r * 2.7, 0);                     // 꼬리 — 날아온 쪽으로
+      ctx.lineTo(0, -r * 0.82);
+      ctx.lineTo(0,  r * 0.82);
+      ctx.closePath();
+      ctx.fill();
+      ctx.fillStyle = "rgba(255,255,255,.8)";      // 반짝이는 점
+      ctx.beginPath(); ctx.arc(r * 0.2, -r * 0.28, r * 0.34, 0, 6.283); ctx.fill();
+      ctx.restore();
     }
     ctx.globalAlpha = 1;
 
