@@ -1073,7 +1073,7 @@
   const elTitle = document.getElementById("overTitle");
   const coinNote = document.getElementById("coinNote");
 
-  const GAME_VERSION = "v0.7.79";
+  const GAME_VERSION = "v0.7.80";
   /* 제작사 스플래시(bamhobak friends 로고) — 2026-09-20 끔. 다시 켜려면 true */
   const SPLASH_USE = false;   // 코드를 고칠 때마다 뒤 두 자리를 올린다
   document.getElementById("ver").textContent = GAME_VERSION;
@@ -1558,9 +1558,14 @@
      쉬었음 청년과 비슷해지도록 잡았다: 높이 = 판정지름 × 1.30 (피격 1.13). */
   /* bcx·bcy·brr = 비누방울의 중심과 반지름. 몸이 실제로 차지한 칸을 재서 넣었다
      (bcx 는 그림 가로, bcy·brr 은 그림 세로에 대한 비율). */
+  /* 2026-09-22 방울이가 시고르자브종(시골 똥개)으로 바뀌었다 — OpenAI(gpt-image-2)로 뽑은 그림
+     (tools/gen_sprite.py). 하늘로 올라가는 게임이라 걷지 않고 비스듬히 떠오르는 자세다.
+     몸이 대각선이라 빈 모서리가 많아 같은 높이면 푸들보다 작아 보여서, 보이는 넓이를 맞춰
+     높이를 판정지름 × 1.40 으로 잡았다 (푸들 1.30). 판정원은 다른 직업처럼 머리.
+     float — 그림자는 땅에 두고 몸만 둥둥 오르내린다 (drawPlayer). */
   const SPR_BANGUL = {
-    right: { img: null, aspect: 0.847, head: 0.380, cx: 0.660, cy: 0.400, adj: 0.4940,
-             bcx: 0.500, bcy: 0.500, brr: 0.500 },
+    right: { img: null, aspect: 0.822, head: 0.330, cx: 0.690, cy: 0.300, adj: 0.4620,
+             bcx: 0.520, bcy: 0.520, brr: 0.510, float: true },
     hurt:  { img: null, aspect: 0.959, head: 0.480, cx: 0.500, cy: 0.340, adj: 0.5424 }
   };
   // 방울이는 제 우주복이 따로 있다 (다른 직업은 공용 우주복을 입는다)
@@ -1714,9 +1719,13 @@
     pp.src = "assets/powerp2_" + key + ".png";
   }
   for (const key of ["right", "hurt"]) {
-    const bg = new Image();
-    bg.onload = () => { SPR_BANGUL[key].img = bg; };
-    bg.src = "assets/bangul_" + key + ".png";
+    /* 방울이(땅)는 새 그림이 아직 떠오르는 모습 하나뿐이다. 맞은 그림은 옛 푸들이라
+       받지 않는다 — 비워 두면 맞은 동안에도 같은 그림을 쓴다 (빨간 번쩍임·흔들림은 그대로). */
+    if (key === "right") {
+      const bg = new Image();
+      bg.onload = () => { SPR_BANGUL[key].img = bg; };
+      bg.src = "assets/bangul_" + key + ".png";
+    }
     const bs = new Image();
     bs.onload = () => { SPR_BANGUL_SPACE[key].img = bs; };
     bs.src = "assets/bangul_space_" + key + ".png";
@@ -1750,7 +1759,7 @@
     t.src = "assets/bg/title.webp";
     setTimeout(() => { if (!titleArt) titleGaveUp = true; }, 2000);
   }
-  loadRunFrames(SPR_BANGUL, "bangul_run");
+  // 땅의 방울이는 걷지 않고 떠오른다 — 옛 푸들의 달리는 16장(bangul_run*)은 쓰지 않는다
   loadRunFrames(SPR_BANGUL_SPACE, "bangul_space_run");
 
   // 도와줘 정연핑 — 아래에서 위로 날아가며 지나간 자리의 똥을 부순다
@@ -10211,6 +10220,13 @@
       ctx.ellipse(0, FOOT - 4 + (groundY - player.y), sw * .3 * (1 - air * .34), 7 * (1 - air * .34), 0, 0, 6.283);
       ctx.fill();
       ctx.restore();
+
+      /* 떠 있는 그림(방울이) — 걷지 않고 둥둥 떠오른다. 그림자는 땅에 둔 채 몸만
+         천천히 오르내리고 살짝 흔들린다. 판정원은 움직이지 않는다 (±4px 라 피하는 감각은 그대로). */
+      if (spr.float && !hurting) {
+        ctx.translate(0, Math.sin(now / 310) * 4);
+        ctx.rotate(Math.sin(now / 540) * 0.05);
+      }
 
       /* 풀소유로 바뀌는 순간 — 몸이 부풀고, 뒤에서 흰빛이 터지고,
          몸 자체가 한 번 하얗게 날아간다. */

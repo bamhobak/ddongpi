@@ -1,2 +1,5 @@
 # 원본 캐릭터 이미지 (배포에는 assets 의 가공된 png 만 올린다)
 src/
+
+# OpenAI 로 뽑은 후보 그림 (고른 것만 assets/ 로 옮긴다)
+assets/_gen/
