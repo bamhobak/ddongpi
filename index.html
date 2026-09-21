@@ -1073,7 +1073,7 @@
   const elTitle = document.getElementById("overTitle");
   const coinNote = document.getElementById("coinNote");
 
-  const GAME_VERSION = "v0.7.80";
+  const GAME_VERSION = "v0.7.81";
   /* 제작사 스플래시(bamhobak friends 로고) — 2026-09-20 끔. 다시 켜려면 true */
   const SPLASH_USE = false;   // 코드를 고칠 때마다 뒤 두 자리를 올린다
   document.getElementById("ver").textContent = GAME_VERSION;
@@ -1396,12 +1396,17 @@
      서 있을 때 발을 구르면 어색해서, 멈추면 첫 장으로 돌아간다.
      (그림 규격은 그대로 두고 그림만 갈아 끼우려고 한 덩이를 돌려 쓴다) */
   const RUN_FRAME_MS = 60;
+  /* 떠 있는 그림(방울이 개헤엄)은 발이 땅에 없으니 멈춰 있어도 헤엄을 멈추지 않는다 —
+     움직일 때는 빠르게 젓고(한 바퀴 1.1초), 가만히 있을 때는 느긋하게(1.8초) 젓는다. */
+  const SWIM_FRAME_MS = 70, SWIM_IDLE_MS = 112;
   const runSpr = {};
   function withFrames(base, now) {
     const fr = base.frames;
     if (!fr || !fr.length) return base;
     const moving = Math.abs(player.tx - player.x) > 1.5;
-    const img = moving ? fr[Math.floor(now / RUN_FRAME_MS) % fr.length] : fr[0];
+    const img = base.float
+      ? fr[Math.floor(now / (moving ? SWIM_FRAME_MS : SWIM_IDLE_MS)) % fr.length]
+      : moving ? fr[Math.floor(now / RUN_FRAME_MS) % fr.length] : fr[0];
     if (!img || img === base.img) return base;
     Object.assign(runSpr, base);
     runSpr.img = img;
@@ -1560,12 +1565,14 @@
      (bcx 는 그림 가로, bcy·brr 은 그림 세로에 대한 비율). */
   /* 2026-09-22 방울이가 시고르자브종(시골 똥개)으로 바뀌었다 — OpenAI(gpt-image-2)로 뽑은 그림
      (tools/gen_sprite.py). 하늘로 올라가는 게임이라 걷지 않고 비스듬히 떠오르는 자세다.
-     몸이 대각선이라 빈 모서리가 많아 같은 높이면 푸들보다 작아 보여서, 보이는 넓이를 맞춰
-     높이를 판정지름 × 1.40 으로 잡았다 (푸들 1.30). 판정원은 다른 직업처럼 머리.
-     float — 그림자는 땅에 두고 몸만 둥둥 오르내린다 (drawPlayer). */
+     게임 안에서는 그 그림을 Ludo(animateSprite·hydra)로 움직인 **허공 개헤엄 16장**
+     (bangul_swim1~16.webp)을 쓰고, 정지 그림(bangul_right.png)은 직업 카드·순위표에만 쓴다.
+     아래 값은 헤엄 프레임 캔버스(231x240)에서 잰 것 — 머리 위치는 16장 평균.
+     보이는 넓이를 정지 그림 때(판정지름 × 1.40 높이)와 같게 맞춰 높이 = 판정지름 × 1.475.
+     float — 그림자는 땅에 두고 몸만 떠 있다. 멈춰 있어도 헤엄은 계속 친다 (withFrames). */
   const SPR_BANGUL = {
-    right: { img: null, aspect: 0.822, head: 0.330, cx: 0.690, cy: 0.300, adj: 0.4620,
-             bcx: 0.520, bcy: 0.520, brr: 0.510, float: true },
+    right: { img: null, aspect: 0.9617, head: 0.336, cx: 0.645, cy: 0.325, adj: 0.4956,
+             bcx: 0.480, bcy: 0.520, brr: 0.500, float: true },
     hurt:  { img: null, aspect: 0.959, head: 0.480, cx: 0.500, cy: 0.340, adj: 0.5424 }
   };
   // 방울이는 제 우주복이 따로 있다 (다른 직업은 공용 우주복을 입는다)
@@ -1721,11 +1728,8 @@
   for (const key of ["right", "hurt"]) {
     /* 방울이(땅)는 새 그림이 아직 떠오르는 모습 하나뿐이다. 맞은 그림은 옛 푸들이라
        받지 않는다 — 비워 두면 맞은 동안에도 같은 그림을 쓴다 (빨간 번쩍임·흔들림은 그대로). */
-    if (key === "right") {
-      const bg = new Image();
-      bg.onload = () => { SPR_BANGUL[key].img = bg; };
-      bg.src = "assets/bangul_" + key + ".png";
-    }
+    /* 땅의 방울이는 정지 그림(bangul_right.png)을 게임 안에서 쓰지 않는다 — 헤엄 프레임과
+       캔버스가 달라 규격이 어긋난다. 첫 헤엄 프레임이 기본 그림이 된다 (loadRunFrames). */
     const bs = new Image();
     bs.onload = () => { SPR_BANGUL_SPACE[key].img = bs; };
     bs.src = "assets/bangul_space_" + key + ".png";
@@ -1738,12 +1742,16 @@
   }
   /* 방울이만 달리는 그림이 16장 따로 있다.
      차례대로 받아야 순서가 섞이지 않으므로 한 장씩 이어 받는다. */
-  function loadRunFrames(set, prefix) {
+  function loadRunFrames(set, prefix, asBase) {
     const frames = [];
     const next = (i) => {
       if (i > 16) return;
       const f = new Image();
-      f.onload = () => { frames.push(f); set.right.frames = frames; next(i + 1); };
+      f.onload = () => {
+        frames.push(f); set.right.frames = frames;
+        if (asBase && i === 1) set.right.img = f;      // 첫 장이 곧 서 있는 그림
+        next(i + 1);
+      };
       f.onerror = () => {};              // 없으면 조용히 그만둔다
       f.src = "assets/" + prefix + i + ".webp";
     };
@@ -1759,7 +1767,8 @@
     t.src = "assets/bg/title.webp";
     setTimeout(() => { if (!titleArt) titleGaveUp = true; }, 2000);
   }
-  // 땅의 방울이는 걷지 않고 떠오른다 — 옛 푸들의 달리는 16장(bangul_run*)은 쓰지 않는다
+  // 땅의 방울이는 걷지 않고 허공에서 개헤엄 친다 (Ludo 16장)
+  loadRunFrames(SPR_BANGUL, "bangul_swim", true);
   loadRunFrames(SPR_BANGUL_SPACE, "bangul_space_run");
 
   // 도와줘 정연핑 — 아래에서 위로 날아가며 지나간 자리의 똥을 부순다
@@ -10221,10 +10230,11 @@
       ctx.fill();
       ctx.restore();
 
-      /* 떠 있는 그림(방울이) — 걷지 않고 둥둥 떠오른다. 그림자는 땅에 둔 채 몸만
-         천천히 오르내리고 살짝 흔들린다. 판정원은 움직이지 않는다 (±4px 라 피하는 감각은 그대로). */
+      /* 떠 있는 그림(방울이) — 걷지 않고 둥둥 떠 있다. 헤엄 프레임에는 둥실거림이 이미
+         들어 있어서 코드로는 살짝 기우뚱하는 것만 얹는다 (프레임이 오기 전에만 ±4px 오르내림).
+         판정원은 움직이지 않는다. */
       if (spr.float && !hurting) {
-        ctx.translate(0, Math.sin(now / 310) * 4);
+        if (!spr.frames || !spr.frames.length) ctx.translate(0, Math.sin(now / 310) * 4);
         ctx.rotate(Math.sin(now / 540) * 0.05);
       }
 
