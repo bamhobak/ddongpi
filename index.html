@@ -1073,7 +1073,7 @@
   const elTitle = document.getElementById("overTitle");
   const coinNote = document.getElementById("coinNote");
 
-  const GAME_VERSION = "v0.7.82";
+  const GAME_VERSION = "v0.7.83";
   /* 제작사 스플래시(bamhobak friends 로고) — 2026-09-20 끔. 다시 켜려면 true */
   const SPLASH_USE = false;   // 코드를 고칠 때마다 뒤 두 자리를 올린다
   document.getElementById("ver").textContent = GAME_VERSION;
@@ -1397,8 +1397,9 @@
      (그림 규격은 그대로 두고 그림만 갈아 끼우려고 한 덩이를 돌려 쓴다) */
   const RUN_FRAME_MS = 60;
   /* 떠 있는 그림(방울이 개헤엄)은 발이 땅에 없으니 멈춰 있어도 헤엄을 멈추지 않는다 —
-     움직일 때는 빠르게 젓고(한 바퀴 1.1초), 가만히 있을 때는 느긋하게(1.8초) 젓는다. */
-  const SWIM_FRAME_MS = 70, SWIM_IDLE_MS = 112;
+     움직일 때는 조금 빠르게(한 바퀴 1.7초), 가만히 있을 때는 느긋하게(2.6초) 젓는다.
+     (2026-09-22 1.5배 느리게 — 1.1/1.8초는 발을 너무 바삐 저어 둥둥 떠 있는 느낌이 안 났다) */
+  const SWIM_FRAME_MS = 105, SWIM_IDLE_MS = 165;
   const runSpr = {};
   function withFrames(base, now) {
     const fr = base.frames;
