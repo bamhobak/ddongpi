@@ -1073,7 +1073,7 @@
   const elTitle = document.getElementById("overTitle");
   const coinNote = document.getElementById("coinNote");
 
-  const GAME_VERSION = "v0.7.81";
+  const GAME_VERSION = "v0.7.82";
   /* 제작사 스플래시(bamhobak friends 로고) — 2026-09-20 끔. 다시 켜려면 true */
   const SPLASH_USE = false;   // 코드를 고칠 때마다 뒤 두 자리를 올린다
   document.getElementById("ver").textContent = GAME_VERSION;
@@ -1567,12 +1567,13 @@
      (tools/gen_sprite.py). 하늘로 올라가는 게임이라 걷지 않고 비스듬히 떠오르는 자세다.
      게임 안에서는 그 그림을 Ludo(animateSprite·hydra)로 움직인 **허공 개헤엄 16장**
      (bangul_swim1~16.webp)을 쓰고, 정지 그림(bangul_right.png)은 직업 카드·순위표에만 쓴다.
-     아래 값은 헤엄 프레임 캔버스(231x240)에서 잰 것 — 머리 위치는 16장 평균.
-     보이는 넓이를 정지 그림 때(판정지름 × 1.40 높이)와 같게 맞춰 높이 = 판정지름 × 1.475.
+     2026-09-22 더 귀엽게 2.5등신으로 다시 뽑았다 (OpenAI cute25_1 → Ludo, 귀가 크게 펄럭이게).
+     아래 값은 헤엄 프레임 캔버스(261x240)에서 잰 것 — 머리 위치는 귀가 선 장면·접힌 장면의 평균.
+     보이는 넓이를 예전과 같게 맞춰 높이 = 판정지름 × 1.30 (머리가 커져서 전보다 낮게 잡혔다).
      float — 그림자는 땅에 두고 몸만 떠 있다. 멈춰 있어도 헤엄은 계속 친다 (withFrames). */
   const SPR_BANGUL = {
-    right: { img: null, aspect: 0.9617, head: 0.336, cx: 0.645, cy: 0.325, adj: 0.4956,
-             bcx: 0.480, bcy: 0.520, brr: 0.500, float: true },
+    right: { img: null, aspect: 1.0886, head: 0.440, cx: 0.645, cy: 0.420, adj: 0.5710,
+             bcx: 0.470, bcy: 0.550, brr: 0.520, float: true },
     hurt:  { img: null, aspect: 0.959, head: 0.480, cx: 0.500, cy: 0.340, adj: 0.5424 }
   };
   // 방울이는 제 우주복이 따로 있다 (다른 직업은 공용 우주복을 입는다)
