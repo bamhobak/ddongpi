@@ -1073,7 +1073,7 @@
   const elTitle = document.getElementById("overTitle");
   const coinNote = document.getElementById("coinNote");
 
-  const GAME_VERSION = "v0.7.91";
+  const GAME_VERSION = "v0.7.92";
   /* 제작사 스플래시(bamhobak friends 로고) — 2026-09-20 끔. 다시 켜려면 true */
   const SPLASH_USE = false;   // 코드를 고칠 때마다 뒤 두 자리를 올린다
   document.getElementById("ver").textContent = GAME_VERSION;
@@ -9547,6 +9547,7 @@
      그림은 화면보다 세로로 길어 위아래가 잘려 있고, prog 0 일 때 그 여유분의
      맨 위(그림의 아래쪽이 보이는 자리)에서 시작해 1 일 때 맨 아래까지 내려온다.
      되돌아가는 지점은 지대가 바뀌며 두 그림이 겹쳐 녹는 순간이라 보이지 않는다. */
+  const ZONE_FADE = 0.5;   // 다음 지대 그림이 겹쳐 오르는 구간 — 레벨의 뒤 절반
   function drawZoneImg(im, a, prog) {
     if (!im || a <= 0.004) return;
     const sc = Math.max(W / im.width, H / im.height);
@@ -9876,8 +9877,18 @@
          시작화면에서는 아예 흐르지 않는다. 아무것도 안 하고 보고 있는데
          배경만 계속 내려오면 어지럽다. 지대가 겹쳐 녹는 것은 그대로 둔다. */
       const idle = state === STATE.READY;
-      drawZoneImg(ZONE_IMG[i0], 1, idle ? 0.5 : zoneFrac());
-      if (i1 !== i0) drawZoneImg(ZONE_IMG[i1], zoneFrac(), idle ? 0.5 : 0);
+      /* 레벨이 바뀔 때 멈칫하지 않게 — 예전엔 다음 지대 그림이 레벨 내내 겹쳐 오르는 동안
+         멈춰 있다가(진행도 0) 레벨이 바뀌어서야 흐르기 시작했다. 레벨 끝 무렵엔 거의 그 멈춘
+         그림만 보여서 배경이 잠깐 서는 것처럼 보였다.
+         이제 다음 그림은 레벨의 뒤 절반(ZONE_FADE)에만 겹쳐 오르고, 한 그림은 처음 보이기
+         시작할 때부터 다음 그림에 다 덮일 때까지(1.5 레벨) 한 번도 서지 않고 이어서 흐른다. */
+      const t = levelTime / lvSec();
+      const pgOf = k => Math.max(0, Math.min(1, (t - (k - ZONE_FADE)) / (1 + ZONE_FADE)));
+      drawZoneImg(ZONE_IMG[i0], 1, idle ? 0.5 : pgOf(i0));
+      if (i1 !== i0) {
+        const a1 = idle ? zoneFrac() : Math.max(0, Math.min(1, (t - (i1 - ZONE_FADE)) / ZONE_FADE));
+        drawZoneImg(ZONE_IMG[i1], a1, idle ? 0.5 : pgOf(i1));
+      }
       bgShown = !!ZONE_IMG[i0];
     }
 
@@ -10989,7 +11000,10 @@
   }
   // 레이저가 떨어질 자리를 미리 깜빡여 알려준다 (막판일수록 빠르게)
   function drawWarnings(now) {
-    const L = H - GROUND_H;
+    /* 예고선은 화면 맨 아래까지 긋는다 — 레이저 똥은 바닥에서 멈추지 않고 화면 밖까지 내리꽂힌다.
+       (예전엔 바닥 높이 L 에서 끊겨서, 바닥이 없는 방울이 판에선 허공에서 뚝 끊겨 보였다)
+       경고 표시(⚠)의 자리는 예전 그대로 L 기준으로 잡는다. */
+    const L = H - GROUND_H, LF = H + 40;
     for (const wn of warns) {
       const left = wn.t / (wn.t0 || LASER_WARN);      // 1 → 0
       const speed = 90 + (1 - left) * 240;            // 남을수록 느리게, 임박하면 빠르게
@@ -11003,22 +11017,23 @@
          부술 수 없는 것이 온다는 걸 미리 알아보게 한다. */
       const dk = !!wn.dark;
       const halfW = dk ? 30 : 17;
-      const g = ctx.createLinearGradient(0, 0, 0, L);
+      const lenF = LF / Math.cos(wn.ang || 0);        // 기울어도 화면 끝까지 닿는 길이
+      const g = ctx.createLinearGradient(0, 0, 0, lenF);
       g.addColorStop(0, dk ? "rgba(150,60,255,.34)" : "rgba(255,60,60,.20)");
       g.addColorStop(1, dk ? "rgba(40,0,80,.12)" : "rgba(255,60,60,.05)");
       ctx.fillStyle = g;
-      ctx.fillRect(-halfW, 0, halfW * 2, L / Math.cos(wn.ang || 0));
+      ctx.fillRect(-halfW, 0, halfW * 2, lenF);
       if (dk) {                                       // 양 끝을 진하게 둘러 테두리를 만든다
         ctx.strokeStyle = "rgba(190,110,255," + (on ? 0.8 : 0.35) + ")";
         ctx.lineWidth = 2;
-        ctx.strokeRect(-halfW, 0, halfW * 2, L / Math.cos(wn.ang || 0));
+        ctx.strokeRect(-halfW, 0, halfW * 2, lenF);
       }
       ctx.strokeStyle = dk ? "rgba(210,150,255," + (on ? 1 : 0.4) + ")"
                            : "rgba(255,80,80," + (on ? 0.9 : 0.3) + ")";
       ctx.lineWidth = dk ? 5 : 2;
       ctx.beginPath();
       ctx.moveTo(0, 0);
-      ctx.lineTo(0, L / Math.cos(wn.ang || 0));
+      ctx.lineTo(0, lenF);
       ctx.stroke();
       /* 경고 표시는 화면 맨 위가 아니라 예고선 중간쯤에 크게 띄운다.
          선을 따라 기울어진 자리로 옮긴 뒤, 글자만 다시 세운다. */
