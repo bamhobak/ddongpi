@@ -1073,7 +1073,7 @@
   const elTitle = document.getElementById("overTitle");
   const coinNote = document.getElementById("coinNote");
 
-  const GAME_VERSION = "v0.7.84";
+  const GAME_VERSION = "v0.7.85";
   /* 제작사 스플래시(bamhobak friends 로고) — 2026-09-20 끔. 다시 켜려면 true */
   const SPLASH_USE = false;   // 코드를 고칠 때마다 뒤 두 자리를 올린다
   document.getElementById("ver").textContent = GAME_VERSION;
@@ -1587,7 +1587,10 @@
   const SPR_BANGUL = {
     right: { img: null, aspect: 1.0886, head: 0.440, cx: 0.645, cy: 0.420, adj: 0.5710,
              bcx: 0.470, bcy: 0.550, brr: 0.520, float: true },
-    hurt:  { img: null, aspect: 0.959, head: 0.480, cx: 0.500, cy: 0.340, adj: 0.5424 }
+    /* 맞은 그림 — 같은 강아지가 머리에 혹이 나고 눈을 '> <' 로 질끈 감은 채 엉엉 운다 (OpenAI hurt25_2).
+       adj 를 헤엄 그림과 같게(0.571) 둬서 맞는 순간에도 머리가 같은 크기로 보인다. */
+    hurt:  { img: null, aspect: 0.9719, head: 0.394, cx: 0.675, cy: 0.360, adj: 0.5710,
+             bcx: 0.500, bcy: 0.520, brr: 0.520 }
   };
   // 방울이는 제 우주복이 따로 있다 (다른 직업은 공용 우주복을 입는다)
   const SPR_BANGUL_SPACE = {
@@ -1743,7 +1746,13 @@
     /* 방울이(땅)는 새 그림이 아직 떠오르는 모습 하나뿐이다. 맞은 그림은 옛 푸들이라
        받지 않는다 — 비워 두면 맞은 동안에도 같은 그림을 쓴다 (빨간 번쩍임·흔들림은 그대로). */
     /* 땅의 방울이는 정지 그림(bangul_right.png)을 게임 안에서 쓰지 않는다 — 헤엄 프레임과
-       캔버스가 달라 규격이 어긋난다. 첫 헤엄 프레임이 기본 그림이 된다 (loadRunFrames). */
+       캔버스가 달라 규격이 어긋난다. 첫 헤엄 프레임이 기본 그림이 된다 (loadRunFrames).
+       맞은 그림(bangul_hurt.png)은 제 규격이 따로 있어 그대로 받는다. */
+    if (key === "hurt") {
+      const bh = new Image();
+      bh.onload = () => { SPR_BANGUL.hurt.img = bh; };
+      bh.src = "assets/bangul_hurt.png";
+    }
     const bs = new Image();
     bs.onload = () => { SPR_BANGUL_SPACE[key].img = bs; };
     bs.src = "assets/bangul_space_" + key + ".png";
