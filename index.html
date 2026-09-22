@@ -1073,7 +1073,7 @@
   const elTitle = document.getElementById("overTitle");
   const coinNote = document.getElementById("coinNote");
 
-  const GAME_VERSION = "v0.7.94";
+  const GAME_VERSION = "v0.7.95";
   /* 제작사 스플래시(bamhobak friends 로고) — 2026-09-20 끔. 다시 켜려면 true */
   const SPLASH_USE = false;   // 코드를 고칠 때마다 뒤 두 자리를 올린다
   document.getElementById("ver").textContent = GAME_VERSION;
@@ -1398,15 +1398,19 @@
      (그림 규격은 그대로 두고 그림만 갈아 끼우려고 한 덩이를 돌려 쓴다) */
   const RUN_FRAME_MS = 60;
   /* 떠 있는 그림(방울이 개헤엄)은 발이 땅에 없으니 멈춰 있어도 헤엄을 멈추지 않는다.
-     젓는 빠르기는 실제로 움직인 속도를 따라간다 — 가만히 있으면 느긋하게(한 바퀴 2.6초),
+     젓는 빠르기는 실제로 움직인 속도를 따라간다 — 가만히 있으면 느긋하게(한 바퀴 4초, v0.7.95 에 2.6초→4초),
      최고 속도면 가장 바쁘게(0.8초), 그 사이는 속도만큼. 시계가 아니라 swimPhase 를 쌓아서
      돌리므로 속도가 바뀌어도 장면이 튀지 않고, 게임이 멈춘 동안(증강 고르기·일시정지·맞은 순간)은
      쌓이지 않아 발도 함께 멈춘다 (tickSwim). */
-  const SWIM_IDLE_FPS = 1000 / 165, SWIM_FAST_FPS = 20;
+  const SWIM_IDLE_FPS = 1000 / 250, SWIM_FAST_FPS = 20;
   let swimPhase = 0, swimK = 0, swimPrevX = null;
+  /* 떠 있는 몸이 살랑 기우뚱하는 시계 — 헤엄과 똑같이 게임이 돌 때만 흐른다.
+     실제 시계(now)로 흔들었더니 증강 고르는 동안에도 혼자 살랑거렸다. */
+  let floatT = 0;
   function tickSwim(dt) {
     const running = (state === STATE.PLAY && hitStop <= 0) || state === STATE.READY;
     if (!running) { swimPrevX = player.x; return; }
+    floatT += dt;
     const v = swimPrevX === null ? 0 : Math.abs(player.x - swimPrevX) / Math.max(dt, 1e-3);
     swimPrevX = player.x;
     const k = Math.min(1, v / (PLAYER_MAX_SPEED * spdMul()));   // 0 정지 ~ 1 최고 속도
@@ -10323,9 +10327,9 @@
       /* 떠 있는 그림(방울이) — 걷지 않고 둥둥 떠 있다. 헤엄 프레임에는 둥실거림이 이미
          들어 있어서 코드로는 살짝 기우뚱하는 것만 얹는다 (프레임이 오기 전에만 ±4px 오르내림).
          판정원은 움직이지 않는다. */
-      if (spr.float && !hurting) {
-        if (!spr.frames || !spr.frames.length) ctx.translate(0, Math.sin(now / 310) * 4);
-        ctx.rotate(Math.sin(now / 540) * 0.05);
+      if (spr.float && !hurting) {          // 게임이 멈추면(증강·일시정지·맞은 순간) 살랑임도 멈춘다 — floatT
+        if (!spr.frames || !spr.frames.length) ctx.translate(0, Math.sin(floatT * 1000 / 310) * 4);
+        ctx.rotate(Math.sin(floatT * 1000 / 540) * 0.05);
       }
 
       /* 풀소유로 바뀌는 순간 — 몸이 부풀고, 뒤에서 흰빛이 터지고,
