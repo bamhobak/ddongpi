@@ -9,6 +9,7 @@ OpenAI 로 캐릭터 그림을 뽑는 도구.
 - 배경을 투명하게 받아 테두리 여백을 잘라 내고, 높이 320px 로 맞춘다 (게임 그림 규격).
 - 결과는 assets/_gen/<이름>_<번호>.png 로 남는다. 고른 것만 assets/ 로 옮겨 쓴다.
   (_gen 은 배포하지 않는다 — .gitignore)
+- 배경 그림은 --bg opaque --raw : 투명 배경·여백 자르기·320px 맞추기를 모두 건너뛰고 받은 그대로 남긴다.
 """
 import argparse, base64, io, os, pathlib, sys, time
 import requests
@@ -42,7 +43,7 @@ def call(args):
     hdr = {"Authorization": "Bearer " + key}
     common = {"model": args.model, "prompt": args.prompt, "n": str(args.n),
               "size": args.size, "quality": args.quality,
-              "background": "transparent", "output_format": "png"}
+              "background": args.bg, "output_format": "png"}
     if args.ref:
         files = [("image[]", (pathlib.Path(p).name, open(p, "rb"), "image/png")) for p in args.ref]
         r = requests.post(API + "/edits", headers=hdr, data=common, files=files, timeout=600)
@@ -63,6 +64,8 @@ def main():
     ap.add_argument("--model", default="gpt-image-2")
     ap.add_argument("--size", default="1024x1024")
     ap.add_argument("--quality", default="high")
+    ap.add_argument("--bg", default="transparent", help="transparent | opaque | auto")
+    ap.add_argument("--raw", action="store_true", help="자르기·크기 맞추기 없이 그대로 (배경 그림용)")
     args = ap.parse_args()
 
     OUT.mkdir(parents=True, exist_ok=True)
@@ -72,7 +75,7 @@ def main():
     for i, item in enumerate(d.get("data", []), 1):
         raw = Image.open(io.BytesIO(base64.b64decode(item["b64_json"]))).convert("RGBA")
         (OUT / ("%s_%d_raw.png" % (args.name, i))).write_bytes(base64.b64decode(item["b64_json"]))
-        im = fit_h(trim(raw))
+        im = raw if args.raw else fit_h(trim(raw))
         p = OUT / ("%s_%d.png" % (args.name, i))
         im.save(p, optimize=True)
         saved.append((p, im.size))
