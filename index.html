@@ -1073,7 +1073,7 @@
   const elTitle = document.getElementById("overTitle");
   const coinNote = document.getElementById("coinNote");
 
-  const GAME_VERSION = "v0.7.83";
+  const GAME_VERSION = "v0.7.84";
   /* 제작사 스플래시(bamhobak friends 로고) — 2026-09-20 끔. 다시 켜려면 true */
   const SPLASH_USE = false;   // 코드를 고칠 때마다 뒤 두 자리를 올린다
   document.getElementById("ver").textContent = GAME_VERSION;
@@ -1396,17 +1396,29 @@
      서 있을 때 발을 구르면 어색해서, 멈추면 첫 장으로 돌아간다.
      (그림 규격은 그대로 두고 그림만 갈아 끼우려고 한 덩이를 돌려 쓴다) */
   const RUN_FRAME_MS = 60;
-  /* 떠 있는 그림(방울이 개헤엄)은 발이 땅에 없으니 멈춰 있어도 헤엄을 멈추지 않는다 —
-     움직일 때는 조금 빠르게(한 바퀴 1.7초), 가만히 있을 때는 느긋하게(2.6초) 젓는다.
-     (2026-09-22 1.5배 느리게 — 1.1/1.8초는 발을 너무 바삐 저어 둥둥 떠 있는 느낌이 안 났다) */
-  const SWIM_FRAME_MS = 105, SWIM_IDLE_MS = 165;
+  /* 떠 있는 그림(방울이 개헤엄)은 발이 땅에 없으니 멈춰 있어도 헤엄을 멈추지 않는다.
+     젓는 빠르기는 실제로 움직인 속도를 따라간다 — 가만히 있으면 느긋하게(한 바퀴 2.6초),
+     최고 속도면 가장 바쁘게(0.8초), 그 사이는 속도만큼. 시계가 아니라 swimPhase 를 쌓아서
+     돌리므로 속도가 바뀌어도 장면이 튀지 않고, 게임이 멈춘 동안(증강 고르기·일시정지·맞은 순간)은
+     쌓이지 않아 발도 함께 멈춘다 (tickSwim). */
+  const SWIM_IDLE_FPS = 1000 / 165, SWIM_FAST_FPS = 20;
+  let swimPhase = 0, swimK = 0, swimPrevX = null;
+  function tickSwim(dt) {
+    const running = (state === STATE.PLAY && hitStop <= 0) || state === STATE.READY;
+    if (!running) { swimPrevX = player.x; return; }
+    const v = swimPrevX === null ? 0 : Math.abs(player.x - swimPrevX) / Math.max(dt, 1e-3);
+    swimPrevX = player.x;
+    const k = Math.min(1, v / (PLAYER_MAX_SPEED * spdMul()));   // 0 정지 ~ 1 최고 속도
+    swimK += (k - swimK) * Math.min(1, dt * 6);                  // 속도가 튀어도 발놀림은 부드럽게 바뀐다
+    swimPhase += dt * (SWIM_IDLE_FPS + (SWIM_FAST_FPS - SWIM_IDLE_FPS) * swimK);
+  }
   const runSpr = {};
   function withFrames(base, now) {
     const fr = base.frames;
     if (!fr || !fr.length) return base;
     const moving = Math.abs(player.tx - player.x) > 1.5;
     const img = base.float
-      ? fr[Math.floor(now / (moving ? SWIM_FRAME_MS : SWIM_IDLE_MS)) % fr.length]
+      ? fr[Math.floor(swimPhase) % fr.length]
       : moving ? fr[Math.floor(now / RUN_FRAME_MS) % fr.length] : fr[0];
     if (!img || img === base.img) return base;
     Object.assign(runSpr, base);
@@ -11659,6 +11671,7 @@
     } else {
       update(dt, now);
     }
+    tickSwim(dt);              // 방울이 헤엄 — 움직인 만큼 빨리 젓고, 게임이 멈추면 발도 멈춘다
     magHum(state === STATE.PLAY ? magNear * magNear : 0);   // 가까울수록 가파르게 커진다
     syncBgm();                 // 화면이 바뀌면 배경음악도 따라 바뀐다
     bgmTick(dt);               // 곡이 끝나갈 때 처음과 겹쳐 이어 붙인다
