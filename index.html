@@ -1073,7 +1073,7 @@
   const elTitle = document.getElementById("overTitle");
   const coinNote = document.getElementById("coinNote");
 
-  const GAME_VERSION = "v0.7.85";
+  const GAME_VERSION = "v0.7.86";
   /* 제작사 스플래시(bamhobak friends 로고) — 2026-09-20 끔. 다시 켜려면 true */
   const SPLASH_USE = false;   // 코드를 고칠 때마다 뒤 두 자리를 올린다
   document.getElementById("ver").textContent = GAME_VERSION;
@@ -1587,10 +1587,11 @@
   const SPR_BANGUL = {
     right: { img: null, aspect: 1.0886, head: 0.440, cx: 0.645, cy: 0.420, adj: 0.5710,
              bcx: 0.470, bcy: 0.550, brr: 0.520, float: true },
-    /* 맞은 그림 — 같은 강아지가 머리에 혹이 나고 눈을 '> <' 로 질끈 감은 채 엉엉 운다 (OpenAI hurt25_2).
+    /* 맞은 그림 — 같은 강아지가 머리에 혹이 나고 눈을 '> <' 로 질끈 감은 채 엉엉 운다 (OpenAI hurt25_3).
+       (hurt25_2 는 머리 위로 올린 앞발이 귀와 섞여 다리가 셋으로 보여서 바꿨다)
        adj 를 헤엄 그림과 같게(0.571) 둬서 맞는 순간에도 머리가 같은 크기로 보인다. */
-    hurt:  { img: null, aspect: 0.9719, head: 0.394, cx: 0.675, cy: 0.360, adj: 0.5710,
-             bcx: 0.500, bcy: 0.520, brr: 0.520 }
+    hurt:  { img: null, aspect: 1.1094, head: 0.416, cx: 0.710, cy: 0.375, adj: 0.5710,
+             bcx: 0.500, bcy: 0.550, brr: 0.520 }
   };
   // 방울이는 제 우주복이 따로 있다 (다른 직업은 공용 우주복을 입는다)
   const SPR_BANGUL_SPACE = {
