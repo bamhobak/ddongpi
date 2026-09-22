@@ -1073,7 +1073,7 @@
   const elTitle = document.getElementById("overTitle");
   const coinNote = document.getElementById("coinNote");
 
-  const GAME_VERSION = "v0.7.92";
+  const GAME_VERSION = "v0.7.93";
   /* 제작사 스플래시(bamhobak friends 로고) — 2026-09-20 끔. 다시 켜려면 true */
   const SPLASH_USE = false;   // 코드를 고칠 때마다 뒤 두 자리를 올린다
   document.getElementById("ver").textContent = GAME_VERSION;
@@ -9883,7 +9883,10 @@
          이제 다음 그림은 레벨의 뒤 절반(ZONE_FADE)에만 겹쳐 오르고, 한 그림은 처음 보이기
          시작할 때부터 다음 그림에 다 덮일 때까지(1.5 레벨) 한 번도 서지 않고 이어서 흐른다. */
       const t = levelTime / lvSec();
-      const pgOf = k => Math.max(0, Math.min(1, (t - (k - ZONE_FADE)) / (1 + ZONE_FADE)));
+      /* 첫 지대(잔디밭)는 겹쳐 오르는 앞 레벨이 없으니 게임 시작(t=0)에 그림 맨 아래(발밑 잔디 언덕)에서
+         출발한다 — 다른 지대처럼 -ZONE_FADE 에서 셈을 시작하면 시작부터 1/3 올라가 있어 언덕이 안 보였다.
+         흐르는 빠르기는 다른 지대와 같다. */
+      const pgOf = k => Math.max(0, Math.min(1, (t - Math.max(0, k - ZONE_FADE)) / (1 + ZONE_FADE)));
       drawZoneImg(ZONE_IMG[i0], 1, idle ? 0.5 : pgOf(i0));
       if (i1 !== i0) {
         const a1 = idle ? zoneFrac() : Math.max(0, Math.min(1, (t - (i1 - ZONE_FADE)) / ZONE_FADE));
