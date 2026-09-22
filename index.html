@@ -1073,7 +1073,7 @@
   const elTitle = document.getElementById("overTitle");
   const coinNote = document.getElementById("coinNote");
 
-  const GAME_VERSION = "v0.7.97";
+  const GAME_VERSION = "v0.7.98";
   /* 제작사 스플래시(bamhobak friends 로고) — 2026-09-20 끔. 다시 켜려면 true */
   const SPLASH_USE = false;   // 코드를 고칠 때마다 뒤 두 자리를 올린다
   document.getElementById("ver").textContent = GAME_VERSION;
@@ -1906,7 +1906,7 @@
     bi.onload = () => { ZONE_IMG[k] = bi; };
     bi.src = "assets/bg/zone" + (zi + 1 < 10 ? "0" : "") + (zi + 1) + ".webp";
   }
-  // 뚜니핑 타임 하늘 — 땅 위에서는 황금빛, 우주에서는 보랏빛 워프
+  // 뚜니핑 타임 하늘 — 땅 위에서는 황금빛, 우주에서는 보랏빛 워프 (v0.7.98 방울이 그림체로 새로 — OpenAI)
   let feverSky = null, feverSkySpace = null;
   { const fi = new Image(); fi.onload = () => { feverSky = fi; }; fi.src = "assets/bg/fever.webp"; }
   { const fs = new Image(); fs.onload = () => { feverSkySpace = fs; };
