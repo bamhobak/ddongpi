@@ -1073,7 +1073,7 @@
   const elTitle = document.getElementById("overTitle");
   const coinNote = document.getElementById("coinNote");
 
-  const GAME_VERSION = "v0.7.88";
+  const GAME_VERSION = "v0.7.89";
   /* 제작사 스플래시(bamhobak friends 로고) — 2026-09-20 끔. 다시 켜려면 true */
   const SPLASH_USE = false;   // 코드를 고칠 때마다 뒤 두 자리를 올린다
   document.getElementById("ver").textContent = GAME_VERSION;
@@ -1112,6 +1112,7 @@
     bangul: { nm: "방울이", ic: "🫧", ds: "목숨 대신 오염도 · 비누방울이 한 대를 대신 맞고 터진다 · 잠시 뒤 다시 맺힌다", f: "이핑재핑보다 귀엽다" }
   };
   // 직업별 캐릭터 그림(오른쪽 이동 모습) — 직업 카드와 순위표에서 함께 쓴다
+  // (방울이의 bangul_right.png 만은 얌전히 앉은 정면 소개 그림이다 — 게임 안에서는 헤엄 16장을 쓰므로 소개 전용)
   const JOB_IMG = { none: "player", fortune: "fortune", gambler: "gambler", levitator: "levitator",
                     fit: "fit", powerj: "powerj", powerp: "monk", powerp2: "powerp2",
                     bangul: "bangul" };
@@ -2846,6 +2847,10 @@
   let dirtShown = 0;
   const DIRT_SLIDE = 70;                   // 초당 몇 % 씩 움직이는지 (25 는 0.36초)
   function dirtJob() { return job === "bangul"; }
+  /* 바닥 없는 판 — 방울이는 걷지 않고 하늘로 둥둥 헤엄쳐 올라가는데, 발밑에 바닥이 늘 따라
+     올라오면 어색하다. 방울이 판에서만 바닥·바닥색 띠·발밑 그림자를 그리지 않는다.
+     (달리는 사람 직업들은 발 디딜 데가 있어야 해서 바닥을 둔다) */
+  function groundless() { return job === "bangul" && state !== STATE.READY; }
   let levelTime = 0;               // 레벨이 오르는 시계 — 뚜니핑 타임에는 멈춰 있다
   const LEVEL_SEC = 13;            // 레벨 한 칸의 길이(초). 지대 하나의 길이이기도 하다
   const LEVEL_SEC_NOITEM = 8;      // 노템전은 레벨이 8초 — 패턴 하나가 8초
@@ -9930,7 +9935,7 @@
     /* 발밑에서 튀어 오르는 빛 — 잔디밭이면 초록, 바위면 갈색, 달이면 잿빛.
        배경이 하늘 그림뿐이라 지금 무엇 위에 서 있는지 읽히지 않는다.
        바닥 바로 위에 그 지대의 바닥색을 얇게 깔아 두면 공기가 이어져 보인다. */
-    if (bgShown && state !== STATE.READY) {
+    if (bgShown && state !== STATE.READY && !groundless()) {
       const gt2 = GROUND_TINT[ZONES[zoneIdx()].gr];
       if (gt2) {
         const gh = 190, gy = H - GROUND_H - gh;
@@ -9943,7 +9948,7 @@
     }
 
     // 발밑 — 단계가 바뀌는 동안 다음 지형이 겹쳐 올라온다
-    if (state !== STATE.READY) {          // 인트로에서는 발판 없이 날아간다
+    if (state !== STATE.READY && !groundless()) {   // 인트로·방울이 판에서는 발판 없이 날아간다
       const za = ZONES[zoneIdx()], zb = ZONES[Math.min(LAST_Z, zoneIdx() + 1)], zf = zoneFrac();
       drawGround(za.gr, 1);
       if (zb.gr !== za.gr && zf > 0.45) drawGround(zb.gr, Math.min(1, (zf - 0.45) / 0.35));
@@ -10255,6 +10260,7 @@
          높이 뜰수록 작고 옅어져서 얼마나 떠 있는지 눈으로 읽힌다. */
       const air = Math.max(0, Math.min(1, (groundY - player.y) / Math.max(1, groundY - H * FLY_TOP)));
       ctx.save();
+      if (groundless()) ctx.globalAlpha = 0;          // 바닥이 없으면 그림자를 드리울 데도 없다
       ctx.globalAlpha *= .22 * (1 - air * .62);
       ctx.fillStyle = "#000";
       ctx.beginPath();
