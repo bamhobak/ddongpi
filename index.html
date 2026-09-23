@@ -497,7 +497,7 @@
     border: 1px solid rgba(255,255,255,.12); box-shadow: none;
   }
   /* 조작 방식 토글 — 이름 알약 아래 */
-  #ctrlBox, #sndBox {
+  #sndBox {
     display: flex; align-items: center; gap: 5px;
     padding: 4px 6px 4px 12px; border-radius: 4px;
     background: rgba(53,240,255,.06); border: 1px solid rgba(53,240,255,.28);
@@ -510,8 +510,6 @@
   #optRow #nameEdit { gap: 5px; }
   #optRow #startName { width: 70px; font-size: 13px; padding: 5px 7px; border-radius: 6px; }
   #optRow #nameEdit button { padding: 5px 8px; font-size: 12px; }
-  #optRow #ctrlBox { padding: 3px 4px 3px 4px; gap: 4px; }
-  #optRow #ctrlBox .ctrlBtn { padding: 5px 8px; }
   #optRow #sndBox { padding: 3px 4px; gap: 4px; }
   /* 소리 버튼은 정사각형 — 옆 조작 버튼과 높이를 맞춘다 */
   #optRow #sndBox .ctrlBtn { font-size: 14px; padding: 0; width: 28px; height: 28px;
@@ -528,51 +526,16 @@
     color: #05060d; background: #35f0ff; border-color: #35f0ff;
     box-shadow: 0 0 12px rgba(53,240,255,.55);
   }
-  #ctrlBox .ctrlBtn, #sndBox .ctrlBtn {
+  #sndBox .ctrlBtn {
     padding: 5px 11px; font-size: 12px; border-radius: 3px;
     background: rgba(255,255,255,.06); color: #9fb4d0; box-shadow: none;
     border: 1px solid rgba(255,255,255,.2);
   }
-  #ctrlBox .ctrlBtn.on, #sndBox .ctrlBtn.on {
+  #sndBox .ctrlBtn.on {
     color: #05060d; background: #35f0ff; border-color: #35f0ff;
     box-shadow: 0 0 12px rgba(53,240,255,.55);
   }
 
-  /* 십자패드 — 오른쪽 아래, 누르고 있는 동안 이동 */
-  /* 하나의 둥근 패드 — 누른 채 밀면 방향이 바로 바뀐다 (손가락을 뗄 필요가 없다) */
-  #dpad {
-    position: absolute; left: 50%; transform: translateX(-50%);
-    bottom: calc(max(12px, env(safe-area-inset-bottom)) + var(--lby, 0px)); z-index: 4;
-    display: none; width: 158px; height: 158px; border-radius: 50%;
-    background: rgba(255,255,255,.13); border: 1px solid rgba(255,255,255,.20);
-    opacity: .82; touch-action: none; -webkit-user-select: none; user-select: none;
-  }
-  #dpad.on { display: block; }
-  #dpad .ar {
-    position: absolute; font-size: 17px; color: #fff; opacity: .5;
-    transition: opacity .08s ease, color .08s ease;
-  }
-  #dpad .ar.hit { opacity: 1; color: #ffd23f; text-shadow: 0 0 10px rgba(255,210,63,.6); }
-  #dpad .up { top: 9px;  left: 50%; transform: translateX(-50%); }
-  #dpad .dn { bottom: 9px; left: 50%; transform: translateX(-50%); }
-  #dpad .lf { left: 11px;  top: 50%; transform: translateY(-50%); }
-  #dpad .rt { right: 11px; top: 50%; transform: translateY(-50%); }
-  #dpad .knob {
-    position: absolute; left: 50%; top: 50%; width: 60px; height: 60px; margin: -30px 0 0 -30px;
-    border-radius: 50%; background: rgba(255,255,255,.30); pointer-events: none;
-    transition: background .1s ease;
-  }
-  #dpad.press .knob { background: rgba(255,210,63,.55); }
-  /* 좌우만 되는 직업은 가로로 긴 알약 패드 — 엄지로 좌우로 밀기 좋다 */
-  #dpad.noVert {
-    width: 178px; height: 68px; border-radius: 999px;
-  }
-  #dpad.noVert .up, #dpad.noVert .dn { display: none; }
-  #dpad.noVert .lf { left: 15px; }
-  #dpad.noVert .rt { right: 15px; }
-  #dpad.noVert .knob {
-    width: 54px; height: 54px; margin: -27px 0 0 -27px;
-  }
   #btnTestEnd {
     position: absolute; right: calc(12px + var(--lbx, 0px)); top: calc(96px + var(--lby, 0px)); z-index: 5; display: none;
     appearance: none; border: 0; cursor: pointer; font: inherit;
@@ -874,11 +837,6 @@
   <div id="stage">
     <canvas id="cv"></canvas>
     <button id="btnPause">⏸</button>
-    <div id="dpad">
-      <span class="ar up">▲</span><span class="ar lf">◀</span>
-      <span class="ar rt">▶</span><span class="ar dn">▼</span>
-      <span class="knob"></span>
-    </div>
     <button id="btnTestEnd">테스트 종료</button>
     <div id="testLv">
       <button id="btnLvUp" title="레벨 올리기">레벨 ▲</button>
@@ -915,10 +873,6 @@
           <input id="startName" type="text" maxlength="5" placeholder="이름 (5자)"
                  autocomplete="off" autocorrect="off" spellcheck="false">
           <button id="btnSaveName">저장</button>
-        </div>
-        <div id="ctrlBox">
-          <button class="ctrlBtn" data-ctrl="touch">👆 터치</button>
-          <button class="ctrlBtn" data-ctrl="pad">🎮 패드</button>
         </div>
         <div id="sndBox">
           <button class="ctrlBtn sndBtn" data-snd="bgm" title="배경음" aria-label="배경음">🎵</button>
@@ -1073,7 +1027,7 @@
   const elTitle = document.getElementById("overTitle");
   const coinNote = document.getElementById("coinNote");
 
-  const GAME_VERSION = "v0.8.01";
+  const GAME_VERSION = "v0.8.02";
   /* 제작사 스플래시(bamhobak friends 로고) — 2026-09-20 끔. 다시 켜려면 true */
   const SPLASH_USE = false;   // 코드를 고칠 때마다 뒤 두 자리를 올린다
   document.getElementById("ver").textContent = GAME_VERSION;
@@ -5684,7 +5638,6 @@
     /* 화면(증강·직업 선택)을 누른 손가락이 그대로 게임 조작으로 새는 걸 막는다.
        화면이 닫힌 뒤 브라우저가 같은 자리에 흉내내는 마우스 이벤트를 흘려보낸다. */
     if (performance.now() < inputHoldUntil) return true;
-    if (ctrlMode === "pad") return true;
     return false;
   }
   function dragAnchor(e) {
@@ -5729,7 +5682,7 @@
      끌기 조작과 섞이지 않는 게 제일 중요하다. '짧게 눌렀다 뗀' 것만 한 번의 두드림으로 치고
      (TAP_MS 안에 떼고, 그동안 TAP_MOVE 넘게 끌지 않았을 것), 그 뒤 DTAP_MS 안에 가까운 자리를
      다시 누르면 터진다. 끌고 있는 손가락은 TAP_MOVE 에서 걸러지므로 오작동하지 않는다.
-     십자패드 모드에서도 놀이판을 두드리면 되게 끌기와 따로 듣는다. */
+     끌기와 따로 들어서, 끌기가 막혀 있을 때도 두드림만은 잡힌다. */
   const TAP_MS = 220, TAP_MOVE = 26, DTAP_MS = 300, DTAP_DIST = 130;
   let tapDownAt = 0, tapDownX = 0, tapDownY = 0, tapMoved = 0;
   let lastTapAt = -1e9, lastTapX = 0, lastTapY = 0;
@@ -5774,107 +5727,6 @@
   cv.addEventListener("mousemove", e => { if (e.buttons & 1) tapMove(e); });
   window.addEventListener("mouseup", tapUp);
 
-  /* ---------- 조작 방식: 터치 따라가기 / 십자패드 ----------
-     십자패드는 누르고 있는 동안 키보드 방향키와 같은 신호를 낸다. */
-  const LS_CTRL = "epjpddongpi_ctrl";
-  let ctrlMode = "touch";
-  try { ctrlMode = localStorage.getItem(LS_CTRL) === "pad" ? "pad" : "touch"; } catch (e) {}
-  const dpad = document.getElementById("dpad");
-  function syncPad() {   // 게임 중 + 십자패드 모드일 때만 보인다
-    const on = ctrlMode === "pad" && btnPause.classList.contains("on");
-    dpad.classList.toggle("on", on);
-    dpad.classList.toggle("noVert", !flyOn);
-    if (!on) padClear();
-  }
-  /* 소리 버튼도 생김새를 맞추려고 같은 클래스를 쓰므로, 조작 쪽은 제 상자 안만 본다.
-     (예전에는 전체를 훑어서 서로를 꺼 버렸다) */
-  function showCtrl() {
-    for (const b of document.querySelectorAll("#ctrlBox .ctrlBtn"))
-      b.classList.toggle("on", b.dataset.ctrl === ctrlMode);
-  }
-  for (const b of document.querySelectorAll("#ctrlBox .ctrlBtn")) {
-    b.addEventListener("click", () => {
-      ctrlMode = b.dataset.ctrl;
-      try { localStorage.setItem(LS_CTRL, ctrlMode); } catch (e) {}
-      showCtrl();
-      beep(760, .06, "square", .03);
-    });
-  }
-  showCtrl();
-  /* 패드 안에서 누른 지점의 방향으로 움직인다. 손가락을 떼지 않고 밀기만 해도 방향이 바뀌고,
-     가운데로 돌아오면 멈춘다. 대각선도 된다. */
-  const padKnob = dpad.querySelector(".knob");
-  /* 패드를 민 정도(0~1). 키보드로 조작할 때는 항상 1이라 예전과 똑같다. */
-  let padAmpX = 1, padAmpY = 1;
-  const PAD_MIN = 0.10;          // 살짝만 밀었을 때의 최소 속도 비율
-  const PAD_STEPS = 16;          // 최소~최대 사이를 이만큼의 단계로 나눈다
-  const PAD_RANGE = 105;         // 이 거리(px)까지 밀어야 최고 속도 — 패드 밖으로 나가도 이어진다
-  /* 느린 구간을 넓게 잡아 섬세하게 다루고, 끝까지 밀었을 때만 최고 속도가 나온다.
-     빠른 캐릭터(부양사)일수록 저속 구간이 더 넓어야 조준이 된다. */
-  function padAmp(v, dead) {
-    const t = Math.max(0, Math.min(1, (Math.abs(v) - dead) / (PAD_RANGE - dead)));
-    const e = 1.6 + (spdMul() - 1) * 0.5;        // 빠른 직업은 더 완만하게
-    const q = Math.round(Math.pow(t, e) * PAD_STEPS) / PAD_STEPS;
-    return PAD_MIN + (1 - PAD_MIN) * q;
-  }
-  const padArrow = {
-    ArrowUp: dpad.querySelector(".up"), ArrowDown: dpad.querySelector(".dn"),
-    ArrowLeft: dpad.querySelector(".lf"), ArrowRight: dpad.querySelector(".rt")
-  };
-  function padSet(l, r, u, d) {
-    keys.ArrowLeft = l; keys.ArrowRight = r; keys.ArrowUp = u; keys.ArrowDown = d;
-    padArrow.ArrowLeft.classList.toggle("hit", l);
-    padArrow.ArrowRight.classList.toggle("hit", r);
-    padArrow.ArrowUp.classList.toggle("hit", u);
-    padArrow.ArrowDown.classList.toggle("hit", d);
-  }
-  function padClear() {
-    padAmpX = padAmpY = 1;
-    padSet(false, false, false, false);
-    dpad.classList.remove("press");
-    padKnob.style.transform = "";
-  }
-  function padMove(e) {
-    const r = dpad.getBoundingClientRect();
-    const dx = e.clientX - (r.left + r.width / 2);
-    const dy = e.clientY - (r.top + r.height / 2);
-    const flat = dpad.classList.contains("noVert");   // 좌우 전용 알약 패드
-    if (flat) {
-      // 가로로만 움직인다. 가운데 12px 안쪽은 정지 구역.
-      const max = r.width / 2 - 34;
-      const kx = Math.max(-max, Math.min(max, dx));
-      padKnob.style.transform = "translateX(" + kx.toFixed(1) + "px)";
-      if (Math.abs(dx) < 5) { padSet(false, false, false, false); return; }
-      padAmpX = padAmp(dx, 5);
-      padSet(dx < 0, dx > 0, false, false);
-      return;
-    }
-    const dist = Math.hypot(dx, dy);
-    const max = r.width / 2 - 16;
-    const k = dist > max ? max / dist : 1;         // 손잡이는 패드 안에서만 움직인다
-    padKnob.style.transform = "translate(" + (dx * k).toFixed(1) + "px," + (dy * k).toFixed(1) + "px)";
-    if (dist < 7) { padSet(false, false, false, false); return; }    // 가운데는 정지
-    // 가로·세로 성분 중 확실히 큰 쪽만 켠다. 둘이 비슷하면(2배 이내) 대각선.
-    const horiz = Math.abs(dx) >= Math.abs(dy) * 0.5;
-    const vert  = flyOn && Math.abs(dy) >= Math.abs(dx) * 0.5;
-    // 민 거리에 비례한 세기 — 축마다 따로 잰다 (대각선에서도 자연스럽게)
-    padAmpX = padAmp(dx, 4);
-    padAmpY = padAmp(dy, 4);
-    padSet(horiz && dx < 0, horiz && dx > 0, vert && dy < 0, vert && dy > 0);
-  }
-  dpad.addEventListener("pointerdown", e => {
-    dpad.classList.add("press");
-    try { dpad.setPointerCapture(e.pointerId); } catch (_) {}
-    padMove(e);
-    if (e.cancelable) e.preventDefault();
-  });
-  dpad.addEventListener("pointermove", e => {
-    if (!dpad.classList.contains("press")) return;
-    padMove(e);
-    if (e.cancelable) e.preventDefault();
-  });
-  for (const ev of ["pointerup", "pointercancel", "lostpointercapture"]) dpad.addEventListener(ev, padClear);
-  dpad.addEventListener("contextmenu", e => e.preventDefault());
 
   /* ---------- 플레이어 이름 ----------
      시작 화면에서 미리 정해두고, 게임이 끝나면 조건을 만족할 때 자동으로 등록된다. */
@@ -5924,7 +5776,7 @@
     state = STATE.PAUSE;
     pauseAt = performance.now();
     resumeCountEnd = 0;
-    btnPause.classList.remove("on"); syncPad();
+    btnPause.classList.remove("on");
     pauseScreen.classList.remove("hidden");
     beep(500, .08, "sine", .04);
   }
@@ -6013,7 +5865,7 @@
     if (hurtUntil > 0) hurtUntil += paused;
     resumeCountEnd = 0;
     state = STATE.PLAY;
-    btnPause.classList.add("on"); syncPad();
+    btnPause.classList.add("on");
     beep(950, .1, "square", .05);
   }
 
@@ -6236,7 +6088,7 @@
     augScreen.classList.add("hidden");
     pauseScreen.classList.add("hidden");
     nameRow.classList.remove("on");       // 이름 등록 줄은 닫고 나간다
-    btnPause.classList.remove("on"); syncPad();
+    btnPause.classList.remove("on");
     startScreen.classList.remove("hidden");
     state = STATE.READY;                 // 시작화면 데모가 다시 돌게
   }
@@ -6391,7 +6243,7 @@
     nameRow.classList.remove("on");
     beep(660, .1, "square", .04);
     inputHoldUntil = performance.now() + 350;   // 직업 카드를 누른 손가락이 조작으로 새지 않게
-    btnPause.classList.add("on"); syncPad();
+    btnPause.classList.add("on");
     pauseScreen.classList.add("hidden");
     resumeCountEnd = 0;
     // READY — 멈춘 채로 1.1초. 끝나면 finishResume 이 GO! 를 띄우며 판을 시작한다
@@ -7054,8 +6906,7 @@
 
     const kSpeed = 448 * spdMul() * dt;   // 키보드·십자패드 이동 속도 (v0.8.00 에 560 에서 20% 줄였다)
     // 패드는 민 정도만큼 속도가 붙는다 (키보드는 늘 최고 속도)
-    const kx = kSpeed * (ctrlMode === "pad" ? padAmpX : 1);
-    const ky = kSpeed * (ctrlMode === "pad" ? padAmpY : 1);
+    const kx = kSpeed, ky = kSpeed;
     const kd = prophIs("reverse") ? -1 : 1;           // 거꾸로 가는 날 — 좌우가 바뀐다
     if (keys.ArrowLeft  || keys.a || keys.A) player.tx -= kx * kd;
     if (keys.ArrowRight || keys.d || keys.D) player.tx += kx * kd;
@@ -8489,7 +8340,7 @@
   function gameOver() {
     state = STATE.OVER;
     dying = 0; hitStop = 0;
-    btnPause.classList.remove("on"); syncPad();
+    btnPause.classList.remove("on");
     augScreen.classList.add("hidden");
     /* 무소유 — 끝내 손대지 않고 흘려보낸 코인 값만큼 점수가 늘어난다
        (1코인 1%, 3코인 3%, 5코인 5%. 화면에 아직 떠 있던 코인도 안 쥔 것으로 친다).
@@ -9472,7 +9323,7 @@
     document.getElementById("btnRhythm").textContent = "리듬 OFF";
     btnTestEnd.classList.remove("on");
     testLv.classList.remove("on");
-    btnPause.classList.remove("on"); syncPad();
+    btnPause.classList.remove("on");
     pauseScreen.classList.add("hidden");
     state = STATE.READY;
     augScreen.classList.add("hidden");
@@ -11846,7 +11697,6 @@
     if (state === STATE.PLAY || state === STATE.PAUSE) { drawPetsFront(now); drawProphecy(); }
     ctx.restore();
     if (state === STATE.PLAY || state === STATE.PAUSE) { drawHud(); drawDashGauge(now); }
-    if (dpad.classList.contains("on")) dpad.classList.toggle("noVert", !flyOn);
 
     // 일시정지 해제 카운트다운 — 3, 2, 1 을 크게 세고 나서 움직인다
     if (goBanner > 0) {                     // GO! — 크게 튀어나왔다가 작아지며 사라진다 (판은 이미 움직인다)
