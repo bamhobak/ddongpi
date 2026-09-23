@@ -1073,7 +1073,7 @@
   const elTitle = document.getElementById("overTitle");
   const coinNote = document.getElementById("coinNote");
 
-  const GAME_VERSION = "v0.8.00";
+  const GAME_VERSION = "v0.8.01";
   /* 제작사 스플래시(bamhobak friends 로고) — 2026-09-20 끔. 다시 켜려면 true */
   const SPLASH_USE = false;   // 코드를 고칠 때마다 뒤 두 자리를 올린다
   document.getElementById("ver").textContent = GAME_VERSION;
@@ -8185,7 +8185,7 @@
      자리는 그 자리에서 바로 옮기고, 지나온 길에 몸을 여러 겹(DASH_GHOSTS) 남겨 잔상으로 보여 준다.
      순간이동이라 지나친 똥에 판정이 저절로 닿지 않으므로, 지나온 길을 훑어 그 자리의 똥을
      직접 스침(아슬)으로 처리한다. */
-  const DASH_CD = 5, DASH_DIST = 210, DASH_INV = 300;
+  const DASH_CD = 5, DASH_DIST = 210;
   const DASH_GHOSTS = 11, DASH_GHOST_LIFE = 0.5, DASH_TAIL = 0.07;
   const DASH_MIN = 30;     // 두드린 자리가 이만큼도 안 떨어져 있으면 '갈 곳을 안 정한 것'으로 본다
   /* sx — 두 번째로 두드린 자리. v0.8.00 부터 거리 제한 없이 **그 자리로 바로 간다**
@@ -8230,7 +8230,8 @@
     if (drag) drag.px = nx;
     dashT = DASH_TAIL;                               // 아주 짧은 여운 — 이 동안은 스침을 계속 잰다
     dashCd = DASH_CD;
-    invUntil = Math.max(invUntil, now + DASH_INV);
+    /* 무적은 걸지 않는다 (v0.8.01) — 지나온 길의 똥은 순간이동이라 애초에 닿지 않지만,
+       도착한 자리에 똥이 있으면 바로 맞아야 한다. 아무 데나 뛰어들어도 되는 도피 수단이 아니다. */
     // 방귀 연기 — 출발한 자리에 뭉게뭉게, 지나온 길에도 흩뿌린다
     burst(x0, cy + 14, "#c7e39a", 14);
     for (let i = 1; i < 5; i++) burst(x0 + (nx - x0) * (i / 5), cy + 10, "#dcecb8", 4);
@@ -11565,26 +11566,28 @@
     ctx.beginPath(); ctx.arc(g.x, g.y, g.r * 1.06, 0, 6.283); ctx.stroke();
     ctx.restore();
   }
-  /* 방귀 대시 눈금 — 머리 위 작은 막대. 다 차면 💨 가 함께 떠서 '지금 쓸 수 있다'를 알린다.
+  /* 방귀 대시 눈금 — 화면 오른쪽 아래 동그란 표시 (v0.8.01, 예전엔 머리 위라 캐릭터와 겹쳤다).
+     다 차면 초록으로 환해지고 💨 가 도드라진다. 차는 중에는 남은 만큼 테두리가 돌아간다.
      증강을 가진 사람에게만 보인다 (안 고른 사람 화면에는 아무것도 늘지 않는다). */
   function drawDashGauge(now) {
     if (!aug.dash || dying > 0) return;
     const ready = dashCd <= 0;
-    const k = ready ? 1 : 1 - dashCd / DASH_CD;
-    const x = player.x, y = player.y + player.hy - player.r * 1.7 - 12;
-    const w = 40, h = 5;
+    const k = ready ? 1 : 1 - dashCd / DASH_CD;      // 0 → 1 로 차오른다
+    const R = 20, cx = W - 20 - R, cy = H - 26 - R;
     ctx.save();
-    ctx.globalAlpha = ready ? 0.95 : 0.65;
-    ctx.fillStyle = "rgba(0,0,0,.38)";
-    ctx.fillRect(x - w / 2, y, w, h);
-    ctx.fillStyle = ready ? "#b9e08a" : "#7f9a63";
-    ctx.fillRect(x - w / 2, y, w * k, h);
-    if (ready) {
-      ctx.globalAlpha = 0.8 + 0.2 * Math.sin(now / 200);
-      ctx.font = "700 14px system-ui, sans-serif";
-      ctx.textAlign = "center"; ctx.textBaseline = "bottom";
-      ctx.fillText("💨", x, y - 2);
-    }
+    ctx.beginPath(); ctx.arc(cx, cy, R, 0, 6.283);
+    ctx.fillStyle = ready ? "rgba(120,190,70,.42)" : "rgba(0,0,0,.34)";
+    ctx.fill();
+    ctx.lineWidth = 3;                              // 차오른 만큼 테두리가 돈다 (12시부터 시계방향)
+    ctx.strokeStyle = "rgba(255,255,255,.22)";
+    ctx.beginPath(); ctx.arc(cx, cy, R, 0, 6.283); ctx.stroke();
+    ctx.strokeStyle = ready ? "#cdf59a" : "#b9e08a";
+    ctx.beginPath(); ctx.arc(cx, cy, R, -1.5708, -1.5708 + 6.283 * k); ctx.stroke();
+    ctx.globalAlpha = ready ? 0.9 + 0.1 * Math.sin(now / 200) : 0.45;
+    ctx.font = "700 19px system-ui, sans-serif";
+    ctx.textAlign = "center"; ctx.textBaseline = "middle";
+    ctx.fillStyle = "#ffffff";
+    ctx.fillText("💨", cx, cy + 1);
     ctx.restore();
   }
   function drawEffects() {
@@ -11838,12 +11841,11 @@
       if (state !== STATE.OVER) drawPetsBack(now);
       if (state !== STATE.OVER) drawPlayer(now);
       if (state !== STATE.OVER) drawInvGlow(now);
-      if (state !== STATE.OVER) drawDashGauge(now);
     }
     drawEffects();
     if (state === STATE.PLAY || state === STATE.PAUSE) { drawPetsFront(now); drawProphecy(); }
     ctx.restore();
-    if (state === STATE.PLAY || state === STATE.PAUSE) drawHud();
+    if (state === STATE.PLAY || state === STATE.PAUSE) { drawHud(); drawDashGauge(now); }
     if (dpad.classList.contains("on")) dpad.classList.toggle("noVert", !flyOn);
 
     // 일시정지 해제 카운트다운 — 3, 2, 1 을 크게 세고 나서 움직인다
