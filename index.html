@@ -1027,7 +1027,7 @@
   const elTitle = document.getElementById("overTitle");
   const coinNote = document.getElementById("coinNote");
 
-  const GAME_VERSION = "v0.8.02";
+  const GAME_VERSION = "v0.8.03";
   /* 제작사 스플래시(bamhobak friends 로고) — 2026-09-20 끔. 다시 켜려면 true */
   const SPLASH_USE = false;   // 코드를 고칠 때마다 뒤 두 자리를 올린다
   document.getElementById("ver").textContent = GAME_VERSION;
@@ -5251,8 +5251,27 @@
        굽잇길: 빈 길이 한 칸씩 좌우로 쓸려 다닌다 (계단)
        널뛰기: 빈 길이 왼쪽 끝과 오른쪽 끝을 오간다 */
   const GAP_LETTER = { 1: "K", 2: "L", 3: "M", 4: "N" };
+  /* 느린 파도(v0.8.03) — 딱 한 칸만 비는 벽. 빈 칸이 사인 곡선을 그리며 좌우로 쓸려 내려온다.
+     P=빈1 · Q=빈2 · R=빈3 · S=빈4 · T=빈5 (PAT_GROUP 에 이미 있는 글자다) */
+  const ONE_GAP = { 1: "P", 2: "Q", 3: "R", 4: "S", 5: "T" };
   function genRows(kind, dl, h) {
     const cells = new Array(PAT_ROWS * 16).fill(".");
+    if (kind === "wave") {
+      /* 벽 사이를 넉넉히 띄운다 — 느리게 떨어져서 화면에 예닐곱 겹이 함께 떠 있고,
+         그 빈 칸들이 이어져 굽이치는 길로 보인다. */
+      const stp = dl < 10 ? 5 : 4;
+      const period = 8 + (h % 3) * 2;                 // 파도 한 바퀴에 벽 8·10·12개
+      const ph = h % period, way = (h >> 5) & 1 ? 1 : -1;
+      let n = 0;
+      for (let i = 0; i < cells.length; i += stp) {
+        const sn = Math.sin(6.2832 * ((n + ph) / period)) * way;
+        cells[i] = ONE_GAP[Math.max(1, Math.min(5, 3 + Math.round(sn * 2)))];
+        n++;
+      }
+      const out = [];
+      for (let r = 0; r < PAT_ROWS; r++) out.push(cells.slice(r * 16, r * 16 + 16).join(""));
+      return out;
+    }
     const step = dl < 8 ? 4 : dl < 16 ? 3 : 2;         // 벽이 오는 간격(칸) — 어려울수록 촘촘
     let g = 1 + (h % 4), dir = (h >> 2) & 1 ? 1 : -1;
     for (let i = 0; i < cells.length; i += step) {
@@ -5287,6 +5306,13 @@
     // 열에 넷은 새로 짠 패턴 (굽잇길 20% · 널뛰기 20%), 나머지는 옛 채보
     const pick = (h >>> 11) % 10;
     if (pick >= 6) {
+      /* 느린 파도 — 한 칸만 비는 벽이 아주 느리게, 좌우로 일렁이며 내려온다.
+         leadRow — 줄마다 몇 배 느린지. 가운데 줄(세 번째)만 확 빨라졌다가 다시 느려진다.
+         wvEnd·wvFade — 흔들림이 거의 바닥까지 이어진다 (보통은 절반에서 제 칸에 선다). */
+      if (pick === 9)
+        return { st: { nm: "느린 파도", wave: true, wv: 0.42, wvMax: 0.45, wvK: 1, tilt: 0,
+                       wvEnd: 0.88, wvFade: 0.25, leadRow: [2.4, 2.2, 1.3, 2.0] },
+                 rows: genRows("wave", dl, h >>> 15), boss: null };
       const kind = pick >= 8 ? "hop" : "sweep";
       return { st: { nm: kind === "hop" ? "널뛰기" : "굽잇길", wv: 0.1, wvK: 2, tilt: 0.2 },
                rows: genRows(kind, dl, h >>> 15), boss: null };
@@ -5304,6 +5330,9 @@
   // 휘는 폭·기울기도 레벨이 오를수록 세진다 (반쯤 내려오면 제 칸에 서는 건 그대로라 피할 수는 있다)
   function patWeave(st, lv) {
     const up = Math.min(1, (patDiff(lv) - 1) / 24);
+    // 느린 파도는 제 값 그대로 (레벨 흔들림·기울기를 덧입히면 벽이 한 덩어리로 일렁이지 않는다)
+    if (st.wave) return { wv: st.wv, wvMax: st.wvMax, wvK: st.wvK || 1, tilt: 0,
+                          wave: true, wvEnd: st.wvEnd, wvFade: st.wvFade };
     return { wv: Math.max(st.wv || 0, 0.12 + 0.26 * up), wvK: st.wvK || 2, tilt: Math.max(st.tilt || 0, 0.15 + 0.45 * up) };
   }
   let patPtr = -1, patClock = 0, patLv = 0;
@@ -5345,10 +5374,10 @@
     st = patWeave(st, lv || 1);
     // 칸 안에서도 조금씩 다른 자리에 선다 (±칸 간격의 12%)
     const home = laneX(vr.mir ? 6 - lane : lane) + vr.off + (Math.random() * 2 - 1) * gap * 0.12;
-    const wvA = gap * Math.min(WEAVE_CAP, st.wv || 0);      // 흔들림 — 정수 바퀴라 도착 때 제자리
+    const wvA = gap * Math.min(st.wave ? (st.wvMax || WEAVE_CAP) : WEAVE_CAP, st.wv || 0);   // 흔들림 — 정수 바퀴라 도착 때 제자리
     let tilt = gap * (st.tilt || 0);                          // 기울기 — 옆에서 비스듬히 들어온다
     let dir = Math.random() < 0.5 ? -1 : 1;
-    const diag = !!vr.diag;
+    const diag = !!vr.diag && !st.wave;      // 느린 파도는 사선 대신 좌우 일렁임
     if (diag) { tilt = gap * Math.abs(vr.diag); dir = vr.diag > 0 ? 1 : -1; }   // 사선 — 레벨 전체가 한 방향으로
     if (home + dir * (tilt + (diag ? 0 : wvA)) < r + 6) dir = 1;
     if (home + dir * (tilt + (diag ? 0 : wvA)) > W - r - 6) dir = -1;
@@ -5357,6 +5386,7 @@
       type: "poop", emoji: "💩",
       x: home + tilt, y: startY, r: r * 0.82, vx: 0, vy: (targetY - startY) / lead,
       chart: true, homeX: home, y0: startY, yT: targetY, wvA: diag ? 0 : wvA, wvK: st.wvK || 0, tilt0: tilt, diag,
+      wvEnd: st.wvEnd || 0, wvFade: st.wvFade || 0,
       rot: (Math.random() - Math.random()) * 1.571, vr: 0,
       swayA: 0.32 + Math.random() * 0.14, swayW: 5.4 + Math.random() * 2.6, swayP: Math.random() * 6.28,
       size: r * 2, sz: r, fast: false,
@@ -5376,12 +5406,14 @@
     if (t < patClock - 0.5) { patPtr = Math.floor(t / SL) - 1; patLastArr = -9; }
     patClock = t;
     for (;;) {
-      const g = patPtr + 1, lv = slotLv(g), lead = patLead(lv);
+      const g = patPtr + 1, lv = slotLv(g), pt = patOf(lv), j = g % (PAT_ROWS * 16);
+      /* 줄마다 속도를 달리 줄 수 있다 (leadRow) — 느린 파도는 느릿느릿 내려오다 가운데 줄만 확 빨라진다.
+         볼 틈을 늘리면 그만큼 일찍 내보내고 떨어지는 시간도 길어진다 = 느려진다. */
+      const lead = patLead(lv) * (pt.st.leadRow ? pt.st.leadRow[Math.floor(j / 16)] : 1);
       if (g * SL - lead > t) break;
       patPtr = g;
       const lead2 = g * SL - t;
       if (lead2 < lead * 0.7) continue;      // 제 몫의 시간을 못 받은 칸은 거른다 (억울하게 맞지 않게)
-      const pt = patOf(lv), j = g % (PAT_ROWS * 16);
       const row = pt.rows[Math.floor(j / 16)];
       const ch = row ? row[j % 16] : ".";
       if (!ch || ch === "." || BONE_LANE[ch]) continue;   // 뼈다귀·하트·코인 칸은 아이템이라 비운다
@@ -7524,7 +7556,7 @@
           it.x = it.homeX + it.tilt0 * (1 - prU);
         }
         else {
-        const u = Math.max(0, Math.min(1, (0.50 - pr) / 0.35));
+        const u = Math.max(0, Math.min(1, ((it.wvEnd || 0.50) - pr) / (it.wvFade || 0.35)));
         const env = u * u * (3 - 2 * u);
         it.x = it.homeX + env * (it.tilt0 + (it.wvA ? it.wvA * Math.sin(6.2832 * it.wvK * pr) : 0));
         }
