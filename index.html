@@ -1073,7 +1073,7 @@
   const elTitle = document.getElementById("overTitle");
   const coinNote = document.getElementById("coinNote");
 
-  const GAME_VERSION = "v0.7.98";
+  const GAME_VERSION = "v0.7.99";
   /* 제작사 스플래시(bamhobak friends 로고) — 2026-09-20 끔. 다시 켜려면 true */
   const SPLASH_USE = false;   // 코드를 고칠 때마다 뒤 두 자리를 올린다
   document.getElementById("ver").textContent = GAME_VERSION;
@@ -7075,14 +7075,7 @@
        끌기 기준점(drag.px)과 목표(player.tx)를 함께 끌고 가야, 대시가 끝나는 순간
        손가락이 잡고 있던 원래 자리로 확 빨려 돌아가지 않는다. */
     if (dashCd > 0) dashCd -= dt;
-    if (dashT > 0) {
-      dashT = Math.max(0, dashT - dt);
-      const nx = Math.max(player.r, Math.min(W - player.r, player.x + dashDir * (DASH_DIST / DASH_SEC) * dt));
-      player.x = nx;
-      player.tx = nx;
-      if (drag) drag.px = nx;
-      burst(player.x - dashDir * 26, player.y + player.hy + 14, "#c7e39a", 3);   // 뒤로 뿜는 방귀 자국
-    }
+    if (dashT > 0) dashT = Math.max(0, dashT - dt);   // 자리는 tryDash 에서 이미 옮겼다 (순간이동)
     if (pet === "dove" && state === STATE.PLAY) {
       moveDist += Math.abs(player.x - prev);
       const need = doveEvery();
@@ -8188,7 +8181,12 @@
      증강으로만 얻는다. 빠르게 두 번 두드리면 옆으로 짧게 돌진하고,
      돌진하는 동안(+여운) 무적이다. 뚫고 지나간 똥은 위의 스침으로 잡혀
      '아슬!' 3배가 된다. 부양사는 이미 두 배 반으로 빠르니 후보에 안 나온다. */
-  const DASH_CD = 5, DASH_SEC = 0.2, DASH_DIST = 180, DASH_INV = 300;
+  /* v0.7.99 — 미끄러지듯 날아가던 것(0.2초·180px)을 거의 순간이동으로 바꿨다.
+     자리는 그 자리에서 바로 옮기고, 지나온 길에 몸을 여러 겹(DASH_GHOSTS) 남겨 잔상으로 보여 준다.
+     순간이동이라 지나친 똥에 판정이 저절로 닿지 않으므로, 지나온 길을 훑어 그 자리의 똥을
+     직접 스침(아슬)으로 처리한다. */
+  const DASH_CD = 5, DASH_DIST = 210, DASH_INV = 300;
+  const DASH_GHOSTS = 11, DASH_GHOST_LIFE = 0.5, DASH_TAIL = 0.07;
   function tryDash(now, sx) {
     if (!aug.dash || state !== STATE.PLAY || dying > 0) return;
     if (dashCd > 0 || dashT > 0) return;
@@ -8197,11 +8195,42 @@
     dashDir = Math.abs(sx - player.x) < 40 ? (facing === "left" ? -1 : 1)
             : (sx > player.x ? 1 : -1);
     if (prophIs("reverse")) dashDir = -dashDir;      // 거꾸로 가는 날 — 조작이 통째로 뒤집힌다
-    dashT = DASH_SEC;
+    const x0 = player.x;
+    const nx = Math.max(player.r, Math.min(W - player.r, x0 + dashDir * DASH_DIST));
+    const cy = player.y + player.hy;
+
+    /* ── 잔상 ── 출발점부터 도착점까지 몸을 여러 겹 남긴다.
+       도착지에 가까울수록 진하고 오래 남고, 출발점 쪽일수록 옅고 먼저 사라지며 옆으로 늘어난다
+       (빠르게 지나간 것처럼 보이게 가로로 늘이고 세로로 살짝 눌렀다). */
+    const gspr = currentSprite(now), gfl = sprFlipped(now);
+    if (gspr) {
+      for (let i = 0; i < DASH_GHOSTS; i++) {
+        const f = i / (DASH_GHOSTS - 1);                       // 0 출발 ~ 1 도착
+        ghosts.push({ x: x0 + (nx - x0) * f, y: player.y, tilt: player.tilt, flip: gfl, spr: gspr,
+                      t: 0, life: DASH_GHOST_LIFE * (0.45 + 0.55 * f),
+                      a: 0.3 + 0.55 * f, st: 1.75 - 0.75 * f });
+      }
+    }
+
+    /* ── 지나온 길의 똥은 뚫고 지나간 것으로 친다 ── */
+    const R = player.r * 0.632 * hitMul();
+    for (const q of items) {
+      if (q.type !== "poop" || q.skin === "fever" || q.bounced || q.ghost) continue;
+      if (segDist(q.x, q.y, x0, cy, nx, cy) > R + q.r) continue;
+      q.gap = -1;                                    // 바닥에 닿을 때 3배
+      if (!q.grazed) { q.grazed = true; onGraze(q); }
+    }
+
+    player.x = player.tx = nx;                       // 순간이동
+    if (drag) drag.px = nx;
+    dashT = DASH_TAIL;                               // 아주 짧은 여운 — 이 동안은 스침을 계속 잰다
     dashCd = DASH_CD;
     invUntil = Math.max(invUntil, now + DASH_INV);
-    popText(player.x, player.y - 46, "💨 방귀 대시!", "#b9e08a", 22);
-    shake = Math.max(shake, 8);
+    // 방귀 연기 — 출발한 자리에 뭉게뭉게, 지나온 길에도 흩뿌린다
+    burst(x0, cy + 14, "#c7e39a", 14);
+    for (let i = 1; i < 5; i++) burst(x0 + (nx - x0) * (i / 5), cy + 10, "#dcecb8", 4);
+    popText(nx, player.y - 46, "💨 방귀 대시!", "#b9e08a", 22);
+    shake = Math.max(shake, 13);
     if (!sfx("dash")) { beep(150, .14, "sawtooth", .05); beep(90, .18, "square", .04); }
     if (navigator.vibrate) navigator.vibrate(30);
   }
@@ -10319,8 +10348,10 @@
       ctx.save();
       ctx.translate(g.x, g.y);
       ctx.rotate(g.tilt * 0.35 * (g.flip ? -1 : 1));
-      ctx.globalAlpha = 0.5 * k;
-      ctx.scale(1 + (1 - k) * 0.1, 1 + (1 - k) * 0.1);
+      /* a — 잔상의 진하기(대시는 겹마다 다르게), st — 가로로 늘인 정도(빠르게 지나간 느낌) */
+      ctx.globalAlpha = (g.a === undefined ? 0.5 : g.a) * k;
+      const gst = g.st || 1, gz = 1 + (1 - k) * 0.1;
+      ctx.scale(gz * (1 + (gst - 1) * k), gz / (1 + (gst - 1) * k * 0.45));
       if (g.flip) ctx.scale(-1, 1);
       drawSpr(g.spr.img, -gw * g.spr.cx, FOOT - gh, gw, gh);
       ctx.restore();
