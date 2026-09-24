@@ -1136,7 +1136,7 @@
   const elTitle = document.getElementById("overTitle");
   const coinNote = document.getElementById("coinNote");
 
-  const GAME_VERSION = "v0.8.17";
+  const GAME_VERSION = "v0.8.18";
   /* 제작사 스플래시(bamhobak friends 로고) — 2026-09-20 끔. 다시 켜려면 true */
   const SPLASH_USE = false;   // 코드를 고칠 때마다 뒤 두 자리를 올린다
   document.getElementById("ver").textContent = GAME_VERSION;
@@ -11194,6 +11194,12 @@
         ctx.rotate(Math.atan2(it.vx, it.vy));   // 굴러떨어지지 않고 진행 방향으로 눕는다
       } else {
         ctx.rotate(it.rot);
+      }
+      /* v0.8.18 똥은 절반쯤 좌우를 뒤집어 그린다 — 그림이 한 장이라 늘 같은 쪽으로 꼬인 게 단조로웠다.
+         처음 그릴 때 한 번 정해 두고, 얼굴 장식까지 통째로 뒤집어 제자리에 붙어 있게 한다. */
+      if (it.type === "poop") {
+        if (it.mirror === undefined) it.mirror = Math.random() < 0.5;
+        if (it.mirror) ctx.scale(-1, 1);
       }
       if (it.special && it.special !== "huge") {
         // 종류마다 다른 색 기운 — 미리 알아보고 피하라고 (초거대는 덩치로 이미 눈에 띈다)
