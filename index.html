@@ -1136,7 +1136,7 @@
   const elTitle = document.getElementById("overTitle");
   const coinNote = document.getElementById("coinNote");
 
-  const GAME_VERSION = "v0.8.16";
+  const GAME_VERSION = "v0.8.17";
   /* 제작사 스플래시(bamhobak friends 로고) — 2026-09-20 끔. 다시 켜려면 true */
   const SPLASH_USE = false;   // 코드를 고칠 때마다 뒤 두 자리를 올린다
   document.getElementById("ver").textContent = GAME_VERSION;
@@ -10761,10 +10761,12 @@
   /* 눈·입 변형 — 그림의 흰자가 순백이라 눈동자를 흰색으로 덮고 다시 그리면 이음매가 없다.
      (좌표는 assets/item_poop.png 를 픽셀 단위로 재어 넣은 값)
      입은 자홍색 영역 안에 이빨·혀를 얹기만 하므로 지울 필요가 없다. (모두 실측 좌표) */
-  const SCL_R = 0.122;                  // 흰자 반지름 / 그림 크기 (새 그림 실측)
-  const PUP_R = 0.078;                  // 원래 눈동자 반지름
-  const PUP_C = "#141414";              // 원래 눈동자 색
-  const MOU_TOP = 0.327, MOU_BOT = 0.383, MOU_HW = 0.060;   // 입 범위
+  /* v0.8.17 똥 그림을 방울이 그림체(Codex poopb_classic)로 바꾸며 다시 잰 값 — 옛 3D 그림에서 자동 측정값과
+     손으로 맞춘 값의 차이(흰자 가장자리 번짐만큼)를 그대로 더했다. */
+  const SCL_R = 0.129;                  // 흰자 반지름 / 그림 크기
+  const PUP_R = 0.080;                  // 원래 눈동자 반지름
+  const PUP_C = "#170e0f";              // 원래 눈동자 색
+  const MOU_TOP = 0.309, MOU_BOT = 0.378, MOU_HW = 0.075;   // 입 범위
 
   function eyeBase(S) {                 // 흰자만 남기고 눈동자를 지운다
     ctx.fillStyle = "#fff";
@@ -10882,7 +10884,7 @@
 
   /* 똥 꾸밈. 3D 그림의 눈은 가운데보다 조금 아래(y +0.124S), 좌우 ±0.221S 에 있고
      눈 반지름은 0.13S 쯤 된다 — 아래 좌표는 전부 그 실측값에 맞춰 두었다. */
-  const EYE_X = 0.185, EYE_Y = 0.126, EYE_R = 0.116;
+  const EYE_X = 0.188, EYE_Y = 0.142, EYE_R = 0.123;   // v0.8.17 새 그림 실측
   function drawPoopFace(kind, S) {
     ctx.save();
     ctx.lineCap = "round";
