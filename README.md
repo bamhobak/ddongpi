@@ -459,6 +459,19 @@ python tools/gen_sprite.py <이름> "<프롬프트>" --ref <화풍 참고 그림
   통째로 넣었더니 우주 지대까지 발밑에 잔디 언덕을 그렸다. '마지막엔 블랙홀'이라고 적으면 앞 지대에도 블랙홀을 그려서 13단계까지는 금지 문구를 붙인다.
   OpenAI 분당 한도 때문에 4개 동시는 막힌다 (2개 + 한도에 걸리면 기다렸다 다시).
 
+### ChatGPT 구독으로 뽑기 (Codex) — 기본
+
+[`tools/gen_codex.py`](tools/gen_codex.py) — 쓰는 법·결과 규격이 `gen_sprite.py` 와 똑같고, API 키 대신 **Codex CLI 의 ChatGPT 로그인**을 씁니다
+(VS Code 의 Codex 확장이 로그인돼 있으면 됨). 크레딧이 안 나가고 구독의 Codex 사용 한도에서 빠집니다.
+
+```
+python tools/gen_codex.py <이름> "<프롬프트>" --ref <참고 그림> ... [--n 4] [--jobs 2]
+```
+
+- Codex 에 내장된 이미지 생성 도구가 그립니다. 한 번에 한 장이라 `--n` 번 부르고, `--jobs` 개씩 동시에 (2장 동시 약 1분 반).
+- 크기·품질은 지정할 수 없고 도구가 정합니다 (보통 1200px 안팎, 투명 배경).
+- 구독 한도에 걸리면 그때만 `gen_sprite.py`(API)로 돌립니다.
+
 ## 폴더 구성
 
 ```
@@ -469,7 +482,7 @@ icon-512.png
 README.md
 assets/         이미지·소리·배경음 (직업별 복장 · 우주복 · 펫 · 보스 · 지대 배경 · 효과음)
 assets/_gen/    OpenAI 로 뽑은 후보 그림 (배포 제외)
-tools/          그림 뽑기 도구 (gen_sprite.py)
+tools/          그림 뽑기 도구 (gen_codex.py 구독 · gen_sprite.py API)
 sql/            Supabase 에 실행하는 SQL (순위표 · 통계 · 관리자 기능)
 src/            원본 캐릭터 이미지 (배포 제외)
 ```
