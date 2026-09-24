@@ -1027,7 +1027,7 @@
   const elTitle = document.getElementById("overTitle");
   const coinNote = document.getElementById("coinNote");
 
-  const GAME_VERSION = "v0.8.11";
+  const GAME_VERSION = "v0.8.12";
   /* 제작사 스플래시(bamhobak friends 로고) — 2026-09-20 끔. 다시 켜려면 true */
   const SPLASH_USE = false;   // 코드를 고칠 때마다 뒤 두 자리를 올린다
   document.getElementById("ver").textContent = GAME_VERSION;
@@ -1052,7 +1052,7 @@
   const JOBS = {
     none:    { nm: "쉬었음 청년", ic: "🏃",
                ds: "힘들때마다 차려지는 엄마의 따뜻한 밥상 · 코인이 2배로 나온다" },
-    /* 점술가 — 도박사 자리를 이어받았다. 가끔 떨어지는 포춘쿠키를 먹으면 10초 동안 예언 하나가 이뤄진다.
+    /* 점술가 — 도박사 자리를 이어받았다. 가끔 떨어지는 수정 구슬(옛 포춘쿠키)을 먹으면 10초 동안 예언 하나가 이뤄진다.
        (옛 도박사 기록은 순위표에 도박사로 그대로 남는다 — JOB_NAMES·JOB_IMG 에만 남겨 두었다) */
     fortune: { nm: "점술가", ic: "🔮", ds: "10초마다 예언이 저절로 바뀐다 · 좋은 예언 넷, 나쁜 예언 하나" },
     levitator: { nm: "부양사", ic: "🎈", ds: "하늘 어디든 날 수 있다 · 높이 있을수록 점수 UP" },
@@ -1321,7 +1321,7 @@
   /* ---------- 스테이지 ----------
      item   — 아이템전: 지금까지의 게임 그대로
      noitem — 노템전: 아이템(달·보름달·두루마리·우산·별·하트)이 안 나온다. 그래서 증강도 없다.
-              코인은 나온다. 직업 능력(엄마의 밥상·포춘쿠키·방울)과 펫 능력은 그대로 — 캐릭터와 펫만으로 겨룬다.
+              코인은 나온다. 직업 능력(엄마의 밥상·수정 구슬·방울)과 펫 능력은 그대로 — 캐릭터와 펫만으로 겨룬다.
      순위표도 스테이지마다 따로 선다. */
   const MODES = {
     item:   { nm: "똥대잔치", ds: "아이템·증강이 쏟아지는 점수전" },
@@ -1852,14 +1852,14 @@
      아직 안 불러졌으면 예전처럼 글자 이모지로 그린다.
      v0.8.10 코인·별·초승달·보름달·우산·하트·물방울은 방울이 그림체로 새로 그렸다(Codex, 얼굴 없이 —
      얼굴 달린 똥과 한눈에 갈리게). 3·5코인은 금화 그림의 색만 바꾼 것.
-     v0.8.11 휴지(뚜니핑 타임)·포춘쿠키(점술가 예언 막대)도 같은 그림체로. 똥은 그대로. */
+     v0.8.11 휴지(뚜니핑 타임)도 같은 그림체로. v0.8.12 점술가 아이템(떨어지는 것·예언 막대 아이콘)은 포춘쿠키 대신 수정 구슬. 똥은 그대로. */
   const ITEM_IMG = {};
   for (const [type, file] of [["moon", "crescent_moon"], ["fullmoon", "full_moon"], ["paper", "roll_of_paper"],
                               ["umbrella", "umbrella"], ["star", "star"], ["heart", "red_heart"],
                               ["poop", "poop"], ["darkpoop", "dark_poop"],
                               ["droplet", "droplet"],
                               ["coin", "coin"], ["coin3", "coin3"], ["coin5", "coin5"],
-                              ["fortune", "fortune_cookie"]]) {
+                              ["fortune", "crystal_ball"]]) {
     const im = new Image();
     im.onload = () => { ITEM_IMG[type] = im; };
     im.src = "assets/item_" + file + ".png";
@@ -2914,7 +2914,7 @@
   let fairies = [], giftT = 0;
   let cats = [], catT = 0, catN = 0;
   let eelT = 0, bolts = [];
-  /* ── 점술가 ── 포춘쿠키는 평균 14초마다, 예언은 PROPH_SEC 동안 */
+  /* ── 점술가 ── 수정 구슬(옛 포춘쿠키)은 평균 14초마다, 예언은 PROPH_SEC 동안 */
   const FORTUNE_FIRST = 2, PROPH_SEC = 10;   // 판 시작 2초 뒤 첫 예언, 그다음부터 10초마다 바뀐다
   /* 예언 — 10초마다 하나씩 저절로 바뀐다. good 좋은 것 · bad 나쁜 것 · both 양면.
      noTower: 똥탑등반(점수 대신 m, 레벨 시계가 뚜니핑 동안 멈춤)에서는 안 나오는 예언 */
@@ -8214,11 +8214,11 @@
     if (navigator.vibrate) navigator.vibrate([30, 40, 80]);
     return true;
   }
-  // 점술가의 포춘쿠키 — 다른 아이템처럼 위에서 떨어진다
+  // 점술가의 수정 구슬(type 은 옛 이름 fortune 그대로) — 다른 아이템처럼 위에서 떨어진다
   function spawnFortune() {
     const r = 22;
     const vy = (110 + level * 6) * (H / BASE_H) * (0.6 + Math.random() * 0.4);
-    items.push({ type: "fortune", emoji: "🥠", x: r + Math.random() * (W - r * 2), y: -r - 10, r,
+    items.push({ type: "fortune", emoji: "🔮", x: r + Math.random() * (W - r * 2), y: -r - 10, r,
                  vx: (Math.random() - Math.random()) * vy * SPREAD_BONUS, vy,
                  rot: 0, vr: 0, size: r * 2, bob: Math.random() * 6.28, born: elapsed });
   }
