@@ -1027,7 +1027,7 @@
   const elTitle = document.getElementById("overTitle");
   const coinNote = document.getElementById("coinNote");
 
-  const GAME_VERSION = "v0.8.07";
+  const GAME_VERSION = "v0.8.08";
   /* 제작사 스플래시(bamhobak friends 로고) — 2026-09-20 끔. 다시 켜려면 true */
   const SPLASH_USE = false;   // 코드를 고칠 때마다 뒤 두 자리를 올린다
   document.getElementById("ver").textContent = GAME_VERSION;
@@ -10519,7 +10519,7 @@
     // 수호천사 — 아직 쓰지 않았거나 오라가 도는 동안 어깨 위에 떠 있다
     if (pet === "angel" && PET_IMG.angel && (!angelUsed || angelAura > 0)) {
       const big = angelAura > 0 ? 1.35 : 1;
-      const sz = 34 * big;
+      const sz = 42 * big;                // v0.8.08 전신 그림이 되며 34 → 42 (얼굴만 있던 옛 그림과 보이는 크기를 맞춤)
       if (!petFon) petFollow(0);
       const x = petFx, y = petFy + petArc() - 4 + Math.sin(t * 3) * 4;
       ctx.save();
