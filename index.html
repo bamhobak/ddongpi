@@ -1136,7 +1136,7 @@
   const elTitle = document.getElementById("overTitle");
   const coinNote = document.getElementById("coinNote");
 
-  const GAME_VERSION = "v0.8.21";
+  const GAME_VERSION = "v0.8.22";
   /* 제작사 스플래시(bamhobak friends 로고) — 2026-09-20 끔. 다시 켜려면 true */
   const SPLASH_USE = false;   // 코드를 고칠 때마다 뒤 두 자리를 올린다
   document.getElementById("ver").textContent = GAME_VERSION;
@@ -1500,6 +1500,7 @@
     return runSpr;
   }
   function currentSprite(now) {
+    if (startArtWaiting(now)) return null;   // 판 시작을 기다리는 동안엔 다른 직업 그림(백수)으로 대신하지 않는다 (v0.8.22)
     const S = sprSet();
     if (now < hurtUntil && S.hurt.img) return S.hurt;
     const base = S.right.img ? S.right : (SPR.right.img ? SPR.right : null);
@@ -2259,7 +2260,8 @@
       ctx.translate(q.x, q.y);
       ctx.rotate(q.rot);
       if (q.kind === "gold") {
-        const fx = goldFx(performance.now(), q.x);
+        if (q.rseed === undefined) q.rseed = Math.random() * 1000;
+        const fx = goldFx(performance.now(), q.rseed);
         const gg = ctx.createRadialGradient(0, 0, 0, 0, 0, q.r * 1.9);
         gg.addColorStop(0, "hsla(" + fx.hue + ",80%,78%," + (0.5 + fx.puls * 0.12).toFixed(2) + ")");
         gg.addColorStop(0.45, "hsla(" + ((fx.hue + 60) % 360) + ",75%,72%,.22)");
@@ -2270,8 +2272,8 @@
       const qi = q.kind === "star" ? ITEM_IMG.star : ITEM_IMG.poop;
       if (qi) {
         const d = q.r * 2 * ITEM_IMG_SCALE;
-        if (!(q.kind === "gold" && drawRainbowPoop(performance.now(), q.x, -d / 2, -d / 2, d,
-                                                   goldFx(performance.now(), q.x).puls)))
+        if (!(q.kind === "gold" && drawRainbowPoop(performance.now(), q.rseed || 0, -d / 2, -d / 2, d,
+                                                   goldFx(performance.now(), q.rseed || 0).puls)))
           ctx.drawImage(qi, -d / 2, -d / 2, d, d);
       } else {
         ctx.fillStyle = "#fff";
@@ -2985,6 +2987,15 @@
      GO! 는 움직이기 시작하는 순간 판 위에 잠깐 떴다 사라진다(goBanner, 남은 초). */
   let startBeat = false, goBanner = 0;
   const START_READY_MS = 1100, GO_SEC = 0.65;
+  /* v0.8.22 READY 는 이 판에 쓸 그림(캐릭터·첫 배경)이 다 올 때까지 붙잡아 둔다 — 폰으로 처음 들어오면 그림이
+     늦게 와서, 그 사이 다른 직업(백수) 그림과 그림 없는 옛 배경(색 하늘·그린 구름)이 잠깐 보였다.
+     네트워크가 끊겨도 ART_WAIT_MAX 가 지나면 그냥 시작한다. */
+  const ART_WAIT_MAX = 8000;
+  function startArtReady() {             // 이 직업 제 그림(sprSet 은 없으면 백수로 대신하므로 직접 본다)과 첫 배경
+    const own = dogMode && DOG_SPRS[job] ? DOG_SPRS[job].ground : JOB_SPRS[job];
+    return (!own || !!own.right.img) && !!ZONE_IMG[zoneIdx()];
+  }
+  function startArtWaiting(now) { return startBeat && now - pauseAt < ART_WAIT_MAX && !startArtReady(); }
   /* 방울이 전용 — 목숨 대신 오염도로 버틴다. 0 에서 시작해 맞을 때마다 DIRT_HIT 씩
      차오르고 100 이면 끝. 빗방울을 먹으면 DIRT_WASH 만큼 씻긴다. */
   const DIRT_MAX = 100, DIRT_HIT = 25, DIRT_WASH = 35;
@@ -7005,7 +7016,10 @@
     }
 
     const wasFever = fever;
-    fever = state === STATE.PLAY && now < powerUntil;
+    /* 증강 고르기·'준비!'·일시정지 동안에는 뚜니핑 타임을 그대로 얼려 둔다 (v0.8.22) — 예전엔 멈추기만 하면
+       꺼져서, 증강 뒤 '준비!' 0.6초 동안 보통 하늘이 보였다가 다시 켜지며 배너까지 새로 떠 순간이동처럼 보였다. */
+    if (state === STATE.PLAY) fever = now < powerUntil;
+    else if (state === STATE.OVER || state === STATE.READY) fever = false;
     if (state === STATE.PLAY) feverBgm = fever;   // 놀고 있을 때만 새로 쓴다
     if (!wasFever && fever) feverBanner = 1;      // 막 시작했다
     /* 뚜니핑 타임에는 똥이 아예 안 보인다 — 뚜니핑만 쏟아진다.
@@ -7779,7 +7793,7 @@
           if (it.gold) {                    // 무지개똥 — 먹으면 점수 (레벨이 오를수록 값지다)
             const g = Math.round(120 * (aug.goldLord ? 2 : 1) * scoreMul() * level);
             score += sc("무지개똥", g);
-            burst(it.x, it.y, "hsl(" + Math.round(goldFx(now, it.x).hue) + ",100%,62%)", 20);
+            burst(it.x, it.y, "hsl(" + Math.round(goldFx(now, it.rseed || 0).hue) + ",100%,62%)", 20);
             popGain(it.x, it.y, g, "🌈", "#ffe07a");
             if (!sfx("gold")) beep(1250, .1, "square", .05);
             items.splice(i, 1);
@@ -8233,6 +8247,9 @@
     if (prophIs("reverse")) nx = x0 - (nx - x0);      // 거꾸로 가는 날 — 조작이 통째로 뒤집힌다
     nx = Math.max(player.r, Math.min(W - player.r, nx));
     dashDir = nx >= x0 ? 1 : -1;
+    /* 가는 쪽을 보게 한다 (v0.8.22) — 보는 쪽은 매 프레임 움직인 방향으로 정하는데, 순간이동은 그 셈 밖에서
+       자리를 옮겨서 오른쪽을 보다 왼쪽으로 대시해도 잔상·도착한 뒤 모두 오른쪽을 보고 있었다. */
+    if (Math.abs(nx - x0) > 0.5) facing = dashDir < 0 ? "left" : "right";
     const cy = player.y + player.hy;
 
     /* ── 잔상 ── 출발점부터 도착점까지 몸을 여러 겹 남긴다.
@@ -10063,7 +10080,7 @@
     }
 
     // 구름 — 올라갈수록 옅어지다 사라진다
-    const cl = bgShown ? 0
+    const cl = (bgShown || startBeat) ? 0          // 판 시작을 기다리는 동안엔 옛 구름도 그리지 않는다
              : fever ? (spaceFever ? 0 : 0.75)
                      : Math.min(0.80, zv("cl") * 0.62);
     if (cl > 0.02) {
@@ -10376,6 +10393,7 @@
     return c;
   }
   function drawPlayer(now) {
+    if (startArtWaiting(now)) return;      // 제 그림이 올 때까지는 아무것도 그리지 않는다 (v0.8.22 — 대신 그린 얼굴이 보였다)
     const hurting = now < hurtUntil && sprSet().hurt.img;
     const blink = now < invUntil && Math.floor(now / 90) % 2 === 0;
     const spr = currentSprite(now);
@@ -10999,7 +11017,8 @@
         /* 색 이모지도 fillStyle 의 투명도를 그대로 따라간다.
            바로 앞에 그린 구름의 반투명 흰색이 남아 있으면 똥까지 비쳐 보인다. */
         if (it.gold) {                       // 무지개똥 — 무지갯빛으로 돌며 번쩍인다
-          const fx = goldFx(now, it.x);
+          if (it.rseed === undefined) it.rseed = Math.random() * 1000;   // 흐름·색 기준 — 위치(x)를 쓰면 옆으로 움직일 때 띠가 확 밀렸다
+          const fx = goldFx(now, it.rseed);
           const R = it.size * (0.92 + fx.puls * 0.08);
           const gg = ctx.createRadialGradient(0, 0, 0, 0, 0, R);
           gg.addColorStop(0, "hsla(" + fx.hue + ",80%,78%," + (0.5 + fx.puls * 0.12).toFixed(2) + ")");
@@ -11036,7 +11055,7 @@
           // 무지개똥은 저 혼자 번쩍여서 테두리가 필요 없다
           if ((rp > 0.03 || it.dark) && !it.gold) drawRim(ii, d, rp, it.dark);
           if (it.gold && it.rv === undefined) it.rv = Math.floor(Math.random() * 7);   // 무지개똥 표정 — 처음 그릴 때
-          if (!(it.gold && drawRainbowPoop(now, it.x, -d / 2, -d / 2, d, goldFx(now, it.x).puls, RB_FACES[it.rv])))
+          if (!(it.gold && drawRainbowPoop(now, it.rseed || 0, -d / 2, -d / 2, d, goldFx(now, it.rseed || 0).puls, RB_FACES[it.rv])))
             ctx.drawImage(ii, -d / 2, -d / 2, d, d);
         } else {
           ctx.fillStyle = "#fff";
@@ -11648,6 +11667,8 @@
       drawBigWord("GO!", 0.95 + 0.45 * k, Math.min(1, k * 2.2), "#7dff8a", 0);
     }
     if (state === STATE.PAUSE && resumeCountEnd > 0) {
+      // 그림이 아직이면 READY 를 숨 쉬는 자리(80% 지점)에 붙잡아 둔다
+      if (resumeCountEnd - now <= 0 && startArtWaiting(now)) resumeCountEnd = now + START_READY_MS * 0.2;
       const leftMs = resumeCountEnd - now;
       if (leftMs <= 0) {
         finishResume(now);
