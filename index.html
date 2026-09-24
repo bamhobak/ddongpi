@@ -9,6 +9,48 @@
 <link rel="manifest" href="manifest.json">
 <link rel="apple-touch-icon" href="icon-192.png">
 <title>이피저피똥피</title>
+<script>
+  /* 카카오톡 안에서 열리면 외부 브라우저로 다시 연다 — 카톡 인앱 브라우저는 위아래 막대가 두꺼워
+     화면이 좁다. 안드로이드는 크롬(intent 주소, 크롬이 없으면 카톡 공식 openExternal 로 기본 브라우저),
+     아이폰은 카톡 공식 주소 kakaotalk://web/openExternal 로 사파리. 카톡 화면은 그대로 남을 수 있어
+     안내판에 [다시 열기]·[여기서 그냥 하기]를 둔다. '그냥 하기'를 누르면 그 탭에서는 다시 넘기지 않는다. */
+  (function () {
+    var ua = navigator.userAgent || "";
+    if (!/KAKAOTALK/i.test(ua)) return;
+    try { if (sessionStorage.getItem("epjp_stay_kakao")) return; } catch (e) {}
+    var url = location.href, android = /Android/i.test(ua);
+    var ext = "kakaotalk://web/openExternal?url=" + encodeURIComponent(url);
+    function open(u) { window.__kakaoOut = u; location.href = u; }   // __kakaoOut 은 시험용 흔적
+    function go() {
+      if (!android) { open(ext); return; }
+      open("intent://" + url.replace(/^https?:\/\//i, "") + "#Intent;scheme=https;package=com.android.chrome;end");
+      setTimeout(function () { if (!document.hidden) open(ext); }, 1500);   // 크롬이 안 열렸으면
+    }
+    // 안내판을 먼저 띄우고 넘긴다 — 페이지를 읽는 도중에 넘기면 브라우저에 따라 로딩이 멈춰 안내판도 안 뜬다
+    document.addEventListener("DOMContentLoaded", function () {
+      var d = document.createElement("div");
+      d.id = "kakaoOut";
+      d.style.cssText = "position:fixed;inset:0;z-index:99999;display:flex;flex-direction:column;align-items:center;" +
+        "justify-content:center;gap:14px;padding:24px;background:#0b0e1f;color:#fff;text-align:center;" +
+        "font:600 16px/1.5 system-ui,-apple-system,sans-serif";
+      var where = android ? "크롬으로" : "사파리로";
+      var b = "border:0;border-radius:14px;padding:13px 22px;font:800 16px system-ui,-apple-system,sans-serif;";
+      d.innerHTML = '<div style="font-size:44px">💩</div>' +
+        '<div style="font-size:19px;font-weight:800">' + where + " 여는 중이에요</div>" +
+        '<div style="opacity:.75;font-size:14px">카카오톡 안에서는 화면이 좁아서<br>밖에서 여는 게 훨씬 넓고 편해요</div>' +
+        '<button id="kakaoGo" style="' + b + 'background:#ffd23f;color:#2a1a00;margin-top:8px">' +
+        where + " 다시 열기</button>" +
+        '<button id="kakaoStay" style="' + b + 'background:transparent;color:#fff;opacity:.6;font-weight:600;font-size:14px">여기서 그냥 할게요</button>';
+      document.body.appendChild(d);
+      document.getElementById("kakaoGo").onclick = go;
+      document.getElementById("kakaoStay").onclick = function () {
+        try { sessionStorage.setItem("epjp_stay_kakao", "1"); } catch (e) {}
+        d.remove();
+      };
+      setTimeout(go, 300);
+    });
+  })();
+</script>
 <link rel="preload" as="image" href="assets/logo.webp">
 <link rel="preload" as="image" href="assets/bg/title.webp">
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ctext x='50' y='52' font-size='84' text-anchor='middle' dominant-baseline='central'%3E%F0%9F%92%A9%3C/text%3E%3C/svg%3E">
@@ -1027,7 +1069,7 @@
   const elTitle = document.getElementById("overTitle");
   const coinNote = document.getElementById("coinNote");
 
-  const GAME_VERSION = "v0.8.12";
+  const GAME_VERSION = "v0.8.13";
   /* 제작사 스플래시(bamhobak friends 로고) — 2026-09-20 끔. 다시 켜려면 true */
   const SPLASH_USE = false;   // 코드를 고칠 때마다 뒤 두 자리를 올린다
   document.getElementById("ver").textContent = GAME_VERSION;
