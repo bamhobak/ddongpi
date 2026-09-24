@@ -1027,7 +1027,7 @@
   const elTitle = document.getElementById("overTitle");
   const coinNote = document.getElementById("coinNote");
 
-  const GAME_VERSION = "v0.8.09";
+  const GAME_VERSION = "v0.8.10";
   /* 제작사 스플래시(bamhobak friends 로고) — 2026-09-20 끔. 다시 켜려면 true */
   const SPLASH_USE = false;   // 코드를 고칠 때마다 뒤 두 자리를 올린다
   document.getElementById("ver").textContent = GAME_VERSION;
@@ -1849,7 +1849,9 @@
     return Math.max(0, Math.min(1, (introT - INTRO_TRIP) / (INTRO_LOOP - INTRO_TRIP)));
   }
   /* 아이템 그림 — Microsoft Fluent 3D 이모지(MIT). 기기마다 다르게 보이던 글자 이모지를 대신한다.
-     아직 안 불러졌으면 예전처럼 글자 이모지로 그린다. */
+     아직 안 불러졌으면 예전처럼 글자 이모지로 그린다.
+     v0.8.10 코인·별·초승달·보름달·우산·하트·물방울은 방울이 그림체로 새로 그렸다(Codex, 얼굴 없이 —
+     얼굴 달린 똥과 한눈에 갈리게). 3·5코인은 금화 그림의 색만 바꾼 것. 똥·휴지·포춘쿠키·뼈다귀는 그대로. */
   const ITEM_IMG = {};
   for (const [type, file] of [["moon", "crescent_moon"], ["fullmoon", "full_moon"], ["paper", "roll_of_paper"],
                               ["umbrella", "umbrella"], ["star", "star"], ["heart", "red_heart"],
