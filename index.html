@@ -1136,7 +1136,7 @@
   const elTitle = document.getElementById("overTitle");
   const coinNote = document.getElementById("coinNote");
 
-  const GAME_VERSION = "v0.8.18";
+  const GAME_VERSION = "v0.8.19";
   /* 제작사 스플래시(bamhobak friends 로고) — 2026-09-20 끔. 다시 켜려면 true */
   const SPLASH_USE = false;   // 코드를 고칠 때마다 뒤 두 자리를 올린다
   document.getElementById("ver").textContent = GAME_VERSION;
@@ -1974,6 +1974,25 @@
     im.src = "assets/item_" + file + ".png";
   }
   const ITEM_IMG_SCALE = 1.18;
+  /* v0.8.19 똥 표정 16종 — 같은 몸통에 표정만 다르게 통째로 그린 그림(Codex)을 한 장 시트(4x4)에 모았다.
+     0 = 기본 얼굴, 1~15 = 화남·선글라스·X눈·부끄럼·식은땀·하트눈·별눈·졸림·윙크·깜짝·울음·해적 안대·왕관·콧수염·고양이 입.
+     예전엔 한 그림 위에 눈썹·선글라스·눈동자 같은 장식을 코드로 얹었는데, 표정이 그림 안에 다 들어가서 그 장치는 뺐다.
+     칸마다 캔버스로 잘라 두어 테두리(rimOf)·필터가 한 장짜리 그림처럼 다룬다. 아직 안 왔으면 ITEM_IMG.poop(기본 얼굴). */
+  const POOP_FACES = [];
+  {
+    const sh = new Image();
+    sh.onload = () => {
+      const c = sh.width / 4, list = [];
+      for (let i = 0; i < 16; i++) {
+        const cv = document.createElement("canvas");
+        cv.width = cv.height = c;
+        cv.getContext("2d").drawImage(sh, (i % 4) * c, Math.floor(i / 4) * c, c, c, 0, 0, c, c);
+        list.push(cv);
+      }
+      POOP_FACES.push(...list);
+    };
+    sh.src = "assets/poop_faces.webp";
+  }
   /* 지대 배경 그림 — 잔디밭부터 블랙홀 안까지 18장.
      전부 합쳐 140KB 남짓이라 처음에 다 받아 둔다.
      2026-09-22 18장 전부 방울이 그림체(부드러운 테두리·파스텔)로 다시 그렸다 — OpenAI, 2~18 은 tools/gen_zones.py
@@ -5517,7 +5536,7 @@
       size: r * 2, sz: r, fast: false,
       skin: "poop", space: inSpace(), gold: false, dark: false, special: null,
       bumpCd: 0, phase: Math.random() * 6.28, splitAt: 1e9, sz0: 0,
-      face: randFace(), eye: randEye(), mouth: randMouth(), gain: 0, giant: false
+      pv: randPv(), gain: 0, giant: false
     });
     coinDebt += coinRatio();                 // 코인은 똥 하나마다 덤으로 쌓인다 (평소와 같게)
   }
@@ -5623,7 +5642,7 @@
       swayA: 0, swayW: 1, swayP: 0, size: r * 2, sz: r, fast: true, thrown: true,
       skin: "poop", space: inSpace(), gold: false, dark: false, special: null,
       bumpCd: 0, phase: 0, splitAt: 1e9, sz0: 0,
-      face: 2, eye: randEye(), mouth: randMouth(), gain: 0, giant: false
+      pv: 1,   // 던진 똥은 화난 얼굴 gain: 0, giant: false
     });
     burst(x0, y0 + 20, "#ff8a8a", 8);
     if (!sfx("boing", 0.5)) beep(300, .05, "square", .03);
@@ -6574,13 +6593,8 @@
   const LASER_VY = 4500;       // 낙하 속도 — 똥이 아니라 레이저처럼 내리꽂힌다
   let warns = [];              // 예고 중인 레이저 자리
 
-  /* 꾸밈 고르기 — 0·1 은 민얼굴이라 셋 중 하나쯤은 장식이 없다. */
-  function randFace() { return Math.floor(Math.random() * 14); }
-  /* 눈·입은 따로 굴려서 장식과 조합된다 (0 = 그림 그대로) */
-  function randEye() { const r = Math.random(); return r < 0.42 ? 0 : 1 + Math.floor(Math.random() * 9); }
-  function randMouth() { const r = Math.random(); return r < 0.55 ? 0 : 1 + Math.floor(Math.random() * 3); }
-  // 눈을 통째로 덮는 장식(선글라스·X눈·하트눈·별눈·안대)이면 눈 변형은 건너뛴다
-  const EYE_COVER = { 3: 1, 4: 1, 8: 1, 9: 1, 12: 1 };
+  /* 표정 고르기 — 0 = 기본 얼굴(30%), 나머지 15가지는 고르게 (POOP_FACES 칸 번호) */
+  function randPv() { return Math.random() < 0.3 ? 0 : 1 + Math.floor(Math.random() * 15); }
 
   /* 공정한 배치 — 똥대잔치·맨몸대결. 머리 높이에 거의 같은 때(±FAIR_WIN 초) 닿는 똥들이
      가로로 벽을 이뤄 캐릭터가 설 자리가 없어지려 하면, 새 똥을 옆으로 옮겨 틈을 남긴다.
@@ -6710,8 +6724,7 @@
       splitAt: H * (lerp(0.10, 0.14, sk) + Math.random() * lerp(0.12, 0.20, sk)),   // 분열똥이 쪼개지는 높이 — 처음엔 더 위에서(피할 틈이 넉넉)
       sk: sk,                                // 특수똥의 독한 정도 (태어날 때 레벨로)
       sz0: 0,
-      face: randFace(),                      // 표정 장식 (0~1은 기본 얼굴)
-      eye: randEye(), mouth: randMouth(),    // 눈·입 변형
+      pv: randPv(),                          // 표정 그림 (POOP_FACES 칸)
       gain: cls ? cls.score : 0,
       giant: !!(cls && cls.giant)
     });
@@ -7646,7 +7659,7 @@
               swayP: Math.random() * 6.28,
               size: r2 * 2, sz: r2, fast: false,
               skin: "poop", space: it.space, special: null, bumpCd: 0, phase: 0, splitAt: 0,
-              sz0: 0, face: randFace(), eye: randEye(), mouth: randMouth(), gain: 0, giant: false
+              sz0: 0, pv: randPv(), gain: 0, giant: false
             });
           }
           burst(it.x, it.y, "#c86bff", 20);
@@ -8414,7 +8427,7 @@
               swayP: Math.random() * 6.28,
               size: r2 * 2, sz: r2, fast: false,
               skin: "poop", space: it.space, special: null, bumpCd: 0, phase: 0, splitAt: 0,
-              sz0: 0, face: randFace(), eye: randEye(), mouth: randMouth(), gain: 0, giant: false
+              sz0: 0, pv: randPv(), gain: 0, giant: false
             });
           }
           burst(it.x, it.y, "#ff963c", 28);
@@ -10756,95 +10769,6 @@
     for (const f of fetchers) drawHelperAt(f.x, f.y, f.vx, f.vy);
   }
 
-  /* 똥 위에 덧그리는 표정. 이모지 폰트가 기기마다 달라서 눈·입을 새로 그리는 대신
-     어느 폰트에서나 자연스럽게 얹히는 장식(선글라스·눈썹·홍조 등)으로 표현한다. */
-  /* 눈·입 변형 — 그림의 흰자가 순백이라 눈동자를 흰색으로 덮고 다시 그리면 이음매가 없다.
-     (좌표는 assets/item_poop.png 를 픽셀 단위로 재어 넣은 값)
-     입은 자홍색 영역 안에 이빨·혀를 얹기만 하므로 지울 필요가 없다. (모두 실측 좌표) */
-  /* v0.8.17 똥 그림을 방울이 그림체(Codex poopb_classic)로 바꾸며 다시 잰 값 — 옛 3D 그림에서 자동 측정값과
-     손으로 맞춘 값의 차이(흰자 가장자리 번짐만큼)를 그대로 더했다. */
-  const SCL_R = 0.129;                  // 흰자 반지름 / 그림 크기
-  const PUP_R = 0.080;                  // 원래 눈동자 반지름
-  const PUP_C = "#170e0f";              // 원래 눈동자 색
-  const MOU_TOP = 0.309, MOU_BOT = 0.378, MOU_HW = 0.075;   // 입 범위
-
-  function eyeBase(S) {                 // 흰자만 남기고 눈동자를 지운다
-    ctx.fillStyle = "#fff";
-    for (const sx of [-1, 1]) {
-      ctx.beginPath();
-      ctx.arc(sx * EYE_X * S, EYE_Y * S, SCL_R * S * 0.99, 0, 6.283);
-      ctx.fill();
-    }
-  }
-  function pupil(S, sx, dx, dy, r) {    // 흰자 안에서만 움직이도록 가둔다
-    const cx = sx * EYE_X * S, cy = EYE_Y * S;
-    const lim = (SCL_R - r) * S;
-    const ox = Math.max(-lim, Math.min(lim, dx * S));
-    const oy = Math.max(-lim, Math.min(lim, dy * S));
-    ctx.fillStyle = PUP_C;
-    ctx.beginPath(); ctx.arc(cx + ox, cy + oy, r * S, 0, 6.283); ctx.fill();
-  }
-  /* 0 = 그림 그대로. 1~9 는 눈동자를 다시 그린다. */
-  function drawPoopEyes(kind, S) {
-    if (!kind) return;
-    ctx.save();
-    if (kind === 7 || kind === 8) {                 // 감은 눈 / 윙크
-      eyeBase(S);
-      ctx.strokeStyle = PUP_C;
-      ctx.lineWidth = Math.max(2, S * 0.035);
-      ctx.lineCap = "round";
-      for (const sx of [-1, 1]) {
-        if (kind === 8 && sx > 0) { pupil(S, sx, 0, 0, PUP_R); continue; }   // 윙크는 한쪽만 감는다
-        const cx = sx * EYE_X * S, cy = EYE_Y * S, r = SCL_R * S * 0.72;
-        ctx.beginPath();
-        ctx.arc(cx, cy + r * 0.55, r, Math.PI * 1.15, Math.PI * 1.85);
-        ctx.stroke();
-      }
-      ctx.restore();
-      return;
-    }
-    eyeBase(S);
-    switch (kind) {
-      case 1: for (const sx of [-1, 1]) pupil(S, sx, -0.09, 0, PUP_R); break;        // 왼쪽 곁눈질
-      case 2: for (const sx of [-1, 1]) pupil(S, sx,  0.09, 0, PUP_R); break;        // 오른쪽 곁눈질
-      case 3: for (const sx of [-1, 1]) pupil(S, sx, 0, -0.08, PUP_R); break;        // 위 보기
-      case 4: pupil(S, -1, 0.10, 0, PUP_R); pupil(S, 1, -0.10, 0, PUP_R); break;     // 사팔뜨기
-      case 5: for (const sx of [-1, 1]) pupil(S, sx, 0, 0.02, PUP_R * 0.5); break;   // 콩눈
-      case 6: for (const sx of [-1, 1]) pupil(S, sx, 0, 0, PUP_R * 1.45); break;     // 부릅뜬 눈
-      case 9: pupil(S, -1, 0, 0, PUP_R * 1.4); pupil(S, 1, 0.03, 0.02, PUP_R * 0.55); break;   // 짝눈
-    }
-    ctx.restore();
-  }
-
-  /* 입 — 원래 입 안에 덧그리기만 한다. 0 = 그림 그대로. */
-  function drawPoopMouth(kind, S) {
-    if (!kind) return;
-    ctx.save();
-    const top = MOU_TOP * S, bot = MOU_BOT * S, hw = MOU_HW * S;
-    if (kind === 1) {                       // 윗니
-      ctx.fillStyle = "#fff";
-      ctx.beginPath();
-      ctx.roundRect(-hw * 0.72, top + S * 0.004, hw * 1.44, (bot - top) * 0.34, S * 0.012);
-      ctx.fill();
-    } else if (kind === 2) {                // 혀
-      ctx.fillStyle = "#ff7ab0";
-      ctx.beginPath();
-      ctx.ellipse(0, bot - (bot - top) * 0.22, hw * 0.52, (bot - top) * 0.34, 0, 0, 6.283);
-      ctx.fill();
-    } else if (kind === 3) {                // 송곳니
-      ctx.fillStyle = "#fff";
-      for (const sx of [-1, 1]) {
-        const x = sx * hw * 0.52;
-        ctx.beginPath();
-        ctx.moveTo(x - hw * 0.13, top + S * 0.004);
-        ctx.lineTo(x + hw * 0.13, top + S * 0.004);
-        ctx.lineTo(x, top + (bot - top) * 0.52);
-        ctx.closePath(); ctx.fill();
-      }
-    }
-    ctx.restore();
-  }
-
   /* 어두운 우주에서는 똥이 배경에 묻힌다. 그림의 흰 실루엣을 한 번 만들어 두고,
      그릴 때 조금 크게 뒤에 깔아 테두리처럼 보이게 한다.
      (그림자 흐림은 폰이 뜨거워져서 쓰지 않는다 — 이 방식은 그리기 한 번이면 된다) */
@@ -10879,162 +10803,6 @@
     ctx.save();
     ctx.globalAlpha *= dark ? 0.95 : rp * 0.85;
     ctx.drawImage(rimOf(img, dark), -d / 2 - k, -d / 2 - k, d + k * 2, d + k * 2);
-    ctx.restore();
-  }
-
-  /* 똥 꾸밈. 3D 그림의 눈은 가운데보다 조금 아래(y +0.124S), 좌우 ±0.221S 에 있고
-     눈 반지름은 0.13S 쯤 된다 — 아래 좌표는 전부 그 실측값에 맞춰 두었다. */
-  const EYE_X = 0.188, EYE_Y = 0.142, EYE_R = 0.123;   // v0.8.17 새 그림 실측
-  function drawPoopFace(kind, S) {
-    ctx.save();
-    ctx.lineCap = "round";
-    ctx.lineJoin = "round";
-    const ex = EYE_X * S, ey = EYE_Y * S, er = EYE_R * S;
-    switch (kind) {
-      case 2: {  // 성난 눈썹
-        ctx.strokeStyle = "#2b1a10";
-        ctx.lineWidth = Math.max(2, S * 0.05);
-        ctx.beginPath();
-        ctx.moveTo(-ex - er * 0.9, ey - er * 1.5); ctx.lineTo(-ex + er * 0.5, ey - er * 0.75);
-        ctx.moveTo( ex + er * 0.9, ey - er * 1.5); ctx.lineTo( ex - er * 0.5, ey - er * 0.75);
-        ctx.stroke();
-        break;
-      }
-      case 3: {  // 선글라스
-        const w = ex + er * 1.35, h = er * 1.5;
-        ctx.fillStyle = "#15161c";
-        ctx.beginPath();
-        ctx.roundRect(-w, ey - h * 0.62, w * 2, h * 1.24, h * 0.4);
-        ctx.fill();
-        ctx.fillStyle = "rgba(255,255,255,.45)";           // 렌즈 반사
-        ctx.beginPath();
-        ctx.roundRect(-ex - er * 0.7, ey - h * 0.42, er * 0.75, h * 0.32, h * 0.16);
-        ctx.fill();
-        break;
-      }
-      case 4: {  // 뿅 간 눈 (X) — 눈동자를 지우고 X 만 남긴다
-        eyeBase(S);
-        ctx.strokeStyle = "#2b1a10";
-        ctx.lineWidth = Math.max(2, S * 0.045);
-        for (const sx of [-1, 1]) {
-          const cx = sx * ex, d = er * 0.85;
-          ctx.beginPath();
-          ctx.moveTo(cx - d, ey - d); ctx.lineTo(cx + d, ey + d);
-          ctx.moveTo(cx + d, ey - d); ctx.lineTo(cx - d, ey + d);
-          ctx.stroke();
-        }
-        break;
-      }
-      case 5: {  // 발그레한 볼
-        ctx.fillStyle = "rgba(255,120,140,.6)";
-        for (const sx of [-1, 1]) {
-          ctx.beginPath();
-          ctx.ellipse(sx * (ex + er * 1.35), ey + er * 1.15, er * 0.6, er * 0.4, 0, 0, 6.283);
-          ctx.fill();
-        }
-        break;
-      }
-      case 6: {  // 식은땀
-        ctx.fillStyle = "#8fd4ff";
-        const x = ex + er * 1.5, y = ey - er * 2.1;
-        ctx.beginPath();
-        ctx.moveTo(x, y);
-        ctx.quadraticCurveTo(x + er * 0.55, y + er * 0.95, x, y + er * 1.2);
-        ctx.quadraticCurveTo(x - er * 0.55, y + er * 0.95, x, y);
-        ctx.fill();
-        break;
-      }
-      case 7: {  // 분노 표시
-        ctx.strokeStyle = "#ff3b3b";
-        ctx.lineWidth = Math.max(2, S * 0.04);
-        for (const off of [[0, 0], [er * 0.55, er * 0.4]]) {
-          const x = ex + er * 0.9 + off[0], y = ey - er * 2.3 + off[1];
-          ctx.beginPath();
-          ctx.moveTo(x, y); ctx.lineTo(x + er * 0.5, y + er * 0.45); ctx.lineTo(x, y + er * 0.9);
-          ctx.stroke();
-        }
-        break;
-      }
-      case 8: {  // 하트 눈 — 원래 눈동자는 지우고 하트만 남긴다
-        eyeBase(S);
-        ctx.fillStyle = "#ff3d68";
-        for (const sx of [-1, 1]) {
-          const cx = sx * ex, cy = ey, r = er * 1.05;
-          ctx.beginPath();
-          ctx.moveTo(cx, cy + r * 0.75);
-          ctx.bezierCurveTo(cx - r * 1.3, cy - r * 0.25, cx - r * 0.5, cy - r * 1.2, cx, cy - r * 0.35);
-          ctx.bezierCurveTo(cx + r * 0.5, cy - r * 1.2, cx + r * 1.3, cy - r * 0.25, cx, cy + r * 0.75);
-          ctx.fill();
-        }
-        break;
-      }
-      case 9: {  // 별 눈 — 원래 눈동자는 지우고 별만 남긴다
-        eyeBase(S);
-        ctx.fillStyle = "#ffd23f";
-        for (const sx of [-1, 1]) {
-          const cx = sx * ex, cy = ey, r = er * 1.15;
-          ctx.beginPath();
-          for (let i = 0; i < 10; i++) {
-            const a = -Math.PI / 2 + i * Math.PI / 5;
-            const rr = i % 2 ? r * 0.45 : r;
-            const px = cx + Math.cos(a) * rr, py = cy + Math.sin(a) * rr;
-            i ? ctx.lineTo(px, py) : ctx.moveTo(px, py);
-          }
-          ctx.closePath(); ctx.fill();
-        }
-        break;
-      }
-      case 10: {  // 왕관
-        const y = ey - er * 3.0, w = ex * 1.15, h = er * 1.5;
-        ctx.fillStyle = "#ffd23f";
-        ctx.beginPath();
-        ctx.moveTo(-w, y + h);
-        ctx.lineTo(-w, y); ctx.lineTo(-w * 0.45, y + h * 0.5); ctx.lineTo(0, y - h * 0.28);
-        ctx.lineTo(w * 0.45, y + h * 0.5); ctx.lineTo(w, y); ctx.lineTo(w, y + h);
-        ctx.closePath(); ctx.fill();
-        ctx.fillStyle = "#ff5d8f";
-        ctx.beginPath(); ctx.arc(0, y + h * 0.55, h * 0.2, 0, 6.283); ctx.fill();
-        break;
-      }
-      case 11: {  // 리본
-        const x = -ex - er * 0.55, y = ey - er * 2.15, r = er * 0.8;
-        ctx.fillStyle = "#ff5d8f";
-        for (const sx of [-1, 1]) {
-          ctx.beginPath();
-          ctx.moveTo(0 + x, y);
-          ctx.quadraticCurveTo(x + sx * r * 1.7, y - r, x + sx * r * 1.5, y + r * 0.35);
-          ctx.quadraticCurveTo(x + sx * r * 0.9, y + r * 0.7, x, y);
-          ctx.fill();
-        }
-        ctx.fillStyle = "#ffd23f";
-        ctx.beginPath(); ctx.arc(x, y, r * 0.35, 0, 6.283); ctx.fill();
-        break;
-      }
-      case 12: {  // 안대
-        ctx.strokeStyle = "#1b1c22";
-        ctx.lineWidth = Math.max(1.5, S * 0.028);
-        ctx.beginPath();
-        ctx.moveTo(-ex - er * 1.15, ey - er * 1.35); ctx.lineTo(ex + er * 0.85, ey - er * 0.3);
-        ctx.stroke();
-        ctx.fillStyle = "#1b1c22";
-        ctx.beginPath();
-        ctx.ellipse(-ex, ey, er * 1.25, er * 1.1, -0.15, 0, 6.283);
-        ctx.fill();
-        break;
-      }
-      case 13: {  // 콧수염
-        ctx.fillStyle = "#3a2415";
-        const y = ey + er * 1.5, w = er * 1.5;
-        for (const sx of [-1, 1]) {
-          ctx.beginPath();
-          ctx.moveTo(0, y);
-          ctx.quadraticCurveTo(sx * w * 0.6, y - er * 0.55, sx * w * 1.35, y - er * 0.15);
-          ctx.quadraticCurveTo(sx * w * 0.7, y + er * 0.5, 0, y + er * 0.3);
-          ctx.fill();
-        }
-        break;
-      }
-    }
     ctx.restore();
   }
 
@@ -11248,7 +11016,8 @@
         }
         // 똥도 같은 3D 그림 (무지개똥 필터는 그림에도 먹는다). 다크똥만 제 그림을 쓴다.
         const ii = it.dark ? (ITEM_IMG.darkpoop || ITEM_IMG[it.type])
-                 : (it.img ? (ITEM_IMG[it.img] || ITEM_IMG[it.type]) : ITEM_IMG[it.type]);
+                 : it.img ? (ITEM_IMG[it.img] || ITEM_IMG[it.type])
+                 : (it.type === "poop" && POOP_FACES.length) ? POOP_FACES[it.pv || 0] : ITEM_IMG[it.type];
         if (ii) {
           const d = it.size * ITEM_IMG_SCALE;
           // 무지개똥은 저 혼자 번쩍여서 테두리가 필요 없다
@@ -11261,11 +11030,6 @@
           ctx.fillText(it.emoji, 0, 0);
         }
         if (canvasFilterOk) ctx.filter = "none";
-        if (it.type === "poop" && it.size >= 28 && !it.gold && !it.dark) {
-          if (!EYE_COVER[it.face]) drawPoopEyes(it.eye || 0, it.size);
-          drawPoopMouth(it.mouth || 0, it.size);
-          if (it.face > 1) drawPoopFace(it.face, it.size);
-        }
       }
       ctx.restore();
     }
