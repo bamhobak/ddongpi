@@ -1136,7 +1136,7 @@
   const elTitle = document.getElementById("overTitle");
   const coinNote = document.getElementById("coinNote");
 
-  const GAME_VERSION = "v0.8.19";
+  const GAME_VERSION = "v0.8.20";
   /* 제작사 스플래시(bamhobak friends 로고) — 2026-09-20 끔. 다시 켜려면 true */
   const SPLASH_USE = false;   // 코드를 고칠 때마다 뒤 두 자리를 올린다
   document.getElementById("ver").textContent = GAME_VERSION;
@@ -1978,21 +1978,27 @@
      0 = 기본 얼굴, 1~15 = 화남·선글라스·X눈·부끄럼·식은땀·하트눈·별눈·졸림·윙크·깜짝·울음·해적 안대·왕관·콧수염·고양이 입.
      예전엔 한 그림 위에 눈썹·선글라스·눈동자 같은 장식을 코드로 얹었는데, 표정이 그림 안에 다 들어가서 그 장치는 뺐다.
      칸마다 캔버스로 잘라 두어 테두리(rimOf)·필터가 한 장짜리 그림처럼 다룬다. 아직 안 왔으면 ITEM_IMG.poop(기본 얼굴). */
-  const POOP_FACES = [];
-  {
+  /* 가로 cols 칸짜리 표정 시트를 칸마다 캔버스로 잘라 list 에 채운다 (다 잘린 뒤 한꺼번에) */
+  function loadFaceSheet(file, cols, n, list) {
     const sh = new Image();
     sh.onload = () => {
-      const c = sh.width / 4, list = [];
-      for (let i = 0; i < 16; i++) {
+      const c = sh.width / cols, out = [];
+      for (let i = 0; i < n; i++) {
         const cv = document.createElement("canvas");
         cv.width = cv.height = c;
-        cv.getContext("2d").drawImage(sh, (i % 4) * c, Math.floor(i / 4) * c, c, c, 0, 0, c, c);
-        list.push(cv);
+        cv.getContext("2d").drawImage(sh, (i % cols) * c, Math.floor(i / cols) * c, c, c, 0, 0, c, c);
+        out.push(cv);
       }
-      POOP_FACES.push(...list);
+      list.push(...out);
     };
-    sh.src = "assets/poop_faces.webp";
+    sh.src = "assets/" + file;
   }
+  const POOP_FACES = [];
+  loadFaceSheet("poop_faces.webp", 4, 16, POOP_FACES);
+  /* v0.8.20 다크똥도 같은 몸통을 새까맣게, 무서운 표정 5가지로 (Codex) — 톱니 이빨·빨간 눈 송곳니·텅 빈 흰 눈·
+     노란 고양이 눈·포효. 한 줄 시트(5칸). 0번 칸은 item_dark_poop.png 로도 둔다(시트가 오기 전 대체). */
+  const DARK_FACES = [];
+  loadFaceSheet("dark_faces.webp", 5, 5, DARK_FACES);
   /* 지대 배경 그림 — 잔디밭부터 블랙홀 안까지 18장.
      전부 합쳐 140KB 남짓이라 처음에 다 받아 둔다.
      2026-09-22 18장 전부 방울이 그림체(부드러운 테두리·파스텔)로 다시 그렸다 — OpenAI, 2~18 은 tools/gen_zones.py
@@ -11015,7 +11021,8 @@
           ctx.beginPath(); ctx.arc(0, 0, it.size * 0.72, 0, 6.283); ctx.stroke();
         }
         // 똥도 같은 3D 그림 (무지개똥 필터는 그림에도 먹는다). 다크똥만 제 그림을 쓴다.
-        const ii = it.dark ? (ITEM_IMG.darkpoop || ITEM_IMG[it.type])
+        if (it.dark && it.dv === undefined) it.dv = Math.floor(Math.random() * 5);   // 다크똥 표정 — 처음 그릴 때 정한다
+        const ii = it.dark ? (DARK_FACES[it.dv] || ITEM_IMG.darkpoop || ITEM_IMG[it.type])
                  : it.img ? (ITEM_IMG[it.img] || ITEM_IMG[it.type])
                  : (it.type === "poop" && POOP_FACES.length) ? POOP_FACES[it.pv || 0] : ITEM_IMG[it.type];
         if (ii) {
