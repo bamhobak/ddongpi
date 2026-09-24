@@ -1010,6 +1010,115 @@
     };
   }
 
+  /* ---------- 이모지 → 그림 아이콘 (v0.8.15) ----------
+     기기마다 다르게 보이던 이모지를 방울이 그림체 아이콘으로 바꿔 그린다. 아이콘은 assets/icons.webp 한 장
+     (칸 ICON_CELL px, 한 줄 ICON_COLS 칸)에 모여 있고 칸 순서가 ICON_KEYS — tools/build_icons.py 가 둘 다 만든다.
+     · 화면(DOM) 글자: 이모지를 <span class="emj"> 로 감싸고 그 칸 그림을 배경으로 깐다. 이모지 글자는 칸 밖으로
+       밀어 숨길 뿐 남겨 두어 textContent 가 그대로다(글자를 읽는 코드가 안 깨진다). 나중에 붙는 글자는 MutationObserver 가 잡는다.
+     · 캔버스 글자: fillText/strokeText 를 감싸 이모지 자리에 그림을 그린다 — 자리 폭은 원래 이모지 폭 그대로라 배치가 안 바뀐다.
+     그림이 아직 안 왔거나 목록에 없는 이모지는 원래 이모지로 나온다. */
+  /*ICONS-BEGIN*/ const ICON_KEYS = ["🪙", "⭐", "🌙", "🌕", "☂", "❤", "💧", "🧻", "🔮", "💩", "🚀", "🕊", "👼", "🧚", "🐈", "⏸", "🏆", "👑", "✏", "🎵", "🔔", "🎉", "🥊", "🗼", "🔄", "🏠", "🔒", "🔓", "🔁", "🥇", "🥈", "🥉", "✨", "⚠", "⏱", "🏃", "🎈", "💪", "📋", "🎯", "🙏", "🫧", "🧘", "🚫", "🦸", "⚡", "🔥", "🐢", "🐦", "📯", "💥", "😋", "💉", "☔", "🌠", "🕳", "🌝", "🧲", "💨", "🍀", "🌧", "💢", "🌈", "📱", "🥕", "🦄", "🕰", "🎲", "👻", "👊", "👯", "🍚", "🌀", "🐕", "🎰", "🪜", "🎼", "✂", "🌱", "⛰", "☁", "🌤", "🧊"]; const ICON_COLS = 10, ICON_ROWS = 9, ICON_CELL = 96; /*ICONS-END*/
+  const ICON_IDX = new Map(ICON_KEYS.map((k, i) => [k, i]));
+  const ICON_RE = ICON_KEYS.length ? new RegExp("(" + ICON_KEYS.slice().sort((a, b) => b.length - a.length)
+    .map(k => k.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")).join("|") + ")\\uFE0F?", "gu") : null;
+  let iconSheet = null;
+  if (ICON_RE) {
+    const im = new Image();
+    im.onload = () => { iconSheet = im; document.documentElement.classList.add("iconsOn"); };
+    im.src = "assets/icons.webp";
+  }
+  function iconPos(i) {                      // 배경 위치(%) — background-size 가 시트 전체를 칸 수만큼 키운다
+    const c = i % ICON_COLS, r = Math.floor(i / ICON_COLS);
+    return (ICON_COLS > 1 ? c / (ICON_COLS - 1) * 100 : 0) + "% " + (ICON_ROWS > 1 ? r / (ICON_ROWS - 1) * 100 : 0) + "%";
+  }
+  if (ICON_RE) {
+    const P = CanvasRenderingContext2D.prototype, fill0 = P.fillText, stroke0 = P.strokeText;
+    const cache = new Map();
+    const split = s => {                     // "🔥 뚜니핑" → [{t:"🔥", i:3}, {t:" 뚜니핑"}] (이모지 없으면 null)
+      let r = cache.get(s);
+      if (r !== undefined) return r;
+      r = null; ICON_RE.lastIndex = 0;
+      if (ICON_RE.test(s)) {
+        r = []; let last = 0, m; ICON_RE.lastIndex = 0;
+        while ((m = ICON_RE.exec(s))) {
+          if (m.index > last) r.push({ t: s.slice(last, m.index) });
+          r.push({ t: m[0], i: ICON_IDX.get(m[1]) });
+          last = m.index + m[0].length;
+        }
+        if (last < s.length) r.push({ t: s.slice(last) });
+      }
+      if (cache.size > 800) cache.clear();
+      cache.set(s, r);
+      return r;
+    };
+    const draw = (ctx, base, stroke, a) => {
+      const s = a[0];
+      const runs = iconSheet && a.length < 4 && typeof s === "string" ? split(s) : null;
+      if (!runs) return base.apply(ctx, a);
+      const x = a[1], y = a[2];
+      const px = parseFloat((/(\d+(?:\.\d+)?)px/.exec(ctx.font) || [0, "16"])[1]);
+      let total = 0;
+      for (const r of runs) { r.w = ctx.measureText(r.t).width; total += r.w; }
+      const al = ctx.textAlign, bl = ctx.textBaseline, sz = px * 1.08;
+      let cx = al === "center" ? x - total / 2 : (al === "right" || al === "end") ? x - total : x;
+      const cy = bl === "middle" ? y : (bl === "top" || bl === "hanging") ? y + px * 0.5
+               : (bl === "bottom" || bl === "ideographic") ? y - px * 0.5 : y - px * 0.36;
+      ctx.textAlign = "left";
+      for (const r of runs) {
+        if (r.i === undefined) base.call(ctx, r.t, cx, y);
+        else if (!stroke) {                  // 외곽선(strokeText)은 그림 자리를 비워 둔다
+          const c = r.i % ICON_COLS, rw = Math.floor(r.i / ICON_COLS);
+          ctx.drawImage(iconSheet, c * ICON_CELL, rw * ICON_CELL, ICON_CELL, ICON_CELL, cx + (r.w - sz) / 2, cy - sz / 2, sz, sz);
+        }
+        cx += r.w;
+      }
+      ctx.textAlign = al;
+    };
+    P.fillText = function () { draw(this, fill0, false, arguments); };
+    P.strokeText = function () { draw(this, stroke0, true, arguments); };
+
+    const SKIP = { SCRIPT: 1, STYLE: 1, TEXTAREA: 1, OPTION: 1, TITLE: 1 };
+    const emojify = root => {
+      const tw = document.createTreeWalker(root, NodeFilter.SHOW_TEXT, { acceptNode(n) {
+        const p = n.parentNode;
+        if (!p || p.nodeType !== 1 || SKIP[p.nodeName] || p.classList.contains("emj")) return NodeFilter.FILTER_REJECT;
+        ICON_RE.lastIndex = 0;
+        return ICON_RE.test(n.data) ? NodeFilter.FILTER_ACCEPT : NodeFilter.FILTER_REJECT;
+      } });
+      const list = [];
+      while (tw.nextNode()) list.push(tw.currentNode);
+      for (const n of list) {
+        const s = n.data, frag = document.createDocumentFragment();
+        let last = 0, m; ICON_RE.lastIndex = 0;
+        while ((m = ICON_RE.exec(s))) {
+          if (m.index > last) frag.appendChild(document.createTextNode(s.slice(last, m.index)));
+          const sp = document.createElement("span");
+          sp.className = "emj"; sp.textContent = m[0];
+          sp.style.backgroundPosition = iconPos(ICON_IDX.get(m[1]));
+          frag.appendChild(sp);
+          last = m.index + m[0].length;
+        }
+        if (last < s.length) frag.appendChild(document.createTextNode(s.slice(last)));
+        n.parentNode.replaceChild(frag, n);
+      }
+    };
+    const st = document.createElement("style");
+    st.textContent = ".iconsOn .emj{display:inline-block;width:1.15em;height:1.15em;vertical-align:-0.22em;" +
+      "background:url(assets/icons.webp) no-repeat;background-size:" + ICON_COLS * 100 + "% " + ICON_ROWS * 100 + "%;" +
+      "overflow:hidden;white-space:nowrap;text-indent:3em;line-height:1}";
+    document.head.appendChild(st);
+    emojify(document.body);
+    new MutationObserver(ms => {
+      for (const m of ms) {
+        if (m.type === "characterData") { if (m.target.parentNode) emojify(m.target.parentNode); continue; }
+        for (const a of m.addedNodes) {
+          if (a.nodeType === 3) { if (a.parentNode) emojify(a.parentNode); }
+          else if (a.nodeType === 1 && !a.classList.contains("emj")) emojify(a);
+        }
+      }
+    }).observe(document.body, { childList: true, subtree: true, characterData: true });
+  }
+
   const BASE_H = 720;     // 기준 논리 높이
   let H = BASE_H;         // 논리 높이 — 화면 비율에 맞춰 유동
   let W = 480;            // 논리 너비 — 화면 비율에 맞춰 유동
@@ -1027,7 +1136,7 @@
   const elTitle = document.getElementById("overTitle");
   const coinNote = document.getElementById("coinNote");
 
-  const GAME_VERSION = "v0.8.14";
+  const GAME_VERSION = "v0.8.15";
   /* 제작사 스플래시(bamhobak friends 로고) — 2026-09-20 끔. 다시 켜려면 true */
   const SPLASH_USE = false;   // 코드를 고칠 때마다 뒤 두 자리를 올린다
   document.getElementById("ver").textContent = GAME_VERSION;
