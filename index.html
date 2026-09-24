@@ -1136,7 +1136,7 @@
   const elTitle = document.getElementById("overTitle");
   const coinNote = document.getElementById("coinNote");
 
-  const GAME_VERSION = "v0.8.20";
+  const GAME_VERSION = "v0.8.21";
   /* 제작사 스플래시(bamhobak friends 로고) — 2026-09-20 끔. 다시 켜려면 true */
   const SPLASH_USE = false;   // 코드를 고칠 때마다 뒤 두 자리를 올린다
   document.getElementById("ver").textContent = GAME_VERSION;
@@ -2035,14 +2035,19 @@
      똥 그림에서 갈색 몸통만 골라 밝기(입체 그림자)를 남기고, 눈·입은 원래 그대로 얹는다.
      캔버스 필터를 쓰지 않아 아이폰(사파리)에서도 똑같이 보인다. */
   const RB_COLORS = ["#fe6448", "#fea74b", "#fee665", "#aaf064", "#68bbfd", "#a154fd"];   // 원색 쪽으로, 파스텔기 조금만
-  let RB = null;                          // null = 아직, false = 못 만듦(원래 그림으로)
-  function rainbowPrep() {
-    if (RB !== null) return RB || null;
-    const img = ITEM_IMG.poop;
+  /* v0.8.21 무지개똥 표정 7가지(기본 + 행복한 얼굴 6: 웃음·반짝눈·이 드러낸 웃음·메롱·신남·흐뭇) — 갈색 몸통 그림(Codex)을
+     한 줄 시트(7칸)에 모아 두고, 칸마다 아래 준비를 따로 해 둔다(RB_CACHE). 시트가 오기 전엔 기본 똥 그림으로. */
+  const RB_FACES = [];
+  loadFaceSheet("rainbow_faces.webp", 7, 7, RB_FACES);
+  const RB_CACHE = new Map();             // 그림 → 준비물 (false = 못 만듦 → 원래 그림으로)
+  function rainbowPrep(img) {
+    img = img || ITEM_IMG.poop;
     if (!img) return null;
-    RB = false;
+    if (RB_CACHE.has(img)) return RB_CACHE.get(img) || null;
+    let RB = false;
+    RB_CACHE.set(img, false);
     try {
-      const S = img.naturalWidth;
+      const S = img.naturalWidth || img.width;
       const mk = (w, h) => { const c = document.createElement("canvas"); c.width = w; c.height = h; return c; };
       const base = mk(S, S), bx = base.getContext("2d");
       bx.drawImage(img, 0, 0, S, S);
@@ -2058,7 +2063,7 @@
         const sat = mx > 0 ? dl / mx : 0;
         let h = 0;
         if (dl > 0) h = (mx === r ? ((g - b) / dl + 6) % 6 : mx === g ? (b - r) / dl + 2 : (r - g) / dl + 4) * 60;
-        const body = sat > 0.35 && (h < 45 || h > 350) && mx > 0.12;
+        const body = sat > 0.35 && (h < 45 || h > 350) && mx > 0.30;   // 0.30 — 진한 갈색 외곽선은 몸통으로 치지 않는다(v0.8.21)
         if (body) {                       // 몸통 — 밝기만 남긴다 (0.19~0.6 → 0.67~1)
           const L = 0.299 * r + 0.587 * g + 0.114 * b;
           const v = Math.round(255 * Math.max(0.56, Math.min(0.97, 0.8 + (L - 0.33) * 1.15)));
@@ -2081,11 +2086,12 @@
       const work = mk(S, S);
       RB = { S, cyc, shade, face, str, work, wx: work.getContext("2d") };
     } catch (e) { RB = false; }           // 그림을 못 읽으면(파일로 열었을 때 등) 원래 똥
+    RB_CACHE.set(img, RB);
     return RB || null;
   }
   /* 무지개똥 한 개를 (x, y) 에 d 크기로 그린다. 그렸으면 true */
-  function drawRainbowPoop(now, seed, x, y, d, puls) {
-    const R = rainbowPrep();
+  function drawRainbowPoop(now, seed, x, y, d, puls, img) {
+    const R = rainbowPrep(img);
     if (!R) return false;
     const c = R.wx, S = R.S;
     c.globalCompositeOperation = "source-over";
@@ -11029,7 +11035,8 @@
           const d = it.size * ITEM_IMG_SCALE;
           // 무지개똥은 저 혼자 번쩍여서 테두리가 필요 없다
           if ((rp > 0.03 || it.dark) && !it.gold) drawRim(ii, d, rp, it.dark);
-          if (!(it.gold && drawRainbowPoop(now, it.x, -d / 2, -d / 2, d, goldFx(now, it.x).puls)))
+          if (it.gold && it.rv === undefined) it.rv = Math.floor(Math.random() * 7);   // 무지개똥 표정 — 처음 그릴 때
+          if (!(it.gold && drawRainbowPoop(now, it.x, -d / 2, -d / 2, d, goldFx(now, it.x).puls, RB_FACES[it.rv])))
             ctx.drawImage(ii, -d / 2, -d / 2, d, d);
         } else {
           ctx.fillStyle = "#fff";
