@@ -1027,7 +1027,7 @@
   const elTitle = document.getElementById("overTitle");
   const coinNote = document.getElementById("coinNote");
 
-  const GAME_VERSION = "v0.8.06";
+  const GAME_VERSION = "v0.8.07";
   /* 제작사 스플래시(bamhobak friends 로고) — 2026-09-20 끔. 다시 켜려면 true */
   const SPLASH_USE = false;   // 코드를 고칠 때마다 뒤 두 자리를 올린다
   document.getElementById("ver").textContent = GAME_VERSION;
@@ -1582,10 +1582,12 @@
        얼굴 크기는 adj 0.571 로 땅 위와 같고, 맞은 그림(spacehurt6_1)은 헬멧 지름이 헤엄 때와 같아지게 adj 를 잡았다. */
     /* v0.8.06 새 방울이(짧은 귀)에 맞춰 우주복도 새로 — 하얀 단단한 헬멧에 큰 유리, 파란 띠
        (OpenAI b2_suitA_1 → Ludo 49장 시트 7x7, 칸 214x200). 귀가 땅 위와 같은 크기로 헬멧 안에 들어간다.
-       맞은 그림(b2_spacehurt2_1)은 헬멧 지름이 헤엄 때와 같아지게 adj 를 잡았다. */
+       맞은 그림은 헬멧 지름이 헤엄 때와 같아지게 adj 를 잡았다.
+       v0.8.07 맞은 그림 교체 — 땅 위 맞은 그림처럼 엉덩방아 찧고 뒷다리를 앞으로 뻗는다. 헬멧이 머리를
+       지켰으니 혹도, 유리 금도 없다 (Codex cx_spacehurt3_3 을 사용자가 손봄). */
     right: { img: null, aspect: 1.0700, head: 0.400, cx: 0.700, cy: 0.390, adj: 0.5710,
              bcx: 0.500, bcy: 0.530, brr: 0.530, float: true },
-    hurt:  { img: null, aspect: 0.9688, head: 0.360, cx: 0.720, cy: 0.420, adj: 0.5400,
+    hurt:  { img: null, aspect: 0.9656, head: 0.360, cx: 0.680, cy: 0.400, adj: 0.5000,
              bcx: 0.500, bcy: 0.540, brr: 0.520 }
   };
   /* 무소유 전용 우주복 —
