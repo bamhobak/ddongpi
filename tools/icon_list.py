@@ -88,6 +88,10 @@ NEW = [
     ("🌑", "newmoon", "a dark grey new moon disc with faint craters"),
     ("🌒", "darkmoon", "a dark moon with a thin glowing crescent on its right edge"),
     ("⚫", "horizon", "a glossy black orb with a thin glowing orange ring around its edge (black hole event horizon)"),
+    # 대전모드 증강 (로블록스판에서)
+    ("🍌", "banana", "a yellow banana peel lying open (peeled banana skin)"),
+    ("😵", "reverse", "two chubby arrows pointing opposite ways left and right in a circle, purple (confusion / reverse controls)"),
+    ("🤢", "stink", "a round green-faced nauseated emoji face (sick from a bad smell)"),
     # 대전모드 이모티콘 도발
     ("😜", "tease", "a round yellow emoji face winking with its tongue out playfully (teasing)"),
     ("😭", "sob", "a round yellow emoji face crying loudly with streams of tears"),

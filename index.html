@@ -1060,7 +1060,7 @@
        밀어 숨길 뿐 남겨 두어 textContent 가 그대로다(글자를 읽는 코드가 안 깨진다). 나중에 붙는 글자는 MutationObserver 가 잡는다.
      · 캔버스 글자: fillText/strokeText 를 감싸 이모지 자리에 그림을 그린다 — 자리 폭은 원래 이모지 폭 그대로라 배치가 안 바뀐다.
      그림이 아직 안 왔거나 목록에 없는 이모지는 원래 이모지로 나온다. */
-  /*ICONS-BEGIN*/ const ICON_KEYS = ["🪙", "⭐", "🌙", "🌕", "☂", "❤", "💧", "🧻", "🔮", "💩", "🚀", "🕊", "👼", "🧚", "🐈", "⏸", "🏆", "👑", "✏", "🎵", "🔔", "🎉", "🥊", "🗼", "🔄", "🏠", "🔒", "🔓", "🔁", "🥇", "🥈", "🥉", "✨", "⚠", "⏱", "🏃", "🎈", "💪", "📋", "🎯", "🙏", "🫧", "🧘", "🚫", "🦸", "⚡", "🔥", "🐢", "🐦", "📯", "💥", "😋", "💉", "☔", "🌠", "🕳", "🌝", "🧲", "💨", "🍀", "🌧", "💢", "🌈", "📱", "🥕", "🦄", "🕰", "🎲", "👻", "👊", "👯", "🍚", "🌀", "🐕", "🎰", "🪜", "🎼", "✂", "🌱", "⛰", "☁", "🌤", "🧊", "❄", "🛰", "🌍", "☄", "🌌", "🌑", "🌒", "⚫", "😜", "😭", "👍", "⚔", "🧑‍🚀"]; const ICON_COLS = 10, ICON_ROWS = 10, ICON_CELL = 96; /*ICONS-END*/
+  /*ICONS-BEGIN*/ const ICON_KEYS = ["🪙", "⭐", "🌙", "🌕", "☂", "❤", "💧", "🧻", "🔮", "💩", "🚀", "🕊", "👼", "🧚", "🐈", "⏸", "🏆", "👑", "✏", "🎵", "🔔", "🎉", "🥊", "🗼", "🔄", "🏠", "🔒", "🔓", "🔁", "🥇", "🥈", "🥉", "✨", "⚠", "⏱", "🏃", "🎈", "💪", "📋", "🎯", "🙏", "🫧", "🧘", "🚫", "🦸", "⚡", "🔥", "🐢", "🐦", "📯", "💥", "😋", "💉", "☔", "🌠", "🕳", "🌝", "🧲", "💨", "🍀", "🌧", "💢", "🌈", "📱", "🥕", "🦄", "🕰", "🎲", "👻", "👊", "👯", "🍚", "🌀", "🐕", "🎰", "🪜", "🎼", "✂", "🌱", "⛰", "☁", "🌤", "🧊", "❄", "🛰", "🌍", "☄", "🌌", "🌑", "🌒", "⚫", "🍌", "😵", "🤢", "😜", "😭", "👍", "⚔", "🧑‍🚀"]; const ICON_COLS = 10, ICON_ROWS = 10, ICON_CELL = 96; /*ICONS-END*/
   const ICON_IDX = new Map(ICON_KEYS.map((k, i) => [k, i]));
   const ICON_RE = ICON_KEYS.length ? new RegExp("(" + ICON_KEYS.slice().sort((a, b) => b.length - a.length)
     .map(k => k.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")).join("|") + ")\\uFE0F?", "gu") : null;
@@ -1179,7 +1179,7 @@
   const elTitle = document.getElementById("overTitle");
   const coinNote = document.getElementById("coinNote");
 
-  const GAME_VERSION = "v0.8.31";
+  const GAME_VERSION = "v0.8.32";
   /* 제작사 스플래시(bamhobak friends 로고) — 2026-09-20 끔. 다시 켜려면 true */
   const SPLASH_USE = false;   // 코드를 고칠 때마다 뒤 두 자리를 올린다
   document.getElementById("ver").textContent = GAME_VERSION;
@@ -5909,7 +5909,7 @@
     if (vsOn() && drag && !dragBlocked(e) && swipeUp(drag, pointerY(e), performance.now())) vsJump(1);   // 두 폰 대전 — 위로 쓸면 점프
     if (dragBlocked(e)) { drag = null; if (e.cancelable) e.preventDefault(); return; }
     if (!drag) { dragAnchor(e); if (e.cancelable) e.preventDefault(); return; }   // 막혀 있던 손가락은 여기서 기준점을 잡는다
-    const kd = prophIs("reverse") ? -1 : 1;           // 거꾸로 가는 날 — 끄는 방향과 반대로
+    const kd = (prophIs("reverse") || (vsOn() && vsReversed(player, performance.now()))) ? -1 : 1;   // 거꾸로 가는 날·어지럼 저주 — 끄는 방향과 반대로
     const wantX = drag.px + (pointerX(e) - drag.fx) * DRAG_GAIN * kd;
     const x = Math.max(player.r, Math.min(W - player.r, wantX));
     if (x !== wantX) drag.px += x - wantX;            // 끝에 닿으면 기준점을 끌어온다
@@ -7180,7 +7180,7 @@
     const kSpeed = 448 * spdMul() * dt;   // 키보드·십자패드 이동 속도 (v0.8.00 에 560 에서 20% 줄였다)
     // 패드는 민 정도만큼 속도가 붙는다 (키보드는 늘 최고 속도)
     const kx = kSpeed, ky = kSpeed;
-    const kd = prophIs("reverse") ? -1 : 1;           // 거꾸로 가는 날 — 좌우가 바뀐다
+    const kd = (prophIs("reverse") || (vsOn() && vsReversed(player, now))) ? -1 : 1;   // 거꾸로 가는 날·어지럼 저주 — 좌우가 바뀐다
     const vk = vsOn() && !NET.role;                   // 한 폰 대전 — 방향키는 P2 몫
     if ((!vk && keys.ArrowLeft)  || keys.a || keys.A) player.tx -= kx * kd;
     if ((!vk && keys.ArrowRight) || keys.d || keys.D) player.tx += kx * kd;
@@ -7194,9 +7194,12 @@
     const prev = player.x;
     // 손가락을 반대편에 찍어도 순간이동하지 않도록 최고 속도를 제한한다
     // 대전모드 — 밟혀서 멈춘 동안은 제자리 (손가락 목표는 그대로 두어 풀리면 가던 쪽으로 간다)
-    const want = (vsOn() && stunned(player, now)) ? 0 : (player.tx - player.x) * Math.min(1, dt * 20);
-    const maxStep = PLAYER_MAX_SPEED * spdMul() * dt;
-    player.x += Math.max(-maxStep, Math.min(maxStep, want));
+    if (vsOn()) vsMoveBody(player, dt, now);          // 대전모드 — 밟혀 멈춤·바나나·얼음·구린내
+    else {
+      const want = (player.tx - player.x) * Math.min(1, dt * 20);
+      const maxStep = PLAYER_MAX_SPEED * spdMul() * dt;
+      player.x += Math.max(-maxStep, Math.min(maxStep, want));
+    }
     /* ── 방귀 대시 — 돌진하는 동안은 끌기보다 앞선다 ──
        끌기 기준점(drag.px)과 목표(player.tx)를 함께 끌고 가야, 대시가 끝나는 순간
        손가락이 잡고 있던 원래 자리로 확 빨려 돌아가지 않는다. */
@@ -8455,6 +8458,9 @@
     player.emo = rival.emo = null;
     bubbleOn = job === "bangul"; rival.bubble = rivalJob === "bangul";   // 방울이 — 판마다 한 번 막는 비누방울
     player.floatT = rival.floatT = 0;
+    vsPeels = []; vsIce = []; vsPigeons = [];
+    for (const b of [player, rival]) { b.slipUntil = 0; b.revUntil = 0; b.stinkT = 0; b.iv = 0; }
+    rival.dodge = 0;
     p1kv = 0; vsBumpCd = 0; vsLoser = 0; vsTouches.clear();
     facing = NET.role === "guest" ? "left" : "right";
     rival.facing = NET.role === "guest" ? "right" : "left";
@@ -8508,7 +8514,7 @@
           d = { who, fx: x, px: who === 1 ? player.tx : rival.tx };
           vsTouches.set(t.identifier, d);
         }
-        const want = d.px + (x - d.fx) * DRAG_GAIN;
+        const want = d.px + (x - d.fx) * DRAG_GAIN * (vsReversed(d.who === 1 ? player : rival, performance.now()) ? -1 : 1);
         const cl = Math.max(player.r, Math.min(W - player.r, want));
         if (cl !== want) d.px += cl - want;            // 끝에 닿으면 기준점을 끌어온다
         if (d.who === 1) player.tx = cl; else rival.tx = cl;
@@ -8524,14 +8530,16 @@
       if (g) rival.tx = g.x + (g.vx || 0) * ((now - NET.gAt) / 1000 + NET_LAT);
     } else {                                            // 한 폰 — P2 는 ← → 와 오른쪽 손가락
       const ks = 448 * dt;
-      if (keys.ArrowLeft)  rival.tx -= ks;
-      if (keys.ArrowRight) rival.tx += ks;
+      const rk = vsReversed(rival, now) ? -1 : 1;         // 어지럼 저주
+      if (keys.ArrowLeft)  rival.tx -= ks * rk;
+      if (keys.ArrowRight) rival.tx += ks * rk;
     }
     rival.tx = Math.max(player.r, Math.min(W - player.r, rival.tx));
     const prev = rival.x;
-    // 밟혀서 멈춘 동안 제자리 (두 폰이면 상대 폰이 스스로 멈춘다)
-    const want = (!net && stunned(rival, now)) ? 0 : (rival.tx - rival.x) * Math.min(1, dt * 20), maxStep = PLAYER_MAX_SPEED * dt;
-    rival.x += Math.max(-maxStep, Math.min(maxStep, want));
+    if (net) {                                          // 두 폰 — 받은 자리를 따라갈 뿐 (멈춤·미끄러짐은 상대 폰이 스스로)
+      const want = (rival.tx - rival.x) * Math.min(1, dt * 20), maxStep = PLAYER_MAX_SPEED * 1.5 * dt;
+      rival.x += Math.max(-maxStep, Math.min(maxStep, want));
+    } else vsMoveBody(rival, dt, now);
     // 튕겨 나가는 힘 — 금방 잦아든다
     if (rival.kv) vsShift(2, rival.kv * dt);
     if (p1kv) vsShift(1, p1kv * dt);
@@ -8556,6 +8564,7 @@
 
     vsMoonStep(dt);
     vsRouletteStep(dt);
+    vsWorldStep(dt, now);
     if (!net && dying <= 0) {                            // 한 폰 P2 가 달을 먹는다 (두 폰이면 상대 폰이 잰다)
       const cy2 = rival.y + rival.hy;
       for (let i = items.length - 1; i >= 0; i--) {
@@ -8638,6 +8647,11 @@
       if (it.type !== "poop" || it.bounced || it.ghost || it.gold || it.skin === "fever") continue;
       const px = it.x - (it.vx || 0) * dt, py = it.y - (it.vy || 0) * dt;
       if (segDist(rival.x, cy, px, py, it.x, it.y) >= it.r + R) continue;
+      if (rival.dodge > 0 && Math.random() < rival.dodge) {   // 잔상 — 잔상만 남기고 피한다
+        it.ghost = true;
+        popText(rival.x, rival.y - 60, "잔상!", "#cbb8ff", 18);
+        continue;
+      }
       if (rival.bubble) {                                // 방울이 비누방울 — 판마다 한 번
         rival.bubble = false; rival.inv = now + 900;
         items.splice(i, 1);
@@ -8763,7 +8777,14 @@
     { id: "dash",  ic: "💨", nm: "방귀 대시",  keep: true },   // 두 번 두드려 순간이동 (제 폰의 제 캐릭터만)
     { id: "umb",   ic: "☂️", nm: "우산" },                     // 똥 한 번 막기 (최대 2)
     { id: "heart", ic: "❤️", nm: "하트" },                     // 목숨 +1 (최대 5)
-    { id: "bomb",  ic: "💩", nm: "똥 폭탄" }                   // 상대 머리 위로 똥 세 개
+    { id: "bomb",  ic: "💩", nm: "똥 폭탄" },                  // 상대 머리 위로 똥 세 개
+    // v0.8.32 로블록스판에서 가져온 것 (설명은 아래 '로블록스판에서 가져온 것')
+    { id: "banana",  ic: "🍌", nm: "바나나 껍질" },
+    { id: "reverse", ic: "😵", nm: "어지럼 저주" },
+    { id: "stink",   ic: "🤢", nm: "구린내" },
+    { id: "pigeon",  ic: "🐦", nm: "비둘기 폭격" },
+    { id: "ice",     ic: "🧊", nm: "얼음 바닥" },
+    { id: "ghost",   ic: "👻", nm: "잔상" }
   ];
   const VS_RL_SEC = 1, VS_MOON_MIN = 8, VS_MOON_MAX = 12, VS_MAX_LIVES = 5;
   let vsMoonT = 0;
@@ -8771,7 +8792,9 @@
   function vsHas(b, id) { return !!vsAugOf(b)[id]; }
   // 무엇이 나올지 — 계속 붙는 것 중 이미 가진 건 뺀다. 한 폰의 P2 는 두드릴 곳이 없어 방귀 대시를 뺀다
   function vsRollAug(b) {
-    const pool = VS_AUGS.filter(a => !(a.keep && vsHas(b, a.id)) && !(a.id === "dash" && b === rival && !NET.role));
+    const dodge = b === player ? aug.dodge : (b.dodge || 0);
+    const pool = VS_AUGS.filter(a => !(a.keep && vsHas(b, a.id)) && !(a.id === "dash" && b === rival && !NET.role)
+                                    && !(a.id === "ghost" && dodge >= VS_DODGE_MAX));   // 잔상은 두 번까지
     return pool[Math.floor(Math.random() * pool.length)].id;
   }
   // who(1 = 이 폰의 나, 2 = 상대)가 달을 먹었다 — 룰렛을 돌리고 끝나면 붙인다
@@ -8792,6 +8815,7 @@
       else if (!guestSide) rival.lives = Math.min(VS_MAX_LIVES, rival.lives + 1);   // 들어온 쪽은 상대 목숨을 받은 값으로만 본다
     }
     if (id === "bomb" && !guestSide) vsDropBomb(me ? rival : player);              // 똥은 방장(한 폰)이 만든다
+    vsApplyRb(who, id, performance.now());
     const x = b.x, y = (b.y || groundY) + (b === player ? player.hy : rival.hy) - vsR() * 2.8;
     popText(x, y, (a ? a.ic + " " + a.nm : id) + "!", me ? "#8fd0ff" : "#ffb3d6", 22);
     burst(x, y + 20, "#ffe08a", 14);
@@ -9000,6 +9024,129 @@
     }
   }
 
+  /* ---------- 대전 증강 — 로블록스판에서 가져온 것 (v0.8.32) ----------
+     🍌 바나나 껍질 — 내 발밑에 껍질. 상대가 밟으면 VS_SLIP_MS 동안 조작이 안 먹고 미끄러진다 (내 껍질은 안 미끄러진다)
+     😵 어지럼 저주 — 상대의 좌우가 VS_REV_MS 동안 반대
+     🤢 구린내 — VS_STINK_SEC 동안 내 둘레에 초록 구름. 상대가 안에 있으면 걸음이 절반
+     🐦 비둘기 폭격 — 비둘기 두 마리가 나에게서 좌우로 날아가며 똥을 VS_PG_DROPS 개씩 떨군다
+     🧊 얼음 바닥 — 내가 보는 쪽 앞 바닥이 VS_ICE_SEC 동안 얼음. 올라서면(누구든) 미끄러워 늦게 서고 늦게 돈다
+     👻 잔상 — 맞을 때 15% 로 잔상만 남기고 피한다 (두 번까지 쌓여 30%)
+     두 폰이면 증강이 붙을 때 두 폰이 똑같이 만든다(껍질·얼음·구름·비둘기). 똥은 방장만 떨구고,
+     껍질을 밟았는지는 밟은 쪽 폰이 재서 상대 폰에 알린다("peel"). */
+  const VS_SLIP_MS = 1000, VS_REV_MS = 5000, VS_STINK_SEC = 4, VS_ICE_SEC = 5, VS_PG_DROPS = 7;
+  const VS_PG_START = 40, VS_PG_GAP = 40, VS_PG_SPEED = 200, VS_ICE_LEN = 220, VS_DODGE = 0.15, VS_DODGE_MAX = 0.3;
+  let vsPeels = [], vsIce = [], vsPigeons = [];
+  function vsStinkR() { return vsR() * 4; }
+  function vsOther(b) { return b === player ? rival : player; }
+  function vsReversed(b, now) { return now < (b.revUntil || 0); }
+  function vsOnIce(b) { return (b.jh || 0) < 4 && vsIce.some(z => b.x >= z.x0 && b.x <= z.x1); }
+  function vsInStink(b) {
+    const o = vsOther(b);
+    return (o.stinkT || 0) > 0 && Math.abs(b.x - o.x) < vsStinkR() && Math.abs((b.jh || 0) - (o.jh || 0)) < vsStinkR();
+  }
+  // 몸 하나 옮기기 — 미끄러짐(바나나)·멈춤(밟기)·얼음·구린내를 반영한다
+  function vsMoveBody(b, dt, now) {
+    const lo = player.r, hi = W - player.r;
+    if (now < (b.slipUntil || 0)) {                    // 바나나 — 조작이 안 먹고 미끄러져 간다
+      b.x = Math.max(lo, Math.min(hi, b.x + (b.slipV || 0) * dt));
+      b.slipV = (b.slipV || 0) * Math.exp(-2.5 * dt);
+      b.iv = 0;
+      return;
+    }
+    if (stunned(b, now)) { b.iv = 0; return; }
+    const maxS = PLAYER_MAX_SPEED * (vsInStink(b) ? 0.5 : 1);
+    const desired = Math.max(-maxS, Math.min(maxS, (b.tx - b.x) * 20));
+    b.iv = vsOnIce(b) ? (b.iv || 0) + (desired - (b.iv || 0)) * Math.min(1, dt * 1.6) : desired;   // 얼음 위는 늦게 서고 늦게 돈다
+    b.x = Math.max(lo, Math.min(hi, b.x + b.iv * dt));
+  }
+  function vsDropPoopAt(x, y, vy) {
+    const r = 15 * VS_SCALE * 1.1;
+    items.push({ type: "poop", emoji: "💩", x: Math.max(r, Math.min(W - r, x)), y, r,
+                 vx: 0, vy: vy * (H / BASE_H), rot: 0, vr: (Math.random() - .5) * 4, swayA: 0, swayW: 1, swayP: 0,
+                 size: r * 2, sz: r, fast: true, skin: "poop", space: inSpace(), gold: false, dark: false, special: null,
+                 bumpCd: 0, phase: 0, splitAt: 1e9, sz0: 0, pv: randPv(), gain: 0, giant: false, born: elapsed });
+  }
+  // 로블록스판 증강 붙이기 — who(1 나·2 상대)가 쓴 것. 두 폰이 똑같이 부른다
+  function vsApplyRb(who, id, now) {
+    const b = who === 1 ? player : rival, o = vsOther(b), host = NET.role !== "guest";
+    const face = (b === player ? facing : rival.facing) === "left" ? -1 : 1;
+    if (id === "banana") vsPeels.push({ x: b.x, owner: who, t: 25 });
+    else if (id === "reverse") {
+      o.revUntil = now + VS_REV_MS;
+      popText(o.x, groundY - (o.jh || 0) - vsR() * 3.4, "😵 좌우 반대!", "#c9a2ff", 20);
+    } else if (id === "stink") b.stinkT = VS_STINK_SEC;
+    else if (id === "pigeon") {
+      for (const dir of [-1, 1]) vsPigeons.push({ x0: b.x, x: b.x, y: H * 0.2, dir, n: 0, next: VS_PG_START, spawn: host, ph: Math.random() * 6 });
+    } else if (id === "ice") {
+      const a = b.x + face * vsR() * 1.2, z = a + face * VS_ICE_LEN;
+      vsIce.push({ x0: Math.max(0, Math.min(a, z)), x1: Math.min(W, Math.max(a, z)), t: VS_ICE_SEC });
+    } else if (id === "ghost") {
+      if (who === 1) aug.dodge = Math.min(VS_DODGE_MAX, aug.dodge + VS_DODGE);
+      else rival.dodge = Math.min(VS_DODGE_MAX, (rival.dodge || 0) + VS_DODGE);
+    }
+  }
+  // 매 프레임 — 껍질·얼음·구름·비둘기 (방장·한 폰은 vsUpdate, 들어온 쪽은 guestUpdate)
+  function vsWorldStep(dt, now) {
+    for (let i = vsPeels.length - 1; i >= 0; i--) { vsPeels[i].t -= dt; if (vsPeels[i].t <= 0) vsPeels.splice(i, 1); }
+    for (let i = vsIce.length - 1; i >= 0; i--) { vsIce[i].t -= dt; if (vsIce[i].t <= 0) vsIce.splice(i, 1); }
+    for (const b of [player, rival]) if (b.stinkT > 0) b.stinkT = Math.max(0, b.stinkT - dt);
+    // 껍질 밟기 — 제 몸은 제 폰이 잰다 (한 폰이면 둘 다)
+    const bodies = NET.role ? [[1, player]] : [[1, player], [2, rival]];
+    for (const [who, b] of bodies) {
+      if ((b.jh || 0) > 4 || now < (b.slipUntil || 0) || dying > 0) continue;
+      const k = vsPeels.findIndex(pl => pl.owner !== who && Math.abs(pl.x - b.x) < vsR() * 0.9);
+      if (k < 0) continue;
+      const pl = vsPeels.splice(k, 1)[0];
+      const face = (b === player ? facing : rival.facing) === "left" ? -1 : 1;
+      b.slipUntil = now + VS_SLIP_MS; b.slipV = face * 460;
+      if (NET.role) netSend("peel", { x: Math.round(pl.x) });
+      popText(b.x, groundY - vsR() * 3, "미끄덩!", "#ffe066", 22);
+      beep(300, .08, "sine", .05); beep(200, .12, "sine", .04);
+    }
+    // 비둘기 — 날아가며 똥을 떨군다 (똥은 방장·한 폰만 만든다)
+    for (let i = vsPigeons.length - 1; i >= 0; i--) {
+      const pg = vsPigeons[i];
+      pg.x += pg.dir * VS_PG_SPEED * dt; pg.ph += dt * 12;
+      while (pg.n < VS_PG_DROPS && Math.abs(pg.x - pg.x0) >= pg.next) {
+        if (pg.spawn && pg.x > 0 && pg.x < W) vsDropPoopAt(pg.x, pg.y + 10, 320);
+        pg.n++; pg.next += VS_PG_GAP;
+      }
+      if (pg.n >= VS_PG_DROPS && (pg.x < -60 || pg.x > W + 60)) vsPigeons.splice(i, 1);
+    }
+  }
+  function drawVsWorld(now) {
+    const gy = groundY + 2;
+    for (const z of vsIce) {                            // 얼음 바닥 — 땅 선을 따라 하늘색 띠
+      ctx.save();
+      ctx.globalAlpha = Math.min(1, z.t / 0.6) * 0.75;
+      ctx.fillStyle = "rgba(170,225,255,.7)"; ctx.strokeStyle = "rgba(255,255,255,.9)"; ctx.lineWidth = 2;
+      ctx.beginPath(); ctx.roundRect(z.x0, gy - 7, z.x1 - z.x0, 14, 7); ctx.fill(); ctx.stroke();
+      ctx.fillStyle = "#fff";
+      for (let k = z.x0 + 14; k < z.x1; k += 38) { ctx.beginPath(); ctx.arc(k + Math.sin(now / 300 + k) * 3, gy - 2, 1.8, 0, 6.283); ctx.fill(); }
+      ctx.restore();
+    }
+    for (const pl of vsPeels) {                          // 바나나 껍질
+      ctx.save();
+      ctx.globalAlpha = Math.min(1, pl.t / 0.6);
+      ctx.font = Math.round(vsR() * 1.1) + "px serif"; ctx.textAlign = "center"; ctx.textBaseline = "middle";
+      ctx.fillText("🍌", pl.x, gy - 6);
+      ctx.restore();
+    }
+    for (const b of [player, rival]) {                   // 구린내 구름
+      if (!(b.stinkT > 0)) continue;
+      const cx = b.x, cy = (b === player ? player.y + player.hy : rival.y + rival.hy), R = vsStinkR();
+      ctx.save();
+      ctx.globalAlpha = Math.min(1, b.stinkT / 0.5) * 0.28;
+      ctx.fillStyle = "#7cc84a";
+      for (let k = 0; k < 7; k++) {
+        const a = k * 0.9 + now / 900, rr = R * (0.42 + 0.12 * Math.sin(now / 400 + k));
+        ctx.beginPath(); ctx.arc(cx + Math.cos(a) * R * 0.5, cy + Math.sin(a) * R * 0.35, rr, 0, 6.283); ctx.fill();
+      }
+      ctx.restore();
+    }
+    for (const pg of vsPigeons) drawDove(pg.x, pg.y + Math.sin(pg.ph) * 4, pg.ph, null);
+  }
+
   /* ---------- 대전모드 온라인 (v0.8.25) — 두 폰으로 ----------
      Supabase Realtime(브로드캐스트)으로 방 하나(방 번호 4자리)에 둘이 들어간다. 라이브러리 없이 웹소켓으로 직접 붙는다
      (Phoenix 채널 규약: phx_join · broadcast · 25초마다 heartbeat).
@@ -9011,7 +9158,7 @@
      · 끝은 host 가 정한다("over"). 6초 동안 아무것도 안 오면 상대가 나간 것으로 친다.
      폰마다 제 캐릭터가 player(나), 상대가 rival 이다 — host 는 쉬었음 청년, guest 는 방울이. */
   const NET = { ws: null, topic: "", role: "", code: "", ref: 0, hbT: 0, lastRx: 0, sendT: 0, joined: false,
-                hiT: 0, items: new Map(), eaten: new Set(), snapAt: 0, snap: null, gAt: 0, g: null,
+                hiT: 0, items: new Map(), eaten: new Set(), dodged: new Set(), snapAt: 0, snap: null, gAt: 0, g: null,
                 again: false, peerAgain: false, gone: false };
   const NET_RATE = 0.1, NET_LAT = 0.08, NET_TIMEOUT = 6000;
   function netOn() { return !!NET.role && runMode === "vs"; }
@@ -9100,6 +9247,13 @@
     const now = performance.now();
     if (ev === "bye") { netLost(); return; }
     if (ev === "emo") { vsShowEmo(rival, p.e | 0); return; }
+    if (ev === "peel") {
+      let k = -1, bd = 60;
+      vsPeels.forEach((pl, i) => { const d = Math.abs(pl.x - p.x); if (d < bd) { bd = d; k = i; } });
+      if (k >= 0) vsPeels.splice(k, 1);
+      popText(rival.x, groundY - vsR() * 3, "미끄덩!", "#ffe066", 22);
+      return;
+    }
     if (NET.role === "host") {
       if (ev === "hi") {
         // 처음 한 번만 — 들어온 쪽은 'start' 를 받을 때까지 hi 를 되풀이하므로 두 번째부터는 무시
@@ -9145,7 +9299,7 @@
   function netStartMatch() {
     vsScreen.classList.add("hidden");
     overScreen.classList.add("hidden");
-    NET.items.clear(); NET.eaten.clear(); NET.snap = null; NET.g = null;
+    NET.items.clear(); NET.eaten.clear(); NET.dodged.clear(); NET.snap = null; NET.g = null;
     NET.again = NET.peerAgain = false; NET.gone = false; NET.sendT = 0; NET.lastRx = performance.now();
     beep(900, .08, "square", .05);
     reset(false);
@@ -9169,13 +9323,12 @@
       }
     }
     // 내 캐릭터 — 원래 판과 같은 움직임
-    const kSpeed = 448 * dt;
+    const kSpeed = 448 * dt * (vsReversed(player, now) ? -1 : 1);   // 어지럼 저주면 좌우 반대
     if (keys.ArrowLeft || keys.a || keys.A) player.tx -= kSpeed;
     if (keys.ArrowRight || keys.d || keys.D) player.tx += kSpeed;
     player.tx = Math.max(player.r, Math.min(W - player.r, player.tx));
     const prev = player.x;
-    const want = stunned(player, now) ? 0 : (player.tx - player.x) * Math.min(1, dt * 20), maxStep = PLAYER_MAX_SPEED * dt;   // 밟혀서 멈춘 동안 제자리
-    player.x += Math.max(-maxStep, Math.min(maxStep, want));
+    vsMoveBody(player, dt, now);                        // 밟혀 멈춤·바나나·얼음·구린내
     if (p1kv) vsShift(1, p1kv * dt);
     p1kv *= Math.exp(-7 * dt); if (Math.abs(p1kv) < 5) p1kv = 0;
     player.vx = (player.x - prev) / Math.max(dt, .001);
@@ -9186,6 +9339,7 @@
     player.y = groundY - (player.jh || 0);
     player.hy = headOffset(currentSprite(now));
     vsRouletteStep(dt);
+    vsWorldStep(dt, now);
     if (!s) return;
     // 상대(방장) — 받은 자리에서 속도만큼 앞당긴다
     const lead = age + NET_LAT;
@@ -9230,8 +9384,13 @@
     items = Array.from(NET.items.values());
     if (now < invUntil) return;
     for (const it of items) {
-      if (it.type !== "poop") continue;
+      if (it.type !== "poop" || NET.dodged.has(it.nid)) continue;
       if (segDist(player.x, cy, it.x - it.vx * dt, it.y - it.vy * dt, it.x, it.y) >= it.r + R) continue;
+      if (aug.dodge > 0 && Math.random() < aug.dodge) {   // 잔상 — 이 똥은 지나간다
+        NET.dodged.add(it.nid);
+        popText(player.x, player.y - 60, "잔상!", "#cbb8ff", 18);
+        continue;
+      }
       if (bubbleOn) {                                  // 방울이 비누방울 — 판마다 한 번 (방장에겐 맞은 것으로 알리지 않는다)
         bubbleOn = false; invUntil = now + 900;
         NET.eaten.add(it.nid); NET.items.delete(it.nid);
@@ -12676,6 +12835,7 @@
       drawItems(now);
       drawHelpers();
       if (state !== STATE.OVER) drawPetsBack(now);
+      if (vsOn() && state !== STATE.OVER && state !== STATE.READY) drawVsWorld(now);   // 얼음·껍질·구름·비둘기
       if (state !== STATE.OVER) drawPlayer(now);
       if (vsOn() && state !== STATE.OVER && state !== STATE.READY) { asRival(() => drawPlayer(now)); drawVsTags(now); drawVsRoulette(now); drawVsRead(now); }
       if (state !== STATE.OVER) drawInvGlow(now);
