@@ -1182,7 +1182,7 @@
   const elTitle = document.getElementById("overTitle");
   const coinNote = document.getElementById("coinNote");
 
-  const GAME_VERSION = "v0.8.37";
+  const GAME_VERSION = "v0.8.38";
   /* 제작사 스플래시(bamhobak friends 로고) — 2026-09-20 끔. 다시 켜려면 true */
   const SPLASH_USE = false;   // 코드를 고칠 때마다 뒤 두 자리를 올린다
   document.getElementById("ver").textContent = GAME_VERSION;
@@ -1225,7 +1225,9 @@
   const JOB_IMG = { none: "player", fortune: "fortune", gambler: "gambler", levitator: "levitator",
                     fit: "fit", powerj: "powerj", powerp: "monk", powerp2: "powerp2",
                     bangul: "bangul" };
-  function spdMul() { return job === "levitator" && runMode !== "vs" ? 2.5 : 1; }   // 이동 속도 배율 (부양사 2.5배, 대전모드는 같게)
+  // 이동 속도 배율 — 부양사 2.5배. 대전모드는 모두 같게, 대신 절반 속도(v0.8.38 VS_MOVE)
+  const VS_MOVE = 0.5;
+  function spdMul() { return runMode === "vs" ? VS_MOVE : job === "levitator" ? 2.5 : 1; }
   /* 평화의 비둘기 — 활짝 펼친 날개에 깃 모양이 물결치고, 꼬리는 부채처럼 갈라진다.
      (흰 실루엣 한 덩어리로 그려야 작게 그려도 비둘기로 읽힌다) */
   function drawDove(x, y, ph, target) {
@@ -1526,7 +1528,7 @@
   function tickSwim(dt) {
     const running = (state === STATE.PLAY && hitStop <= 0) || state === STATE.READY;
     if (running && runMode === "vs") {                // 대전 상대의 헤엄 — 제 빠르기로 젓는다
-      const rk = Math.min(1, Math.abs(rival.vx || 0) / PLAYER_MAX_SPEED);
+      const rk = Math.min(1, Math.abs(rival.vx || 0) / (PLAYER_MAX_SPEED * VS_MOVE));
       rival.swimK = (rival.swimK || 0) + (rk - (rival.swimK || 0)) * Math.min(1, dt * 6);
       rival.swimPhase = (rival.swimPhase || 0) + dt * (1 / SWIM_IDLE_CYCLE + (1 / SWIM_FAST_CYCLE - 1 / SWIM_IDLE_CYCLE) * rival.swimK);
     }
@@ -6517,7 +6519,7 @@
     facing = "right";
     player.x = player.tx = W / 2;
     player.y = player.ty = groundY;
-    if (runMode === "vs") { aug.hitboxMul *= VS_SCALE; aug.poopMul *= VS_SCALE; aug.fallMul *= VS_FALL; vsReset(); }
+    if (runMode === "vs") { aug.hitboxMul *= VS_SCALE; aug.poopMul *= VS_SCALE; vsReset(); }
     state = STATE.PLAY;
     startScreen.classList.add("hidden");
     overScreen.classList.add("hidden");
@@ -8396,7 +8398,6 @@
   /* v0.8.28 대전모드는 캐릭터·똥이 30% 작다 (VS_SCALE) — 몸 크기는 hitboxMul, 똥은 poopMul 로 줄이고,
      제일 작은 똥(크기 범위 아래 30%)은 너무 안 보여서 나오지 않는다. 몸에 붙은 거리는 모두 vsR() 로 잰다. */
   const VS_SCALE = 0.7;
-  const VS_FALL = 0.5;                            // v0.8.37 대전모드는 똥이 절반 속도로 떨어진다 (aug.fallMul — 레이저·폭격·비둘기 똥까지)
   function vsR() { return player.r * hitMul(); }
   let rivalJob = "bangul";                   // 상대 차림 (한 폰: P2 방울이 · 두 폰: 상대가 방장이면 쉬었음 청년)
   const VS_LIVES = 3;
@@ -8640,7 +8641,7 @@
         p1kv -= dir * (260 + a2 * 1.35) * (vsHas(rival, "ram") ? 1.6 : 1) * fitK(rival) * (vsHas(player, "heavy") ? 0.5 : 1);
         vsBumpCd = 0.22;
         const cx = (player.x + rival.x) / 2, cy = player.y + player.hy;
-        const hard = Math.max(a1, a2) > 350;
+        const hard = Math.max(a1, a2) > 350 * VS_MOVE;
         if (net) netSend("kv", { v: Math.round(kv2), big: hard ? 1 : 0 });   // 상대 몸은 상대 폰이 움직인다
         else rival.kv += kv2;
         burst(cx, cy, "#ffe08a", hard ? 18 : 8);
@@ -8851,7 +8852,7 @@
     for (let k = -1; k <= 1; k++) {
       const r = 15 * VS_SCALE * 1.2;
       items.push({ type: "poop", emoji: "💩", x: Math.max(r, Math.min(W - r, t.x + k * 34)), y: -20 - Math.abs(k) * 30, r,
-                   vx: 0, vy: 420 * (H / BASE_H) * aug.fallMul, rot: 0, vr: (Math.random() - .5) * 4, swayA: 0, swayW: 1, swayP: 0,
+                   vx: 0, vy: 420 * (H / BASE_H), rot: 0, vr: (Math.random() - .5) * 4, swayA: 0, swayW: 1, swayP: 0,
                    size: r * 2, sz: r, fast: true, skin: "poop", space: inSpace(), gold: false, dark: false, special: null,
                    bumpCd: 0, phase: 0, splitAt: 1e9, sz0: 0, pv: 1, gain: 0, giant: false, born: elapsed });
     }
@@ -9080,7 +9081,7 @@
       return;
     }
     if (stunned(b, now)) { b.iv = 0; return; }
-    const maxS = PLAYER_MAX_SPEED * (vsInStink(b) ? 0.5 : 1);
+    const maxS = PLAYER_MAX_SPEED * VS_MOVE * (vsInStink(b) ? 0.5 : 1);
     const desired = Math.max(-maxS, Math.min(maxS, (b.tx - b.x) * 20));
     b.iv = vsOnIce(b) ? (b.iv || 0) + (desired - (b.iv || 0)) * Math.min(1, dt * 1.6) : desired;   // 얼음 위는 늦게 서고 늦게 돈다
     b.x = Math.max(lo, Math.min(hi, b.x + b.iv * dt));
@@ -9088,7 +9089,7 @@
   function vsDropPoopAt(x, y, vy) {
     const r = 15 * VS_SCALE * 1.1;
     items.push({ type: "poop", emoji: "💩", x: Math.max(r, Math.min(W - r, x)), y, r,
-                 vx: 0, vy: vy * (H / BASE_H) * aug.fallMul, rot: 0, vr: (Math.random() - .5) * 4, swayA: 0, swayW: 1, swayP: 0,
+                 vx: 0, vy: vy * (H / BASE_H), rot: 0, vr: (Math.random() - .5) * 4, swayA: 0, swayW: 1, swayP: 0,
                  size: r * 2, sz: r, fast: true, skin: "poop", space: inSpace(), gold: false, dark: false, special: null,
                  bumpCd: 0, phase: 0, splitAt: 1e9, sz0: 0, pv: randPv(), gain: 0, giant: false, born: elapsed });
   }
@@ -9177,14 +9178,15 @@
      · 빠른 대전: 모두가 같이 쓰는 대기실 채널(ddongpi-vs-lobby)에 들어가 1초마다 '기다려요'를 알린다.
        다른 사람의 '기다려요'를 들으면 번호가 작은 쪽이 방장이 되어 방 번호를 정해 '짝'을 보내고, 둘 다 그 방으로 간다.
        짝을 보냈는데 6초 안에 상대가 안 들어오면(동시에 다른 사람과 짝이 됐다) 다시 기다린다.
-     · 10초 안에 상대가 없으면 기록 대전으로 넘어간다 — 빈 대기실에서 기다리다 떠나는 일이 없게.
+     · v0.8.38 부터 상대가 올 때까지 계속 기다린다(예전엔 10초 뒤 기록 대전으로 넘어갔다 — ghostStart 는 남겨 둠).
+       오래 기다려도 대기실 연결이 끊기지 않게 25초마다 heartbeat 를 보내고, 끊기면 다시 들어간다.
      · 기록 대전: 남이 두 폰 대전(또는 기록 대전)에서 움직인 길(0.1초마다 자리·높이, ddongpi_vs_ghosts)을 하나 골라
        그대로 따라 움직이는 상대와 붙는다. 똥은 새로 떨어지므로 코앞의 똥만 살짝 피하게 했다.
        기록을 못 받으면(표가 아직 없거나 비었을 때) 연습 봇이 대신한다 — 무작위로 오가며 가끔 뛴다.
      · 내 움직임 기록: 두 폰 대전·기록 대전 판마다 남기고, 10초 넘게 버틴 판만 올린다(끊겨서 끝난 판 제외). */
   const SB_GHOSTS = "ddongpi_vs_ghosts";
-  const QUICK_WAIT_MS = 10000, QUICK_PAIR_MS = 6000;
-  const LOBBY = { ws: null, id: "", ref: 0, t0: 0, waitT: 0, pairedAt: 0, joined: false };
+  const QUICK_PAIR_MS = 6000;
+  const LOBBY = { ws: null, id: "", ref: 0, t0: 0, waitT: 0, pairedAt: 0, joined: false, hbT: 0 };
   let vsGhostOn = false, vsGhost = null;         // { name, job, trace, bot }
   let vsRecTrace = null, vsRecT = 0;             // 내 움직임 기록
   function vsSplit() { return vsOn() && !NET.role && !vsGhostOn; }   // 한 폰 둘이서 — 화면을 반씩 나눈다
@@ -9201,7 +9203,7 @@
   function quickStart() {
     lobbyClose(); netClose();
     LOBBY.id = Math.random().toString(36).slice(2, 10);
-    LOBBY.t0 = performance.now(); LOBBY.waitT = 0; LOBBY.pairedAt = 0;
+    LOBBY.t0 = performance.now(); LOBBY.waitT = 0; LOBBY.pairedAt = 0; LOBBY.hbT = 25;
     vsMsg("상대를 찾는 중…");
     const ws = new WebSocket(SB_URL.replace(/^http/, "ws") + "/realtime/v1/websocket?apikey=" + SB_KEY + "&vsn=1.0.0");
     LOBBY.ws = ws;
@@ -9238,9 +9240,13 @@
     if (!LOBBY.pairedAt) {
       LOBBY.waitT -= dt;
       if (LOBBY.waitT <= 0) { LOBBY.waitT = 1; lobbySend("wait", { id: LOBBY.id, name: savedName(), job: vsJob }); }
-      const left = Math.ceil((QUICK_WAIT_MS - (now - LOBBY.t0)) / 1000);
-      if (left > 0) vsMsg("상대를 찾는 중… " + left);
-      else { lobbyClose(); ghostStart(); }                  // 아무도 없다 — 기록 대전으로
+      vsMsg("상대를 찾는 중… " + Math.floor((now - LOBBY.t0) / 1000) + "초");   // 올 때까지 계속 기다린다
+      const ws = LOBBY.ws;
+      if ((!ws || ws.readyState >= 2) && now - (LOBBY.reAt || 0) > 3000) { const t0 = LOBBY.t0; quickStart(); LOBBY.t0 = t0; LOBBY.reAt = now; return; }   // 대기실 연결이 끊겼다 — 3초마다 다시
+      if ((LOBBY.hbT -= dt) <= 0 && ws && ws.readyState === 1) {                    // 오래 기다려도 안 끊기게
+        LOBBY.hbT = 25;
+        ws.send(JSON.stringify({ topic: "phoenix", event: "heartbeat", payload: {}, ref: String(++LOBBY.ref) }));
+      }
     }
   }
   // 기록 대전 시작 — 남의 기록 하나를 받아 온다 (못 받으면 연습 봇)
@@ -9751,7 +9757,7 @@
         const fitK = b => jobOf(b) === "fit" ? VS_FIT_RAM : 1;
         p1kv -= dir * (260 + a2 * 1.35) * (vsHas(rival, "ram") ? 1.6 : 1) * fitK(rival) * (vsHas(player, "heavy") ? 0.5 : 1);
         vsBumpCd = 0.22;
-        const hard = Math.max(a1, a2) > 350, cx = (player.x + rival.x) / 2, cy = player.y + player.hy;
+        const hard = Math.max(a1, a2) > 350 * VS_MOVE, cx = (player.x + rival.x) / 2, cy = player.y + player.hy;
         burst(cx, cy, "#ffe08a", hard ? 18 : 8);
         if (hard) { shake = Math.max(shake, 12); popText(cx, cy - 50, "쾅!", "#ffd23f", 26); beep(120, .12, "square", .06); }
         else beep(260, .06, "square", .04);
