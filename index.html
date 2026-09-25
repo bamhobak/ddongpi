@@ -783,7 +783,7 @@
 
   /* 스테이지 고르기 — 시작 버튼 바로 위 */
   #modeBox { display: flex; flex-direction: column; align-items: center; gap: 5px; }
-  #modeSeg { display: inline-flex; gap: 4px; padding: 3px; border-radius: 8px;
+  #modeSeg { display: inline-flex; flex-wrap: wrap; justify-content: center; gap: 4px; padding: 3px; border-radius: 8px;
              background: rgba(255,255,255,.06); border: 1px solid rgba(255,255,255,.14); }
   #modeSeg button {
     padding: 6px 11px; font-size: 13.5px; border-radius: 6px; box-shadow: none; white-space: nowrap;
@@ -793,6 +793,9 @@
   #modeSeg button.locked { opacity: .55; }
   #modeSeg button.locked::after { content: " 🔒"; font-size: 11px; }
   #modeDesc { display: none; }   /* 스테이지 설명 줄은 두지 않는다 (버튼 이름으로 충분) */
+  /* 대전모드 — 순위표·코인은 없고, 대신 조작 설명을 보인다 */
+  body.vsMode #modeDesc { display: block; font-size: 12.5px; color: #cfe4ff; text-align: center; line-height: 1.5; }
+  body.vsMode .board, body.vsMode #coinNote, body.vsMode #overBest, body.vsMode #nameRow { display: none !important; }
 
   /* 시작 버튼 */
   #btnStart {
@@ -885,6 +888,7 @@
           <button data-mode="item" role="radio">🎉 똥대잔치</button>
           <button data-mode="pure" role="radio">🥊 맨몸대결</button>
           <button data-mode="noitem" role="radio">🗼 똥탑등반</button>
+          <button data-mode="vs" role="radio">⚔️ 대전모드</button>
         </div>
         <div id="modeDesc"></div>
       </div>
@@ -1017,7 +1021,7 @@
        밀어 숨길 뿐 남겨 두어 textContent 가 그대로다(글자를 읽는 코드가 안 깨진다). 나중에 붙는 글자는 MutationObserver 가 잡는다.
      · 캔버스 글자: fillText/strokeText 를 감싸 이모지 자리에 그림을 그린다 — 자리 폭은 원래 이모지 폭 그대로라 배치가 안 바뀐다.
      그림이 아직 안 왔거나 목록에 없는 이모지는 원래 이모지로 나온다. */
-  /*ICONS-BEGIN*/ const ICON_KEYS = ["🪙", "⭐", "🌙", "🌕", "☂", "❤", "💧", "🧻", "🔮", "💩", "🚀", "🕊", "👼", "🧚", "🐈", "⏸", "🏆", "👑", "✏", "🎵", "🔔", "🎉", "🥊", "🗼", "🔄", "🏠", "🔒", "🔓", "🔁", "🥇", "🥈", "🥉", "✨", "⚠", "⏱", "🏃", "🎈", "💪", "📋", "🎯", "🙏", "🫧", "🧘", "🚫", "🦸", "⚡", "🔥", "🐢", "🐦", "📯", "💥", "😋", "💉", "☔", "🌠", "🕳", "🌝", "🧲", "💨", "🍀", "🌧", "💢", "🌈", "📱", "🥕", "🦄", "🕰", "🎲", "👻", "👊", "👯", "🍚", "🌀", "🐕", "🎰", "🪜", "🎼", "✂", "🌱", "⛰", "☁", "🌤", "🧊", "❄", "🛰", "🌍", "☄", "🌌", "🌑", "🌒", "⚫", "🧑‍🚀"]; const ICON_COLS = 10, ICON_ROWS = 10, ICON_CELL = 96; /*ICONS-END*/
+  /*ICONS-BEGIN*/ const ICON_KEYS = ["🪙", "⭐", "🌙", "🌕", "☂", "❤", "💧", "🧻", "🔮", "💩", "🚀", "🕊", "👼", "🧚", "🐈", "⏸", "🏆", "👑", "✏", "🎵", "🔔", "🎉", "🥊", "🗼", "🔄", "🏠", "🔒", "🔓", "🔁", "🥇", "🥈", "🥉", "✨", "⚠", "⏱", "🏃", "🎈", "💪", "📋", "🎯", "🙏", "🫧", "🧘", "🚫", "🦸", "⚡", "🔥", "🐢", "🐦", "📯", "💥", "😋", "💉", "☔", "🌠", "🕳", "🌝", "🧲", "💨", "🍀", "🌧", "💢", "🌈", "📱", "🥕", "🦄", "🕰", "🎲", "👻", "👊", "👯", "🍚", "🌀", "🐕", "🎰", "🪜", "🎼", "✂", "🌱", "⛰", "☁", "🌤", "🧊", "❄", "🛰", "🌍", "☄", "🌌", "🌑", "🌒", "⚫", "⚔", "🧑‍🚀"]; const ICON_COLS = 10, ICON_ROWS = 10, ICON_CELL = 96; /*ICONS-END*/
   const ICON_IDX = new Map(ICON_KEYS.map((k, i) => [k, i]));
   const ICON_RE = ICON_KEYS.length ? new RegExp("(" + ICON_KEYS.slice().sort((a, b) => b.length - a.length)
     .map(k => k.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")).join("|") + ")\\uFE0F?", "gu") : null;
@@ -1136,7 +1140,7 @@
   const elTitle = document.getElementById("overTitle");
   const coinNote = document.getElementById("coinNote");
 
-  const GAME_VERSION = "v0.8.23";
+  const GAME_VERSION = "v0.8.24";
   /* 제작사 스플래시(bamhobak friends 로고) — 2026-09-20 끔. 다시 켜려면 true */
   const SPLASH_USE = false;   // 코드를 고칠 때마다 뒤 두 자리를 올린다
   document.getElementById("ver").textContent = GAME_VERSION;
@@ -1435,7 +1439,8 @@
   const MODES = {
     item:   { nm: "똥대잔치", ds: "아이템·증강이 쏟아지는 점수전" },
     pure:   { nm: "맨몸대결", ds: "아이템·증강 없이 직업과 펫만으로 겨루는 점수전 (코인은 나온다)" },
-    noitem: { nm: "똥탑등반", ds: "패턴과 보스를 뚫고 몇 m까지 오르나 (아이템 없음)" }
+    noitem: { nm: "똥탑등반", ds: "패턴과 보스를 뚫고 몇 m까지 오르나 (아이템 없음)" },
+    vs:     { nm: "대전모드", ds: "한 폰으로 둘이서! 왼쪽 반은 P1 · 오른쪽 반은 P2 (PC: A·D / ← →) — 부딪혀 밀쳐서 똥에 맞혀라, 목숨 3개" }
   };
   const LS_MODE = "epjpddongpi_mode";
   let gameMode = "item";
@@ -1445,7 +1450,7 @@
   try { const m = localStorage.getItem(LS_MODE); if (MODES[m] && (towerOpen || m !== "noitem")) gameMode = m; } catch (e) {}
   let runMode = gameMode;            // 지금 판이 어느 스테이지인가 (판 도중에 안 바뀐다)
   function noItem() { return runMode === "noitem"; }                        // 똥탑등반 (패턴·보스·m 기록)
-  function itemsOff() { return runMode === "noitem" || runMode === "pure"; }   // 아이템·증강이 안 나오는 판 (코인은 나온다)
+  function itemsOff() { return runMode === "noitem" || runMode === "pure" || runMode === "vs"; }   // 아이템·증강이 안 나오는 판 (코인은 대전모드 빼고 나온다)
   /* 맨몸대결·똥탑등반은 방울이만 뛴다 (비누방울 없이). 고른 직업(LS_JOB)은 그대로 두고,
      똥대잔치로 돌아오면 원래 직업으로 되돌린다. */
   function jobLocked() { return gameMode !== "item"; }
@@ -3024,7 +3029,7 @@
   const LEVEL_SEC_PURE = 6.5;       // 맨몸대결은 레벨이 두 배 빨리 오른다
   function lvSec() {
     if (state === STATE.READY) return LEVEL_SEC;
-    return runMode === "noitem" ? LEVEL_SEC_NOITEM : runMode === "pure" ? LEVEL_SEC_PURE : LEVEL_SEC;
+    return runMode === "noitem" ? LEVEL_SEC_NOITEM : (runMode === "pure" || runMode === "vs") ? LEVEL_SEC_PURE : LEVEL_SEC;
   }
   /* 노템전 기록 — 점수가 아니라 올라간 거리. 레벨 하나 = 100m, 레벨 안에서도 흐른 만큼 오른다. */
   function meters() { return Math.floor(levelTime / lvSec() * 100); }
@@ -5850,11 +5855,13 @@
     drag = { fx: pointerX(e), fy: pointerY(e), px: player.tx, py: flyOn ? player.ty : groundY };
   }
   function dragStart(e) {
+    if (vsOn()) { vsTouch(e); return; }
     if (dragBlocked(e)) { drag = null; if (e.cancelable) e.preventDefault(); return; }
     dragAnchor(e);
     if (e.cancelable) e.preventDefault();
   }
   function dragMove(e) {
+    if (vsOn()) { vsTouch(e); return; }
     if (dragBlocked(e)) { drag = null; if (e.cancelable) e.preventDefault(); return; }
     if (!drag) { dragAnchor(e); if (e.cancelable) e.preventDefault(); return; }   // 막혀 있던 손가락은 여기서 기준점을 잡는다
     const kd = prophIs("reverse") ? -1 : 1;           // 거꾸로 가는 날 — 끄는 방향과 반대로
@@ -5872,6 +5879,7 @@
     if (e.cancelable) e.preventDefault();
   }
   function dragEnd(e) {
+    if (vsOn()) { vsTouch(e); return; }
     // 여러 손가락 중 하나만 뗐으면 남은 손가락으로 기준점을 다시 잡는다
     if (e.touches && e.touches.length) { if (!dragBlocked(e)) dragAnchor(e); return; }
     drag = null;
@@ -5882,7 +5890,7 @@
   cv.addEventListener("touchcancel", dragEnd);
   cv.addEventListener("mousedown", e => { if (e.button === 0) dragStart(e); });
   cv.addEventListener("mousemove", e => { if (e.buttons & 1) dragMove(e); });
-  window.addEventListener("mouseup", () => { drag = null; });
+  window.addEventListener("mouseup", () => { drag = null; vsTouches.delete("m"); });
 
   /* ---------- 두 번 두드리기 → 방귀 대시 ----------
      끌기 조작과 섞이지 않는 게 제일 중요하다. '짧게 눌렀다 뗀' 것만 한 번의 두드림으로 치고
@@ -6310,6 +6318,7 @@
       b.setAttribute("aria-checked", on ? "true" : "false");
     }
     document.getElementById("modeDesc").textContent = MODES[gameMode].ds;
+    document.body.classList.toggle("vsMode", gameMode === "vs");
   }
   function syncBoardTabs() {
     const hide = gameMode !== "item";
@@ -6362,7 +6371,7 @@
 
   function reset(test) {
     testMode = (test === true);    // 정확히 true 일 때만 테스트 모드 (이벤트 객체가 새어들지 않게)
-    if (jobLocked()) job = "bangul";         // 맨몸대결·똥탑등반은 방울이만
+    if (jobLocked()) job = gameMode === "vs" ? "none" : "bangul";   // 맨몸대결·똥탑등반은 방울이만, 대전모드 P1 은 쉬었음 청년
     if (petLocked()) pet = "none";           // 펫도 없이
     btnTestEnd.classList.toggle("on", testMode);
     testLv.classList.toggle("on", testMode);
@@ -6377,7 +6386,7 @@
     invUntil = 0; powerUntil = 0; hurtUntil = 0; shields = 0;
     shake = 0; flash = 0; feverFlash = 0; fever = false; feverBgm = false;
     feverT = 0; feverBanner = 0;
-    momMsg = (job === "none") ? MOM_SEC : 0;   // 쉬었음 청년에게만
+    momMsg = (job === "none" && gameMode !== "vs") ? MOM_SEC : 0;   // 쉬었음 청년에게만 (대전모드는 빼고)
     scoreShown = 0; scorePunch = 0; prevScore = 0; rings = []; bubPops = [];
     scoreSrc = {};
     bubbleOn = (job === "bangul" && !jobLocked()); bubbleT = 0;   // 방울이는 방울을 두르고 시작한다 (맨몸대결·똥탑등반은 방울 없이)
@@ -6418,7 +6427,7 @@
     /* 쉬었음 청년은 '엄마는 우리 딸 믿어' 를 기본으로 깔고 시작한다.
        타이머를 잡기 전에 켜 두어야 엄마의 밥상 시계가 제대로 돌아간다
        (꺼져 있으면 평균 간격이 무한이라 영영 안 떨어진다). */
-    aug.momMeal = (job === "none");
+    aug.momMeal = (job === "none" && runMode !== "vs");   // 대전모드 P1 은 직업 능력 없이
     resetBonusTimers();          // 증강 배율을 되돌린 뒤라야 첫 타이머가 제대로 잡힌다
     aug.helper = 0; aug.helperRush = false; aug.hungry = false; aug.galaga = 0;
     helpers = []; fetchers = [];
@@ -6443,6 +6452,7 @@
     facing = "right";
     player.x = player.tx = W / 2;
     player.y = player.ty = groundY;
+    if (runMode === "vs") vsReset();
     state = STATE.PLAY;
     startScreen.classList.add("hidden");
     overScreen.classList.add("hidden");
@@ -6534,6 +6544,7 @@
   const FULL_FX = 0.7;            // 변신 번쩍임이 이어지는 시간(초)
   let monkStreak = 0, fullOwn = false, fullBanner = 0, fullFx = 0;
   function spawnCoin() {
+    if (runMode === "vs") return;          // 대전모드는 코인도 없다 (한쪽만 주워 가면 불공평)
     let tot = 0;
     for (const c of COIN_KINDS) tot += c.w;
     let n = Math.random() * tot, k = COIN_KINDS[0];
@@ -7111,8 +7122,9 @@
     // 패드는 민 정도만큼 속도가 붙는다 (키보드는 늘 최고 속도)
     const kx = kSpeed, ky = kSpeed;
     const kd = prophIs("reverse") ? -1 : 1;           // 거꾸로 가는 날 — 좌우가 바뀐다
-    if (keys.ArrowLeft  || keys.a || keys.A) player.tx -= kx * kd;
-    if (keys.ArrowRight || keys.d || keys.D) player.tx += kx * kd;
+    const vk = vsOn();                                // 대전모드 — 방향키는 P2 몫
+    if ((!vk && keys.ArrowLeft)  || keys.a || keys.A) player.tx -= kx * kd;
+    if ((!vk && keys.ArrowRight) || keys.d || keys.D) player.tx += kx * kd;
     player.tx = Math.max(player.r, Math.min(W - player.r, player.tx));
     if (flyOn) {
       if (keys.ArrowUp   || keys.w || keys.W) player.ty -= ky;
@@ -7164,6 +7176,7 @@
     else if (player.x - prev > 0.25) facing = "right";   // 멈춰 있으면 마지막 방향 유지
     player.tilt += (((player.x - prev) / Math.max(dt, .001) / 900) - player.tilt) * Math.min(1, dt * 10);
     player.tilt = Math.max(-.35, Math.min(.35, player.tilt));
+    if (vsOn()) vsUpdate(dt, now, (player.x - prev) / Math.max(dt, .001));
 
     // 위아래 이동 — 가로보다 조금 느리게 따라간다 (붕 뜬 느낌)
     if (flyOn) {
@@ -8298,6 +8311,204 @@
     if (navigator.vibrate) navigator.vibrate(30);
   }
 
+  /* ---------- 대전모드 (v0.8.24) ----------
+     한 폰에서 둘이 붙는다. P1(쉬었음 청년)은 화면 왼쪽 반, P2(방울이)는 오른쪽 반을 끌어서 움직인다
+     (두 손가락 동시에 · PC 는 A·D / ← →). 아이템·증강·코인 없이 똥만 떨어지고 목숨은 3개씩.
+     몸이 부딪히면 둘 다 튕겨 나가는데, 상대 쪽으로 빠르게 달려든 쪽이 상대를 더 멀리 민다 —
+     상대를 똥 밑으로 밀어 넣는 싸움이다. 먼저 목숨을 다 잃은 쪽이 진다.
+     P1 은 원래 캐릭터(player)를 그대로 쓰고, P2(rival)는 따로 움직이고 따로 맞는다.
+     그릴 때만 P2 값을 P1 자리에 잠깐 바꿔 넣고 같은 drawPlayer 로 그린다(asRival).
+     (한 폰 시험판 — 재미가 확인되면 네트워크로 잇는다) */
+  function vsOn() { return runMode === "vs"; }
+  const VS_JOB2 = "bangul";                  // P2 차림
+  const VS_LIVES = 3;
+  const VS_BUMP = 1.9;                       // 두 몸이 이만큼(판정 반지름 배수)보다 가까우면 부딪힌다
+  const rival = { x: 0, y: 0, tx: 0, tilt: 0, hy: 0, vx: 0, lives: VS_LIVES, inv: 0, hurt: 0, facing: "left", kv: 0 };
+  let p1kv = 0, vsBumpCd = 0, vsLoser = 0;
+  const vsTouches = new Map();               // 손가락(마우스는 "m") → { who, fx, px } 누른 자리·그때 캐릭터 목표 자리
+  function vsReset() {
+    player.x = player.tx = W * 0.3;
+    rival.x = rival.tx = W * 0.7;
+    rival.y = player.y; rival.tilt = 0; rival.vx = 0; rival.hy = player.hy;
+    rival.lives = VS_LIVES; rival.inv = 0; rival.hurt = 0; rival.facing = "left"; rival.kv = 0;
+    p1kv = 0; vsBumpCd = 0; vsLoser = 0; vsTouches.clear();
+    facing = "right";
+  }
+  /* P2 값을 P1 자리에 잠깐 넣고 fn 을 부른 뒤 되돌린다 — 그림·머리 높이를 같은 함수로 구하려고 */
+  function asRival(fn) {
+    const sx = player.x, sy = player.y, st = player.tilt, sh = player.hy;
+    const sf = facing, sj = job, su = hurtUntil, si = invUntil, sb = bubbleOn;
+    player.x = rival.x; player.y = rival.y; player.tilt = rival.tilt; player.hy = rival.hy;
+    facing = rival.facing; job = VS_JOB2; hurtUntil = rival.hurt; invUntil = rival.inv; bubbleOn = false;
+    try { return fn(); }
+    finally {
+      player.x = sx; player.y = sy; player.tilt = st; player.hy = sh;
+      facing = sf; job = sj; hurtUntil = su; invUntil = si; bubbleOn = sb;
+    }
+  }
+  // who(1·2)의 몸을 dx 만큼 옮긴다 — 목표 자리와 손가락 기준점도 같이 (안 그러면 곧장 손가락 자리로 돌아온다)
+  function vsShift(who, dx) {
+    const lo = player.r, hi = W - player.r;
+    if (who === 1) {
+      player.x = Math.max(lo, Math.min(hi, player.x + dx));
+      player.tx = Math.max(lo, Math.min(hi, player.tx + dx));
+    } else {
+      rival.x = Math.max(lo, Math.min(hi, rival.x + dx));
+      rival.tx = Math.max(lo, Math.min(hi, rival.tx + dx));
+    }
+    for (const d of vsTouches.values()) if (d.who === who) d.px += dx;
+  }
+  /* 손가락마다 따로 — 누른 자리가 화면 왼쪽 반이면 P1, 오른쪽 반이면 P2 를 끈다 (떼기 전까지 그 캐릭터) */
+  function vsTouch(e) {
+    if (e.cancelable) e.preventDefault();
+    if (dragBlocked(e)) { vsTouches.clear(); return; }
+    const r = cv.getBoundingClientRect();
+    const tx = cx => (cx - r.left) / r.width * W;
+    const list = e.changedTouches ? Array.from(e.changedTouches) : [{ identifier: "m", clientX: e.clientX }];
+    const kind = e.type;
+    for (const t of list) {
+      const x = tx(t.clientX);
+      if (kind === "touchstart" || kind === "mousedown") {
+        const who = x < W / 2 ? 1 : 2;
+        vsTouches.set(t.identifier, { who, fx: x, px: who === 1 ? player.tx : rival.tx });
+      } else if (kind === "touchmove" || kind === "mousemove") {
+        let d = vsTouches.get(t.identifier);
+        if (!d) {
+          const who = x < W / 2 ? 1 : 2;
+          d = { who, fx: x, px: who === 1 ? player.tx : rival.tx };
+          vsTouches.set(t.identifier, d);
+        }
+        const want = d.px + (x - d.fx) * DRAG_GAIN;
+        const cl = Math.max(player.r, Math.min(W - player.r, want));
+        if (cl !== want) d.px += cl - want;            // 끝에 닿으면 기준점을 끌어온다
+        if (d.who === 1) player.tx = cl; else rival.tx = cl;
+      } else vsTouches.delete(t.identifier);
+    }
+  }
+  function vsUpdate(dt, now, p1vx) {
+    // P2 움직임 — 키보드(← →)와 손가락. P1 과 같은 최고 속도
+    const ks = 448 * dt;
+    if (keys.ArrowLeft)  rival.tx -= ks;
+    if (keys.ArrowRight) rival.tx += ks;
+    rival.tx = Math.max(player.r, Math.min(W - player.r, rival.tx));
+    const prev = rival.x;
+    const want = (rival.tx - rival.x) * Math.min(1, dt * 20), maxStep = PLAYER_MAX_SPEED * dt;
+    rival.x += Math.max(-maxStep, Math.min(maxStep, want));
+    // 튕겨 나가는 힘 — 금방 잦아든다
+    if (rival.kv) vsShift(2, rival.kv * dt);
+    if (p1kv) vsShift(1, p1kv * dt);
+    const damp = Math.exp(-7 * dt);
+    rival.kv *= damp; p1kv *= damp;
+    if (Math.abs(rival.kv) < 5) rival.kv = 0;
+    if (Math.abs(p1kv) < 5) p1kv = 0;
+    rival.vx = (rival.x - prev) / Math.max(dt, .001);
+    if (rival.x - prev < -0.25) rival.facing = "left";
+    else if (rival.x - prev > 0.25) rival.facing = "right";
+    rival.tilt += ((rival.vx / 900) - rival.tilt) * Math.min(1, dt * 10);
+    rival.tilt = Math.max(-.35, Math.min(.35, rival.tilt));
+    rival.y = player.y;
+    rival.hy = asRival(() => headOffset(currentSprite(now)));
+
+    // 몸싸움 — 겹친 만큼 벌리고, 달려든 빠르기만큼 상대를 튕겨 보낸다
+    if (vsBumpCd > 0) vsBumpCd -= dt;
+    const d = rival.x - player.x, ad = Math.abs(d), minD = player.r * VS_BUMP;
+    if (ad < minD && dying <= 0) {
+      const dir = d >= 0 ? 1 : -1;                     // P1 에서 P2 쪽
+      const o = (minD - ad) / 2;
+      vsShift(1, -dir * o); vsShift(2, dir * o);
+      if (vsBumpCd <= 0) {
+        const a1 = Math.max(0, p1vx * dir), a2 = Math.max(0, -rival.vx * dir);   // 상대 쪽으로 달려든 빠르기
+        rival.kv += dir * (260 + a1 * 1.35);
+        p1kv -= dir * (260 + a2 * 1.35);
+        vsBumpCd = 0.22;
+        const cx = (player.x + rival.x) / 2, cy = player.y + player.hy;
+        const hard = Math.max(a1, a2) > 350;
+        burst(cx, cy, "#ffe08a", hard ? 18 : 8);
+        if (hard) {
+          shake = Math.max(shake, 12);
+          popText(cx, cy - 50, "쾅!", "#ffd23f", 26);
+          beep(120, .12, "square", .06);
+        } else beep(260, .06, "square", .04);
+        if (navigator.vibrate) navigator.vibrate(25);
+      }
+    }
+
+    // P2 가 똥에 맞는다 — P1 과 같은 판정(이번 프레임에 지나온 선분과의 거리)
+    if (dying > 0 || now < rival.inv) return;
+    const cy = rival.y + rival.hy, R = player.r * 0.632;
+    for (let i = items.length - 1; i >= 0; i--) {
+      const it = items[i];
+      if (it.type !== "poop" || it.bounced || it.ghost || it.gold || it.skin === "fever") continue;
+      const px = it.x - (it.vx || 0) * dt, py = it.y - (it.vy || 0) * dt;
+      if (segDist(rival.x, cy, px, py, it.x, it.y) >= it.r + R) continue;
+      rival.lives--;
+      rival.inv = now + 1000; rival.hurt = now + 1000;
+      items.splice(i, 1);
+      shake = 22; flash = 1;
+      hitStop = Math.max(hitStop, HITSTOP_SEC);
+      burst(it.x, it.y, "#8a5a2b", 22);
+      popText(rival.x, rival.y - 60, "으악!", "#ff5d5d");
+      if (!sfx("hurt")) beep(140, .25, "sawtooth", .07);
+      if (navigator.vibrate) navigator.vibrate(70);
+      if (rival.lives <= 0) { vsLoser = 2; startDeath(); }
+      break;
+    }
+  }
+  // 머리 위 이름표 — 누가 누군지
+  function drawVsTags(now) {
+    const tag = (x, y, t, c) => {
+      ctx.save();
+      ctx.font = "900 15px NanumBarunGothic, system-ui, sans-serif";
+      ctx.textAlign = "center"; ctx.textBaseline = "middle";
+      const w = ctx.measureText(t).width + 16;
+      ctx.fillStyle = c; ctx.globalAlpha = .92;
+      ctx.beginPath(); ctx.roundRect(x - w / 2, y - 11, w, 22, 11); ctx.fill();
+      ctx.globalAlpha = 1; ctx.fillStyle = "#fff";
+      ctx.fillText(t, x, y + 1);
+      ctx.restore();
+    };
+    tag(player.x, player.y + player.hy - player.r * 2.3, "P1", "#2f8cff");
+    tag(rival.x, rival.y + rival.hy - player.r * 2.3, "P2", "#ff4f9a");
+  }
+  // 위쪽 상태 — 왼쪽 P1, 오른쪽 P2 목숨 (조작하는 쪽과 같은 편에)
+  function drawVsHud(top) {
+    ctx.font = "900 20px NanumBarunGothic, system-ui, sans-serif";
+    ctx.textBaseline = "middle";
+    const row = (x, al, label, c, n) => {
+      ctx.textAlign = al;
+      ctx.fillStyle = c;
+      ctx.fillText(label, x, top + 14);
+      const lw = ctx.measureText(label).width + 12;
+      for (let i = 0; i < VS_LIVES; i++) {
+        const hx = al === "left" ? x + lw + 12 + i * 26 : x - lw - 12 - i * 26;
+        ctx.fillStyle = i < n ? "#ff3d68" : "rgba(255,255,255,.28)";
+        heartPath(hx, top + 14, 9.5); ctx.fill();
+      }
+    };
+    row(16, "left", "P1", "#6fb4ff", lives);
+    row(W - 16, "right", "P2", "#ff8cc0", rival.lives);
+    ctx.textAlign = "center"; ctx.fillStyle = "rgba(255,255,255,.85)";
+    ctx.font = "700 15px NanumBarunGothic, system-ui, sans-serif";
+    ctx.fillText("⏱️ " + fmtSec(elapsed), W / 2, top + 14);
+  }
+  function vsOver() {
+    state = STATE.OVER;
+    dying = 0; hitStop = 0;
+    btnPause.classList.remove("on");
+    augScreen.classList.add("hidden");
+    const win = vsLoser === 2 ? 1 : 2;
+    elTitle.textContent = "P" + win + " 승리!";
+    elFinal.textContent = "🏆 P" + win;
+    document.getElementById("overStory").textContent =
+      "⏱️ " + fmtSec(elapsed) + " 버팀 · 남은 목숨 " + Math.max(0, win === 1 ? lives : rival.lives);
+    document.getElementById("overBest").textContent = "";
+    nameRow.classList.remove("on");
+    overScreen.classList.remove("hidden");
+    burst(win === 1 ? player.x : rival.x, player.y, "#ffd23f", 40);
+    shake = 20;
+    beep(660, .12, "square", .05); beep(990, .18, "square", .05);
+  }
+
   /* 정연핑이 지나간 자리의 똥을 부순다 (뚜니핑 낙하물은 제 점수를 그대로 준다)
      gainMul — 부순 것의 점수 배율. 비둘기는 5배를 준다
      (일반 똥·까다로운 똥·무지개똥·뚜니핑 낙하물에 모두 걸린다). */
@@ -8544,6 +8755,7 @@
     btnRetryJob.hidden = locked;
   }
   function gameOver() {
+    if (vsOn()) return vsOver();
     state = STATE.OVER;
     dying = 0; hitStop = 0;
     btnPause.classList.remove("on");
@@ -11091,6 +11303,7 @@
   function drawHud() {
     ctx.save();
     const top = 14;
+    if (vsOn()) { drawVsHud(top); ctx.restore(); return; }
     ctx.textAlign = "left";
     ctx.textBaseline = "top";
     ctx.font = "700 21px NanumBarunGothic, system-ui, sans-serif";
@@ -11660,6 +11873,7 @@
       drawHelpers();
       if (state !== STATE.OVER) drawPetsBack(now);
       if (state !== STATE.OVER) drawPlayer(now);
+      if (vsOn() && state !== STATE.OVER && state !== STATE.READY) { asRival(() => drawPlayer(now)); drawVsTags(now); }
       if (state !== STATE.OVER) drawInvGlow(now);
     }
     drawEffects();

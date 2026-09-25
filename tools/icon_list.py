@@ -88,6 +88,7 @@ NEW = [
     ("🌑", "newmoon", "a dark grey new moon disc with faint craters"),
     ("🌒", "darkmoon", "a dark moon with a thin glowing crescent on its right edge"),
     ("⚫", "horizon", "a glossy black orb with a thin glowing orange ring around its edge (black hole event horizon)"),
+    ("⚔", "swords", "two crossed cartoon swords with golden hilts and shiny silver blades (battle symbol)"),
     ("🧑‍🚀", "astronaut", "a white astronaut helmet with a big glossy blue visor (helmet only, nobody inside)"),
 ]
 
