@@ -1212,7 +1212,7 @@
   const elTitle = document.getElementById("overTitle");
   const coinNote = document.getElementById("coinNote");
 
-  const GAME_VERSION = "v0.8.46";
+  const GAME_VERSION = "v0.8.47";
   /* 제작사 스플래시(bamhobak friends 로고) — 2026-09-20 끔. 다시 켜려면 true */
   const SPLASH_USE = false;   // 코드를 고칠 때마다 뒤 두 자리를 올린다
   document.getElementById("ver").textContent = GAME_VERSION;
@@ -1256,7 +1256,7 @@
                     fit: "fit", powerj: "powerj", powerp: "monk", powerp2: "powerp2",
                     bangul: "bangul" };
   // 이동 속도 배율 — 부양사 2.5배. 대전모드는 모두 같게, 대신 절반 속도(v0.8.38 VS_MOVE)
-  const VS_MOVE = 0.5;
+  const VS_MOVE = 0.425;                    // v0.8.38 0.5 → v0.8.47 15% 더 줄여 0.425
   function spdMul() { return runMode === "vs" ? VS_MOVE : job === "levitator" ? 2.5 : 1; }
   /* 평화의 비둘기 — 활짝 펼친 날개에 깃 모양이 물결치고, 꼬리는 부채처럼 갈라진다.
      (흰 실루엣 한 덩어리로 그려야 작게 그려도 비둘기로 읽힌다) */
