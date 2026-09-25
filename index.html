@@ -819,7 +819,7 @@
             border: 1px solid rgba(255,255,255,.25); background: rgba(0,0,0,.35); color: #fff; }
   #vsCode::placeholder { letter-spacing: 0; font-size: 14px; color: rgba(255,255,255,.45); }
   #vsMsg { min-height: 44px; max-width: 300px; text-align: center; font-size: 14px; color: #ffd23f; line-height: 1.5; }
-  #vsLocal { background: transparent; color: #9fb4d0; box-shadow: none; border: 1px solid rgba(255,255,255,.2); }
+  #vsLocal, #vsBot { background: transparent; color: #9fb4d0; box-shadow: none; border: 1px solid rgba(255,255,255,.2); }
 
   /* 시작 버튼 */
   #btnStart {
@@ -1000,6 +1000,7 @@
       <div id="vsMsg"></div>
       <div id="vsRec"></div>
       <button id="vsLocal">한 폰으로 둘이서</button>
+      <button id="vsBot">🤖 봇과 연습</button>
       <button id="vsBack">← 메인으로</button>
     </div>
 
@@ -1181,7 +1182,7 @@
   const elTitle = document.getElementById("overTitle");
   const coinNote = document.getElementById("coinNote");
 
-  const GAME_VERSION = "v0.8.35";
+  const GAME_VERSION = "v0.8.36";
   /* 제작사 스플래시(bamhobak friends 로고) — 2026-09-20 끔. 다시 켜려면 true */
   const SPLASH_USE = false;   // 코드를 고칠 때마다 뒤 두 자리를 올린다
   document.getElementById("ver").textContent = GAME_VERSION;
@@ -8567,7 +8568,7 @@
     }
     stepJump(player, dt);
     if (net) { rival.jh = smp ? smp.jh : 0; rival.jv = smp ? smp.jv : 0; }   // 두 폰 — 높이·오르내림도 이어 그린다 (밟기·들이받기 판정에 쓴다)
-    else if (!vsGhostOn) stepJump(rival, dt);         // 기록 대전은 높이도 기록대로
+    else if (!vsGhostOn || vsGhost.live) stepJump(rival, dt);   // 기록 대전은 높이도 기록대로 (봇은 스스로 뛴다)
     rival.y = groundY - rival.jh;
     rival.hy = asRival(() => headOffset(currentSprite(now)));
 
@@ -8586,7 +8587,8 @@
     }
 
     // 위아래로 맞닿았을 때 — 아래쪽이 뛰어오르는 중이면 들이받기(위쪽이 높이 날아감), 아니면 위쪽이 떨어질 때 밟기
-    if (vsBumpCd <= 0 && dying <= 0) {
+    // (두 폰은 vsNetClash — 각 폰이 제가 한 것·제 몸만 판정한다, v0.8.36)
+    if (!net && vsBumpCd <= 0 && dying <= 0) {
       const stomp = (topB, botB, topWho) => {
         const dh = (topB.jh || 0) - (botB.jh || 0), dx = botB.x - topB.x;
         if (!(dh > vsR() * 1.8 && dh < vsR() * 3.6 && Math.abs(dx) < vsR() * 1.4)) return false;
@@ -8624,7 +8626,8 @@
     // 몸싸움 — 겹친 만큼 벌리고, 달려든 빠르기만큼 상대를 튕겨 보낸다 (높이가 다르면 머리 위로 지나간다)
     if (vsBumpCd > 0) vsBumpCd -= dt;
     const d = rival.x - player.x, ad = Math.abs(d), minD = vsR() * VS_BUMP;
-    if (ad < minD && dying <= 0 && Math.abs((player.jh || 0) - (rival.jh || 0)) < vsR() * 1.3) {
+    if (net) vsNetClash(dt, now, p1vx, false);
+    else if (ad < minD && dying <= 0 && Math.abs((player.jh || 0) - (rival.jh || 0)) < vsR() * 1.3) {
       const dir = d >= 0 ? 1 : -1;                     // P1 에서 P2 쪽
       const o = (minD - ad) / 2;
       vsShift(1, -dir * o); vsShift(2, dir * o);
@@ -8738,12 +8741,19 @@
       }
     };
     row(16, "left", (NET.role || vsGhostOn) ? "나" : "P1", "#6fb4ff", lives);
-    row(W - 16, "right", NET.role ? "상대" : vsGhostOn ? "기록" : "P2", "#ff8cc0", rival.lives);
+    row(W - 16, "right", NET.role ? "상대" : vsGhostOn ? (vsGhost.live ? "봇" : "기록") : "P2", "#ff8cc0", rival.lives);
     drawVsAugRow(16, "left", top + 38, player, shields);
     drawVsAugRow(W - 16, "right", top + 38, rival, rival.shield || 0);
     ctx.textAlign = "center"; ctx.fillStyle = "rgba(255,255,255,.85)";
     ctx.font = "700 15px NanumBarunGothic, system-ui, sans-serif";
     ctx.fillText("⏱️ " + fmtSec(elapsed), W / 2, top + 14);
+    if (NET.role) {                                   // 두 폰 — 지금 어떤 길로 잇고 있나
+      const lb = RTC.open ? "직접 연결" : "서버 경유";
+      ctx.font = "800 12px NanumBarunGothic, system-ui, sans-serif";
+      ctx.lineWidth = 3; ctx.strokeStyle = "rgba(0,0,0,.55)"; ctx.strokeText(lb, W / 2, top + 32);
+      ctx.fillStyle = RTC.open ? "#8cffaa" : "#ffd278";
+      ctx.fillText(lb, W / 2, top + 32);
+    }
   }
   function vsOver(reason) {
     state = STATE.OVER;
@@ -8762,7 +8772,7 @@
     } else if (vsGhostOn) {                           // 기록 대전 — 전적에는 넣지 않는다
       elTitle.textContent = meWin ? "승리!" : "패배…";
       elFinal.textContent = meWin ? "🏆" : "💩";
-      recLine = "기록 대전 · " + (vsGhost.bot ? "연습 봇" : vsGhost.name + "의 기록");
+      recLine = vsGhost.live ? "봇과 연습" : "기록 대전 · " + (vsGhost.bot ? "연습 봇" : vsGhost.name + "의 기록");
     } else {
       elTitle.textContent = "P" + win + " 승리!";
       elFinal.textContent = "🏆 P" + win;
@@ -9272,6 +9282,7 @@
   }
   // 기록 따라 움직이기 — 기록 자리에 코앞 똥 피하기를 얹는다
   function ghostDrive(dt, now) {
+    if (vsGhost.live) { botBrain(dt, now); return; }   // 봇과 연습 — 기록 없이 스스로
     const tr = vsGhost.trace, k = Math.floor(elapsed * 10) % tr.length, a = tr[k], b = tr[(k + 1) % tr.length];
     const f = elapsed * 10 - Math.floor(elapsed * 10);
     const gx = a[0] + (b[0] - a[0]) * f, gh = a[1] + (b[1] - a[1]) * f;
@@ -9339,7 +9350,7 @@
   // 이어 그릴 자리 — 없으면 null
   function netSample(now) {
     if (!netBuf.length || netOff === null) return null;
-    const rt = now - netOff - NET_INTERP;
+    const rt = now - netOff - (RTC.open ? RTC_INTERP : NET_INTERP);
     let a = netBuf[0], b = null;
     for (const q of netBuf) { if (q.ts <= rt) a = q; else { b = q; break; } }
     if (b && a.ts <= rt) {
@@ -9356,6 +9367,13 @@
   function netHost() { return NET.role === "host" && runMode === "vs"; }
   function netGuest() { return NET.role === "guest" && runMode === "vs"; }
   function netSend(ev, payload) {
+    if (RTC.open) {                                  // 직접 이어졌으면 직접 — 자리는 빠른 통로, 나머지는 꼭 닿는 통로
+      const dc = (ev === "s" || ev === "g") ? RTC.dcU : RTC.dcR;
+      if (dc && dc.readyState === "open") { try { dc.send(JSON.stringify({ e: ev, p: payload || {} })); return; } catch (e) {} }
+    }
+    netSendSb(ev, payload);
+  }
+  function netSendSb(ev, payload) {                  // Supabase 채널로
     const ws = NET.ws;
     if (!ws || ws.readyState !== 1 || !NET.joined) return;
     ws.send(JSON.stringify({ topic: NET.topic, event: "broadcast", ref: String(++NET.ref),
@@ -9363,6 +9381,7 @@
   }
   function netClose() {
     if (NET.ws) { try { netSend("bye"); NET.ws.close(); } catch (e) {} }
+    rtcClose();
     NET.ws = null; NET.role = ""; NET.joined = false; NET.items.clear(); NET.eaten.clear();
     NET.snap = null; NET.g = null; NET.again = NET.peerAgain = NET.gone = false;
   }
@@ -9407,12 +9426,13 @@
     if (state !== STATE.PLAY || runMode !== "vs" || dying > 0) return;
     NET.sendT -= dt;
     if (NET.sendT > 0) return;
-    NET.sendT = NET_RATE;
+    NET.sendT = RTC.open ? RTC_RATE : NET_RATE;
     if (NET.role === "host") netSendSnap(now); else netSendMe(now);
   }
   function netSendSnap(now) {
+    const withItems = !RTC.open || (NET.snapN = (NET.snapN || 0) + 1) % 2 === 0;   // 직접이면 똥 목록은 두 번에 한 번
     const its = [];
-    for (const it of items) {
+    if (withItems) for (const it of items) {
       if ((it.type !== "poop" && it.type !== "moon") || it.bounced) continue;   // 똥과 달
       if (!it.nid) it.nid = ++NET.ref;
       its.push([it.nid, Math.round(it.x), Math.round(it.y), Math.round(it.vx || 0), Math.round(it.vy || 0),
@@ -9422,9 +9442,9 @@
     netSend("s", {
       ts: Math.round(now), t: elapsed, lt: levelTime, x: Math.round(player.x), vx: Math.round(player.vx || 0), f: facing === "left" ? 1 : 0,
       tl: Math.round(player.tilt * 100) / 100, h: Math.max(0, Math.round(hurtUntil - now)), i: Math.max(0, Math.round(invUntil - now)),
-      l: lives, gl: rival.lives, it: its, jh: Math.round(player.jh || 0), jv: Math.round(player.jv || 0),
+      l: lives, gl: rival.lives, it: withItems ? its : undefined, jh: Math.round(player.jh || 0), jv: Math.round(player.jv || 0),
       sn: Math.max(0, Math.round((player.stun || 0) - now)), sh: shields, bb: bubbleOn ? 1 : 0, tx: Math.round(player.tx),
-      w: warns.map(w => [Math.round(w.x), Math.round(w.ang * 1000) / 1000, Math.round(w.t * 100) / 100, Math.round(w.t0 * 100) / 100, w.dark ? 1 : 0])
+      w: withItems ? warns.map(w => [Math.round(w.x), Math.round(w.ang * 1000) / 1000, Math.round(w.t * 100) / 100, Math.round(w.t0 * 100) / 100, w.dark ? 1 : 0]) : undefined
     });
   }
   function netSendMe(now) {
@@ -9438,6 +9458,9 @@
     const now = performance.now();
     if (ev === "bye") { netLost(); return; }
     if (ev === "emo") { vsShowEmo(rival, p.e | 0); return; }
+    if (ev === "rtc" || ev === "ice") { rtcSignal(ev, p); return; }
+    if (ev === "stun") { player.stun = now + (p.ms || STOMP_STUN); return; }      // 상대가 내 머리를 밟았다
+    if (ev === "launch") { player.jv = p.v || HEADBUTT_V; if (!(player.jh > 0)) player.jh = 0.5; return; }   // 아래에서 들이받혔다
     if (ev === "peel") {
       let k = -1, bd = 60;
       vsPeels.forEach((pl, i) => { const d = Math.abs(pl.x - p.x); if (d < bd) { bd = d; k = i; } });
@@ -9448,7 +9471,7 @@
     if (NET.role === "host") {
       if (ev === "hi") {
         // 처음 한 번만 — 들어온 쪽은 'start' 를 받을 때까지 hi 를 되풀이하므로 두 번째부터는 무시
-        if (!NET.peerIn) { NET.peerIn = true; NET.oppName = p.name || "상대"; NET.oppJob = p.job || "bangul"; vsMsg("상대가 들어왔어요!"); netSend("start", { name: savedName(), job: vsJob }); netStartMatch(); }
+        if (!NET.peerIn) { NET.peerIn = true; NET.oppName = p.name || "상대"; NET.oppJob = p.job || "bangul"; vsMsg("상대가 들어왔어요!"); netSend("start", { name: savedName(), job: vsJob }); netStartMatch(); rtcStart(); }
       } else if (ev === "g") {
         NET.g = p; NET.gAt = now; netPush(p, now);
         rival.hurt = now + (p.h || 0); rival.inv = now + (p.i || 0);
@@ -9471,7 +9494,7 @@
       }
     } else {
       if (ev === "start") { NET.peerIn = true; if (p.name) NET.oppName = p.name; if (p.job) NET.oppJob = p.job; netStartMatch(); }
-      else if (ev === "s") { NET.snap = p; NET.snapAt = now; netPush(p, now); }
+      else if (ev === "s") { NET.snap = p; NET.snapAt = now; netPush(p, now); if (p.it) { NET.itSnap = p; NET.itAt = now; } }
       else if (ev === "stun") { player.stun = now + (p.ms || STOMP_STUN); }
       else if (ev === "aug") { vsStartRoulette(p.who === 2 ? 1 : 2, p.id); }   // 2 = 들어온 쪽(나)
       else if (ev === "kv") { p1kv += p.v || 0; if (p.bounce) player.jv = STOMP_BOUNCE; if (p.launch) player.jv = p.launch; if (p.big) { shake = Math.max(shake, 12); popText(player.x, player.y - 50, "쾅!", "#ffd23f", 26); } burst(player.x, player.y + player.hy, "#ffe08a", 10); }
@@ -9490,7 +9513,7 @@
   function netStartMatch() {
     vsScreen.classList.add("hidden");
     overScreen.classList.add("hidden");
-    NET.items.clear(); NET.eaten.clear(); NET.dodged.clear(); NET.snap = null; NET.g = null;
+    NET.items.clear(); NET.eaten.clear(); NET.dodged.clear(); NET.snap = null; NET.g = null; NET.itSnap = null;
     netBuf.length = 0; netOff = null;
     NET.again = NET.peerAgain = false; NET.gone = false; NET.sendT = 0; NET.lastRx = performance.now();
     beep(900, .08, "square", .05);
@@ -9534,8 +9557,9 @@
     vsWorldStep(dt, now);
     vsRecStep(dt);
     if (!s) return;
-    // 상대(방장) — 받은 자리에서 속도만큼 앞당긴다
-    const lead = age + NET_LAT;
+    const si = NET.itSnap || s;                          // 똥 목록은 직접 연결이면 두 번에 한 번 온다
+    const ageI = NET.itSnap ? (now - NET.itAt) / 1000 : age;
+    const lead = ageI + (RTC.open ? RTC_LAT : NET_LAT);
     const smp = netSample(now);                          // 방장 몸 — 받은 자리들 사이를 이어 그린다 (v0.8.34)
     if (smp) {
       rival.x = Math.max(player.r, Math.min(W - player.r, smp.x)); rival.vx = smp.vx; rival.jh = smp.jh; rival.jv = smp.jv;
@@ -9546,9 +9570,10 @@
     rival.stun = NET.snapAt + (s.sn || 0); rival.shield = s.sh || 0; rival.bubble = !!s.bb; rival.ttx = s.tx;
     rival.lives = s.l;
     rival.hy = asRival(() => headOffset(currentSprite(now)));
+    vsNetClash(dt, now, player.vx || 0, true);           // 밟기·들이받기·몸싸움 — 내가 한 것·내 몸은 내가 판정
     // 똥 — 번호로 이어 붙인다 (같은 똥은 같은 물체라 좌우 반전·표정이 안 바뀐다)
     const seen = new Set();
-    for (const a of s.it) {
+    for (const a of (si.it || [])) {
       const id = a[0];
       if (NET.eaten.has(id)) continue;
       seen.add(id);
@@ -9564,9 +9589,9 @@
       it.special = a[11] || null; it.rot = a[12];
     }
     for (const id of NET.items.keys()) if (!seen.has(id)) NET.items.delete(id);
-    for (const id of NET.eaten) if (!s.it.some(a => a[0] === id)) NET.eaten.delete(id);
+    for (const id of NET.eaten) if (!(si.it || []).some(a => a[0] === id)) NET.eaten.delete(id);
     items = Array.from(NET.items.values());
-    warns = s.w.map(w => ({ x: w[0], ang: w[1], t: Math.max(0, w[2] - age), t0: w[3], dark: !!w[4] }));
+    warns = (si.w || []).map(w => ({ x: w[0], ang: w[1], t: Math.max(0, w[2] - ageI), t0: w[3], dark: !!w[4] }));
     // 내가 맞았는지 — 내 화면에서 잰다
     if (dying > 0 || lives <= 0) return;
     const cy = player.y + player.hy, R = vsR() * 0.632;
@@ -9618,6 +9643,161 @@
     }
   }
 
+  /* ---------- 폰끼리 직접 잇기 (v0.8.36, WebRTC) ----------
+     판이 열리면 방장이 Supabase 채널로 연결 제안(rtc/ice)을 보내고, 두 폰이 서로를 찾으면 그때부터 직접 주고받는다.
+     통로는 둘 — 자리(s·g)는 순서 없이 빠르게(하나 잃어도 다음 것이 곧 온다), 나머지 신호는 꼭 닿게.
+     직접 이어진 동안은 자리를 1초에 30번 보내고(똥 목록은 15번) 상대 몸을 0.06초 전 시점으로 이어 그린다.
+     못 잇거나 끊기면 저절로 예전처럼 Supabase 로 돌아간다 — 통신사·와이파이 조합에 따라 직접 연결이 안 될 수 있다. */
+  const RTC = { pc: null, dcR: null, dcU: null, open: false, pend: [], remoteSet: false };
+  const RTC_CFG = { iceServers: [{ urls: ["stun:stun.l.google.com:19302", "stun:stun1.l.google.com:19302"] }] };
+  const RTC_RATE = 1 / 30, RTC_INTERP = 60, RTC_LAT = 0.03;
+  function rtcClose() {
+    try { if (RTC.dcR) RTC.dcR.close(); if (RTC.dcU) RTC.dcU.close(); if (RTC.pc) RTC.pc.close(); } catch (e) {}
+    RTC.pc = RTC.dcR = RTC.dcU = null; RTC.pend = []; RTC.remoteSet = false;
+    if (RTC.open) { RTC.open = false; netOff = null; }
+  }
+  function rtcCheckOpen() {
+    const ok = !!(RTC.dcR && RTC.dcU && RTC.dcR.readyState === "open" && RTC.dcU.readyState === "open");
+    if (ok !== RTC.open) { RTC.open = ok; netOff = null; }   // 길이 바뀌면 시계 차이를 다시 잰다
+  }
+  function rtcWire(dc) {
+    dc.onopen = rtcCheckOpen;
+    dc.onclose = rtcCheckOpen;
+    dc.onmessage = e => {
+      let m; try { m = JSON.parse(e.data); } catch (err) { return; }
+      NET.lastRx = performance.now();
+      netRecv(m.e, m.p || {});
+    };
+    rtcCheckOpen();
+  }
+  function rtcNewPc() {
+    const pc = new RTCPeerConnection(RTC_CFG);
+    pc.onicecandidate = e => { if (e.candidate) netSendSb("ice", { c: e.candidate.toJSON ? e.candidate.toJSON() : e.candidate }); };
+    pc.onconnectionstatechange = () => { if (pc.connectionState === "failed" || pc.connectionState === "closed") rtcCheckOpen(); };
+    return pc;
+  }
+  // 방장 — 연결 제안
+  function rtcStart() {
+    if (RTC.open || !window.RTCPeerConnection) return;
+    rtcClose();
+    try {
+      const pc = rtcNewPc(); RTC.pc = pc;
+      RTC.dcR = pc.createDataChannel("r");
+      RTC.dcU = pc.createDataChannel("u", { ordered: false, maxRetransmits: 0 });
+      rtcWire(RTC.dcR); rtcWire(RTC.dcU);
+      pc.createOffer().then(o => pc.setLocalDescription(o))
+        .then(() => netSendSb("rtc", { sdp: { type: pc.localDescription.type, sdp: pc.localDescription.sdp } })).catch(() => {});
+    } catch (e) { rtcClose(); }
+  }
+  function rtcAddPending() {
+    for (const c of RTC.pend) RTC.pc.addIceCandidate(c).catch(() => {});
+    RTC.pend = [];
+  }
+  function rtcSignal(ev, p) {
+    if (!window.RTCPeerConnection) return;
+    if (ev === "rtc" && p.sdp && p.sdp.type === "offer") {          // 들어온 쪽 — 제안에 답한다
+      rtcClose();
+      try {
+        const pc = rtcNewPc(); RTC.pc = pc;
+        pc.ondatachannel = e => { const dc = e.channel; if (dc.label === "u") RTC.dcU = dc; else RTC.dcR = dc; rtcWire(dc); };
+        pc.setRemoteDescription(p.sdp).then(() => { RTC.remoteSet = true; rtcAddPending(); return pc.createAnswer(); })
+          .then(a => pc.setLocalDescription(a))
+          .then(() => netSendSb("rtc", { sdp: { type: pc.localDescription.type, sdp: pc.localDescription.sdp } })).catch(() => {});
+      } catch (e) { rtcClose(); }
+    } else if (ev === "rtc" && p.sdp && p.sdp.type === "answer" && RTC.pc) {
+      RTC.pc.setRemoteDescription(p.sdp).then(() => { RTC.remoteSet = true; rtcAddPending(); }).catch(() => {});
+    } else if (ev === "ice" && p.c && RTC.pc) {
+      if (RTC.remoteSet) RTC.pc.addIceCandidate(p.c).catch(() => {}); else RTC.pend.push(p.c);
+    }
+  }
+  // 내 몸에 일어난 일만 내가 판정한다 (두 폰) — 밟기·들이받기는 한 쪽이 판정해 상대에게 알리고, 몸싸움은 각자 제 몸만 튕긴다
+  function vsNetClash(dt, now, myvx, dec) {
+    if (dec && vsBumpCd > 0) vsBumpCd -= dt;
+    if (dying > 0 || lives <= 0 || state !== STATE.PLAY) return;
+    const R = vsR(), dh = (player.jh || 0) - (rival.jh || 0), dx = rival.x - player.x;
+    if (vsBumpCd <= 0 && Math.abs(dx) < R * 1.4) {
+      const rivalRising = (rival.jh || 0) > 0 && (rival.jv || 0) > 0;
+      if (dh > R * 1.8 && dh < R * 3.6 && (player.jv || 0) < 0 && !rivalRising) {   // 내가 위에서 떨어지며 밟았다
+        const dur = STOMP_STUN * (vsHas(player, "dizzy") ? 2 : 1) * (vsHas(rival, "heavy") ? 0.5 : 1);
+        player.jv = STOMP_BOUNCE;
+        rival.stun = now + dur;                               // 별은 바로 그린다 (상대 폰이 곧 제 멈춤을 보내온다)
+        netSend("stun", { ms: Math.round(dur) });
+        vsBumpCd = 0.3;
+        const cx = rival.x, cy = groundY - (rival.jh || 0) - R * 2.4;
+        burst(cx, cy, "#ffe08a", 18); shake = Math.max(shake, 14);
+        popText(cx, cy - 20, "밟았다!", "#ffd23f", 26);
+        beep(180, .12, "square", .06); beep(520, .1, "triangle", .05);
+        if (navigator.vibrate) navigator.vibrate(40);
+        return;
+      }
+      if (-dh > R * 1.8 && -dh < R * 3.6 && (player.jh || 0) > 0 && (player.jv || 0) > 0) {   // 내가 아래에서 올라가며 들이받았다
+        netSend("launch", { v: HEADBUTT_V });
+        vsBumpCd = 0.3;
+        const hx = rival.x, hy = groundY - (rival.jh || 0);
+        burst(hx, hy, "#9fe8ff", 18); shake = Math.max(shake, 12);
+        popText(hx, hy - R * 3, "들이받기!", "#7fe0ff", 26);
+        beep(300, .1, "square", .06); beep(900, .12, "triangle", .05);
+        if (navigator.vibrate) navigator.vibrate(40);
+        return;
+      }
+    }
+    const ad = Math.abs(dx), minD = R * VS_BUMP;
+    if (ad < minD && Math.abs(dh) < R * 1.3) {
+      const dir = dx >= 0 ? 1 : -1;
+      vsShift(1, -dir * (minD - ad) / 2);                    // 겹친 만큼의 절반 — 나머지 절반은 상대 폰이 제 몸을 비킨다
+      if (vsBumpCd <= 0) {
+        const a1 = Math.max(0, myvx * dir), a2 = Math.max(0, -(rival.vx || 0) * dir);
+        const fitK = b => jobOf(b) === "fit" ? VS_FIT_RAM : 1;
+        p1kv -= dir * (260 + a2 * 1.35) * (vsHas(rival, "ram") ? 1.6 : 1) * fitK(rival) * (vsHas(player, "heavy") ? 0.5 : 1);
+        vsBumpCd = 0.22;
+        const hard = Math.max(a1, a2) > 350, cx = (player.x + rival.x) / 2, cy = player.y + player.hy;
+        burst(cx, cy, "#ffe08a", hard ? 18 : 8);
+        if (hard) { shake = Math.max(shake, 12); popText(cx, cy - 50, "쾅!", "#ffd23f", 26); beep(120, .12, "square", .06); }
+        else beep(260, .06, "square", .04);
+        if (navigator.vibrate) navigator.vibrate(25);
+      }
+    }
+  }
+  /* 봇과 연습 (v0.8.36) — 혼자 시험해 볼 수 있게, 기록 없이 스스로 움직이는 상대.
+     달이 있으면 달을 먹으러 가고, 아니면 반쯤은 나를 쫓아와 들이받고 반쯤은 딴 데로 간다.
+     가까이 붙으면 가끔 뛰어 머리를 밟으려 하고, 내가 머리 위에 있으면 들이받으러 뛴다. 코앞의 똥은 피한다. */
+  function vsBotStart() {
+    netClose(); lobbyClose();
+    const others = VS_JOBS.filter(v => v.id !== vsJob);
+    vsGhost = { name: "연습 봇", job: others[Math.floor(Math.random() * others.length)].id, bot: true, live: true };
+    vsGhostOn = true;
+    vsScreen.classList.add("hidden");
+    beep(900, .08, "square", .05);
+    reset(false);
+  }
+  function botBrain(dt, now) {
+    const B = rival, R = vsR();
+    B.aiT = (B.aiT || 0) - dt;
+    if (B.aiT <= 0) {
+      B.aiT = 0.5 + Math.random() * 0.8;
+      const moon = items.find(it => it.type === "moon" && it.y > H * 0.25);
+      if (moon) B.aiX = moon.x;
+      else if (Math.random() < 0.6) B.aiX = player.x + (Math.random() - 0.5) * 60;
+      else B.aiX = R + Math.random() * (W - R * 2);
+    }
+    const cy = B.y + B.hy;                                   // 코앞 똥 피하기 (기록 대전과 같은 셈)
+    let push = 0;
+    for (const it of items) {
+      if (it.type !== "poop" || it.bounced || !(it.vy > 0)) continue;
+      const tHit = (cy - it.y) / it.vy;
+      if (tHit < 0 || tHit > 0.45) continue;
+      const d = B.x - it.x;
+      if (Math.abs(d) < R * 1.6 + it.r) push += (d >= 0 ? 1 : -1) * 80;
+    }
+    B.dOff = (B.dOff || 0) + (Math.max(-90, Math.min(90, push)) - (B.dOff || 0)) * Math.min(1, dt * 6);
+    B.tx = Math.max(player.r, Math.min(W - player.r, (B.aiX || B.x) + B.dOff));
+    const dx = Math.abs(player.x - B.x);
+    if ((B.jh || 0) <= 1 && !stunned(B, now) && now >= (B.slipUntil || 0)) {
+      if ((player.jh || 0) > R * 1.5 && dx < R * 1.5 && Math.random() < dt * 5) vsJump(2);   // 머리 위의 나를 들이받으러
+      else if (dx < R * 2.4 && Math.random() < dt * 1.4) vsJump(2);                           // 붙으면 가끔 밟으러
+    }
+  }
+
   /* 대전모드 로비 — 한 폰으로 / 방 만들기 / 방 참가 */
   const vsScreen = document.getElementById("vsScreen");
   function vsMsg(t) { document.getElementById("vsMsg").textContent = t; }
@@ -9640,6 +9820,7 @@
     beep(900, .08, "square", .05);
     reset(false);
   });
+  document.getElementById("vsBot").addEventListener("click", vsBotStart);
   document.getElementById("vsQuick").addEventListener("click", () => {
     vsGhostOn = false;
     beep(700, .08, "square", .04);
