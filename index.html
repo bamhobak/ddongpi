@@ -832,6 +832,9 @@
   #vsScreen #vsQuick { padding: 13px 44px; font-size: 20px; }
   #vsScreen #vsHost { padding: 9px 30px; font-size: 15px; background: #33405e; color: #dfe6f5; }
   #vsJoinRow { display: flex; gap: 8px; }
+  /* v0.8.46 방 만들기·방 번호 참가·한 폰으로 둘이서는 화면에서 뺐다 (빠른 대전·봇과 연습만).
+     기능은 남겨 둔다 — 두 브라우저 시험이 방 번호로 붙는다 */
+  #vsScreen #vsHost, #vsScreen #vsJoinRow, #vsScreen #vsLocal { display: none; }
   #vsCode { width: 150px; font-size: 20px; text-align: center; letter-spacing: 6px; padding: 8px; border-radius: 8px;
             border: 1px solid rgba(255,255,255,.25); background: rgba(0,0,0,.35); color: #fff; }
   #vsCode::placeholder { letter-spacing: 0; font-size: 14px; color: rgba(255,255,255,.45); }
@@ -1209,7 +1212,7 @@
   const elTitle = document.getElementById("overTitle");
   const coinNote = document.getElementById("coinNote");
 
-  const GAME_VERSION = "v0.8.45";
+  const GAME_VERSION = "v0.8.46";
   /* 제작사 스플래시(bamhobak friends 로고) — 2026-09-20 끔. 다시 켜려면 true */
   const SPLASH_USE = false;   // 코드를 고칠 때마다 뒤 두 자리를 올린다
   document.getElementById("ver").textContent = GAME_VERSION;
@@ -2687,7 +2690,7 @@
     const want = (rhythmActive() && inGame) ? "rhythm"
       : inGame
       ? (feverBgm ? "fever"
-                  : (inBlackhole() ? "blackhole" : (inSpace() ? "space" : (JOB_BGM[job] || "play"))))
+                  : (inBlackhole() ? "blackhole" : (inSpace() ? "space" : "play")))   // v0.8.46 직업 곡(JOB_BGM) 안 씀 — 지상은 모두 새 곡
       : "menu";
     if (want === bgmName || bgmOff) return;
     if (bgmName === null && Date.now() < bgmRetryAt) return;   // 막힌 직후에는 잠깐 쉰다
@@ -5888,6 +5891,8 @@
     if (vsOn() && state === STATE.PLAY && !e.repeat) {           // 대전모드 점프 — 한 폰: P1 W · P2 ↑, 두 폰: W 나 ↑
       if (e.key === "w" || e.key === "W") vsJump(1);
       else if (e.key === "ArrowUp") vsJump(vsSplit() ? 2 : 1);
+      else if (e.key === "s" || e.key === "S") vsUpper(1);           // 어퍼컷
+      else if (e.key === "ArrowDown") vsUpper(vsSplit() ? 2 : 1);
     }
     /* 방귀 대시 — 키보드로 할 때는 두 번 두드릴 데가 없으니 스페이스바로 낸다.
        나아가는 쪽은 지금 누르고 있는 방향키, 아무것도 안 누르고 있으면 보고 있는 쪽. */
@@ -5937,7 +5942,7 @@
   }
   function dragAnchor(e) {
     drag = { fx: pointerX(e), fy: pointerY(e), px: player.tx, py: flyOn ? player.ty : groundY };
-    if (vsOn()) swipeUp(drag, drag.fy, performance.now());   // 대전모드 — 누른 자리가 쓸어 올리기의 첫 기준
+    if (vsOn()) { swipeUp(drag, drag.fy, performance.now()); swipeDown(drag, drag.fy, performance.now()); }   // 대전모드 — 누른 자리가 쓸기의 첫 기준
   }
   function dragStart(e) {
     if (vsSplit()) { vsTouch(e); return; }            // 한 폰 대전만 화면을 반씩 나눈다
@@ -5947,7 +5952,11 @@
   }
   function dragMove(e) {
     if (vsSplit()) { vsTouch(e); return; }
-    if (vsOn() && drag && !dragBlocked(e) && swipeUp(drag, pointerY(e), performance.now())) vsJump(1);   // 두 폰 대전 — 위로 쓸면 점프
+    if (vsOn() && drag && !dragBlocked(e)) {         // 대전 — 위로 쓸면 점프, 아래로 쓸면 어퍼컷
+      const py = pointerY(e), pn = performance.now();
+      if (swipeUp(drag, py, pn)) vsJump(1);
+      if (swipeDown(drag, py, pn)) vsUpper(1);
+    }
     if (dragBlocked(e)) { drag = null; if (e.cancelable) e.preventDefault(); return; }
     if (!drag) { dragAnchor(e); if (e.cancelable) e.preventDefault(); return; }   // 막혀 있던 손가락은 여기서 기준점을 잡는다
     const kd = (prophIs("reverse") || (vsOn() && vsReversed(player, performance.now()))) ? -1 : 1;   // 거꾸로 가는 날·어지럼 저주 — 끄는 방향과 반대로
@@ -8434,6 +8443,7 @@
   function vsR() { return player.r * hitMul(); }
   let rivalJob = "bangul";                   // 상대 차림 (한 폰: P2 방울이 · 두 폰: 상대가 방장이면 쉬었음 청년)
   const VS_LIVES = 3;
+  const VS_KNOCK = 0.5;                      // v0.8.46 몸싸움으로 튕겨 나가는 거리 배율 (절반으로 줄였다)
   const VS_BUMP = 1.9;                       // 두 몸이 이만큼(판정 반지름 배수)보다 가까우면 부딪힌다
   const rival = { x: 0, y: 0, tx: 0, tilt: 0, hy: 0, vx: 0, lives: VS_LIVES, inv: 0, hurt: 0, facing: "left", kv: 0, jh: 0, jv: 0 };
   /* 점프 (v0.8.26) — 위로 빠르게 쓸어 올리면(0.15초 안에 55 이상) 뛰어오른다. 키보드는 W(한 폰 P2 는 ↑).
@@ -8445,8 +8455,9 @@
   /* v0.8.28 멈춤 0.3 → 0.2초, 풀린 뒤 잠깐 안 밟히던 보호(0.6초)는 뺐다 — 연달아 밟을 수 있다 (사용자 결정).
      아래에서 들이받기 — 위에 상대가 있을 때 내가 뛰어오르는 중에 머리로 치면, 밟히는 대신 위에 있던 쪽이
      HEADBUTT_V 로 날아간다(보통 점프의 두 배 높이). 떠 있는 시간이 길어 착지할 곳을 골라야 하고 똥에도 맞기 쉽다.
-     v0.8.40 높이 30% 줄임 — 1075(높이 약 222) → 900(약 156). 높이는 빠르기의 제곱이라 1075 × √0.7. */
-  const JUMP_V = 760, JUMP_G = 2600, STOMP_BOUNCE = 620, STOMP_STUN = 200, HEADBUTT_V = 900;
+     v0.8.40 높이 30% 줄임 — 1075(높이 약 222) → 900(약 156). 높이는 빠르기의 제곱이라 1075 × √0.7.
+     v0.8.46 기본 점프·들이받기 높이 10% 더 줄임(× √0.9) — 점프 760(약 111) → 721(약 100), 들이받기 900(약 156) → 854(약 140). */
+  const JUMP_V = 721, JUMP_G = 2600, STOMP_BOUNCE = 620, STOMP_STUN = 200, HEADBUTT_V = 854;
   function stunned(b, now) { return now < (b.stun || 0); }
   const SWIPE_DY = 55, SWIPE_MS = 150;
   function vsJump(who) {
@@ -8484,6 +8495,57 @@
     if (st.by === undefined || y > st.by || now - st.bt > SWIPE_MS) { st.by = y; st.bt = now; st.fired = false; }
     if (!st.fired && st.by - y > SWIPE_DY) { st.fired = true; return true; }
     return false;
+  }
+  // 쓸어 내리기 — 쓸어 올리기와 거울 (기록 칸은 따로)
+  function swipeDown(st, y, now) {
+    if (st.dy0 === undefined || y < st.dy0 || now - st.dt0 > SWIPE_MS) { st.dy0 = y; st.dt0 = now; st.dfired = false; }
+    if (!st.dfired && y - st.dy0 > SWIPE_DY) { st.dfired = true; return true; }
+    return false;
+  }
+  /* 어퍼컷 (v0.8.46) — 아래로 쓸면 가까운 상대 쪽으로 주먹을 올려 친다. 맞으면 상대가 위로 떠서 옆으로 밀려난다.
+     닿는 거리 옆으로 vsR×UPPER_REACH(4.2), 높이는 나보다 조금 아래~머리 위까지. 0.8초에 한 번. 목숨은 안 깎는다.
+     두 폰이면 친 쪽 폰이 판정해 'launch'(v·kv)를 보내고, 휘두른 모습은 'upc' 로 알린다 */
+  // 닿는 거리 — 몸끼리는 vsR×1.9 에서 부딪혀 튕기므로(몸싸움 뒤 보통 2~3.5배 떨어진다) 그보다 넉넉히
+  const UPPER_V = 680, UPPER_KV = 420, UPPER_CD = 0.8, UPPER_SHOW = 260, UPPER_REACH = 4.2;
+  function vsUpper(who) {
+    const now = performance.now();
+    const b = who === 1 ? player : rival, o = who === 1 ? rival : player;
+    if (state !== STATE.PLAY || dying > 0 || stunned(b, now) || now < (b.upCd || 0)) return;
+    b.upCd = now + UPPER_CD * 1000; b.upAt = now;
+    const R = vsR(), dx = o.x - b.x, dh = (o.jh || 0) - (b.jh || 0), dir = dx >= 0 ? 1 : -1;
+    b.upDir = dir;
+    if (who === 1) facing = dir < 0 ? "left" : "right"; else rival.facing = dir < 0 ? "left" : "right";
+    if (who === 1 && NET.role) netSend("upc", { d: dir });
+    const hit = Math.abs(dx) < R * UPPER_REACH && dh > -R * 0.8 && dh < R * 2.8;
+    if (!hit) { beep(420, .05, "triangle", .03); return; }
+    const heavy = vsHas(o, "heavy");
+    const v = Math.round(UPPER_V * (heavy ? 0.75 : 1)), kv = Math.round(dir * UPPER_KV * (heavy ? 0.5 : 1));
+    if (who === 1 && NET.role) netSend("launch", { v, kv });          // 상대 몸은 상대 폰이 띄운다
+    else if (who === 1) { rival.jv = v; if (!(rival.jh > 0)) rival.jh = 0.5; rival.kv += kv; }
+    else { player.jv = v; if (!(player.jh > 0)) player.jh = 0.5; p1kv += kv; }
+    const hx = o.x, hy = groundY - (o.jh || 0) - R;
+    burst(hx, hy, "#ffb347", 20); shake = Math.max(shake, 14);
+    popText(hx, hy - R * 2.2, "어퍼컷!", "#ff9a3c", 26);
+    beep(160, .1, "square", .06); beep(760, .12, "triangle", .05);
+    if (navigator.vibrate) navigator.vibrate(45);
+  }
+  // 휘두르는 주먹 — 몸 앞 아래에서 머리 위로 치솟는다
+  function drawVsUpper(now) {
+    for (const b of [player, rival]) {
+      const t = now - (b.upAt || -1e9);
+      if (t < 0 || t > UPPER_SHOW) continue;
+      const k = t / UPPER_SHOW, R = vsR(), dir = b.upDir || 1;
+      const by = b === player ? player.y + player.hy : rival.y + rival.hy;
+      const x = b.x + dir * R * (1.3 + 0.4 * k), y = by + R * 1.4 - k * R * 3.6;
+      ctx.save();
+      ctx.globalAlpha = 1 - k * 0.6;
+      ctx.strokeStyle = "rgba(255,255,255,.75)"; ctx.lineWidth = 4; ctx.lineCap = "round";
+      ctx.beginPath(); ctx.moveTo(x, by + R * 1.4); ctx.quadraticCurveTo(x + dir * R * 0.6, (y + by + R * 1.4) / 2, x, y); ctx.stroke();
+      ctx.font = Math.round(R * 1.5) + "px serif"; ctx.textAlign = "center"; ctx.textBaseline = "middle";
+      ctx.translate(x, y); ctx.rotate(dir * -0.35);
+      ctx.fillText("👊", 0, 0);
+      ctx.restore();
+    }
   }
   let p1kv = 0, vsBumpCd = 0, vsLoser = 0;
   const vsTouches = new Map();               // 손가락(마우스는 "m") → { who, fx, px } 누른 자리·그때 캐릭터 목표 자리
@@ -8553,7 +8615,7 @@
       if (kind === "touchstart" || kind === "mousedown") {
         const who = x < W / 2 ? 1 : 2;
         const d0 = { who, fx: x, px: who === 1 ? player.tx : rival.tx };
-        swipeUp(d0, ty(t.clientY), performance.now());   // 누른 자리가 쓸어 올리기의 첫 기준
+        swipeUp(d0, ty(t.clientY), performance.now()); swipeDown(d0, ty(t.clientY), performance.now());   // 누른 자리가 쓸기의 첫 기준
         vsTouches.set(t.identifier, d0);
       } else if (kind === "touchmove" || kind === "mousemove") {
         let d = vsTouches.get(t.identifier);
@@ -8567,6 +8629,7 @@
         if (cl !== want) d.px += cl - want;            // 끝에 닿으면 기준점을 끌어온다
         if (d.who === 1) player.tx = cl; else rival.tx = cl;
         if (swipeUp(d, ty(t.clientY), performance.now())) vsJump(d.who);
+        if (swipeDown(d, ty(t.clientY), performance.now())) vsUpper(d.who);
       } else vsTouches.delete(t.identifier);
     }
   }
@@ -8671,8 +8734,8 @@
         const a1 = Math.max(0, p1vx * dir), a2 = Math.max(0, -rival.vx * dir);   // 상대 쪽으로 달려든 빠르기
         // 박치기면 1.6배 멀리, 무거운 몸이면 절반만 밀린다
         const fitK = b => jobOf(b) === "fit" ? VS_FIT_RAM : 1;   // 헬스걸 몸통 박치기
-        const kv2 = dir * (260 + a1 * 1.35) * (vsHas(player, "ram") ? 1.6 : 1) * fitK(player) * (vsHas(rival, "heavy") ? 0.5 : 1);
-        p1kv -= dir * (260 + a2 * 1.35) * (vsHas(rival, "ram") ? 1.6 : 1) * fitK(rival) * (vsHas(player, "heavy") ? 0.5 : 1);
+        const kv2 = dir * VS_KNOCK * (260 + a1 * 1.35) * (vsHas(player, "ram") ? 1.6 : 1) * fitK(player) * (vsHas(rival, "heavy") ? 0.5 : 1);
+        p1kv -= dir * VS_KNOCK * (260 + a2 * 1.35) * (vsHas(rival, "ram") ? 1.6 : 1) * fitK(rival) * (vsHas(player, "heavy") ? 0.5 : 1);
         vsBumpCd = 0.22;
         const cx = (player.x + rival.x) / 2, cy = player.y + player.hy;
         const hard = Math.max(a1, a2) > 350 * VS_MOVE;
@@ -9576,7 +9639,8 @@
     if (ev === "emo") { vsShowEmo(rival, p.e | 0); return; }
     if (ev === "rtc" || ev === "ice") { rtcSignal(ev, p); return; }
     if (ev === "stun") { player.stun = now + (p.ms || STOMP_STUN); return; }      // 상대가 내 머리를 밟았다
-    if (ev === "launch") { player.jv = p.v || HEADBUTT_V; if (!(player.jh > 0)) player.jh = 0.5; return; }   // 아래에서 들이받혔다
+    if (ev === "launch") { player.jv = p.v || HEADBUTT_V; if (!(player.jh > 0)) player.jh = 0.5; if (p.kv) p1kv += p.kv; return; }
+    if (ev === "upc") { rival.upAt = now; rival.upDir = p.d || 1; if (p.d) rival.facing = p.d < 0 ? "left" : "right"; return; }   // 상대가 어퍼컷을 휘둘렀다   // 아래에서 들이받혔다
     if (ev === "peel") {
       let k = -1, bd = 60;
       vsPeels.forEach((pl, i) => { const d = Math.abs(pl.x - p.x); if (d < bd) { bd = d; k = i; } });
@@ -9864,7 +9928,7 @@
       if (vsBumpCd <= 0) {
         const a1 = Math.max(0, myvx * dir), a2 = Math.max(0, -(rival.vx || 0) * dir);
         const fitK = b => jobOf(b) === "fit" ? VS_FIT_RAM : 1;
-        p1kv -= dir * (260 + a2 * 1.35) * (vsHas(rival, "ram") ? 1.6 : 1) * fitK(rival) * (vsHas(player, "heavy") ? 0.5 : 1);
+        p1kv -= dir * VS_KNOCK * (260 + a2 * 1.35) * (vsHas(rival, "ram") ? 1.6 : 1) * fitK(rival) * (vsHas(player, "heavy") ? 0.5 : 1);
         vsBumpCd = 0.22;
         const hard = Math.max(a1, a2) > 350 * VS_MOVE, cx = (player.x + rival.x) / 2, cy = player.y + player.hy;
         burst(cx, cy, "#ffe08a", hard ? 18 : 8);
@@ -9911,6 +9975,7 @@
     if ((B.jh || 0) <= 1 && !stunned(B, now) && now >= (B.slipUntil || 0)) {
       if ((player.jh || 0) > R * 1.5 && dx < R * 1.5 && Math.random() < dt * 5) vsJump(2);   // 머리 위의 나를 들이받으러
       else if (dx < R * 2.4 && Math.random() < dt * 1.4) vsJump(2);                           // 붙으면 가끔 밟으러
+      else if (dx < R * 2.3 && Math.abs((player.jh || 0) - (B.jh || 0)) < R * 1.5 && Math.random() < dt * 1.2) vsUpper(2);   // 붙으면 가끔 어퍼컷
     }
   }
 
@@ -13338,7 +13403,7 @@
       if (state !== STATE.OVER) drawPetsBack(now);
       if (vsOn() && state !== STATE.OVER && state !== STATE.READY) drawVsWorld(now);   // 얼음·껍질·구름·비둘기
       if (state !== STATE.OVER) drawPlayer(now);
-      if (vsOn() && state !== STATE.OVER && state !== STATE.READY) { asRival(() => drawPlayer(now)); drawVsTags(now); drawVsRoulette(now); drawVsRead(now); }
+      if (vsOn() && state !== STATE.OVER && state !== STATE.READY) { asRival(() => drawPlayer(now)); drawVsTags(now); drawVsRoulette(now); drawVsRead(now); drawVsUpper(now); }
       if (state !== STATE.OVER) drawInvGlow(now);
     }
     drawEffects();
