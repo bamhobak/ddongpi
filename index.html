@@ -1181,7 +1181,7 @@
   const elTitle = document.getElementById("overTitle");
   const coinNote = document.getElementById("coinNote");
 
-  const GAME_VERSION = "v0.8.33";
+  const GAME_VERSION = "v0.8.34";
   /* 제작사 스플래시(bamhobak friends 로고) — 2026-09-20 끔. 다시 켜려면 true */
   const SPLASH_USE = false;   // 코드를 고칠 때마다 뒤 두 자리를 올린다
   document.getElementById("ver").textContent = GAME_VERSION;
@@ -1524,6 +1524,11 @@
   let floatT = 0;
   function tickSwim(dt) {
     const running = (state === STATE.PLAY && hitStop <= 0) || state === STATE.READY;
+    if (running && runMode === "vs") {                // 대전 상대의 헤엄 — 제 빠르기로 젓는다
+      const rk = Math.min(1, Math.abs(rival.vx || 0) / PLAYER_MAX_SPEED);
+      rival.swimK = (rival.swimK || 0) + (rk - (rival.swimK || 0)) * Math.min(1, dt * 6);
+      rival.swimPhase = (rival.swimPhase || 0) + dt * (1 / SWIM_IDLE_CYCLE + (1 / SWIM_FAST_CYCLE - 1 / SWIM_IDLE_CYCLE) * rival.swimK);
+    }
     if (!running) { swimPrevX = player.x; return; }
     floatT += dt;
     const v = swimPrevX === null ? 0 : Math.abs(player.x - swimPrevX) / Math.max(dt, 1e-3);
@@ -8471,13 +8476,16 @@
   }
   /* P2 값을 P1 자리에 잠깐 넣고 fn 을 부른 뒤 되돌린다 — 그림·머리 높이를 같은 함수로 구하려고 */
   function asRival(fn) {
-    const sx = player.x, sy = player.y, st = player.tilt, sh = player.hy;
+    const sx = player.x, sy = player.y, st = player.tilt, sh = player.hy, stx = player.tx, sp = swimPhase;
     const sf = facing, sj = job, su = hurtUntil, si = invUntil, sb = bubbleOn;
     player.x = rival.x; player.y = rival.y; player.tilt = rival.tilt; player.hy = rival.hy;
+    // 걷기(움직이나?)·헤엄(얼마나 빨리 젓나)은 상대 제 빠르기로
+    player.tx = rival.x + (Math.abs(rival.vx || 0) > 25 ? Math.sign(rival.vx) * 10 : 0);
+    swimPhase = rival.swimPhase || 0;
     facing = rival.facing; job = rivalJob; hurtUntil = rival.hurt; invUntil = rival.inv; bubbleOn = !!rival.bubble;
     try { return fn(); }
     finally {
-      player.x = sx; player.y = sy; player.tilt = st; player.hy = sh;
+      player.x = sx; player.y = sy; player.tilt = st; player.hy = sh; player.tx = stx; swimPhase = sp;
       facing = sf; job = sj; hurtUntil = su; invUntil = si; bubbleOn = sb;
     }
   }
@@ -8528,9 +8536,9 @@
   function vsUpdate(dt, now, p1vx) {
     player.vx = p1vx;
     const net = netHost();
-    if (net) {                                          // 두 폰 — 상대 자리는 받은 값에서 속도만큼 앞당긴다
-      const g = NET.g;
-      if (g) rival.tx = g.x + (g.vx || 0) * ((now - NET.gAt) / 1000 + NET_LAT);
+    const smp = net ? netSample(now) : null;
+    if (net) {                                          // 두 폰 — 상대 자리는 받은 자리들 사이를 이어 그린다
+      if (smp) rival.tx = smp.x;
     } else if (vsGhostOn) ghostDrive(dt, now);          // 기록 대전 — 남의 움직임 기록을 따라
     else {                                              // 한 폰 — P2 는 ← → 와 오른쪽 손가락
       const ks = 448 * dt;
@@ -8540,9 +8548,8 @@
     }
     rival.tx = Math.max(player.r, Math.min(W - player.r, rival.tx));
     const prev = rival.x;
-    if (net) {                                          // 두 폰 — 받은 자리를 따라갈 뿐 (멈춤·미끄러짐은 상대 폰이 스스로)
-      const want = (rival.tx - rival.x) * Math.min(1, dt * 20), maxStep = PLAYER_MAX_SPEED * 1.5 * dt;
-      rival.x += Math.max(-maxStep, Math.min(maxStep, want));
+    if (net) {                                          // 두 폰 — 이어 그린 자리 그대로 (멈춤·미끄러짐은 상대 폰이 스스로)
+      if (smp) rival.x = Math.max(player.r, Math.min(W - player.r, smp.x));
     } else vsMoveBody(rival, dt, now);
     // 튕겨 나가는 힘 — 금방 잦아든다
     if (rival.kv) vsShift(2, rival.kv * dt);
@@ -8559,10 +8566,8 @@
       rival.tilt = Math.max(-.35, Math.min(.35, rival.tilt));
     }
     stepJump(player, dt);
-    if (net) {
-      const g = NET.g;
-      rival.jh = g ? jumpAhead(g.jh || 0, g.jv || 0, (now - NET.gAt) / 1000 + NET_LAT) : 0;
-    } else if (!vsGhostOn) stepJump(rival, dt);         // 기록 대전은 높이도 기록대로
+    if (net) rival.jh = smp ? smp.jh : 0;              // 두 폰 — 높이도 이어 그린다
+    else if (!vsGhostOn) stepJump(rival, dt);         // 기록 대전은 높이도 기록대로
     rival.y = groundY - rival.jh;
     rival.hy = asRival(() => headOffset(currentSprite(now)));
 
@@ -9315,6 +9320,38 @@
                 hiT: 0, items: new Map(), eaten: new Set(), dodged: new Set(), snapAt: 0, snap: null, gAt: 0, g: null,
                 again: false, peerAgain: false, gone: false };
   const NET_RATE = 0.1, NET_LAT = 0.08, NET_TIMEOUT = 6000;
+  /* v0.8.34 상대 몸은 받은 자리로 바로 옮기지 않고 받은 자리들 사이를 이어 그린다 — 예전엔 0.1초마다 새 자리로
+     딱딱 옮겨서(앞당기기만 했다) 끊겨 보였다. 보낼 때 제 시계(ts)를 같이 보내고, 받는 쪽은 '받은 시각 − 보낸 시각'의
+     가장 작은 값으로 두 시계의 차이를 잡은 뒤 NET_INTERP 만큼 지난 시점을 두 받은 자리 사이에서 이어 그린다.
+     (그만큼 조금 늦게 보이는 대신 부드럽다. 끊겨 다음 자리가 안 오면 마지막 속도로 잠깐 앞당긴다) */
+  const NET_INTERP = 130;
+  const netBuf = [];                            // 상대 몸 { ts, x, jh, vx, f, tl }
+  let netOff = null, netOffAt = 0;
+  function netPush(p, now) {
+    if (typeof p.ts !== "number") return;
+    const d = now - p.ts;
+    // 시계 차이 — 가장 빨리 온 것을 믿되, 5초마다 조금씩 풀어 준다(지연이 커졌다 줄어드는 것도 따라가게)
+    if (netOff === null || d < netOff) netOff = d;
+    else if (now - netOffAt > 5000) { netOff += (d - netOff) * 0.2; netOffAt = now; }
+    netBuf.push({ ts: p.ts, x: p.x, jh: p.jh || 0, vx: p.vx || 0, f: p.f, tl: p.tl || 0 });
+    if (netBuf.length > 20) netBuf.shift();
+  }
+  // 이어 그릴 자리 — 없으면 null
+  function netSample(now) {
+    if (!netBuf.length || netOff === null) return null;
+    const rt = now - netOff - NET_INTERP;
+    let a = netBuf[0], b = null;
+    for (const q of netBuf) { if (q.ts <= rt) a = q; else { b = q; break; } }
+    if (b && a.ts <= rt) {
+      const k = (rt - a.ts) / Math.max(1, b.ts - a.ts);
+      return { x: a.x + (b.x - a.x) * k, jh: a.jh + (b.jh - a.jh) * k, vx: (b.x - a.x) / Math.max(1, b.ts - a.ts) * 1000,
+               f: k < 0.5 ? a.f : b.f, tl: a.tl + (b.tl - a.tl) * k };
+    }
+    const last = netBuf[netBuf.length - 1];
+    if (rt < last.ts) return { x: a.x, jh: a.jh, vx: 0, f: a.f, tl: a.tl };   // 아직 첫 자리 전
+    const ex = Math.min(0.12, (rt - last.ts) / 1000);                           // 다음 자리가 늦다 — 잠깐만 앞당긴다
+    return { x: last.x + last.vx * ex, jh: last.jh, vx: last.vx, f: last.f, tl: last.tl };
+  }
   function netOn() { return !!NET.role && runMode === "vs"; }
   function netHost() { return NET.role === "host" && runMode === "vs"; }
   function netGuest() { return NET.role === "guest" && runMode === "vs"; }
@@ -9383,7 +9420,7 @@
                 it.dark ? 1 : 0, it.dv || 0, it.special || "", Math.round((it.rot || 0) * 100) / 100, it.type === "moon" ? "m" : ""]);
     }
     netSend("s", {
-      t: elapsed, lt: levelTime, x: Math.round(player.x), vx: Math.round(player.vx || 0), f: facing === "left" ? 1 : 0,
+      ts: Math.round(now), t: elapsed, lt: levelTime, x: Math.round(player.x), vx: Math.round(player.vx || 0), f: facing === "left" ? 1 : 0,
       tl: Math.round(player.tilt * 100) / 100, h: Math.max(0, Math.round(hurtUntil - now)), i: Math.max(0, Math.round(invUntil - now)),
       l: lives, gl: rival.lives, it: its, jh: Math.round(player.jh || 0), jv: Math.round(player.jv || 0),
       sn: Math.max(0, Math.round((player.stun || 0) - now)), sh: shields, bb: bubbleOn ? 1 : 0, tx: Math.round(player.tx),
@@ -9391,7 +9428,7 @@
     });
   }
   function netSendMe(now) {
-    netSend("g", { x: Math.round(player.x), vx: Math.round(player.vx || 0), f: facing === "left" ? 1 : 0,
+    netSend("g", { ts: Math.round(now), x: Math.round(player.x), vx: Math.round(player.vx || 0), f: facing === "left" ? 1 : 0,
                    tl: Math.round(player.tilt * 100) / 100, h: Math.max(0, Math.round(hurtUntil - now)),
                    i: Math.max(0, Math.round(invUntil - now)), l: lives,
                    jh: Math.round(player.jh || 0), jv: Math.round(player.jv || 0),
@@ -9413,7 +9450,7 @@
         // 처음 한 번만 — 들어온 쪽은 'start' 를 받을 때까지 hi 를 되풀이하므로 두 번째부터는 무시
         if (!NET.peerIn) { NET.peerIn = true; NET.oppName = p.name || "상대"; NET.oppJob = p.job || "bangul"; vsMsg("상대가 들어왔어요!"); netSend("start", { name: savedName(), job: vsJob }); netStartMatch(); }
       } else if (ev === "g") {
-        NET.g = p; NET.gAt = now;
+        NET.g = p; NET.gAt = now; netPush(p, now);
         rival.hurt = now + (p.h || 0); rival.inv = now + (p.i || 0);
         rival.facing = p.f ? "left" : "right"; rival.tilt = p.tl || 0;
         rival.stun = now + (p.sn || 0); rival.shield = p.sh || 0; rival.bubble = !!p.bb; rival.ttx = p.tx;
@@ -9434,7 +9471,7 @@
       }
     } else {
       if (ev === "start") { NET.peerIn = true; if (p.name) NET.oppName = p.name; if (p.job) NET.oppJob = p.job; netStartMatch(); }
-      else if (ev === "s") { NET.snap = p; NET.snapAt = now; }
+      else if (ev === "s") { NET.snap = p; NET.snapAt = now; netPush(p, now); }
       else if (ev === "stun") { player.stun = now + (p.ms || STOMP_STUN); }
       else if (ev === "aug") { vsStartRoulette(p.who === 2 ? 1 : 2, p.id); }   // 2 = 들어온 쪽(나)
       else if (ev === "kv") { p1kv += p.v || 0; if (p.bounce) player.jv = STOMP_BOUNCE; if (p.launch) player.jv = p.launch; if (p.big) { shake = Math.max(shake, 12); popText(player.x, player.y - 50, "쾅!", "#ffd23f", 26); } burst(player.x, player.y + player.hy, "#ffe08a", 10); }
@@ -9454,6 +9491,7 @@
     vsScreen.classList.add("hidden");
     overScreen.classList.add("hidden");
     NET.items.clear(); NET.eaten.clear(); NET.dodged.clear(); NET.snap = null; NET.g = null;
+    netBuf.length = 0; netOff = null;
     NET.again = NET.peerAgain = false; NET.gone = false; NET.sendT = 0; NET.lastRx = performance.now();
     beep(900, .08, "square", .05);
     reset(false);
@@ -9498,10 +9536,12 @@
     if (!s) return;
     // 상대(방장) — 받은 자리에서 속도만큼 앞당긴다
     const lead = age + NET_LAT;
-    rival.x = Math.max(player.r, Math.min(W - player.r, s.x + (s.vx || 0) * lead));
-    rival.jh = jumpAhead(s.jh || 0, s.jv || 0, lead);
-    rival.y = groundY - rival.jh; rival.vx = s.vx || 0;
-    rival.facing = s.f ? "left" : "right"; rival.tilt = s.tl || 0;
+    const smp = netSample(now);                          // 방장 몸 — 받은 자리들 사이를 이어 그린다 (v0.8.34)
+    if (smp) {
+      rival.x = Math.max(player.r, Math.min(W - player.r, smp.x)); rival.vx = smp.vx; rival.jh = smp.jh;
+      rival.facing = smp.f ? "left" : "right"; rival.tilt = smp.tl;
+    }
+    rival.y = groundY - (rival.jh || 0);
     rival.hurt = NET.snapAt + (s.h || 0); rival.inv = NET.snapAt + (s.i || 0);
     rival.stun = NET.snapAt + (s.sn || 0); rival.shield = s.sh || 0; rival.bubble = !!s.bb; rival.ttx = s.tx;
     rival.lives = s.l;
