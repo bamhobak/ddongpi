@@ -1182,7 +1182,7 @@
   const elTitle = document.getElementById("overTitle");
   const coinNote = document.getElementById("coinNote");
 
-  const GAME_VERSION = "v0.8.39";
+  const GAME_VERSION = "v0.8.40";
   /* 제작사 스플래시(bamhobak friends 로고) — 2026-09-20 끔. 다시 켜려면 true */
   const SPLASH_USE = false;   // 코드를 고칠 때마다 뒤 두 자리를 올린다
   document.getElementById("ver").textContent = GAME_VERSION;
@@ -8411,8 +8411,9 @@
      jh = 땅에서 뜬 높이, jv = 위로 가는 빠르기, stun = 멈춤이 풀리는 시각. */
   /* v0.8.28 멈춤 0.3 → 0.2초, 풀린 뒤 잠깐 안 밟히던 보호(0.6초)는 뺐다 — 연달아 밟을 수 있다 (사용자 결정).
      아래에서 들이받기 — 위에 상대가 있을 때 내가 뛰어오르는 중에 머리로 치면, 밟히는 대신 위에 있던 쪽이
-     HEADBUTT_V 로 날아간다(보통 점프의 두 배 높이). 떠 있는 시간이 길어 착지할 곳을 골라야 하고 똥에도 맞기 쉽다. */
-  const JUMP_V = 760, JUMP_G = 2600, STOMP_BOUNCE = 620, STOMP_STUN = 200, HEADBUTT_V = 1075;
+     HEADBUTT_V 로 날아간다(보통 점프의 두 배 높이). 떠 있는 시간이 길어 착지할 곳을 골라야 하고 똥에도 맞기 쉽다.
+     v0.8.40 높이 30% 줄임 — 1075(높이 약 222) → 900(약 156). 높이는 빠르기의 제곱이라 1075 × √0.7. */
+  const JUMP_V = 760, JUMP_G = 2600, STOMP_BOUNCE = 620, STOMP_STUN = 200, HEADBUTT_V = 900;
   function stunned(b, now) { return now < (b.stun || 0); }
   const SWIPE_DY = 55, SWIPE_MS = 150;
   function vsJump(who) {
@@ -8735,21 +8736,32 @@
   function drawVsHud(top) {
     ctx.font = "900 20px NanumBarunGothic, system-ui, sans-serif";
     ctx.textBaseline = "middle";
+    // v0.8.39 — 하트 줄 아래에 닉네임 (예전엔 하트 앞에 나/상대/봇). 증강 아이콘은 그 아래로
     const row = (x, al, label, c, n) => {
-      ctx.textAlign = al;
-      ctx.fillStyle = c;
-      ctx.fillText(label, x, top + 14);
-      const lw = ctx.measureText(label).width + 12;
       for (let i = 0; i < Math.max(VS_LIVES, n); i++) {       // 하트 증강으로 5개까지
-        const hx = al === "left" ? x + lw + 12 + i * 26 : x - lw - 12 - i * 26;
+        const hx = al === "left" ? x + 10 + i * 26 : x - 10 - i * 26;
         ctx.fillStyle = i < n ? "#ff3d68" : "rgba(255,255,255,.28)";
         heartPath(hx, top + 14, 9.5); ctx.fill();
       }
+      ctx.save();
+      ctx.font = "900 14px NanumBarunGothic, system-ui, sans-serif";
+      ctx.textAlign = al;
+      const maxW = W / 2 - 64;                               // 가운데 '직접 연결' 글자와 안 겹치게
+      let t = label;
+      if (ctx.measureText(t).width > maxW) {
+        while (t.length > 1 && ctx.measureText(t + "…").width > maxW) t = t.slice(0, -1);
+        t += "…";
+      }
+      ctx.lineWidth = 3; ctx.strokeStyle = "rgba(0,0,0,.45)"; ctx.lineJoin = "round";
+      ctx.strokeText(t, x, top + 36);
+      ctx.fillStyle = c; ctx.fillText(t, x, top + 36);
+      ctx.restore();
     };
-    row(16, "left", (NET.role || vsGhostOn) ? "나" : "P1", "#6fb4ff", lives);
-    row(W - 16, "right", NET.role ? "상대" : vsGhostOn ? (vsGhost.live ? "봇" : "기록") : "P2", "#ff8cc0", rival.lives);
-    drawVsAugRow(16, "left", top + 38, player, shields);
-    drawVsAugRow(W - 16, "right", top + 38, rival, rival.shield || 0);
+    const pvp = NET.role || vsGhostOn;
+    row(16, "left", pvp ? (savedName() || "나") : "P1", "#6fb4ff", lives);
+    row(W - 16, "right", NET.role ? (NET.oppName || "상대") : vsGhostOn ? vsGhost.name : "P2", "#ff8cc0", rival.lives);
+    drawVsAugRow(16, "left", top + 58, player, shields);
+    drawVsAugRow(W - 16, "right", top + 58, rival, rival.shield || 0);
     ctx.textAlign = "center"; ctx.fillStyle = "rgba(255,255,255,.85)";
     ctx.font = "700 15px NanumBarunGothic, system-ui, sans-serif";
     ctx.fillText("⏱️ " + fmtSec(elapsed), W / 2, top + 14);
