@@ -1182,7 +1182,7 @@
   const elTitle = document.getElementById("overTitle");
   const coinNote = document.getElementById("coinNote");
 
-  const GAME_VERSION = "v0.8.42";
+  const GAME_VERSION = "v0.8.43";
   /* 제작사 스플래시(bamhobak friends 로고) — 2026-09-20 끔. 다시 켜려면 true */
   const SPLASH_USE = false;   // 코드를 고칠 때마다 뒤 두 자리를 올린다
   document.getElementById("ver").textContent = GAME_VERSION;
@@ -8721,11 +8721,12 @@
     dizzy(player, player.y + player.hy - vsR() * 1.75 - vsHatSize(vsHatMe));
     dizzy(rival, rival.y + rival.hy - vsR() * 1.75 - vsHatSize(vsHatOpp));
     // 이름표 — 발밑에, 닉네임으로 (v0.8.39, 예전엔 머리 위에 나/상대). 한 폰 둘이서는 P1/P2
+    // v0.8.43 몸 자세(hy — 그림마다·첫 그림 뜨기 전 0)와 상관없이 몸 자리에서 늘 같은 거리 — 위아래로 흔들리지 않게
     const short = t => t.length > 8 ? t.slice(0, 8) + "…" : t;
     const myName = short(savedName() || "나");
     const opName = short(NET.role ? (NET.oppName || "상대") : vsGhostOn ? vsGhost.name : "P2");
-    tag(player.x, player.y + player.hy + vsR() * 2.3, (NET.role || vsGhostOn) ? myName : "P1", "#2f8cff");
-    tag(rival.x, rival.y + rival.hy + vsR() * 2.3, (NET.role || vsGhostOn) ? opName : "P2", "#ff4f9a");
+    tag(player.x, player.y + vsR() * 3.15, (NET.role || vsGhostOn) ? myName : "P1", "#2f8cff");
+    tag(rival.x, rival.y + vsR() * 3.15, (NET.role || vsGhostOn) ? opName : "P2", "#ff4f9a");
     drawVsEmo(player); drawVsEmo(rival);
   }
   // 위쪽 상태 — 왼쪽 P1, 오른쪽 P2 목숨 (조작하는 쪽과 같은 편에)
