@@ -1160,7 +1160,7 @@
   const elTitle = document.getElementById("overTitle");
   const coinNote = document.getElementById("coinNote");
 
-  const GAME_VERSION = "v0.8.26";
+  const GAME_VERSION = "v0.8.27";
   /* 제작사 스플래시(bamhobak friends 로고) — 2026-09-20 끔. 다시 켜려면 true */
   const SPLASH_USE = false;   // 코드를 고칠 때마다 뒤 두 자리를 올린다
   document.getElementById("ver").textContent = GAME_VERSION;
@@ -7172,7 +7172,8 @@
 
     const prev = player.x;
     // 손가락을 반대편에 찍어도 순간이동하지 않도록 최고 속도를 제한한다
-    const want = (player.tx - player.x) * Math.min(1, dt * 20);
+    // 대전모드 — 밟혀서 멈춘 동안은 제자리 (손가락 목표는 그대로 두어 풀리면 가던 쪽으로 간다)
+    const want = (vsOn() && stunned(player, now)) ? 0 : (player.tx - player.x) * Math.min(1, dt * 20);
     const maxStep = PLAYER_MAX_SPEED * spdMul() * dt;
     player.x += Math.max(-maxStep, Math.min(maxStep, want));
     /* ── 방귀 대시 — 돌진하는 동안은 끌기보다 앞선다 ──
@@ -8365,13 +8366,19 @@
   const rival = { x: 0, y: 0, tx: 0, tilt: 0, hy: 0, vx: 0, lives: VS_LIVES, inv: 0, hurt: 0, facing: "left", kv: 0, jh: 0, jv: 0 };
   /* 점프 (v0.8.26) — 위로 빠르게 쓸어 올리면(0.15초 안에 55 이상) 뛰어오른다. 키보드는 W(한 폰 P2 는 ↑).
      떠 있는 동안은 옆으로 부딪히지 않고 상대 머리 위로 넘어간다. 떨어지면서 상대 머리를 밟으면
-     상대는 옆으로 크게 튕겨 나가고 나는 한 번 더 통 튀어 오른다. 대신 몸이 올라가서 떨어지는 똥에 맞기 쉽다.
-     jh = 땅에서 뜬 높이, jv = 위로 가는 빠르기. */
-  const JUMP_V = 760, JUMP_G = 2600, STOMP_BOUNCE = 620, STOMP_KV = 900;
+     상대는 그 자리에 STOMP_STUN 동안 멈추고(움직이지도 뛰지도 못한다, v0.8.27 — 예전엔 옆으로 튕겨 나갔다)
+     나는 한 번 더 통 튀어 오른다. 대신 몸이 올라가서 떨어지는 똥에 맞기 쉽다.
+     jh = 땅에서 뜬 높이, jv = 위로 가는 빠르기, stun = 멈춤이 풀리는 시각. */
+  const JUMP_V = 760, JUMP_G = 2600, STOMP_BOUNCE = 620, STOMP_STUN = 300;
+  /* 밟은 쪽이 튀어 올랐다가 또 머리에 떨어지면 멈춤이 끝없이 이어져 빠져나갈 수 없었다 —
+     밟힌 쪽은 멈춤이 풀린 뒤로도 STOMP_GUARD 동안은 다시 밟히지 않는다 */
+  const STOMP_GUARD = 600;
+  function stunned(b, now) { return now < (b.stun || 0); }
   const SWIPE_DY = 55, SWIPE_MS = 150;
   function vsJump(who) {
     const b = who === 1 ? player : rival;
     if ((b.jh || 0) > 1) return;                       // 땅에 있을 때만
+    if (stunned(b, performance.now())) return;         // 밟혀서 멈춘 동안엔 못 뛴다
     b.jv = JUMP_V; b.jh = 0.5;
     beep(620, .07, "triangle", .04);
   }
@@ -8403,7 +8410,7 @@
     rivalJob = job === "none" ? "bangul" : "none";
     rival.y = player.y; rival.tilt = 0; rival.vx = 0; rival.hy = player.hy;
     rival.lives = VS_LIVES; rival.inv = 0; rival.hurt = 0; rival.facing = "left"; rival.kv = 0;
-    rival.jh = rival.jv = 0; player.jh = player.jv = 0;
+    rival.jh = rival.jv = 0; player.jh = player.jv = 0; rival.stun = player.stun = 0; rival.guard = player.guard = 0;
     p1kv = 0; vsBumpCd = 0; vsLoser = 0; vsTouches.clear();
     facing = NET.role === "guest" ? "left" : "right";
     rival.facing = NET.role === "guest" ? "right" : "left";
@@ -8478,7 +8485,8 @@
     }
     rival.tx = Math.max(player.r, Math.min(W - player.r, rival.tx));
     const prev = rival.x;
-    const want = (rival.tx - rival.x) * Math.min(1, dt * 20), maxStep = PLAYER_MAX_SPEED * dt;
+    // 밟혀서 멈춘 동안 제자리 (두 폰이면 상대 폰이 스스로 멈춘다)
+    const want = (!net && stunned(rival, now)) ? 0 : (rival.tx - rival.x) * Math.min(1, dt * 20), maxStep = PLAYER_MAX_SPEED * dt;
     rival.x += Math.max(-maxStep, Math.min(maxStep, want));
     // 튕겨 나가는 힘 — 금방 잦아든다
     if (rival.kv) vsShift(2, rival.kv * dt);
@@ -8507,15 +8515,16 @@
       const stomp = (topB, botB, topWho) => {
         const dh = (topB.jh || 0) - (botB.jh || 0), dx = botB.x - topB.x;
         if (!(topB.jv < 0 && dh > player.r * 1.8 && dh < player.r * 3.6 && Math.abs(dx) < player.r * 1.4)) return false;
-        const dir = dx === 0 ? (Math.random() < .5 ? -1 : 1) : Math.sign(dx);
-        // 밟은 쪽은 튀어 오르고, 밟힌 쪽은 옆으로 날아간다 — 두 폰이면 상대 몸은 상대 폰이 움직인다
-        if (topWho === 1) { player.jv = STOMP_BOUNCE; if (net) netSend("kv", { v: dir * STOMP_KV, big: 1 }); else rival.kv += dir * STOMP_KV; }
-        else { p1kv += dir * STOMP_KV; if (net) netSend("kv", { v: 0, bounce: 1 }); else rival.jv = STOMP_BOUNCE; }
+        if (now < (botB.guard || 0)) return false;           // 방금 밟힌 쪽은 잠깐 못 밟는다
+        botB.guard = now + STOMP_STUN + STOMP_GUARD;
+        // 밟은 쪽은 튀어 오르고, 밟힌 쪽은 그 자리에 멈춘다 — 두 폰이면 상대 몸은 상대 폰이 멈춘다
+        if (topWho === 1) { player.jv = STOMP_BOUNCE; if (net) netSend("stun", { ms: STOMP_STUN }); else rival.stun = now + STOMP_STUN; }
+        else { player.stun = now + STOMP_STUN; if (net) netSend("kv", { v: 0, bounce: 1 }); else rival.jv = STOMP_BOUNCE; }
         vsBumpCd = 0.3;
         const cx = botB.x, cy = groundY - (botB.jh || 0) - player.r * 2.4;
         burst(cx, cy, "#ffe08a", 18);
         shake = Math.max(shake, 14);
-        popText(cx, cy - 20, "밟았다!", "#ffd23f", 26);
+        popText(cx, cy - 20, "밟았다!", "#ffd23f", 26);   // 밟힌 쪽은 0.3초 멈춘다
         beep(180, .12, "square", .06); beep(520, .1, "triangle", .05);
         if (navigator.vibrate) navigator.vibrate(40);
         return true;
@@ -8583,6 +8592,18 @@
       ctx.fillText(t, x, y + 1);
       ctx.restore();
     };
+    const dizzy = (b, y) => {                       // 밟혀서 멈춘 동안 — 머리 위를 별 셋이 돈다
+      if (!stunned(b, now)) return;
+      ctx.save();
+      ctx.font = "16px serif"; ctx.textAlign = "center"; ctx.textBaseline = "middle";
+      for (let k = 0; k < 3; k++) {
+        const a = now / 120 + k * 2.094;
+        ctx.fillText("⭐", b.x + Math.cos(a) * 20, y + Math.sin(a) * 6);
+      }
+      ctx.restore();
+    };
+    dizzy(player, player.y + player.hy - player.r * 1.75);
+    dizzy(rival, rival.y + rival.hy - player.r * 1.75);
     tag(player.x, player.y + player.hy - player.r * 2.3, NET.role ? "나" : "P1", "#2f8cff");
     tag(rival.x, rival.y + rival.hy - player.r * 2.3, NET.role ? "상대" : "P2", "#ff4f9a");
   }
@@ -8717,6 +8738,7 @@
       t: elapsed, lt: levelTime, x: Math.round(player.x), vx: Math.round(player.vx || 0), f: facing === "left" ? 1 : 0,
       tl: Math.round(player.tilt * 100) / 100, h: Math.max(0, Math.round(hurtUntil - now)), i: Math.max(0, Math.round(invUntil - now)),
       l: lives, gl: rival.lives, it: its, jh: Math.round(player.jh || 0), jv: Math.round(player.jv || 0),
+      sn: Math.max(0, Math.round((player.stun || 0) - now)),
       w: warns.map(w => [Math.round(w.x), Math.round(w.ang * 1000) / 1000, Math.round(w.t * 100) / 100, Math.round(w.t0 * 100) / 100, w.dark ? 1 : 0])
     });
   }
@@ -8724,7 +8746,8 @@
     netSend("g", { x: Math.round(player.x), vx: Math.round(player.vx || 0), f: facing === "left" ? 1 : 0,
                    tl: Math.round(player.tilt * 100) / 100, h: Math.max(0, Math.round(hurtUntil - now)),
                    i: Math.max(0, Math.round(invUntil - now)), l: lives,
-                   jh: Math.round(player.jh || 0), jv: Math.round(player.jv || 0) });
+                   jh: Math.round(player.jh || 0), jv: Math.round(player.jv || 0),
+                   sn: Math.max(0, Math.round((player.stun || 0) - now)) });
   }
   function netRecv(ev, p) {
     const now = performance.now();
@@ -8737,6 +8760,7 @@
         NET.g = p; NET.gAt = now;
         rival.hurt = now + (p.h || 0); rival.inv = now + (p.i || 0);
         rival.facing = p.f ? "left" : "right"; rival.tilt = p.tl || 0;
+        rival.stun = now + (p.sn || 0);
       } else if (ev === "hit" && state === STATE.PLAY && dying <= 0) {
         const k = items.findIndex(q => q.nid === p.id);
         if (k >= 0) { burst(items[k].x, items[k].y, "#8a5a2b", 22); items.splice(k, 1); }
@@ -8752,6 +8776,7 @@
     } else {
       if (ev === "start") { NET.peerIn = true; netStartMatch(); }
       else if (ev === "s") { NET.snap = p; NET.snapAt = now; }
+      else if (ev === "stun") { player.stun = now + (p.ms || STOMP_STUN); }
       else if (ev === "kv") { p1kv += p.v || 0; if (p.bounce) player.jv = STOMP_BOUNCE; if (p.big) { shake = Math.max(shake, 12); popText(player.x, player.y - 50, "쾅!", "#ffd23f", 26); } burst(player.x, player.y + player.hy, "#ffe08a", 10); }
       else if (ev === "over") { vsLoser = p.win === 1 ? 2 : 1; if (state !== STATE.OVER) vsOver(); }
     }
@@ -8797,7 +8822,7 @@
     if (keys.ArrowRight || keys.d || keys.D) player.tx += kSpeed;
     player.tx = Math.max(player.r, Math.min(W - player.r, player.tx));
     const prev = player.x;
-    const want = (player.tx - player.x) * Math.min(1, dt * 20), maxStep = PLAYER_MAX_SPEED * dt;
+    const want = stunned(player, now) ? 0 : (player.tx - player.x) * Math.min(1, dt * 20), maxStep = PLAYER_MAX_SPEED * dt;   // 밟혀서 멈춘 동안 제자리
     player.x += Math.max(-maxStep, Math.min(maxStep, want));
     if (p1kv) vsShift(1, p1kv * dt);
     p1kv *= Math.exp(-7 * dt); if (Math.abs(p1kv) < 5) p1kv = 0;
@@ -8816,6 +8841,7 @@
     rival.y = groundY - rival.jh; rival.vx = s.vx || 0;
     rival.facing = s.f ? "left" : "right"; rival.tilt = s.tl || 0;
     rival.hurt = NET.snapAt + (s.h || 0); rival.inv = NET.snapAt + (s.i || 0);
+    rival.stun = NET.snapAt + (s.sn || 0);
     rival.lives = s.l;
     rival.hy = asRival(() => headOffset(currentSprite(now)));
     // 똥 — 번호로 이어 붙인다 (같은 똥은 같은 물체라 좌우 반전·표정이 안 바뀐다)
