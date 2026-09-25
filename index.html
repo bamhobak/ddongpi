@@ -796,6 +796,14 @@
   /* 대전모드 — 순위표·코인은 없고, 대신 조작 설명을 보인다 */
   body.vsMode #modeDesc { display: block; font-size: 12.5px; color: #cfe4ff; text-align: center; line-height: 1.5; }
   body.vsMode .board, body.vsMode #coinNote, body.vsMode #overBest, body.vsMode #nameRow { display: none !important; }
+  #vsScreen { gap: 14px; }
+  #vsScreen #vsHost { padding: 12px 38px; font-size: 18px; }
+  #vsJoinRow { display: flex; gap: 8px; }
+  #vsCode { width: 150px; font-size: 20px; text-align: center; letter-spacing: 6px; padding: 8px; border-radius: 8px;
+            border: 1px solid rgba(255,255,255,.25); background: rgba(0,0,0,.35); color: #fff; }
+  #vsCode::placeholder { letter-spacing: 0; font-size: 14px; color: rgba(255,255,255,.45); }
+  #vsMsg { min-height: 44px; max-width: 300px; text-align: center; font-size: 14px; color: #ffd23f; line-height: 1.5; }
+  #vsLocal { background: transparent; color: #9fb4d0; box-shadow: none; border: 1px solid rgba(255,255,255,.2); }
 
   /* 시작 버튼 */
   #btnStart {
@@ -960,6 +968,18 @@
       <h2 id="augTitle">⭐ 증강 선택 🌙</h2>
       <div id="augList"></div>
       <button id="btnReroll">🔄 다시 뽑기</button>
+    </div>
+
+    <div id="vsScreen" class="screen hidden">
+      <h2>⚔️ 대전모드</h2>
+      <button id="vsHost">방 만들기</button>
+      <div id="vsJoinRow">
+        <input id="vsCode" type="text" inputmode="numeric" maxlength="4" placeholder="방 번호 4자리" autocomplete="off">
+        <button id="vsJoin">참가</button>
+      </div>
+      <div id="vsMsg"></div>
+      <button id="vsLocal">한 폰으로 둘이서</button>
+      <button id="vsBack">← 메인으로</button>
     </div>
 
     <div id="overScreen" class="screen hidden">
@@ -1140,7 +1160,7 @@
   const elTitle = document.getElementById("overTitle");
   const coinNote = document.getElementById("coinNote");
 
-  const GAME_VERSION = "v0.8.24";
+  const GAME_VERSION = "v0.8.25";
   /* 제작사 스플래시(bamhobak friends 로고) — 2026-09-20 끔. 다시 켜려면 true */
   const SPLASH_USE = false;   // 코드를 고칠 때마다 뒤 두 자리를 올린다
   document.getElementById("ver").textContent = GAME_VERSION;
@@ -5855,13 +5875,13 @@
     drag = { fx: pointerX(e), fy: pointerY(e), px: player.tx, py: flyOn ? player.ty : groundY };
   }
   function dragStart(e) {
-    if (vsOn()) { vsTouch(e); return; }
+    if (vsOn() && !NET.role) { vsTouch(e); return; }   // 한 폰 대전만 화면을 반씩 나눈다
     if (dragBlocked(e)) { drag = null; if (e.cancelable) e.preventDefault(); return; }
     dragAnchor(e);
     if (e.cancelable) e.preventDefault();
   }
   function dragMove(e) {
-    if (vsOn()) { vsTouch(e); return; }
+    if (vsOn() && !NET.role) { vsTouch(e); return; }
     if (dragBlocked(e)) { drag = null; if (e.cancelable) e.preventDefault(); return; }
     if (!drag) { dragAnchor(e); if (e.cancelable) e.preventDefault(); return; }   // 막혀 있던 손가락은 여기서 기준점을 잡는다
     const kd = prophIs("reverse") ? -1 : 1;           // 거꾸로 가는 날 — 끄는 방향과 반대로
@@ -5879,7 +5899,7 @@
     if (e.cancelable) e.preventDefault();
   }
   function dragEnd(e) {
-    if (vsOn()) { vsTouch(e); return; }
+    if (vsOn() && !NET.role) { vsTouch(e); return; }
     // 여러 손가락 중 하나만 뗐으면 남은 손가락으로 기준점을 다시 잡는다
     if (e.touches && e.touches.length) { if (!dragBlocked(e)) dragAnchor(e); return; }
     drag = null;
@@ -5987,6 +6007,7 @@
 
   function doPause() {
     if (state !== STATE.PLAY) return;
+    if (netOn()) return;                 // 두 폰 대전은 멈출 수 없다 (상대 판도 같이 서 버린다)
     state = STATE.PAUSE;
     pauseAt = performance.now();
     resumeCountEnd = 0;
@@ -6296,6 +6317,7 @@
   /* 시작화면으로 되돌아간다 — 직업 선택의 [뒤로], 게임오버의 [메인으로] 가 같은 길을 쓴다.
      배경음은 state 를 보고 저절로 메뉴 곡으로 돌아가고, 코인·순위표는 이미 갱신돼 있다. */
   function goHome() {
+    netClose();                          // 대전 방에 있었으면 나간다
     beep(520, .06, "square", .04);
     jobScreen.classList.add("hidden");
     overScreen.classList.add("hidden");
@@ -6349,11 +6371,20 @@
   document.getElementById("btnStart").addEventListener("click", () => {
     dogMode = false;                                 // 시작하기 — 원래 캐릭터
     if (!savedName()) { startEditName(); return; }   // 이름부터 정하고 시작
+    if (gameMode === "vs") { openVsLobby(); return; }  // 대전모드 — 한 폰 / 방 만들기 / 방 참가
     openJobSelect();
   });
   const btnRetry = document.getElementById("btnRetry");
   const btnRetryJob = document.getElementById("btnRetryJob");
   btnRetry.addEventListener("click", () => {
+    if (netOn()) {                                   // 두 폰 대전 — 둘 다 누르면 방장이 새 판을 연다
+      if (NET.gone) { openVsLobby(); return; }
+      NET.again = true;
+      netSend("again");
+      document.getElementById("overStory").textContent = "상대를 기다리는 중…";
+      netTryAgain();
+      return;
+    }
     if (jobLocked()) { openJobSelect(); return; }   // 맨몸대결·똥탑등반은 원래 곧장 시작
     /* 똥대잔치 — 같은 직업·펫으로 곧장 한 판 더 (강아지로 뛰었으면 다시 해도 강아지) */
     overScreen.classList.add("hidden");
@@ -6371,7 +6402,7 @@
 
   function reset(test) {
     testMode = (test === true);    // 정확히 true 일 때만 테스트 모드 (이벤트 객체가 새어들지 않게)
-    if (jobLocked()) job = gameMode === "vs" ? "none" : "bangul";   // 맨몸대결·똥탑등반은 방울이만, 대전모드 P1 은 쉬었음 청년
+    if (jobLocked()) job = gameMode === "vs" ? (NET.role === "guest" ? "bangul" : "none") : "bangul";   // 맨몸대결·똥탑등반은 방울이만, 대전모드는 방장(P1) 쉬었음 청년·들어온 쪽 방울이
     if (petLocked()) pet = "none";           // 펫도 없이
     btnTestEnd.classList.toggle("on", testMode);
     testLv.classList.toggle("on", testMode);
@@ -7077,6 +7108,7 @@
       dirtShown = Math.abs(gap) <= move ? dirt : dirtShown + Math.sign(gap) * move;
     }
     if (state !== STATE.PLAY) return;
+    if (netGuest()) { guestUpdate(dt, now); return; }   // 두 폰 대전의 들어온 쪽 — 똥은 방장이 만든다
 
     elapsed += dt;
     noHitSec += dt;                          // 안 맞고 버틴 시간 (피격 시 1/4 감소)
@@ -7122,7 +7154,7 @@
     // 패드는 민 정도만큼 속도가 붙는다 (키보드는 늘 최고 속도)
     const kx = kSpeed, ky = kSpeed;
     const kd = prophIs("reverse") ? -1 : 1;           // 거꾸로 가는 날 — 좌우가 바뀐다
-    const vk = vsOn();                                // 대전모드 — 방향키는 P2 몫
+    const vk = vsOn() && !NET.role;                   // 한 폰 대전 — 방향키는 P2 몫
     if ((!vk && keys.ArrowLeft)  || keys.a || keys.A) player.tx -= kx * kd;
     if ((!vk && keys.ArrowRight) || keys.d || keys.D) player.tx += kx * kd;
     player.tx = Math.max(player.r, Math.min(W - player.r, player.tx));
@@ -8320,26 +8352,31 @@
      그릴 때만 P2 값을 P1 자리에 잠깐 바꿔 넣고 같은 drawPlayer 로 그린다(asRival).
      (한 폰 시험판 — 재미가 확인되면 네트워크로 잇는다) */
   function vsOn() { return runMode === "vs"; }
-  const VS_JOB2 = "bangul";                  // P2 차림
+  let rivalJob = "bangul";                   // 상대 차림 (한 폰: P2 방울이 · 두 폰: 상대가 방장이면 쉬었음 청년)
   const VS_LIVES = 3;
   const VS_BUMP = 1.9;                       // 두 몸이 이만큼(판정 반지름 배수)보다 가까우면 부딪힌다
   const rival = { x: 0, y: 0, tx: 0, tilt: 0, hy: 0, vx: 0, lives: VS_LIVES, inv: 0, hurt: 0, facing: "left", kv: 0 };
   let p1kv = 0, vsBumpCd = 0, vsLoser = 0;
   const vsTouches = new Map();               // 손가락(마우스는 "m") → { who, fx, px } 누른 자리·그때 캐릭터 목표 자리
   function vsReset() {
-    player.x = player.tx = W * 0.3;
-    rival.x = rival.tx = W * 0.7;
+    // 방장·한 폰의 P1 은 왼쪽, 들어온 쪽은 오른쪽에서 시작 (두 폰이 같은 좌표를 쓴다)
+    const guest = NET.role === "guest";
+    player.x = player.tx = W * (guest ? 0.7 : 0.3);
+    rival.x = rival.tx = W * (guest ? 0.3 : 0.7);
+    rivalJob = job === "none" ? "bangul" : "none";
     rival.y = player.y; rival.tilt = 0; rival.vx = 0; rival.hy = player.hy;
     rival.lives = VS_LIVES; rival.inv = 0; rival.hurt = 0; rival.facing = "left"; rival.kv = 0;
     p1kv = 0; vsBumpCd = 0; vsLoser = 0; vsTouches.clear();
-    facing = "right";
+    facing = NET.role === "guest" ? "left" : "right";
+    rival.facing = NET.role === "guest" ? "right" : "left";
+    zoneShown = -1;
   }
   /* P2 값을 P1 자리에 잠깐 넣고 fn 을 부른 뒤 되돌린다 — 그림·머리 높이를 같은 함수로 구하려고 */
   function asRival(fn) {
     const sx = player.x, sy = player.y, st = player.tilt, sh = player.hy;
     const sf = facing, sj = job, su = hurtUntil, si = invUntil, sb = bubbleOn;
     player.x = rival.x; player.y = rival.y; player.tilt = rival.tilt; player.hy = rival.hy;
-    facing = rival.facing; job = VS_JOB2; hurtUntil = rival.hurt; invUntil = rival.inv; bubbleOn = false;
+    facing = rival.facing; job = rivalJob; hurtUntil = rival.hurt; invUntil = rival.inv; bubbleOn = false;
     try { return fn(); }
     finally {
       player.x = sx; player.y = sy; player.tilt = st; player.hy = sh;
@@ -8357,6 +8394,7 @@
       rival.tx = Math.max(lo, Math.min(hi, rival.tx + dx));
     }
     for (const d of vsTouches.values()) if (d.who === who) d.px += dx;
+    if (who === 1 && drag) drag.px += dx;          // 두 폰 대전은 원래 끌기(drag)로 움직인다
   }
   /* 손가락마다 따로 — 누른 자리가 화면 왼쪽 반이면 P1, 오른쪽 반이면 P2 를 끈다 (떼기 전까지 그 캐릭터) */
   function vsTouch(e) {
@@ -8386,10 +8424,16 @@
     }
   }
   function vsUpdate(dt, now, p1vx) {
-    // P2 움직임 — 키보드(← →)와 손가락. P1 과 같은 최고 속도
-    const ks = 448 * dt;
-    if (keys.ArrowLeft)  rival.tx -= ks;
-    if (keys.ArrowRight) rival.tx += ks;
+    player.vx = p1vx;
+    const net = netHost();
+    if (net) {                                          // 두 폰 — 상대 자리는 받은 값에서 속도만큼 앞당긴다
+      const g = NET.g;
+      if (g) rival.tx = g.x + (g.vx || 0) * ((now - NET.gAt) / 1000 + NET_LAT);
+    } else {                                            // 한 폰 — P2 는 ← → 와 오른쪽 손가락
+      const ks = 448 * dt;
+      if (keys.ArrowLeft)  rival.tx -= ks;
+      if (keys.ArrowRight) rival.tx += ks;
+    }
     rival.tx = Math.max(player.r, Math.min(W - player.r, rival.tx));
     const prev = rival.x;
     const want = (rival.tx - rival.x) * Math.min(1, dt * 20), maxStep = PLAYER_MAX_SPEED * dt;
@@ -8402,10 +8446,12 @@
     if (Math.abs(rival.kv) < 5) rival.kv = 0;
     if (Math.abs(p1kv) < 5) p1kv = 0;
     rival.vx = (rival.x - prev) / Math.max(dt, .001);
-    if (rival.x - prev < -0.25) rival.facing = "left";
-    else if (rival.x - prev > 0.25) rival.facing = "right";
-    rival.tilt += ((rival.vx / 900) - rival.tilt) * Math.min(1, dt * 10);
-    rival.tilt = Math.max(-.35, Math.min(.35, rival.tilt));
+    if (!net) {                                         // 두 폰이면 보는 쪽·기울기는 상대가 보낸 값
+      if (rival.x - prev < -0.25) rival.facing = "left";
+      else if (rival.x - prev > 0.25) rival.facing = "right";
+      rival.tilt += ((rival.vx / 900) - rival.tilt) * Math.min(1, dt * 10);
+      rival.tilt = Math.max(-.35, Math.min(.35, rival.tilt));
+    }
     rival.y = player.y;
     rival.hy = asRival(() => headOffset(currentSprite(now)));
 
@@ -8418,11 +8464,13 @@
       vsShift(1, -dir * o); vsShift(2, dir * o);
       if (vsBumpCd <= 0) {
         const a1 = Math.max(0, p1vx * dir), a2 = Math.max(0, -rival.vx * dir);   // 상대 쪽으로 달려든 빠르기
-        rival.kv += dir * (260 + a1 * 1.35);
+        const kv2 = dir * (260 + a1 * 1.35);
         p1kv -= dir * (260 + a2 * 1.35);
         vsBumpCd = 0.22;
         const cx = (player.x + rival.x) / 2, cy = player.y + player.hy;
         const hard = Math.max(a1, a2) > 350;
+        if (net) netSend("kv", { v: Math.round(kv2), big: hard ? 1 : 0 });   // 상대 몸은 상대 폰이 움직인다
+        else rival.kv += kv2;
         burst(cx, cy, "#ffe08a", hard ? 18 : 8);
         if (hard) {
           shake = Math.max(shake, 12);
@@ -8433,8 +8481,8 @@
       }
     }
 
-    // P2 가 똥에 맞는다 — P1 과 같은 판정(이번 프레임에 지나온 선분과의 거리)
-    if (dying > 0 || now < rival.inv) return;
+    // P2 가 똥에 맞는다 — P1 과 같은 판정(이번 프레임에 지나온 선분과의 거리). 두 폰이면 상대 폰이 잰다
+    if (net || dying > 0 || now < rival.inv) return;
     const cy = rival.y + rival.hy, R = player.r * 0.632;
     for (let i = items.length - 1; i >= 0; i--) {
       const it = items[i];
@@ -8467,8 +8515,8 @@
       ctx.fillText(t, x, y + 1);
       ctx.restore();
     };
-    tag(player.x, player.y + player.hy - player.r * 2.3, "P1", "#2f8cff");
-    tag(rival.x, rival.y + rival.hy - player.r * 2.3, "P2", "#ff4f9a");
+    tag(player.x, player.y + player.hy - player.r * 2.3, NET.role ? "나" : "P1", "#2f8cff");
+    tag(rival.x, rival.y + rival.hy - player.r * 2.3, NET.role ? "상대" : "P2", "#ff4f9a");
   }
   // 위쪽 상태 — 왼쪽 P1, 오른쪽 P2 목숨 (조작하는 쪽과 같은 편에)
   function drawVsHud(top) {
@@ -8485,22 +8533,29 @@
         heartPath(hx, top + 14, 9.5); ctx.fill();
       }
     };
-    row(16, "left", "P1", "#6fb4ff", lives);
-    row(W - 16, "right", "P2", "#ff8cc0", rival.lives);
+    row(16, "left", NET.role ? "나" : "P1", "#6fb4ff", lives);
+    row(W - 16, "right", NET.role ? "상대" : "P2", "#ff8cc0", rival.lives);
     ctx.textAlign = "center"; ctx.fillStyle = "rgba(255,255,255,.85)";
     ctx.font = "700 15px NanumBarunGothic, system-ui, sans-serif";
     ctx.fillText("⏱️ " + fmtSec(elapsed), W / 2, top + 14);
   }
-  function vsOver() {
+  function vsOver(reason) {
     state = STATE.OVER;
     dying = 0; hitStop = 0;
     btnPause.classList.remove("on");
     augScreen.classList.add("hidden");
-    const win = vsLoser === 2 ? 1 : 2;
-    elTitle.textContent = "P" + win + " 승리!";
-    elFinal.textContent = "🏆 P" + win;
-    document.getElementById("overStory").textContent =
-      "⏱️ " + fmtSec(elapsed) + " 버팀 · 남은 목숨 " + Math.max(0, win === 1 ? lives : rival.lives);
+    const win = vsLoser === 2 ? 1 : 2;               // 1 = 방장(한 폰이면 P1)
+    if (netHost()) netSend("over", { win });
+    if (NET.role) {
+      const meWin = (NET.role === "host") === (win === 1);
+      elTitle.textContent = meWin ? "승리!" : "패배…";
+      elFinal.textContent = meWin ? "🏆" : "💩";
+    } else {
+      elTitle.textContent = "P" + win + " 승리!";
+      elFinal.textContent = "🏆 P" + win;
+    }
+    document.getElementById("overStory").textContent = reason ||
+      ("⏱️ " + fmtSec(elapsed) + " 버팀 · 남은 목숨 " + Math.max(0, (NET.role ? (NET.role === "host") === (win === 1) : win === 1) ? lives : rival.lives));
     document.getElementById("overBest").textContent = "";
     nameRow.classList.remove("on");
     overScreen.classList.remove("hidden");
@@ -8508,6 +8563,268 @@
     shake = 20;
     beep(660, .12, "square", .05); beep(990, .18, "square", .05);
   }
+
+  /* ---------- 대전모드 온라인 (v0.8.25) — 두 폰으로 ----------
+     Supabase Realtime(브로드캐스트)으로 방 하나(방 번호 4자리)에 둘이 들어간다. 라이브러리 없이 웹소켓으로 직접 붙는다
+     (Phoenix 채널 규약: phx_join · broadcast · 25초마다 heartbeat).
+     · 방을 만든 쪽(host)이 심판 — 똥을 만들고 움직이고 부딪힘을 잰다. 0.1초마다 똥·레이저 예고·제 자리·목숨을 보낸다("s").
+     · 들어온 쪽(guest)은 똥을 만들지 않고 받은 것을 그린다. 받은 자리 + 속도 × (지난 시간 + 전송 지연)으로 앞당겨 그려서
+       늦게 보이지 않는다. 제 캐릭터는 제 폰에서 바로 움직이고 0.1초마다 자리를 보낸다("g").
+     · 맞았는지는 각자 제 화면에서 잰다 — guest 는 맞으면 "hit"(똥 번호)를 보내고, host 가 그 똥을 지우고 목숨을 깎는다.
+     · 몸싸움은 host 가 재서 guest 에게 튕겨 나갈 힘("kv")을 보낸다.
+     · 끝은 host 가 정한다("over"). 6초 동안 아무것도 안 오면 상대가 나간 것으로 친다.
+     폰마다 제 캐릭터가 player(나), 상대가 rival 이다 — host 는 쉬었음 청년, guest 는 방울이. */
+  const NET = { ws: null, topic: "", role: "", code: "", ref: 0, hbT: 0, lastRx: 0, sendT: 0, joined: false,
+                hiT: 0, items: new Map(), eaten: new Set(), snapAt: 0, snap: null, gAt: 0, g: null,
+                again: false, peerAgain: false, gone: false };
+  const NET_RATE = 0.1, NET_LAT = 0.08, NET_TIMEOUT = 6000;
+  function netOn() { return !!NET.role && runMode === "vs"; }
+  function netHost() { return NET.role === "host" && runMode === "vs"; }
+  function netGuest() { return NET.role === "guest" && runMode === "vs"; }
+  function netSend(ev, payload) {
+    const ws = NET.ws;
+    if (!ws || ws.readyState !== 1 || !NET.joined) return;
+    ws.send(JSON.stringify({ topic: NET.topic, event: "broadcast", ref: String(++NET.ref),
+                             payload: { type: "broadcast", event: ev, payload: payload || {} } }));
+  }
+  function netClose() {
+    if (NET.ws) { try { netSend("bye"); NET.ws.close(); } catch (e) {} }
+    NET.ws = null; NET.role = ""; NET.joined = false; NET.items.clear(); NET.eaten.clear();
+    NET.snap = null; NET.g = null; NET.again = NET.peerAgain = NET.gone = false;
+  }
+  function netConnect(code, role, onJoin) {
+    netClose();
+    NET.role = role; NET.code = code; NET.topic = "realtime:ddongpi-vs-" + code;
+    const ws = new WebSocket(SB_URL.replace(/^http/, "ws") + "/realtime/v1/websocket?apikey=" + SB_KEY + "&vsn=1.0.0");
+    NET.ws = ws;
+    ws.onopen = () => {
+      ws.send(JSON.stringify({ topic: NET.topic, event: "phx_join", ref: "1",
+        payload: { config: { broadcast: { self: false, ack: false }, presence: { key: "" }, private: false } } }));
+    };
+    ws.onmessage = ev => {
+      if (NET.ws !== ws) return;
+      let m; try { m = JSON.parse(ev.data); } catch (e) { return; }
+      if (m.event === "phx_reply" && m.ref === "1") {
+        NET.joined = m.payload && m.payload.status === "ok";
+        if (NET.joined && onJoin) onJoin(); else if (!NET.joined) vsMsg("방에 들어가지 못했어요 — 잠시 뒤 다시 해 주세요");
+        return;
+      }
+      if (m.event !== "broadcast" || !m.payload) return;
+      NET.lastRx = performance.now();
+      netRecv(m.payload.event, m.payload.payload || {});
+    };
+    ws.onclose = () => { if (NET.ws === ws && NET.role) { NET.joined = false; netLost(); } };
+    NET.lastRx = performance.now();
+    NET.hbT = 0;
+  }
+  // 게임 루프에서 부른다 — 하트비트·끊김 감시·주기적으로 보내기
+  function netTick(dt, now) {
+    if (!NET.ws || !NET.role) return;
+    NET.hbT += dt;
+    if (NET.hbT > 25 && NET.ws.readyState === 1) {
+      NET.hbT = 0;
+      NET.ws.send(JSON.stringify({ topic: "phoenix", event: "heartbeat", payload: {}, ref: String(++NET.ref) }));
+    }
+    if (NET.role === "guest" && !NET.peerIn && NET.joined) {     // 방장이 알아볼 때까지 '들어왔어요'를 되풀이
+      NET.hiT -= dt;
+      if (NET.hiT <= 0) { NET.hiT = 1; netSend("hi", { name: savedName() }); }
+    }
+    if (state === STATE.PLAY && runMode === "vs" && dying <= 0 && now - NET.lastRx > NET_TIMEOUT) netLost();
+    if (state !== STATE.PLAY || runMode !== "vs" || dying > 0) return;
+    NET.sendT -= dt;
+    if (NET.sendT > 0) return;
+    NET.sendT = NET_RATE;
+    if (NET.role === "host") netSendSnap(now); else netSendMe(now);
+  }
+  function netSendSnap(now) {
+    const its = [];
+    for (const it of items) {
+      if (it.type !== "poop" || it.bounced) continue;
+      if (!it.nid) it.nid = ++NET.ref;
+      its.push([it.nid, Math.round(it.x), Math.round(it.y), Math.round(it.vx || 0), Math.round(it.vy || 0),
+                Math.round(it.r * 10) / 10, Math.round(it.size * 10) / 10, it.pv || 0, it.mirror ? 1 : 0,
+                it.dark ? 1 : 0, it.dv || 0, it.special || "", Math.round((it.rot || 0) * 100) / 100]);
+    }
+    netSend("s", {
+      t: elapsed, lt: levelTime, x: Math.round(player.x), vx: Math.round(player.vx || 0), f: facing === "left" ? 1 : 0,
+      tl: Math.round(player.tilt * 100) / 100, h: Math.max(0, Math.round(hurtUntil - now)), i: Math.max(0, Math.round(invUntil - now)),
+      l: lives, gl: rival.lives, it: its,
+      w: warns.map(w => [Math.round(w.x), Math.round(w.ang * 1000) / 1000, Math.round(w.t * 100) / 100, Math.round(w.t0 * 100) / 100, w.dark ? 1 : 0])
+    });
+  }
+  function netSendMe(now) {
+    netSend("g", { x: Math.round(player.x), vx: Math.round(player.vx || 0), f: facing === "left" ? 1 : 0,
+                   tl: Math.round(player.tilt * 100) / 100, h: Math.max(0, Math.round(hurtUntil - now)),
+                   i: Math.max(0, Math.round(invUntil - now)), l: lives });
+  }
+  function netRecv(ev, p) {
+    const now = performance.now();
+    if (ev === "bye") { netLost(); return; }
+    if (NET.role === "host") {
+      if (ev === "hi") {
+        // 처음 한 번만 — 들어온 쪽은 'start' 를 받을 때까지 hi 를 되풀이하므로 두 번째부터는 무시
+        if (!NET.peerIn) { NET.peerIn = true; vsMsg("상대가 들어왔어요!"); netSend("start", {}); netStartMatch(); }
+      } else if (ev === "g") {
+        NET.g = p; NET.gAt = now;
+        rival.hurt = now + (p.h || 0); rival.inv = now + (p.i || 0);
+        rival.facing = p.f ? "left" : "right"; rival.tilt = p.tl || 0;
+      } else if (ev === "hit" && state === STATE.PLAY && dying <= 0) {
+        const k = items.findIndex(q => q.nid === p.id);
+        if (k >= 0) { burst(items[k].x, items[k].y, "#8a5a2b", 22); items.splice(k, 1); }
+        rival.lives--;
+        shake = Math.max(shake, 14);
+        popText(rival.x, rival.y - 60, "으악!", "#ff5d5d");
+        if (!sfx("hurt")) beep(140, .2, "sawtooth", .05);
+        if (rival.lives <= 0) { vsLoser = 2; startDeath(); }
+      } else if (ev === "again") {
+        NET.peerAgain = true;
+        if (state === STATE.OVER) netTryAgain();
+      }
+    } else {
+      if (ev === "start") { NET.peerIn = true; netStartMatch(); }
+      else if (ev === "s") { NET.snap = p; NET.snapAt = now; }
+      else if (ev === "kv") { p1kv += p.v || 0; if (p.big) { shake = Math.max(shake, 12); popText(player.x, player.y - 50, "쾅!", "#ffd23f", 26); } burst(player.x, player.y + player.hy, "#ffe08a", 10); }
+      else if (ev === "over") { vsLoser = p.win === 1 ? 2 : 1; if (state !== STATE.OVER) vsOver(); }
+    }
+  }
+  // 상대가 나갔다 — 판 중이면 내가 이긴 것으로 끝낸다
+  function netLost() {
+    if (NET.gone) return;
+    NET.gone = true;
+    if (state === STATE.PLAY || state === STATE.PAUSE) {
+      vsLoser = NET.role === "host" ? 2 : 1;
+      vsOver("상대 연결이 끊겼어요");
+    } else vsMsg("상대 연결이 끊겼어요");
+  }
+  function netStartMatch() {
+    vsScreen.classList.add("hidden");
+    overScreen.classList.add("hidden");
+    NET.items.clear(); NET.eaten.clear(); NET.snap = null; NET.g = null;
+    NET.again = NET.peerAgain = false; NET.gone = false; NET.sendT = 0; NET.lastRx = performance.now();
+    beep(900, .08, "square", .05);
+    reset(false);
+  }
+  // 다시 하기 — 둘 다 눌러야 방장이 새 판을 연다
+  function netTryAgain() {
+    if (NET.role === "host" && NET.again && NET.peerAgain) { netSend("start", {}); netStartMatch(); }
+  }
+  /* guest 의 한 프레임 — 똥은 만들지 않고 받은 것을 앞당겨 그리고, 내 캐릭터만 여기서 움직인다 */
+  function guestUpdate(dt, now) {
+    const s = NET.snap;
+    const age = s ? (now - NET.snapAt) / 1000 : 0;
+    if (s) {
+      elapsed = s.t + age;
+      levelTime = s.lt + age;
+      level = 1 + Math.floor(levelTime / lvSec());
+      const zi = zoneIdx();
+      if (zi !== zoneShown) {
+        if (zoneShown >= 0) { popText(W / 2, H * 0.40, ZONES[zi].ic + " " + ZONES[zi].nm, "#cfe4ff", 30); beep(760, .1, "sine", .05); }
+        zoneShown = zi;
+      }
+    }
+    // 내 캐릭터 — 원래 판과 같은 움직임
+    const kSpeed = 448 * dt;
+    if (keys.ArrowLeft || keys.a || keys.A) player.tx -= kSpeed;
+    if (keys.ArrowRight || keys.d || keys.D) player.tx += kSpeed;
+    player.tx = Math.max(player.r, Math.min(W - player.r, player.tx));
+    const prev = player.x;
+    const want = (player.tx - player.x) * Math.min(1, dt * 20), maxStep = PLAYER_MAX_SPEED * dt;
+    player.x += Math.max(-maxStep, Math.min(maxStep, want));
+    if (p1kv) vsShift(1, p1kv * dt);
+    p1kv *= Math.exp(-7 * dt); if (Math.abs(p1kv) < 5) p1kv = 0;
+    player.vx = (player.x - prev) / Math.max(dt, .001);
+    if (player.x - prev < -0.25) facing = "left"; else if (player.x - prev > 0.25) facing = "right";
+    player.tilt += ((player.vx / 900) - player.tilt) * Math.min(1, dt * 10);
+    player.tilt = Math.max(-.35, Math.min(.35, player.tilt));
+    player.hy = headOffset(currentSprite(now));
+    if (!s) return;
+    // 상대(방장) — 받은 자리에서 속도만큼 앞당긴다
+    const lead = age + NET_LAT;
+    rival.x = Math.max(player.r, Math.min(W - player.r, s.x + (s.vx || 0) * lead));
+    rival.y = player.y; rival.vx = s.vx || 0;
+    rival.facing = s.f ? "left" : "right"; rival.tilt = s.tl || 0;
+    rival.hurt = NET.snapAt + (s.h || 0); rival.inv = NET.snapAt + (s.i || 0);
+    rival.lives = s.l;
+    rival.hy = asRival(() => headOffset(currentSprite(now)));
+    // 똥 — 번호로 이어 붙인다 (같은 똥은 같은 물체라 좌우 반전·표정이 안 바뀐다)
+    const seen = new Set();
+    for (const a of s.it) {
+      const id = a[0];
+      if (NET.eaten.has(id)) continue;
+      seen.add(id);
+      let it = NET.items.get(id);
+      if (!it) {
+        it = { type: "poop", emoji: "💩", nid: id, gain: 0, giant: false, sz0: 0, phase: Math.random() * 6 };
+        NET.items.set(id, it);
+      }
+      it.x = a[1] + a[3] * lead; it.y = a[2] + a[4] * lead; it.vx = a[3]; it.vy = a[4];
+      it.r = a[5]; it.size = a[6]; it.pv = a[7]; it.mirror = !!a[8]; it.dark = !!a[9]; it.dv = a[10];
+      it.special = a[11] || null; it.rot = a[12];
+    }
+    for (const id of NET.items.keys()) if (!seen.has(id)) NET.items.delete(id);
+    for (const id of NET.eaten) if (!s.it.some(a => a[0] === id)) NET.eaten.delete(id);
+    items = Array.from(NET.items.values());
+    warns = s.w.map(w => ({ x: w[0], ang: w[1], t: Math.max(0, w[2] - age), t0: w[3], dark: !!w[4] }));
+    // 내가 맞았는지 — 내 화면에서 잰다
+    if (now < invUntil || dying > 0 || lives <= 0) return;
+    const cy = player.y + player.hy, R = player.r * 0.632;
+    for (const it of items) {
+      if (segDist(player.x, cy, it.x - it.vx * dt, it.y - it.vy * dt, it.x, it.y) >= it.r + R) continue;
+      lives--;
+      invUntil = now + 1000; hurtUntil = now + 1000;
+      NET.eaten.add(it.nid); NET.items.delete(it.nid);
+      items = Array.from(NET.items.values());
+      netSend("hit", { id: it.nid });
+      shake = 22; flash = 1;
+      burst(it.x, it.y, "#8a5a2b", 22);
+      popText(player.x, player.y - 60, "으악!", "#ff5d5d");
+      if (!sfx("hurt")) beep(140, .25, "sawtooth", .07);
+      if (navigator.vibrate) navigator.vibrate(70);
+      break;
+    }
+  }
+
+  /* 대전모드 로비 — 한 폰으로 / 방 만들기 / 방 참가 */
+  const vsScreen = document.getElementById("vsScreen");
+  function vsMsg(t) { document.getElementById("vsMsg").textContent = t; }
+  function openVsLobby() {
+    netClose();
+    startScreen.classList.add("hidden");
+    overScreen.classList.add("hidden");
+    vsScreen.classList.remove("hidden");
+    vsMsg("");
+    document.getElementById("vsCode").value = "";
+  }
+  document.getElementById("vsLocal").addEventListener("click", () => {
+    netClose();
+    vsScreen.classList.add("hidden");
+    beep(900, .08, "square", .05);
+    reset(false);
+  });
+  document.getElementById("vsHost").addEventListener("click", () => {
+    const code = String(1000 + Math.floor(Math.random() * 9000));
+    beep(700, .08, "square", .04);
+    vsMsg("방을 여는 중…");
+    netConnect(code, "host", () => {
+      NET.peerIn = false;
+      vsMsg("방 번호 " + code + " — 상대 폰에서 이 번호로 참가하면 바로 시작해요. 기다리는 중…");
+    });
+  });
+  document.getElementById("vsJoin").addEventListener("click", () => {
+    const code = document.getElementById("vsCode").value.replace(/\D/g, "");
+    if (code.length !== 4) { vsMsg("방 번호 4자리를 넣어 주세요"); return; }
+    beep(700, .08, "square", .04);
+    vsMsg("방 " + code + " 에 들어가는 중…");
+    netConnect(code, "guest", () => {
+      NET.peerIn = false; NET.hiT = 0;
+      vsMsg("방 " + code + " 에 들어왔어요 — 방장을 찾는 중…");
+    });
+  });
+  document.getElementById("vsBack").addEventListener("click", () => {
+    netClose();
+    vsScreen.classList.add("hidden");
+    goHome();
+  });
 
   /* 정연핑이 지나간 자리의 똥을 부순다 (뚜니핑 낙하물은 제 점수를 그대로 준다)
      gainMul — 부순 것의 점수 배율. 비둘기는 5배를 준다
@@ -11853,6 +12170,7 @@
     } else {
       update(dt, now);
     }
+    netTick(dt, now);          // 두 폰 대전 — 주고받기·끊김 감시
     tickSwim(dt);              // 방울이 헤엄 — 움직인 만큼 빨리 젓고, 게임이 멈추면 발도 멈춘다
     magHum(state === STATE.PLAY ? magNear * magNear : 0);   // 가까울수록 가파르게 커진다
     syncBgm();                 // 화면이 바뀌면 배경음악도 따라 바뀐다
