@@ -1212,7 +1212,7 @@
   const elTitle = document.getElementById("overTitle");
   const coinNote = document.getElementById("coinNote");
 
-  const GAME_VERSION = "v0.8.51";
+  const GAME_VERSION = "v0.8.52";
   /* 제작사 스플래시(bamhobak friends 로고) — 2026-09-20 끔. 다시 켜려면 true */
   const SPLASH_USE = false;   // 코드를 고칠 때마다 뒤 두 자리를 올린다
   document.getElementById("ver").textContent = GAME_VERSION;
@@ -9044,10 +9044,9 @@
     { id: "lowgrav", ic: "🪐", nm: "저중력",     ds: "둥실둥실 — 점프가 높고 길어진다", w: 10 },
     { id: "poop2x",  ic: "💩", nm: "똥 두 배",   ds: "똥이 두 배로 쏟아진다", w: 10 },
     { id: "shove2x", ic: "💥", nm: "밀치기 두 배", ds: "몸싸움으로 튕기는 거리·힘이 두 배", w: 10 },
-    { id: "reverse", ic: "😵", nm: "좌우 반대",  ds: "왼쪽으로 끌면 오른쪽으로 간다", w: 8 },
     { id: "slim",    ic: "🎯", nm: "전원 홀쭉이", ds: "모두 몸집이 30% 작아진다", w: 10 },
     { id: "wind",    ic: "🌬", nm: "바람",       ds: "똥이 한쪽으로 쓸려 내려온다", w: 10 },
-    { id: "fog",     ic: "🌫", nm: "안개",       ds: "하늘 위쪽이 안 보인다 — 똥이 늦게 보인다", w: 8 },
+    // (좌우 반대·안개는 v0.8.52 에 뺐다 — 효과 코드는 목록에 없으면 안 걸린다)
     { id: "heavy",   ic: "🏋", nm: "무거움",     ds: "모두 걸음이 25% 느려진다", w: 8 },
   ];
   const VS_RULE_SPIN = 1.8, VS_RULE_SHOW = 3;       // 룰렛 도는 시간 · 멈춘 뒤 크게 보여 주는 시간(초)
