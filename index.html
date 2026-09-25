@@ -1160,7 +1160,7 @@
   const elTitle = document.getElementById("overTitle");
   const coinNote = document.getElementById("coinNote");
 
-  const GAME_VERSION = "v0.8.25";
+  const GAME_VERSION = "v0.8.26";
   /* 제작사 스플래시(bamhobak friends 로고) — 2026-09-20 끔. 다시 켜려면 true */
   const SPLASH_USE = false;   // 코드를 고칠 때마다 뒤 두 자리를 올린다
   document.getElementById("ver").textContent = GAME_VERSION;
@@ -1460,7 +1460,7 @@
     item:   { nm: "똥대잔치", ds: "아이템·증강이 쏟아지는 점수전" },
     pure:   { nm: "맨몸대결", ds: "아이템·증강 없이 직업과 펫만으로 겨루는 점수전 (코인은 나온다)" },
     noitem: { nm: "똥탑등반", ds: "패턴과 보스를 뚫고 몇 m까지 오르나 (아이템 없음)" },
-    vs:     { nm: "대전모드", ds: "한 폰으로 둘이서! 왼쪽 반은 P1 · 오른쪽 반은 P2 (PC: A·D / ← →) — 부딪혀 밀쳐서 똥에 맞혀라, 목숨 3개" }
+    vs:     { nm: "대전모드", ds: "둘이서 한 하늘에! 부딪혀 밀치고, 위로 쓸어 올려 점프해서 머리를 밟아라 — 먼저 목숨 3개를 다 잃으면 진다" }
   };
   const LS_MODE = "epjpddongpi_mode";
   let gameMode = "item";
@@ -5825,6 +5825,10 @@
   const keys = {};
   window.addEventListener("keydown", e => {
     keys[e.key] = true;
+    if (vsOn() && state === STATE.PLAY && !e.repeat) {           // 대전모드 점프 — 한 폰: P1 W · P2 ↑, 두 폰: W 나 ↑
+      if (e.key === "w" || e.key === "W") vsJump(1);
+      else if (e.key === "ArrowUp") vsJump(NET.role ? 1 : 2);
+    }
     /* 방귀 대시 — 키보드로 할 때는 두 번 두드릴 데가 없으니 스페이스바로 낸다.
        나아가는 쪽은 지금 누르고 있는 방향키, 아무것도 안 누르고 있으면 보고 있는 쪽. */
     if (e.key === " " && state === STATE.PLAY && aug.dash && !e.repeat) {
@@ -5873,6 +5877,7 @@
   }
   function dragAnchor(e) {
     drag = { fx: pointerX(e), fy: pointerY(e), px: player.tx, py: flyOn ? player.ty : groundY };
+    if (vsOn()) swipeUp(drag, drag.fy, performance.now());   // 대전모드 — 누른 자리가 쓸어 올리기의 첫 기준
   }
   function dragStart(e) {
     if (vsOn() && !NET.role) { vsTouch(e); return; }   // 한 폰 대전만 화면을 반씩 나눈다
@@ -5882,6 +5887,7 @@
   }
   function dragMove(e) {
     if (vsOn() && !NET.role) { vsTouch(e); return; }
+    if (vsOn() && drag && !dragBlocked(e) && swipeUp(drag, pointerY(e), performance.now())) vsJump(1);   // 두 폰 대전 — 위로 쓸면 점프
     if (dragBlocked(e)) { drag = null; if (e.cancelable) e.preventDefault(); return; }
     if (!drag) { dragAnchor(e); if (e.cancelable) e.preventDefault(); return; }   // 막혀 있던 손가락은 여기서 기준점을 잡는다
     const kd = prophIs("reverse") ? -1 : 1;           // 거꾸로 가는 날 — 끄는 방향과 반대로
@@ -7219,6 +7225,7 @@
       player.y += (groundY - player.y) * Math.min(1, dt * 10);
       if (Math.abs(player.y - groundY) < 0.5) player.y = groundY;
     }
+    if (vsOn()) player.y = groundY - (player.jh || 0);   // 대전모드 점프 높이
 
     player.hy = headOffset(currentSprite(now));
 
@@ -8355,7 +8362,37 @@
   let rivalJob = "bangul";                   // 상대 차림 (한 폰: P2 방울이 · 두 폰: 상대가 방장이면 쉬었음 청년)
   const VS_LIVES = 3;
   const VS_BUMP = 1.9;                       // 두 몸이 이만큼(판정 반지름 배수)보다 가까우면 부딪힌다
-  const rival = { x: 0, y: 0, tx: 0, tilt: 0, hy: 0, vx: 0, lives: VS_LIVES, inv: 0, hurt: 0, facing: "left", kv: 0 };
+  const rival = { x: 0, y: 0, tx: 0, tilt: 0, hy: 0, vx: 0, lives: VS_LIVES, inv: 0, hurt: 0, facing: "left", kv: 0, jh: 0, jv: 0 };
+  /* 점프 (v0.8.26) — 위로 빠르게 쓸어 올리면(0.15초 안에 55 이상) 뛰어오른다. 키보드는 W(한 폰 P2 는 ↑).
+     떠 있는 동안은 옆으로 부딪히지 않고 상대 머리 위로 넘어간다. 떨어지면서 상대 머리를 밟으면
+     상대는 옆으로 크게 튕겨 나가고 나는 한 번 더 통 튀어 오른다. 대신 몸이 올라가서 떨어지는 똥에 맞기 쉽다.
+     jh = 땅에서 뜬 높이, jv = 위로 가는 빠르기. */
+  const JUMP_V = 760, JUMP_G = 2600, STOMP_BOUNCE = 620, STOMP_KV = 900;
+  const SWIPE_DY = 55, SWIPE_MS = 150;
+  function vsJump(who) {
+    const b = who === 1 ? player : rival;
+    if ((b.jh || 0) > 1) return;                       // 땅에 있을 때만
+    b.jv = JUMP_V; b.jh = 0.5;
+    beep(620, .07, "triangle", .04);
+  }
+  function stepJump(b, dt) {
+    if (!b.jh && !b.jv) return;
+    b.jv -= JUMP_G * dt;
+    b.jh += b.jv * dt;
+    if (b.jh <= 0) { b.jh = 0; b.jv = 0; }
+  }
+  // 받은 높이·빠르기에서 지난 시간만큼 앞당긴다 (두 폰)
+  function jumpAhead(jh, jv, a) {
+    if (!jh && !jv) return 0;
+    return Math.max(0, jh + jv * a - JUMP_G * a * a / 2);
+  }
+  /* 쓸어 올리기 — st 는 손가락마다 붙는 기록. 기준점보다 내려가거나 오래 머물면 기준을 다시 잡고,
+     기준에서 SWIPE_MS 안에 SWIPE_DY 넘게 올라가면 한 번 터진다 */
+  function swipeUp(st, y, now) {
+    if (st.by === undefined || y > st.by || now - st.bt > SWIPE_MS) { st.by = y; st.bt = now; st.fired = false; }
+    if (!st.fired && st.by - y > SWIPE_DY) { st.fired = true; return true; }
+    return false;
+  }
   let p1kv = 0, vsBumpCd = 0, vsLoser = 0;
   const vsTouches = new Map();               // 손가락(마우스는 "m") → { who, fx, px } 누른 자리·그때 캐릭터 목표 자리
   function vsReset() {
@@ -8366,6 +8403,7 @@
     rivalJob = job === "none" ? "bangul" : "none";
     rival.y = player.y; rival.tilt = 0; rival.vx = 0; rival.hy = player.hy;
     rival.lives = VS_LIVES; rival.inv = 0; rival.hurt = 0; rival.facing = "left"; rival.kv = 0;
+    rival.jh = rival.jv = 0; player.jh = player.jv = 0;
     p1kv = 0; vsBumpCd = 0; vsLoser = 0; vsTouches.clear();
     facing = NET.role === "guest" ? "left" : "right";
     rival.facing = NET.role === "guest" ? "right" : "left";
@@ -8402,13 +8440,16 @@
     if (dragBlocked(e)) { vsTouches.clear(); return; }
     const r = cv.getBoundingClientRect();
     const tx = cx => (cx - r.left) / r.width * W;
-    const list = e.changedTouches ? Array.from(e.changedTouches) : [{ identifier: "m", clientX: e.clientX }];
+    const ty = cy => (cy - r.top) / r.height * H;
+    const list = e.changedTouches ? Array.from(e.changedTouches) : [{ identifier: "m", clientX: e.clientX, clientY: e.clientY }];
     const kind = e.type;
     for (const t of list) {
       const x = tx(t.clientX);
       if (kind === "touchstart" || kind === "mousedown") {
         const who = x < W / 2 ? 1 : 2;
-        vsTouches.set(t.identifier, { who, fx: x, px: who === 1 ? player.tx : rival.tx });
+        const d0 = { who, fx: x, px: who === 1 ? player.tx : rival.tx };
+        swipeUp(d0, ty(t.clientY), performance.now());   // 누른 자리가 쓸어 올리기의 첫 기준
+        vsTouches.set(t.identifier, d0);
       } else if (kind === "touchmove" || kind === "mousemove") {
         let d = vsTouches.get(t.identifier);
         if (!d) {
@@ -8420,6 +8461,7 @@
         const cl = Math.max(player.r, Math.min(W - player.r, want));
         if (cl !== want) d.px += cl - want;            // 끝에 닿으면 기준점을 끌어온다
         if (d.who === 1) player.tx = cl; else rival.tx = cl;
+        if (swipeUp(d, ty(t.clientY), performance.now())) vsJump(d.who);
       } else vsTouches.delete(t.identifier);
     }
   }
@@ -8452,13 +8494,39 @@
       rival.tilt += ((rival.vx / 900) - rival.tilt) * Math.min(1, dt * 10);
       rival.tilt = Math.max(-.35, Math.min(.35, rival.tilt));
     }
-    rival.y = player.y;
+    stepJump(player, dt);
+    if (net) {
+      const g = NET.g;
+      rival.jh = g ? jumpAhead(g.jh || 0, g.jv || 0, (now - NET.gAt) / 1000 + NET_LAT) : 0;
+    } else stepJump(rival, dt);
+    rival.y = groundY - rival.jh;
     rival.hy = asRival(() => headOffset(currentSprite(now)));
 
-    // 몸싸움 — 겹친 만큼 벌리고, 달려든 빠르기만큼 상대를 튕겨 보낸다
+    // 밟기 — 떨어지면서 상대 머리 높이에 발이 닿으면 상대를 옆으로 날리고 나는 다시 튄다
+    if (vsBumpCd <= 0 && dying <= 0) {
+      const stomp = (topB, botB, topWho) => {
+        const dh = (topB.jh || 0) - (botB.jh || 0), dx = botB.x - topB.x;
+        if (!(topB.jv < 0 && dh > player.r * 1.8 && dh < player.r * 3.6 && Math.abs(dx) < player.r * 1.4)) return false;
+        const dir = dx === 0 ? (Math.random() < .5 ? -1 : 1) : Math.sign(dx);
+        // 밟은 쪽은 튀어 오르고, 밟힌 쪽은 옆으로 날아간다 — 두 폰이면 상대 몸은 상대 폰이 움직인다
+        if (topWho === 1) { player.jv = STOMP_BOUNCE; if (net) netSend("kv", { v: dir * STOMP_KV, big: 1 }); else rival.kv += dir * STOMP_KV; }
+        else { p1kv += dir * STOMP_KV; if (net) netSend("kv", { v: 0, bounce: 1 }); else rival.jv = STOMP_BOUNCE; }
+        vsBumpCd = 0.3;
+        const cx = botB.x, cy = groundY - (botB.jh || 0) - player.r * 2.4;
+        burst(cx, cy, "#ffe08a", 18);
+        shake = Math.max(shake, 14);
+        popText(cx, cy - 20, "밟았다!", "#ffd23f", 26);
+        beep(180, .12, "square", .06); beep(520, .1, "triangle", .05);
+        if (navigator.vibrate) navigator.vibrate(40);
+        return true;
+      };
+      if (!stomp(player, rival, 1)) stomp(rival, player, 2);
+    }
+
+    // 몸싸움 — 겹친 만큼 벌리고, 달려든 빠르기만큼 상대를 튕겨 보낸다 (높이가 다르면 머리 위로 지나간다)
     if (vsBumpCd > 0) vsBumpCd -= dt;
     const d = rival.x - player.x, ad = Math.abs(d), minD = player.r * VS_BUMP;
-    if (ad < minD && dying <= 0) {
+    if (ad < minD && dying <= 0 && Math.abs((player.jh || 0) - (rival.jh || 0)) < player.r * 1.3) {
       const dir = d >= 0 ? 1 : -1;                     // P1 에서 P2 쪽
       const o = (minD - ad) / 2;
       vsShift(1, -dir * o); vsShift(2, dir * o);
@@ -8648,14 +8716,15 @@
     netSend("s", {
       t: elapsed, lt: levelTime, x: Math.round(player.x), vx: Math.round(player.vx || 0), f: facing === "left" ? 1 : 0,
       tl: Math.round(player.tilt * 100) / 100, h: Math.max(0, Math.round(hurtUntil - now)), i: Math.max(0, Math.round(invUntil - now)),
-      l: lives, gl: rival.lives, it: its,
+      l: lives, gl: rival.lives, it: its, jh: Math.round(player.jh || 0), jv: Math.round(player.jv || 0),
       w: warns.map(w => [Math.round(w.x), Math.round(w.ang * 1000) / 1000, Math.round(w.t * 100) / 100, Math.round(w.t0 * 100) / 100, w.dark ? 1 : 0])
     });
   }
   function netSendMe(now) {
     netSend("g", { x: Math.round(player.x), vx: Math.round(player.vx || 0), f: facing === "left" ? 1 : 0,
                    tl: Math.round(player.tilt * 100) / 100, h: Math.max(0, Math.round(hurtUntil - now)),
-                   i: Math.max(0, Math.round(invUntil - now)), l: lives });
+                   i: Math.max(0, Math.round(invUntil - now)), l: lives,
+                   jh: Math.round(player.jh || 0), jv: Math.round(player.jv || 0) });
   }
   function netRecv(ev, p) {
     const now = performance.now();
@@ -8683,7 +8752,7 @@
     } else {
       if (ev === "start") { NET.peerIn = true; netStartMatch(); }
       else if (ev === "s") { NET.snap = p; NET.snapAt = now; }
-      else if (ev === "kv") { p1kv += p.v || 0; if (p.big) { shake = Math.max(shake, 12); popText(player.x, player.y - 50, "쾅!", "#ffd23f", 26); } burst(player.x, player.y + player.hy, "#ffe08a", 10); }
+      else if (ev === "kv") { p1kv += p.v || 0; if (p.bounce) player.jv = STOMP_BOUNCE; if (p.big) { shake = Math.max(shake, 12); popText(player.x, player.y - 50, "쾅!", "#ffd23f", 26); } burst(player.x, player.y + player.hy, "#ffe08a", 10); }
       else if (ev === "over") { vsLoser = p.win === 1 ? 2 : 1; if (state !== STATE.OVER) vsOver(); }
     }
   }
@@ -8736,12 +8805,15 @@
     if (player.x - prev < -0.25) facing = "left"; else if (player.x - prev > 0.25) facing = "right";
     player.tilt += ((player.vx / 900) - player.tilt) * Math.min(1, dt * 10);
     player.tilt = Math.max(-.35, Math.min(.35, player.tilt));
+    stepJump(player, dt);
+    player.y = groundY - (player.jh || 0);
     player.hy = headOffset(currentSprite(now));
     if (!s) return;
     // 상대(방장) — 받은 자리에서 속도만큼 앞당긴다
     const lead = age + NET_LAT;
     rival.x = Math.max(player.r, Math.min(W - player.r, s.x + (s.vx || 0) * lead));
-    rival.y = player.y; rival.vx = s.vx || 0;
+    rival.jh = jumpAhead(s.jh || 0, s.jv || 0, lead);
+    rival.y = groundY - rival.jh; rival.vx = s.vx || 0;
     rival.facing = s.f ? "left" : "right"; rival.tilt = s.tl || 0;
     rival.hurt = NET.snapAt + (s.h || 0); rival.inv = NET.snapAt + (s.i || 0);
     rival.lives = s.l;
