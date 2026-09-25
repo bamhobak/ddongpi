@@ -1212,7 +1212,7 @@
   const elTitle = document.getElementById("overTitle");
   const coinNote = document.getElementById("coinNote");
 
-  const GAME_VERSION = "v0.8.48";
+  const GAME_VERSION = "v0.8.49";
   /* 제작사 스플래시(bamhobak friends 로고) — 2026-09-20 끔. 다시 켜려면 true */
   const SPLASH_USE = false;   // 코드를 고칠 때마다 뒤 두 자리를 올린다
   document.getElementById("ver").textContent = GAME_VERSION;
@@ -2890,8 +2890,56 @@
     { id: "clone",      ic: "👯", nm: "벼랑 끝 분신술", ds: "작은 이재가 날아가 똥과 함께 자폭한다",
       hidden: true, once: true,
       cond: () => level >= 7 && (dirtJob() ? dirt >= DIRT_HIT * 2 : lives <= 2),
-      go: () => { aug.clone = true; cloneTimer = 1.5; } }
+      go: () => { aug.clone = true; cloneTimer = 1.5; } },
+    /* ── v0.8.49 새 증강 셋 ── */
+    { id: "glass",      ic: "🍷", nm: "유리 멘탈", ds: "점수 +25%, 대신 몸(판정) +15% 커짐",
+      max: 3, go: () => { aug.scoreMul *= 1.25; aug.hitboxMul *= 1.15; } },
+    /* 외줄 타기 — 목숨을 1개로 줄이고(하트로도 안 늘어난다) 대신 가진 증강 효과가 전부 두 배.
+       이미 가진 것은 고른 횟수만큼 그때 감쇠 그대로 한 번씩 더 걸고, 앞으로 고르는 것은 두 번씩 건다(augApply).
+       한 번만 먹는 증강(자석·대시·히든 등 켜고 끄는 것)은 두 번 걸어도 같아서 뺀다.
+       목숨 대신 오염도로 버티는 방울이에겐 안 나온다. 하트 3개 이상일 때만 */
+    { id: "rope",       ic: "☝️", nm: "외줄 타기", ds: "목숨이 1개로! 대신 가진 증강 효과가 전부 두 배 (앞으로 먹는 것도)",
+      hidden: true, once: true, cond: () => !dirtJob() && lives >= 3,
+      go: () => {
+        aug.rope = true; lives = 1; aug.maxLives = 1;
+        for (const b of AUGMENTS) {
+          const n = augCount[b.id] || 0;
+          if (!n || !ropeDoubles(b) || b.id === "roid") continue;   // 스테로이드는 7초짜리 — 다시 걸면 지금 부풀어 버린다
+          for (let k = 0; k < n; k++) { augCount[b.id] = k; b.go(); }
+          augCount[b.id] = n;
+        }
+        augClamp();
+      } },
+    { id: "twoRand",    ic: "🌀", nm: "대충 두 개", ds: "증강 중 랜덤으로 두 개 받음",
+      go: () => {
+        const got = [];
+        for (let k = 0; k < 2; k++) {
+          const pool = AUGMENTS.filter(b => !b.hidden && b.id !== "twoRand"
+            && (augCount[b.id] || 0) < maxOf(b) && (!b.cond || b.cond()));
+          if (!pool.length) break;
+          const b = pool[Math.floor(Math.random() * pool.length)];
+          const nm = nameOf(b);
+          augApply(b);
+          got.push(b.ic + " " + nm);
+        }
+        twoRandGot = got;              // 창을 닫은 뒤 무엇을 받았는지 띄운다
+      } }
   ];
+  /* 증강 걸기 — 외줄 타기면 두 번 (같은 감쇠로 두 번 = 이번 몫이 두 배) */
+  function ropeDoubles(a) { return !a.once && a.id !== "rope" && a.id !== "twoRand"; }
+  function augApply(a) {
+    const reps = aug.rope && ropeDoubles(a) ? 2 : 1;
+    for (let k = 0; k < reps; k++) a.go();
+    augCount[a.id] = (augCount[a.id] || 0) + 1;
+    augClamp();
+  }
+  // 두 배로 걸다 보면 넘칠 수 있는 것들 — 보유 상한과 같은 선에서 자른다
+  function augClamp() {
+    // 갤러그·정연핑 수는 펫 1 을 포함한다 (펫 1 + 증강 4 = 5)
+    aug.galaga = Math.min(aug.galaga, 5); aug.helper = Math.min(aug.helper, 5); aug.doveFlock = Math.min(aug.doveFlock, 4);
+    aug.dodge = Math.min(aug.dodge, 0.5);
+  }
+  let twoRandGot = null;
 
   const augScreen = document.getElementById("augScreen");
   const augList   = document.getElementById("augList");
@@ -3042,8 +3090,8 @@
       card.addEventListener("click", () => {
         const picked = nameOf(a);      // 보유 수가 오르기 전 = 카드에 적혀 있던 이름
         augTook[a.id] = augRound;      // 고른 것은 더 오래 쉬어 간다
-        a.go();
-        augCount[a.id] = (augCount[a.id] || 0) + 1;
+        twoRandGot = null;
+        augApply(a);                   // 외줄 타기면 두 번 건다
         if (!sfx("aug")) { beep(900, .09, "square", .05); beep(1350, .13, "square", .05); }
         augRemain--;
         if (augRemain > 0) {           // 보름달: 남은 횟수만큼 이어서 고른다
@@ -3052,6 +3100,7 @@
         }
         closeAugScreen();
         popText(player.x, player.y - 70, a.ic + " " + picked, "#ffd23f", 24);
+        if (twoRandGot) twoRandGot.forEach((t, i) => popText(player.x, player.y - 100 - i * 30, t, "#9fe8ff", 20));   // 대충 두 개로 받은 것
       });
       augList.appendChild(card);
     }
@@ -6503,7 +6552,7 @@
     aug.feverBonus = 0; aug.starMul = 1; aug.timeMul = 1;
     aug.feverScoreMul = 1; aug.fallMul = 1; aug.hitboxMul = 1; aug.poopMul = 1;
     aug.steelUmb = false; aug.starburst = false; aug.scoreMul = 1;
-    aug.dodge = 0; aug.wak = false; aug.chainZap = false; aug.dungy = false; aug.momMeal = false;
+    aug.dodge = 0; aug.wak = false; aug.chainZap = false; aug.dungy = false; aug.momMeal = false; aug.rope = false;
     rerolls = REROLLS; ghosts = []; wakBooms = []; sweats = [];
     aug.blackhole = false; aug.legion = false; roidT = 0;
     aug.doveWhat = false; aug.doveFlock = 0; aug.doveFreq = 1;
