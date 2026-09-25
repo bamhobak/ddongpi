@@ -1182,7 +1182,7 @@
   const elTitle = document.getElementById("overTitle");
   const coinNote = document.getElementById("coinNote");
 
-  const GAME_VERSION = "v0.8.36";
+  const GAME_VERSION = "v0.8.37";
   /* 제작사 스플래시(bamhobak friends 로고) — 2026-09-20 끔. 다시 켜려면 true */
   const SPLASH_USE = false;   // 코드를 고칠 때마다 뒤 두 자리를 올린다
   document.getElementById("ver").textContent = GAME_VERSION;
@@ -6517,7 +6517,7 @@
     facing = "right";
     player.x = player.tx = W / 2;
     player.y = player.ty = groundY;
-    if (runMode === "vs") { aug.hitboxMul *= VS_SCALE; aug.poopMul *= VS_SCALE; vsReset(); }
+    if (runMode === "vs") { aug.hitboxMul *= VS_SCALE; aug.poopMul *= VS_SCALE; aug.fallMul *= VS_FALL; vsReset(); }
     state = STATE.PLAY;
     startScreen.classList.add("hidden");
     overScreen.classList.add("hidden");
@@ -8396,6 +8396,7 @@
   /* v0.8.28 대전모드는 캐릭터·똥이 30% 작다 (VS_SCALE) — 몸 크기는 hitboxMul, 똥은 poopMul 로 줄이고,
      제일 작은 똥(크기 범위 아래 30%)은 너무 안 보여서 나오지 않는다. 몸에 붙은 거리는 모두 vsR() 로 잰다. */
   const VS_SCALE = 0.7;
+  const VS_FALL = 0.5;                            // v0.8.37 대전모드는 똥이 절반 속도로 떨어진다 (aug.fallMul — 레이저·폭격·비둘기 똥까지)
   function vsR() { return player.r * hitMul(); }
   let rivalJob = "bangul";                   // 상대 차림 (한 폰: P2 방울이 · 두 폰: 상대가 방장이면 쉬었음 청년)
   const VS_LIVES = 3;
@@ -8850,7 +8851,7 @@
     for (let k = -1; k <= 1; k++) {
       const r = 15 * VS_SCALE * 1.2;
       items.push({ type: "poop", emoji: "💩", x: Math.max(r, Math.min(W - r, t.x + k * 34)), y: -20 - Math.abs(k) * 30, r,
-                   vx: 0, vy: 420 * (H / BASE_H), rot: 0, vr: (Math.random() - .5) * 4, swayA: 0, swayW: 1, swayP: 0,
+                   vx: 0, vy: 420 * (H / BASE_H) * aug.fallMul, rot: 0, vr: (Math.random() - .5) * 4, swayA: 0, swayW: 1, swayP: 0,
                    size: r * 2, sz: r, fast: true, skin: "poop", space: inSpace(), gold: false, dark: false, special: null,
                    bumpCd: 0, phase: 0, splitAt: 1e9, sz0: 0, pv: 1, gain: 0, giant: false, born: elapsed });
     }
@@ -9087,7 +9088,7 @@
   function vsDropPoopAt(x, y, vy) {
     const r = 15 * VS_SCALE * 1.1;
     items.push({ type: "poop", emoji: "💩", x: Math.max(r, Math.min(W - r, x)), y, r,
-                 vx: 0, vy: vy * (H / BASE_H), rot: 0, vr: (Math.random() - .5) * 4, swayA: 0, swayW: 1, swayP: 0,
+                 vx: 0, vy: vy * (H / BASE_H) * aug.fallMul, rot: 0, vr: (Math.random() - .5) * 4, swayA: 0, swayW: 1, swayP: 0,
                  size: r * 2, sz: r, fast: true, skin: "poop", space: inSpace(), gold: false, dark: false, special: null,
                  bumpCd: 0, phase: 0, splitAt: 1e9, sz0: 0, pv: randPv(), gain: 0, giant: false, born: elapsed });
   }
