@@ -489,6 +489,14 @@
     font-size: 18px; opacity: .75;
   }
   #btnPause.on { display: block; }
+  /* 대전 이모티콘 — 오른쪽 아래 (두 폰 대전의 판 중에만) */
+  #vsEmo { position: absolute; z-index: 4; display: none; gap: 6px;
+           right: calc(10px + var(--lbx, 0px)); bottom: calc(max(12px, env(safe-area-inset-bottom)) + var(--lby, 0px)); }
+  #vsEmo.on { display: flex; }
+  #vsEmo button { width: 40px; height: 40px; padding: 0; border-radius: 50%; font-size: 22px; line-height: 1;
+                  background: rgba(255,255,255,.22); box-shadow: none; opacity: .85; }
+  #vsEmo button:active { transform: scale(.9); opacity: 1; }
+  #vsRec { font-size: 13px; color: #cfe4ff; min-height: 18px; text-align: center; }
   #btnPause:active { opacity: .9; }
   #pauseScreen h2 { color: #ffd23f; }
   #btnPauseRetry {
@@ -848,6 +856,7 @@
   <div id="stage">
     <canvas id="cv"></canvas>
     <button id="btnPause">⏸</button>
+    <div id="vsEmo"><button data-e="0">😜</button><button data-e="1">💩</button><button data-e="2">😭</button><button data-e="3">👍</button></div>
     <button id="btnTestEnd">테스트 종료</button>
     <div id="testLv">
       <button id="btnLvUp" title="레벨 올리기">레벨 ▲</button>
@@ -978,6 +987,7 @@
         <button id="vsJoin">참가</button>
       </div>
       <div id="vsMsg"></div>
+      <div id="vsRec"></div>
       <button id="vsLocal">한 폰으로 둘이서</button>
       <button id="vsBack">← 메인으로</button>
     </div>
@@ -1041,7 +1051,7 @@
        밀어 숨길 뿐 남겨 두어 textContent 가 그대로다(글자를 읽는 코드가 안 깨진다). 나중에 붙는 글자는 MutationObserver 가 잡는다.
      · 캔버스 글자: fillText/strokeText 를 감싸 이모지 자리에 그림을 그린다 — 자리 폭은 원래 이모지 폭 그대로라 배치가 안 바뀐다.
      그림이 아직 안 왔거나 목록에 없는 이모지는 원래 이모지로 나온다. */
-  /*ICONS-BEGIN*/ const ICON_KEYS = ["🪙", "⭐", "🌙", "🌕", "☂", "❤", "💧", "🧻", "🔮", "💩", "🚀", "🕊", "👼", "🧚", "🐈", "⏸", "🏆", "👑", "✏", "🎵", "🔔", "🎉", "🥊", "🗼", "🔄", "🏠", "🔒", "🔓", "🔁", "🥇", "🥈", "🥉", "✨", "⚠", "⏱", "🏃", "🎈", "💪", "📋", "🎯", "🙏", "🫧", "🧘", "🚫", "🦸", "⚡", "🔥", "🐢", "🐦", "📯", "💥", "😋", "💉", "☔", "🌠", "🕳", "🌝", "🧲", "💨", "🍀", "🌧", "💢", "🌈", "📱", "🥕", "🦄", "🕰", "🎲", "👻", "👊", "👯", "🍚", "🌀", "🐕", "🎰", "🪜", "🎼", "✂", "🌱", "⛰", "☁", "🌤", "🧊", "❄", "🛰", "🌍", "☄", "🌌", "🌑", "🌒", "⚫", "⚔", "🧑‍🚀"]; const ICON_COLS = 10, ICON_ROWS = 10, ICON_CELL = 96; /*ICONS-END*/
+  /*ICONS-BEGIN*/ const ICON_KEYS = ["🪙", "⭐", "🌙", "🌕", "☂", "❤", "💧", "🧻", "🔮", "💩", "🚀", "🕊", "👼", "🧚", "🐈", "⏸", "🏆", "👑", "✏", "🎵", "🔔", "🎉", "🥊", "🗼", "🔄", "🏠", "🔒", "🔓", "🔁", "🥇", "🥈", "🥉", "✨", "⚠", "⏱", "🏃", "🎈", "💪", "📋", "🎯", "🙏", "🫧", "🧘", "🚫", "🦸", "⚡", "🔥", "🐢", "🐦", "📯", "💥", "😋", "💉", "☔", "🌠", "🕳", "🌝", "🧲", "💨", "🍀", "🌧", "💢", "🌈", "📱", "🥕", "🦄", "🕰", "🎲", "👻", "👊", "👯", "🍚", "🌀", "🐕", "🎰", "🪜", "🎼", "✂", "🌱", "⛰", "☁", "🌤", "🧊", "❄", "🛰", "🌍", "☄", "🌌", "🌑", "🌒", "⚫", "😜", "😭", "👍", "⚔", "🧑‍🚀"]; const ICON_COLS = 10, ICON_ROWS = 10, ICON_CELL = 96; /*ICONS-END*/
   const ICON_IDX = new Map(ICON_KEYS.map((k, i) => [k, i]));
   const ICON_RE = ICON_KEYS.length ? new RegExp("(" + ICON_KEYS.slice().sort((a, b) => b.length - a.length)
     .map(k => k.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")).join("|") + ")\\uFE0F?", "gu") : null;
@@ -1160,7 +1170,7 @@
   const elTitle = document.getElementById("overTitle");
   const coinNote = document.getElementById("coinNote");
 
-  const GAME_VERSION = "v0.8.29";
+  const GAME_VERSION = "v0.8.30";
   /* 제작사 스플래시(bamhobak friends 로고) — 2026-09-20 끔. 다시 켜려면 true */
   const SPLASH_USE = false;   // 코드를 고칠 때마다 뒤 두 자리를 올린다
   document.getElementById("ver").textContent = GAME_VERSION;
@@ -8427,6 +8437,7 @@
     rival.jh = rival.jv = 0; player.jh = player.jv = 0; rival.stun = player.stun = 0;
     player.vaug = {}; rival.vaug = {}; player.rl = rival.rl = null; rival.shield = 0;
     player.dj2 = rival.dj2 = false; vsMoonT = 5;          // 첫 달은 5초 뒤
+    player.emo = rival.emo = null;
     p1kv = 0; vsBumpCd = 0; vsLoser = 0; vsTouches.clear();
     facing = NET.role === "guest" ? "left" : "right";
     rival.facing = NET.role === "guest" ? "right" : "left";
@@ -8653,10 +8664,13 @@
       }
       ctx.restore();
     };
-    dizzy(player, player.y + player.hy - vsR() * 1.75);
-    dizzy(rival, rival.y + rival.hy - vsR() * 1.75);
-    tag(player.x, player.y + player.hy - vsR() * 2.3, NET.role ? "나" : "P1", "#2f8cff");
-    tag(rival.x, rival.y + rival.hy - vsR() * 2.3, NET.role ? "상대" : "P2", "#ff4f9a");
+    drawVsHat(player, vsHatMe);                    // 진 사람 똥 모자
+    drawVsHat(rival, vsHatOpp);
+    dizzy(player, player.y + player.hy - vsR() * 1.75 - vsHatSize(vsHatMe));
+    dizzy(rival, rival.y + rival.hy - vsR() * 1.75 - vsHatSize(vsHatOpp));
+    tag(player.x, player.y + player.hy - vsR() * 2.3 - vsHatSize(vsHatMe), NET.role ? "나" : "P1", "#2f8cff");
+    tag(rival.x, rival.y + rival.hy - vsR() * 2.3 - vsHatSize(vsHatOpp), NET.role ? "상대" : "P2", "#ff4f9a");
+    drawVsEmo(player); drawVsEmo(rival);
   }
   // 위쪽 상태 — 왼쪽 P1, 오른쪽 P2 목숨 (조작하는 쪽과 같은 편에)
   function drawVsHud(top) {
@@ -8688,16 +8702,20 @@
     augScreen.classList.add("hidden");
     const win = vsLoser === 2 ? 1 : 2;               // 1 = 방장(한 폰이면 P1)
     if (netHost()) netSend("over", { win });
+    const meWin = NET.role ? (NET.role === "host") === (win === 1) : win === 1;   // 한 폰이면 '나' = P1
+    if (meWin) { vsHatOpp++; vsHatMe = 0; } else { vsHatMe++; vsHatOpp = 0; }     // 진 쪽은 다음 판에 똥 모자
+    let recLine = "";
     if (NET.role) {
-      const meWin = (NET.role === "host") === (win === 1);
       elTitle.textContent = meWin ? "승리!" : "패배…";
       elFinal.textContent = meWin ? "🏆" : "💩";
+      if (!reason) recLine = vsRecText(vsRecAdd(meWin, NET.oppName), NET.oppName);   // 끊겨서 끝난 판은 빼고
     } else {
       elTitle.textContent = "P" + win + " 승리!";
       elFinal.textContent = "🏆 P" + win;
     }
     document.getElementById("overStory").textContent = reason ||
-      ("⏱️ " + fmtSec(elapsed) + " 버팀 · 남은 목숨 " + Math.max(0, (NET.role ? (NET.role === "host") === (win === 1) : win === 1) ? lives : rival.lives));
+      ("⏱️ " + fmtSec(elapsed) + " 버팀 · 남은 목숨 " + Math.max(0, meWin ? lives : rival.lives)
+       + (recLine ? " · " + recLine : ""));
     document.getElementById("overBest").textContent = "";
     nameRow.classList.remove("on");
     overScreen.classList.remove("hidden");
@@ -8815,6 +8833,87 @@
     ctx.restore();
   }
 
+  /* ---------- 대전 재미 (v0.8.30) — 이모티콘 도발 · 진 사람 똥 모자 · 전적 ----------
+     · 이모티콘: 두 폰 대전 중 오른쪽 아래 버튼 넷(😜 💩 😭 👍). 누르면 내 머리 위에 뜨고 상대에게도 보인다("emo").
+       채팅은 없다 — 정해 둔 이모티콘만이라 욕설 걱정이 없다. 1초에 한 번까지.
+     · 똥 모자: 진 사람은 다음 판 동안 머리에 똥 모자를 쓴다. 연달아 질수록 커진다(5연패까지). 방을 나가면 벗는다.
+       한 폰이면 P1·P2 각자.
+     · 전적: 두 폰 대전만 이 기기에 쌓는다(끊겨서 끝난 판은 빼고) — 전체 승·패·연승, 상대 이름별 승·패. */
+  const VS_EMO = ["😜", "💩", "😭", "👍"];
+  const EMO_SEC = 1.6;
+  let emoCd = 0;
+  let vsHatMe = 0, vsHatOpp = 0;               // 연패 수 = 모자 크기 (한 폰이면 P1·P2)
+  const vsEmoBar = document.getElementById("vsEmo");
+  function vsShowEmo(b, e) { b.emo = { e, t: EMO_SEC }; }
+  for (const btn of vsEmoBar.querySelectorAll("button")) {
+    btn.addEventListener("click", ev => {
+      ev.stopPropagation();
+      const now = performance.now();
+      if (now < emoCd || !netOn()) return;
+      emoCd = now + 1000;
+      const e = +btn.dataset.e;
+      vsShowEmo(player, e);
+      netSend("emo", { e });
+      beep(1100, .05, "square", .03);
+    });
+  }
+  // 버튼은 두 폰 대전의 판 중에만
+  function vsEmoSync() {
+    const on = netOn() && (state === STATE.PLAY || state === STATE.PAUSE);
+    if (vsEmoBar.classList.contains("on") !== on) vsEmoBar.classList.toggle("on", on);
+  }
+  function vsEmoStep(dt) {
+    for (const b of [player, rival]) if (b.emo) { b.emo.t -= dt; if (b.emo.t <= 0) b.emo = null; }
+  }
+  // 머리 꼭대기 — 모자·이름표·이모티콘이 이 위로 쌓인다
+  function vsHeadTop(b) {
+    return (b === player ? player.y + player.hy : rival.y + rival.hy) - vsR() * 1.05;
+  }
+  function vsHatSize(n) { return n > 0 ? vsR() * 1.5 * (1 + 0.3 * (Math.min(5, n) - 1)) : 0; }
+  // 똥 모자 — 아래를 머리에 붙이고 그린다
+  function drawVsHat(b, n) {
+    if (n <= 0) return;
+    const s = vsHatSize(n), top = vsHeadTop(b);
+    ctx.save();
+    ctx.font = Math.round(s) + "px serif"; ctx.textAlign = "center"; ctx.textBaseline = "middle";
+    ctx.fillText("💩", b.x, top - s * 0.38);
+    ctx.restore();
+  }
+  function drawVsEmo(b) {
+    if (!b.emo) return;
+    const k = b.emo.t, age = EMO_SEC - k;
+    const pop = age < 0.18 ? 0.5 + age / 0.18 * 0.7 : 1.2 - Math.min(0.2, (age - 0.18) * 1.2);
+    const y = vsHeadTop(b) - vsHatSize(b === player ? vsHatMe : vsHatOpp) - vsR() * 2.6;
+    ctx.save();
+    ctx.globalAlpha = Math.min(1, k / 0.3);
+    ctx.fillStyle = "rgba(255,255,255,.92)";
+    ctx.beginPath(); ctx.arc(b.x, y, 24 * pop, 0, 6.283); ctx.fill();
+    ctx.font = Math.round(30 * pop) + "px serif"; ctx.textAlign = "center"; ctx.textBaseline = "middle";
+    ctx.fillText(VS_EMO[b.emo.e] || "👍", b.x, y + 1);
+    ctx.restore();
+  }
+  // 전적 — 이 기기에만 (두 폰 대전)
+  const LS_VSREC = "epjp_vs_rec";
+  function vsRecLoad() {
+    try { const r = JSON.parse(localStorage.getItem(LS_VSREC) || "null"); if (r && typeof r.w === "number") return r; } catch (e) {}
+    return { w: 0, l: 0, cur: 0, best: 0, opp: {} };
+  }
+  function vsRecAdd(win, opp) {
+    const r = vsRecLoad();
+    if (win) { r.w++; r.cur = r.cur > 0 ? r.cur + 1 : 1; r.best = Math.max(r.best, r.cur); }
+    else { r.l++; r.cur = r.cur < 0 ? r.cur - 1 : -1; }
+    if (opp) { const o = r.opp[opp] || [0, 0]; o[win ? 0 : 1]++; r.opp[opp] = o; }
+    try { localStorage.setItem(LS_VSREC, JSON.stringify(r)); } catch (e) {}
+    return r;
+  }
+  function vsRecText(r, opp) {
+    let t = "내 전적 " + r.w + "승 " + r.l + "패";
+    if (r.cur >= 2) t += " · " + r.cur + "연승";
+    else if (r.cur <= -2) t += " · " + (-r.cur) + "연패";
+    if (opp && r.opp[opp]) t += " · vs " + opp + " " + r.opp[opp][0] + "승 " + r.opp[opp][1] + "패";
+    return t;
+  }
+
   /* ---------- 대전모드 온라인 (v0.8.25) — 두 폰으로 ----------
      Supabase Realtime(브로드캐스트)으로 방 하나(방 번호 4자리)에 둘이 들어간다. 라이브러리 없이 웹소켓으로 직접 붙는다
      (Phoenix 채널 규약: phx_join · broadcast · 25초마다 heartbeat).
@@ -8914,10 +9013,11 @@
   function netRecv(ev, p) {
     const now = performance.now();
     if (ev === "bye") { netLost(); return; }
+    if (ev === "emo") { vsShowEmo(rival, p.e | 0); return; }
     if (NET.role === "host") {
       if (ev === "hi") {
         // 처음 한 번만 — 들어온 쪽은 'start' 를 받을 때까지 hi 를 되풀이하므로 두 번째부터는 무시
-        if (!NET.peerIn) { NET.peerIn = true; vsMsg("상대가 들어왔어요!"); netSend("start", {}); netStartMatch(); }
+        if (!NET.peerIn) { NET.peerIn = true; NET.oppName = p.name || "상대"; vsMsg("상대가 들어왔어요!"); netSend("start", { name: savedName() }); netStartMatch(); }
       } else if (ev === "g") {
         NET.g = p; NET.gAt = now;
         rival.hurt = now + (p.h || 0); rival.inv = now + (p.i || 0);
@@ -8939,7 +9039,7 @@
         if (state === STATE.OVER) netTryAgain();
       }
     } else {
-      if (ev === "start") { NET.peerIn = true; netStartMatch(); }
+      if (ev === "start") { NET.peerIn = true; if (p.name) NET.oppName = p.name; netStartMatch(); }
       else if (ev === "s") { NET.snap = p; NET.snapAt = now; }
       else if (ev === "stun") { player.stun = now + (p.ms || STOMP_STUN); }
       else if (ev === "aug") { vsStartRoulette(p.who === 2 ? 1 : 2, p.id); }   // 2 = 들어온 쪽(나)
@@ -8966,7 +9066,7 @@
   }
   // 다시 하기 — 둘 다 눌러야 방장이 새 판을 연다
   function netTryAgain() {
-    if (NET.role === "host" && NET.again && NET.peerAgain) { netSend("start", {}); netStartMatch(); }
+    if (NET.role === "host" && NET.again && NET.peerAgain) { netSend("start", { name: savedName() }); netStartMatch(); }
   }
   /* guest 의 한 프레임 — 똥은 만들지 않고 받은 것을 앞당겨 그리고, 내 캐릭터만 여기서 움직인다 */
   function guestUpdate(dt, now) {
@@ -9074,6 +9174,9 @@
   function vsMsg(t) { document.getElementById("vsMsg").textContent = t; }
   function openVsLobby() {
     netClose();
+    vsHatMe = vsHatOpp = 0;                          // 방을 새로 잡으면 모자를 벗는다
+    const rec = vsRecLoad();
+    document.getElementById("vsRec").textContent = rec.w + rec.l ? vsRecText(rec) : "";
     startScreen.classList.add("hidden");
     overScreen.classList.add("hidden");
     vsScreen.classList.remove("hidden");
@@ -12456,6 +12559,7 @@
       update(dt, now);
     }
     netTick(dt, now);          // 두 폰 대전 — 주고받기·끊김 감시
+    if (runMode === "vs") { vsEmoSync(); vsEmoStep(dt); }
     tickSwim(dt);              // 방울이 헤엄 — 움직인 만큼 빨리 젓고, 게임이 멈추면 발도 멈춘다
     magHum(state === STATE.PLAY ? magNear * magNear : 0);   // 가까울수록 가파르게 커진다
     syncBgm();                 // 화면이 바뀌면 배경음악도 따라 바뀐다

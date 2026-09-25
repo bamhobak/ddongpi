@@ -88,6 +88,10 @@ NEW = [
     ("🌑", "newmoon", "a dark grey new moon disc with faint craters"),
     ("🌒", "darkmoon", "a dark moon with a thin glowing crescent on its right edge"),
     ("⚫", "horizon", "a glossy black orb with a thin glowing orange ring around its edge (black hole event horizon)"),
+    # 대전모드 이모티콘 도발
+    ("😜", "tease", "a round yellow emoji face winking with its tongue out playfully (teasing)"),
+    ("😭", "sob", "a round yellow emoji face crying loudly with streams of tears"),
+    ("👍", "thumbsup", "a cartoon thumbs-up hand"),
     ("⚔", "swords", "two crossed cartoon swords with golden hilts and shiny silver blades (battle symbol)"),
     ("🧑‍🚀", "astronaut", "a white astronaut helmet with a big glossy blue visor (helmet only, nobody inside)"),
 ]
