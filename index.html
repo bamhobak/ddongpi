@@ -1136,7 +1136,7 @@
   const elTitle = document.getElementById("overTitle");
   const coinNote = document.getElementById("coinNote");
 
-  const GAME_VERSION = "v0.8.22";
+  const GAME_VERSION = "v0.8.23";
   /* 제작사 스플래시(bamhobak friends 로고) — 2026-09-20 끔. 다시 켜려면 true */
   const SPLASH_USE = false;   // 코드를 고칠 때마다 뒤 두 자리를 올린다
   document.getElementById("ver").textContent = GAME_VERSION;
@@ -2012,10 +2012,17 @@
     bi.src = "assets/bg/zone" + (zi + 1 < 10 ? "0" : "") + (zi + 1) + ".webp";
   }
   // 뚜니핑 타임 하늘 — 땅 위에서는 황금빛, 우주에서는 보랏빛 워프 (v0.7.98 방울이 그림체로 새로 — OpenAI)
-  let feverSky = null, feverSkySpace = null;
-  { const fi = new Image(); fi.onload = () => { feverSky = fi; }; fi.src = "assets/bg/fever.webp"; }
-  { const fs = new Image(); fs.onload = () => { feverSkySpace = fs; };
-    fs.src = "assets/bg/fever_space.webp"; }
+  /* v0.8.23 뚜니핑 타임 하늘을 새로 — 높이에 따라 다섯 장 (Codex, 기존 디자인과 무관하게 '보너스 폭주' 느낌으로).
+     1 땅 초반(0~2 지대) 파스텔 무지개 빛살 · 2 땅 높은 곳(3~5) 파티 하늘 · 3 우주 낮은 곳(6~9) 빛의 속도 워프 ·
+     4 우주 높은 곳(10~12) 성운 파티 · 5 블랙홀 지대부터(13~) 무지개 고리 터널.
+     뚜니핑 타임엔 레벨 시계가 멈춰 지대가 안 바뀌므로 도중에 그림이 갈릴 일은 없다. */
+  const FEVER_SKY = [];
+  for (let k = 0; k < 5; k++) {
+    const fi = new Image();
+    fi.onload = () => { FEVER_SKY[k] = fi; };
+    fi.src = "assets/bg/fever" + (k + 1) + ".webp";
+  }
+  function feverSkyFor(zi) { return FEVER_SKY[zi <= 2 ? 0 : zi <= 5 ? 1 : zi <= 9 ? 2 : zi <= 12 ? 3 : 4]; }
   // 비둘기 펫 그림 (없으면 아래 도안으로 그린다)
   let doveImg = null;
   { const di = new Image(); di.onload = () => { doveImg = di; }; di.src = "assets/dove.png"; }
@@ -10016,7 +10023,7 @@
       /* 뚜니핑 하늘은 흐르지 않고 가만히 있는다.
          겹쳐 먹으면 시간이 늘어나 남은 시간을 진행도로 쓸 수 없어 시계로 흘렸는데,
          그러면 한 바퀴 돌 때마다 그림이 260px 씩 되감겨 튀면서 경계처럼 보였다. */
-      const fsky = spaceFever ? feverSkySpace : feverSky;
+      const fsky = feverSkyFor(zoneIdx());
       drawZoneImg(fsky, 1, 0.5);
       bgShown = !!fsky;
     } else {
