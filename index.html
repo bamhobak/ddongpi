@@ -1182,7 +1182,7 @@
   const elTitle = document.getElementById("overTitle");
   const coinNote = document.getElementById("coinNote");
 
-  const GAME_VERSION = "v0.8.40";
+  const GAME_VERSION = "v0.8.41";
   /* 제작사 스플래시(bamhobak friends 로고) — 2026-09-20 끔. 다시 켜려면 true */
   const SPLASH_USE = false;   // 코드를 고칠 때마다 뒤 두 자리를 올린다
   document.getElementById("ver").textContent = GAME_VERSION;
@@ -8699,15 +8699,13 @@
   }
   // 머리 위 이름표 — 누가 누군지
   function drawVsTags(now) {
-    const tag = (x, y, t, c) => {
+    const tag = (x, y, t, c) => {                    // v0.8.41 배경 없이 작은 글자만 (흰 테두리로 하늘 위에서도 보이게)
       ctx.save();
-      ctx.font = "900 15px NanumBarunGothic, system-ui, sans-serif";
+      ctx.font = "800 12px NanumBarunGothic, system-ui, sans-serif";
       ctx.textAlign = "center"; ctx.textBaseline = "middle";
-      const w = ctx.measureText(t).width + 16;
-      ctx.fillStyle = c; ctx.globalAlpha = .92;
-      ctx.beginPath(); ctx.roundRect(x - w / 2, y - 11, w, 22, 11); ctx.fill();
-      ctx.globalAlpha = 1; ctx.fillStyle = "#fff";
-      ctx.fillText(t, x, y + 1);
+      ctx.lineWidth = 3; ctx.lineJoin = "round"; ctx.strokeStyle = "rgba(255,255,255,.9)";
+      ctx.strokeText(t, x, y);
+      ctx.fillStyle = c; ctx.fillText(t, x, y);
       ctx.restore();
     };
     const dizzy = (b, y) => {                       // 밟혀서 멈춘 동안 — 머리 위를 별 셋이 돈다
@@ -8728,8 +8726,8 @@
     const short = t => t.length > 8 ? t.slice(0, 8) + "…" : t;
     const myName = short(savedName() || "나");
     const opName = short(NET.role ? (NET.oppName || "상대") : vsGhostOn ? vsGhost.name : "P2");
-    tag(player.x, player.y + player.hy + vsR() * 2.5, (NET.role || vsGhostOn) ? myName : "P1", "#2f8cff");
-    tag(rival.x, rival.y + rival.hy + vsR() * 2.5, (NET.role || vsGhostOn) ? opName : "P2", "#ff4f9a");
+    tag(player.x, player.y + player.hy + vsR() * 2.3, (NET.role || vsGhostOn) ? myName : "P1", "#2f8cff");
+    tag(rival.x, rival.y + rival.hy + vsR() * 2.3, (NET.role || vsGhostOn) ? opName : "P2", "#ff4f9a");
     drawVsEmo(player); drawVsEmo(rival);
   }
   // 위쪽 상태 — 왼쪽 P1, 오른쪽 P2 목숨 (조작하는 쪽과 같은 편에)
