@@ -844,7 +844,7 @@
 
   .big { font-size: clamp(38px, 11vw, 48px); font-weight: 800; color: #ffd23f; }
   /* 게임오버 — 이번 판 이야기 */
-  #overStory { font-size: 13px; color: #cfd6e4; margin-top: 4px; }
+  #overStory { font-size: 13px; color: #cfd6e4; margin-top: 4px; white-space: pre-line; line-height: 1.6; }
   #overBest { font-size: 14px; font-weight: 700; color: #ffe08a; margin-top: 3px; min-height: 1em; }
   #overBest.new { color: #ff9ede; font-size: 16px; }
   #overAugs { display: flex; flex-wrap: wrap; justify-content: center; gap: 2px 7px;
@@ -1182,7 +1182,7 @@
   const elTitle = document.getElementById("overTitle");
   const coinNote = document.getElementById("coinNote");
 
-  const GAME_VERSION = "v0.8.41";
+  const GAME_VERSION = "v0.8.42";
   /* 제작사 스플래시(bamhobak friends 로고) — 2026-09-20 끔. 다시 켜려면 true */
   const SPLASH_USE = false;   // 코드를 고칠 때마다 뒤 두 자리를 올린다
   document.getElementById("ver").textContent = GAME_VERSION;
@@ -8718,8 +8718,6 @@
       }
       ctx.restore();
     };
-    drawVsHat(player, vsHatMe);                    // 진 사람 똥 모자
-    drawVsHat(rival, vsHatOpp);
     dizzy(player, player.y + player.hy - vsR() * 1.75 - vsHatSize(vsHatMe));
     dizzy(rival, rival.y + rival.hy - vsR() * 1.75 - vsHatSize(vsHatOpp));
     // 이름표 — 발밑에, 닉네임으로 (v0.8.39, 예전엔 머리 위에 나/상대). 한 폰 둘이서는 P1/P2
@@ -8779,12 +8777,16 @@
     const win = vsLoser === 2 ? 1 : 2;               // 1 = 방장(한 폰이면 P1)
     if (netHost()) netSend("over", { win });
     const meWin = NET.role ? (NET.role === "host") === (win === 1) : win === 1;   // 한 폰이면 '나' = P1
-    if (meWin) { vsHatOpp++; vsHatMe = 0; } else { vsHatMe++; vsHatOpp = 0; }     // 진 쪽은 다음 판에 똥 모자
+    // (진 사람 똥 모자는 v0.8.42 에 뺐다 — vsHatMe/vsHatOpp 는 늘 0)
     let recLine = "";
     if (NET.role) {
       elTitle.textContent = meWin ? "승리!" : "패배…";
       elFinal.textContent = meWin ? "🏆" : "💩";
-      if (!reason) recLine = vsRecText(vsRecAdd(meWin, NET.oppName), NET.oppName);   // 끊겨서 끝난 판은 빼고
+      if (!reason) {                                  // 끊겨서 끝난 판은 빼고
+        const r = vsRecAdd(meWin, NET.oppName), o = NET.oppRec;
+        if (o) { if (meWin) o.l++; else o.w++; o.cur = meWin ? Math.min(0, o.cur || 0) - 1 : Math.max(0, o.cur || 0) + 1; }   // 상대 전적도 이번 판을 더해 둔다
+        recLine = vsRecText(r, NET.oppName, o);
+      }
     } else if (vsGhostOn) {                           // 기록 대전 — 전적에는 넣지 않는다
       elTitle.textContent = meWin ? "승리!" : "패배…";
       elFinal.textContent = meWin ? "🏆" : "💩";
@@ -8796,7 +8798,7 @@
     if (!reason) vsRecUpload(); else vsRecTrace = null;   // 내 움직임 기록 올리기 (끊겨서 끝난 판은 빼고)
     document.getElementById("overStory").textContent = reason ||
       ("⏱️ " + fmtSec(elapsed) + " 버팀 · 남은 목숨 " + Math.max(0, meWin ? lives : rival.lives)
-       + (recLine ? " · " + recLine : ""));
+       + (recLine ? (NET.role ? "\n" : " · ") + recLine : ""));
     document.getElementById("overBest").textContent = "";
     nameRow.classList.remove("on");
     overScreen.classList.remove("hidden");
@@ -8997,13 +8999,16 @@
     try { localStorage.setItem(LS_VSREC, JSON.stringify(r)); } catch (e) {}
     return r;
   }
-  function vsRecText(r, opp) {
-    let t = "내 전적 " + r.w + "승 " + r.l + "패";
-    if (r.cur >= 2) t += " · " + r.cur + "연승";
-    else if (r.cur <= -2) t += " · " + (-r.cur) + "연패";
-    if (opp && r.opp[opp]) t += " · vs " + opp + " " + r.opp[opp][0] + "승 " + r.opp[opp][1] + "패";
+  // 끝 화면 전적 (v0.8.42) — 줄마다: 나 · 상대(상대 폰이 보내 준 전체 전적) · 맞대결
+  function vsRecText(r, opp, o) {
+    const one = (nm, x) => nm + "  " + x.w + "승 " + x.l + "패"
+      + ((x.cur || 0) >= 2 ? " (" + x.cur + "연승)" : (x.cur || 0) <= -2 ? " (" + (-x.cur) + "연패)" : "");
+    let t = one(savedName() || "나", r);
+    if (o && typeof o.w === "number") t += "\n" + one(opp || "상대", o);
+    if (opp && r.opp[opp]) t += "\n맞대결  " + r.opp[opp][0] + "승 " + r.opp[opp][1] + "패";
     return t;
   }
+  function vsRecBrief() { const r = vsRecLoad(); return { w: r.w, l: r.l, cur: r.cur }; }
 
   /* ---------- 대전 직업 능력 (v0.8.31) ----------
      대전에서는 원래 직업 능력(부양사 비행·헬스걸 목숨 5·방울이 오염도 등)을 끄고, 대전용으로 약하게 다시 만든 능력 하나씩만 준다.
@@ -9408,7 +9413,7 @@
   }
   function netConnect(code, role, onJoin) {
     netClose();
-    NET.role = role; NET.code = code; NET.topic = "realtime:ddongpi-vs-" + code;
+    NET.role = role; NET.code = code; NET.topic = "realtime:ddongpi-vs-" + code; NET.oppRec = null;
     const ws = new WebSocket(SB_URL.replace(/^http/, "ws") + "/realtime/v1/websocket?apikey=" + SB_KEY + "&vsn=1.0.0");
     NET.ws = ws;
     ws.onopen = () => {
@@ -9441,7 +9446,7 @@
     }
     if (NET.role === "guest" && !NET.peerIn && NET.joined) {     // 방장이 알아볼 때까지 '들어왔어요'를 되풀이
       NET.hiT -= dt;
-      if (NET.hiT <= 0) { NET.hiT = 1; netSend("hi", { name: savedName(), job: vsJob }); }
+      if (NET.hiT <= 0) { NET.hiT = 1; netSend("hi", { name: savedName(), job: vsJob, rec: vsRecBrief() }); }
     }
     if (state === STATE.PLAY && runMode === "vs" && dying <= 0 && now - NET.lastRx > NET_TIMEOUT) netLost();
     if (state !== STATE.PLAY || runMode !== "vs" || dying > 0) return;
@@ -9492,7 +9497,7 @@
     if (NET.role === "host") {
       if (ev === "hi") {
         // 처음 한 번만 — 들어온 쪽은 'start' 를 받을 때까지 hi 를 되풀이하므로 두 번째부터는 무시
-        if (!NET.peerIn) { NET.peerIn = true; NET.oppName = p.name || "상대"; NET.oppJob = p.job || "bangul"; vsMsg("상대가 들어왔어요!"); netSend("start", { name: savedName(), job: vsJob }); netStartMatch(); rtcStart(); }
+        if (!NET.peerIn) { NET.peerIn = true; NET.oppName = p.name || "상대"; NET.oppJob = p.job || "bangul"; NET.oppRec = p.rec || null; vsMsg("상대가 들어왔어요!"); netSend("start", { name: savedName(), job: vsJob, rec: vsRecBrief() }); netStartMatch(); rtcStart(); }
       } else if (ev === "g") {
         NET.g = p; NET.gAt = now; netPush(p, now);
         rival.hurt = now + (p.h || 0); rival.inv = now + (p.i || 0);
@@ -9514,7 +9519,7 @@
         if (state === STATE.OVER) netTryAgain();
       }
     } else {
-      if (ev === "start") { NET.peerIn = true; if (p.name) NET.oppName = p.name; if (p.job) NET.oppJob = p.job; netStartMatch(); }
+      if (ev === "start") { NET.peerIn = true; if (p.name) NET.oppName = p.name; if (p.job) NET.oppJob = p.job; if (p.rec) NET.oppRec = p.rec; netStartMatch(); }
       else if (ev === "s") { NET.snap = p; NET.snapAt = now; netPush(p, now); if (p.it) { NET.itSnap = p; NET.itAt = now; } }
       else if (ev === "stun") { player.stun = now + (p.ms || STOMP_STUN); }
       else if (ev === "aug") { vsStartRoulette(p.who === 2 ? 1 : 2, p.id); }   // 2 = 들어온 쪽(나)
@@ -9542,7 +9547,7 @@
   }
   // 다시 하기 — 둘 다 눌러야 방장이 새 판을 연다
   function netTryAgain() {
-    if (NET.role === "host" && NET.again && NET.peerAgain) { netSend("start", { name: savedName(), job: vsJob }); netStartMatch(); }
+    if (NET.role === "host" && NET.again && NET.peerAgain) { netSend("start", { name: savedName(), job: vsJob, rec: vsRecBrief() }); netStartMatch(); }
   }
   /* guest 의 한 프레임 — 똥은 만들지 않고 받은 것을 앞당겨 그리고, 내 캐릭터만 여기서 움직인다 */
   function guestUpdate(dt, now) {
@@ -9828,7 +9833,7 @@
     NET.oppJob = "";
     renderVsJobs();
     const rec = vsRecLoad();
-    document.getElementById("vsRec").textContent = rec.w + rec.l ? vsRecText(rec) : "";
+    document.getElementById("vsRec").textContent = rec.w + rec.l ? "내 전적 " + vsRecText(rec).replace(/^.*?  /, "") : "";
     startScreen.classList.add("hidden");
     overScreen.classList.add("hidden");
     vsScreen.classList.remove("hidden");
