@@ -66,6 +66,8 @@ NEW = [
     ("👻", "ghost", "a cute white ghost with a playful face"),
     ("👊", "fist", "a cartoon fist punching forward with a red sleeve cuff"),
     ("👯", "clone", "a rolled ninja scroll with a puff of white smoke (clone jutsu)"),
+    ("🍷", "wine", "a delicate stemmed wine glass half full of red wine, with one thin crack line on the glass bowl (fragile glass heart)"),
+    ("☝", "onefinger", "a cartoon hand with only the index finger pointing straight up (number one gesture), other fingers curled"),
     # 스테이지·패턴
     ("🍚", "rice", "a bowl of white rice"),
     ("🌀", "swirl", "a blue cyclone swirl spiral"),
