@@ -1093,7 +1093,7 @@
        밀어 숨길 뿐 남겨 두어 textContent 가 그대로다(글자를 읽는 코드가 안 깨진다). 나중에 붙는 글자는 MutationObserver 가 잡는다.
      · 캔버스 글자: fillText/strokeText 를 감싸 이모지 자리에 그림을 그린다 — 자리 폭은 원래 이모지 폭 그대로라 배치가 안 바뀐다.
      그림이 아직 안 왔거나 목록에 없는 이모지는 원래 이모지로 나온다. */
-  /*ICONS-BEGIN*/ const ICON_KEYS = ["🪙", "⭐", "🌙", "🌕", "☂", "❤", "💧", "🧻", "🔮", "💩", "🚀", "🕊", "👼", "🧚", "🐈", "⏸", "🏆", "👑", "✏", "🎵", "🔔", "🎉", "🥊", "🗼", "🔄", "🏠", "🔒", "🔓", "🔁", "🥇", "🥈", "🥉", "✨", "⚠", "⏱", "🏃", "🎈", "💪", "📋", "🎯", "🙏", "🫧", "🧘", "🚫", "🦸", "⚡", "🔥", "🐢", "🐦", "📯", "💥", "😋", "💉", "☔", "🌠", "🕳", "🌝", "🧲", "💨", "🍀", "🌧", "💢", "🌈", "📱", "🥕", "🦄", "🕰", "🎲", "👻", "👊", "👯", "🍷", "☝", "🍚", "🌀", "🐕", "🎰", "🪜", "🎼", "✂", "🌱", "⛰", "☁", "🌤", "🧊", "❄", "🛰", "🌍", "☄", "🌌", "🌑", "🌒", "⚫", "🍌", "😵", "🤢", "😜", "😭", "👍", "⚔", "🧑‍🚀"]; const ICON_COLS = 10, ICON_ROWS = 11, ICON_CELL = 96; /*ICONS-END*/
+  /*ICONS-BEGIN*/ const ICON_KEYS = ["🪙", "⭐", "🌙", "🌕", "☂", "❤", "💧", "🧻", "🔮", "💩", "🚀", "🕊", "👼", "🧚", "🐈", "⏸", "🏆", "👑", "✏", "🎵", "🔔", "🎉", "🥊", "🗼", "🔄", "🏠", "🔒", "🔓", "🔁", "🥇", "🥈", "🥉", "✨", "⚠", "⏱", "🏃", "🎈", "💪", "📋", "🎯", "🙏", "🫧", "🧘", "🚫", "🦸", "⚡", "🔥", "🐢", "🐦", "📯", "💥", "😋", "💉", "☔", "🌠", "🕳", "🌝", "🧲", "💨", "🍀", "🌧", "💢", "🌈", "📱", "🥕", "🦄", "🕰", "🎲", "👻", "👊", "👯", "🍷", "☝", "🍚", "🌀", "🐕", "🎰", "🪜", "🎼", "✂", "🌱", "⛰", "☁", "🌤", "🧊", "❄", "🛰", "🌍", "☄", "🌌", "🌑", "🌒", "⚫", "🍌", "😵", "🤢", "😜", "😭", "👍", "⚔", "🪐", "🌬", "🌫", "🏋", "🧑‍🚀"]; const ICON_COLS = 10, ICON_ROWS = 11, ICON_CELL = 96; /*ICONS-END*/
   const ICON_IDX = new Map(ICON_KEYS.map((k, i) => [k, i]));
   const ICON_RE = ICON_KEYS.length ? new RegExp("(" + ICON_KEYS.slice().sort((a, b) => b.length - a.length)
     .map(k => k.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")).join("|") + ")\\uFE0F?", "gu") : null;
@@ -1212,7 +1212,7 @@
   const elTitle = document.getElementById("overTitle");
   const coinNote = document.getElementById("coinNote");
 
-  const GAME_VERSION = "v0.8.50";
+  const GAME_VERSION = "v0.8.51";
   /* 제작사 스플래시(bamhobak friends 로고) — 2026-09-20 끔. 다시 켜려면 true */
   const SPLASH_USE = false;   // 코드를 고칠 때마다 뒤 두 자리를 올린다
   document.getElementById("ver").textContent = GAME_VERSION;
@@ -2898,7 +2898,7 @@
        이미 가진 것은 고른 횟수만큼 그때 감쇠 그대로 한 번씩 더 걸고, 앞으로 고르는 것은 두 번씩 건다(augApply).
        한 번만 먹는 증강(자석·대시·히든 등 켜고 끄는 것)은 두 번 걸어도 같아서 뺀다.
        목숨 대신 오염도로 버티는 방울이에겐 안 나온다. 하트 3개 이상일 때만 */
-    { id: "rope",       ic: "☝️", nm: "외줄 타기", ds: "목숨이 1개로! 대신 가진 증강 효과가 전부 두 배 (앞으로 먹는 것도, 펫 증강 빼고)",
+    { id: "rope",       ic: "☝️", nm: "외줄 타기", ds: "목숨이 단 한개! 대신 모든 증강 효과가 두 배",
       hidden: true, once: true, cond: () => !dirtJob() && lives >= 3,
       go: () => {
         aug.rope = true; lives = 1; aug.maxLives = 1;
@@ -6889,6 +6889,7 @@
     if (special === "huge") vy *= 0.55;   // 덩치값 — 느릿느릿 굴러떨어진다
     let px = r + Math.random() * (W - r * 2);
     let pvx = (Math.random() - Math.random()) * vy * SPREAD_POOP;
+    if (ruleOn("wind")) pvx += vsRuleWind * (H / BASE_H);   // 대전 규칙 — 바람
     // 틈 지키기 — 뚜니핑 낙하물·무지개똥은 막는 똥이 아니고, 지그재그·분열은 자리가 바뀌어 빼고 본다
     if (!inFever && !gold && special !== "laser" && special !== "zigzag" && special !== "split") {
       const fx = fairPlace(px, r * (special === "huge" ? 0.70 : 0.82), pvx, vy, -r - 10);
@@ -7830,7 +7831,8 @@
           }
         }
         spawnTimer = spawnGap() / DIFF_F / spaceF() / bhDiff() * widthFactor * (0.7 + Math.random() * 0.6)
-                   / (prophIs("dice") ? 1.5 : 1);        // 운명의 주사위 — 똥 1.5배
+                   / (prophIs("dice") ? 1.5 : 1)         // 운명의 주사위 — 똥 1.5배
+                   / (ruleOn("poop2x") ? 2 : 1);         // 대전 규칙 — 똥 두 배
       }
     }
     /* 쌓인 몫만큼 코인을 떨어뜨린다. 몫은 똥 하나가 나올 때마다 spawnPoop 에서
@@ -8517,17 +8519,17 @@
     if (stunned(b, performance.now())) return;         // 밟혀서 멈춘 동안엔 못 뛴다
     if ((b.jh || 0) > 1) {                             // 공중 — 더블 점프 증강이 있으면 한 번 더
       if (!vsHas(b, "dj") || b.dj2) return;
-      b.dj2 = true; b.jv = JUMP_V * 0.9;
+      b.dj2 = true; b.jv = JUMP_V * 0.9 * (ruleOn("lowgrav") ? RULE_LOWGRAV_V : 1);
       beep(820, .07, "triangle", .04);
       return;
     }
     b.dj2 = false;
-    b.jv = JUMP_V; b.jh = 0.5;
+    b.jv = JUMP_V * (ruleOn("lowgrav") ? RULE_LOWGRAV_V : 1); b.jh = 0.5;
     beep(620, .07, "triangle", .04);
   }
   function stepJump(b, dt) {
     if (!b.jh && !b.jv) return;
-    let g = JUMP_G;
+    let g = JUMP_G * (ruleOn("lowgrav") ? RULE_LOWGRAV : 1);
     if (b.jv < 0 && jobOf(b) === "levitator" && (b.floatT || 0) < VS_FLOAT_SEC) {   // 부양사 — 떨어질 때 잠깐 둥실
       b.floatT = (b.floatT || 0) + dt; g *= VS_FLOAT_G;
       if (b.jv < -160) b.jv = -160;
@@ -8613,7 +8615,9 @@
     rival.lives = VS_LIVES; rival.inv = 0; rival.hurt = 0; rival.facing = "left"; rival.kv = 0;
     rival.jh = rival.jv = 0; player.jh = player.jv = 0; rival.stun = player.stun = 0;
     player.vaug = {}; rival.vaug = {}; player.rl = rival.rl = null; rival.shield = 0;
-    player.dj2 = rival.dj2 = false; vsMoonT = 5;          // 첫 달은 5초 뒤
+    player.dj2 = rival.dj2 = false; vsMoonT = 3; vsMoonTwin = true;   // 첫 달은 3초 뒤 좌우에 하나씩
+    vsRule = null; vsRuleSlim = false;
+    if (NET.role !== "guest") vsRuleRoll();               // 판 규칙 — 들어온 쪽은 방장 것을 받는다
     player.emo = rival.emo = null;
     bubbleOn = job === "bangul"; rival.bubble = rivalJob === "bangul";   // 방울이 — 판마다 한 번 막는 비누방울
     player.floatT = rival.floatT = 0;
@@ -8786,8 +8790,8 @@
         const a1 = Math.max(0, p1vx * dir), a2 = Math.max(0, -rival.vx * dir);   // 상대 쪽으로 달려든 빠르기
         // 박치기면 1.6배 멀리, 무거운 몸이면 절반만 밀린다
         const fitK = b => jobOf(b) === "fit" ? VS_FIT_RAM : 1;   // 헬스걸 몸통 박치기
-        const kv2 = dir * VS_KNOCK * (260 + a1 * 1.35) * (vsHas(player, "ram") ? 1.6 : 1) * fitK(player) * (vsHas(rival, "heavy") ? 0.5 : 1);
-        p1kv -= dir * VS_KNOCK * (260 + a2 * 1.35) * (vsHas(rival, "ram") ? 1.6 : 1) * fitK(rival) * (vsHas(player, "heavy") ? 0.5 : 1);
+        const kv2 = dir * VS_KNOCK * (ruleOn("shove2x") ? 2 : 1) * (260 + a1 * 1.35) * (vsHas(player, "ram") ? 1.6 : 1) * fitK(player) * (vsHas(rival, "heavy") ? 0.5 : 1);
+        p1kv -= dir * VS_KNOCK * (ruleOn("shove2x") ? 2 : 1) * (260 + a2 * 1.35) * (vsHas(rival, "ram") ? 1.6 : 1) * fitK(rival) * (vsHas(player, "heavy") ? 0.5 : 1);
         vsBumpCd = 0.22;
         const cx = (player.x + rival.x) / 2, cy = player.y + player.hy;
         const hard = Math.max(a1, a2) > 350 * VS_MOVE;
@@ -9032,11 +9036,89 @@
     }
   }
   // 달 — 방장(한 폰)이 떨어뜨린다
+  /* ---------- 🎰 판 규칙 룰렛 (v0.8.51, 로블록스판 Rules.luau 에서) ----------
+     판이 열리면 방장(한 폰·봇 연습은 이 폰)이 규칙 하나를 뽑는다. 처음 VS_RULE_SPIN 초는 룰렛이 돌고, 멈추면 그때부터 걸린다.
+     들어온 쪽은 스냅샷(ru)으로 받는다. 시계는 판 시간(elapsed)이라 두 폰이 같은 순간에 걸린다.
+     바람은 방장이 똥을 만들 때 옆으로 미는 것이라 방장만 알면 된다(들어온 쪽은 받은 속도로 그린다). */
+  const VS_RULES = [
+    { id: "lowgrav", ic: "🪐", nm: "저중력",     ds: "둥실둥실 — 점프가 높고 길어진다", w: 10 },
+    { id: "poop2x",  ic: "💩", nm: "똥 두 배",   ds: "똥이 두 배로 쏟아진다", w: 10 },
+    { id: "shove2x", ic: "💥", nm: "밀치기 두 배", ds: "몸싸움으로 튕기는 거리·힘이 두 배", w: 10 },
+    { id: "reverse", ic: "😵", nm: "좌우 반대",  ds: "왼쪽으로 끌면 오른쪽으로 간다", w: 8 },
+    { id: "slim",    ic: "🎯", nm: "전원 홀쭉이", ds: "모두 몸집이 30% 작아진다", w: 10 },
+    { id: "wind",    ic: "🌬", nm: "바람",       ds: "똥이 한쪽으로 쓸려 내려온다", w: 10 },
+    { id: "fog",     ic: "🌫", nm: "안개",       ds: "하늘 위쪽이 안 보인다 — 똥이 늦게 보인다", w: 8 },
+    { id: "heavy",   ic: "🏋", nm: "무거움",     ds: "모두 걸음이 25% 느려진다", w: 8 },
+  ];
+  const VS_RULE_SPIN = 1.8, VS_RULE_SHOW = 3;       // 룰렛 도는 시간 · 멈춘 뒤 크게 보여 주는 시간(초)
+  const RULE_LOWGRAV = 0.4, RULE_LOWGRAV_V = Math.sqrt(2 * 0.4);   // 중력 0.4배, 점프 높이 2배 (높이 = v²/2g)
+  const RULE_WIND = 70, RULE_FOG_TOP = 0.42, RULE_SLIM = 0.7, RULE_HEAVY = 0.75;
+  let vsRule = null, vsRuleWind = 0, vsRuleSlim = false;
+  function vsRuleRoll() {
+    let x = Math.random() * VS_RULES.reduce((t, r) => t + r.w, 0), pick = VS_RULES[VS_RULES.length - 1];
+    for (const r of VS_RULES) { if (x < r.w) { pick = r; break; } x -= r.w; }
+    vsRule = pick.id;
+    vsRuleWind = (Math.random() < 0.5 ? -1 : 1) * RULE_WIND;
+  }
+  function ruleOn(id) { return vsOn() && vsRule === id && elapsed >= VS_RULE_SPIN; }
+  // 매 프레임 (두 폰 모두) — 홀쭉이는 멈추는 순간 한 번 줄인다
+  function vsRuleStep() {
+    if (!vsRuleSlim && ruleOn("slim")) { vsRuleSlim = true; aug.hitboxMul *= RULE_SLIM; }
+  }
+  // 안개 — 하늘 위쪽을 덮는다 (위쪽 상태 줄보다 먼저 그려 목숨·시계는 보이게)
+  function drawVsFog() {
+    if (!ruleOn("fog")) return;
+    const k = Math.min(1, (elapsed - VS_RULE_SPIN) / 0.8), h = H * RULE_FOG_TOP;
+    const g = ctx.createLinearGradient(0, 0, 0, h * 1.25);
+    g.addColorStop(0, "rgba(226,232,240," + (0.97 * k) + ")");
+    g.addColorStop(0.72, "rgba(226,232,240," + (0.93 * k) + ")");
+    g.addColorStop(1, "rgba(226,232,240,0)");
+    ctx.fillStyle = g; ctx.fillRect(0, 0, W, h * 1.25);
+  }
+  // 룰렛 — 처음엔 가운데에서 돌고, 멈추면 크게 보였다가 시계 아래 작은 딱지로 남는다
+  function drawVsRule(top) {
+    if (!vsRule) return;
+    const r = VS_RULES.find(q => q.id === vsRule);
+    if (!r) return;
+    ctx.save();
+    ctx.textAlign = "center"; ctx.textBaseline = "middle";
+    if (elapsed < VS_RULE_SPIN + VS_RULE_SHOW) {
+      const spin = elapsed < VS_RULE_SPIN;
+      const show = spin ? VS_RULES[Math.floor(elapsed * 14) % VS_RULES.length] : r;
+      const cy = H * 0.3, pop = spin ? 1 : 1 + 0.15 * Math.max(0, 1 - (elapsed - VS_RULE_SPIN) * 4);
+      ctx.fillStyle = "rgba(10,14,30,.72)";
+      ctx.beginPath(); ctx.roundRect(W / 2 - 150, cy - 46, 300, spin ? 70 : 96, 16); ctx.fill();
+      ctx.font = "800 13px NanumBarunGothic, system-ui, sans-serif"; ctx.fillStyle = "#ffd23f";
+      ctx.fillText(spin ? "🎰 이번 판 규칙은…" : "🎰 이번 판 규칙", W / 2, cy - 30);
+      ctx.font = "900 " + Math.round(24 * pop) + "px NanumBarunGothic, system-ui, sans-serif"; ctx.fillStyle = "#fff";
+      ctx.fillText(show.ic + " " + show.nm, W / 2, cy);
+      if (!spin) {
+        ctx.font = "700 12.5px NanumBarunGothic, system-ui, sans-serif"; ctx.fillStyle = "#cfe4ff";
+        ctx.fillText(r.ds, W / 2, cy + 30);
+      }
+    } else {
+      ctx.font = "800 12px NanumBarunGothic, system-ui, sans-serif";
+      const t = r.ic + " " + r.nm;
+      ctx.lineWidth = 3; ctx.lineJoin = "round"; ctx.strokeStyle = "rgba(0,0,0,.5)"; ctx.strokeText(t, W / 2, top + 50);
+      ctx.fillStyle = "#ffd23f"; ctx.fillText(t, W / 2, top + 50);
+    }
+    ctx.restore();
+  }
+  /* 달 — 판 시작 3초 뒤엔 좌우 양쪽에 하나씩 동시에 곧게 떨어지고(빠르기는 저마다 무작위, v0.8.51),
+     그 뒤로는 VS_MOON_MIN~MAX 초마다 하나씩 */
+  let vsMoonTwin = false;
   function vsMoonStep(dt) {
     vsMoonT -= dt;
     if (vsMoonT > 0) return;
     vsMoonT = VS_MOON_MIN + Math.random() * (VS_MOON_MAX - VS_MOON_MIN);
     const r = 20 * 0.945 * ITEM_SCALE;
+    if (vsMoonTwin) {
+      vsMoonTwin = false;
+      for (const fx of [0.2, 0.8])
+        items.push({ type: "moon", emoji: "🌙", x: W * fx, y: -r - 10, r,
+                     vx: 0, vy: 150 * (H / BASE_H) * (0.6 + Math.random() * 0.9), rot: 0, vr: 0, size: r * 2, bob: Math.random() * 6.28, born: elapsed });
+      return;
+    }
     items.push({ type: "moon", emoji: "🌙", x: r + Math.random() * (W - r * 2), y: -r - 10, r,
                  vx: 0, vy: 150 * (H / BASE_H), rot: 0, vr: 0, size: r * 2, bob: Math.random() * 6.28, born: elapsed });
   }
@@ -9289,7 +9371,7 @@
   let vsPeels = [], vsIce = [], vsPigeons = [];
   function vsStinkR() { return vsR() * 4; }
   function vsOther(b) { return b === player ? rival : player; }
-  function vsReversed(b, now) { return now < (b.revUntil || 0); }
+  function vsReversed(b, now) { return now < (b.revUntil || 0) || ruleOn("reverse"); }
   function vsOnIce(b) { return (b.jh || 0) < 4 && vsIce.some(z => b.x >= z.x0 && b.x <= z.x1); }
   function vsInStink(b) {
     const o = vsOther(b);
@@ -9305,7 +9387,7 @@
       return;
     }
     if (stunned(b, now)) { b.iv = 0; return; }
-    const maxS = PLAYER_MAX_SPEED * VS_MOVE * (vsInStink(b) ? 0.5 : 1);
+    const maxS = PLAYER_MAX_SPEED * VS_MOVE * (vsInStink(b) ? 0.5 : 1) * (ruleOn("heavy") ? RULE_HEAVY : 1);
     const desired = Math.max(-maxS, Math.min(maxS, (b.tx - b.x) * 20));
     b.iv = vsOnIce(b) ? (b.iv || 0) + (desired - (b.iv || 0)) * Math.min(1, dt * 1.6) : desired;   // 얼음 위는 늦게 서고 늦게 돈다
     b.x = Math.max(lo, Math.min(hi, b.x + b.iv * dt));
@@ -9338,6 +9420,7 @@
   }
   // 매 프레임 — 껍질·얼음·구름·비둘기 (방장·한 폰은 vsUpdate, 들어온 쪽은 guestUpdate)
   function vsWorldStep(dt, now) {
+    vsRuleStep();
     for (let i = vsPeels.length - 1; i >= 0; i--) { vsPeels[i].t -= dt; if (vsPeels[i].t <= 0) vsPeels.splice(i, 1); }
     for (let i = vsIce.length - 1; i >= 0; i--) { vsIce[i].t -= dt; if (vsIce[i].t <= 0) vsIce.splice(i, 1); }
     for (const b of [player, rival]) if (b.stinkT > 0) b.stinkT = Math.max(0, b.stinkT - dt);
@@ -9671,7 +9754,7 @@
                 it.dark ? 1 : 0, it.dv || 0, it.special || "", Math.round((it.rot || 0) * 100) / 100, it.type === "moon" ? "m" : ""]);
     }
     netSend("s", {
-      ts: Math.round(now), t: elapsed, lt: levelTime, x: Math.round(player.x), vx: Math.round(player.vx || 0), f: facing === "left" ? 1 : 0,
+      ts: Math.round(now), t: elapsed, lt: levelTime, ru: vsRule, x: Math.round(player.x), vx: Math.round(player.vx || 0), f: facing === "left" ? 1 : 0,
       tl: Math.round(player.tilt * 100) / 100, h: Math.max(0, Math.round(hurtUntil - now)), i: Math.max(0, Math.round(invUntil - now)),
       l: lives, gl: rival.lives, it: withItems ? its : undefined, jh: Math.round(player.jh || 0), jv: Math.round(player.jv || 0),
       sn: Math.max(0, Math.round((player.stun || 0) - now)), sh: shields, bb: bubbleOn ? 1 : 0, tx: Math.round(player.tx),
@@ -9792,6 +9875,7 @@
     const si = NET.itSnap || s;                          // 똥 목록은 직접 연결이면 두 번에 한 번 온다
     const ageI = NET.itSnap ? (now - NET.itAt) / 1000 : age;
     const lead = ageI + (RTC.open ? RTC_LAT : NET_LAT);
+    if (s && s.ru && !vsRule) vsRule = s.ru;            // 판 규칙 (방장이 뽑은 것)
     const smp = netSample(now);                          // 방장 몸 — 받은 자리들 사이를 이어 그린다 (v0.8.34)
     if (smp) {
       rival.x = Math.max(player.r, Math.min(W - player.r, smp.x)); rival.vx = smp.vx; rival.jh = smp.jh; rival.jv = smp.jv;
@@ -9980,7 +10064,7 @@
       if (vsBumpCd <= 0) {
         const a1 = Math.max(0, myvx * dir), a2 = Math.max(0, -(rival.vx || 0) * dir);
         const fitK = b => jobOf(b) === "fit" ? VS_FIT_RAM : 1;
-        p1kv -= dir * VS_KNOCK * (260 + a2 * 1.35) * (vsHas(rival, "ram") ? 1.6 : 1) * fitK(rival) * (vsHas(player, "heavy") ? 0.5 : 1);
+        p1kv -= dir * VS_KNOCK * (ruleOn("shove2x") ? 2 : 1) * (260 + a2 * 1.35) * (vsHas(rival, "ram") ? 1.6 : 1) * fitK(rival) * (vsHas(player, "heavy") ? 0.5 : 1);
         vsBumpCd = 0.22;
         const hard = Math.max(a1, a2) > 350 * VS_MOVE, cx = (player.x + rival.x) / 2, cy = player.y + player.hy;
         burst(cx, cy, "#ffe08a", hard ? 18 : 8);
@@ -12881,7 +12965,7 @@
   function drawHud() {
     ctx.save();
     const top = 14;
-    if (vsOn()) { drawVsHud(top); ctx.restore(); return; }
+    if (vsOn()) { drawVsFog(); drawVsHud(top); drawVsRule(top); ctx.restore(); return; }
     ctx.textAlign = "left";
     ctx.textBaseline = "top";
     ctx.font = "700 21px NanumBarunGothic, system-ui, sans-serif";

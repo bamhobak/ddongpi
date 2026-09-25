@@ -99,6 +99,11 @@ NEW = [
     ("😭", "sob", "a round yellow emoji face crying loudly with streams of tears"),
     ("👍", "thumbsup", "a cartoon thumbs-up hand"),
     ("⚔", "swords", "two crossed cartoon swords with golden hilts and shiny silver blades (battle symbol)"),
+    # 대전 판 규칙 룰렛 (로블록스판 tools/sprites/rule_*.png 를 가져왔다)
+    ("🪐", "rule_lowgrav", "a pastel purple ringed planet with sparkles (low gravity)"),
+    ("🌬", "rule_wind", "swirling blue wind gusts with a green leaf"),
+    ("🌫", "rule_fog", "a thick lavender-grey fog cloud"),
+    ("🏋", "rule_heavy", "a chubby pink dumbbell"),
     ("🧑‍🚀", "astronaut", "a white astronaut helmet with a big glossy blue visor (helmet only, nobody inside)"),
 ]
 
