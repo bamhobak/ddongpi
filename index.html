@@ -744,7 +744,7 @@
      왼쪽 아래는 테스트 모드, 오른쪽 위는 통계. 누르는 자리를 그림 위에 겹쳐 둔다. */
   #startScreen h1 .logoWrap { position: relative; display: inline-block; line-height: 0; }
   #startScreen h1 img.ttl {
-    display: block; width: min(50vw, 236px); height: auto;   /* v0.8.55 59vw → 50vw: 모드 그림 카드가 커진 만큼 */
+    display: block; width: min(42vw, 196px); height: auto;   /* v0.8.88 새 로고(B, 가로세로 1.5)는 옛 로고보다 키가 커서 높이가 같도록 폭을 줄였다 */
     filter: drop-shadow(0 3px 10px rgba(0,0,0,.45));
   }
   #startScreen h1 #testDot, #startScreen h1 #devDot, #startScreen h1 #stageDot {
@@ -753,12 +753,13 @@
   }
   /* 화면이 짧은 폰에서는 제목을 조금 더 줄여 스크롤이 생기지 않게 한다 */
   @media (max-height: 670px) {
-    #startScreen h1 img.ttl { width: min(44vw, 210px); }
+    #startScreen h1 img.ttl { width: min(37vw, 176px); }
     #startScreen .board .mini { padding: 2px 3px; }   /* 이름 줄 높이를 못 박은 만큼 여백을 되돌린다 */
   }
-  #startScreen h1 #testDot { left: 4%;  top: 69%; width: 19%; height: 27%; }   /* 왼쪽 아래 똥 */
-  #startScreen h1 #devDot  { left: 68%; top: 5%;  width: 26%; height: 37%; }   /* 오른쪽 위 똥 */
-  #startScreen h1 #stageDot { left: 38%; top: 41%; width: 25%; height: 32%; }  /* 가운데 '저피' */
+  /* v0.8.88 새 로고 — 숨은 버튼 자리를 새 그림에 맞췄다 */
+  #startScreen h1 #testDot { left: 0%;  top: 62%; width: 17%; height: 30%; }   /* 왼쪽 아래 구름·별 */
+  #startScreen h1 #devDot  { left: 28%; top: 0%;  width: 32%; height: 38%; }   /* 가운데 위 큰 똥 */
+  #startScreen h1 #stageDot { left: 38%; top: 40%; width: 24%; height: 18%; }  /* '저피' */
   #startScreen h1 #testDot:active, #startScreen h1 #devDot:active,
   #startScreen h1 #stageDot:active { transform: scale(.88); }
 
@@ -1364,7 +1365,7 @@
   const elTitle = document.getElementById("overTitle");
   const coinNote = document.getElementById("coinNote");
 
-  const GAME_VERSION = "v0.8.87";
+  const GAME_VERSION = "v0.8.88";
   /* 제작사 스플래시(bamhobak friends 로고) — 2026-09-20 끔. 다시 켜려면 true */
   const SPLASH_USE = false;   // 코드를 고칠 때마다 뒤 두 자리를 올린다
   document.getElementById("ver").textContent = GAME_VERSION;
