@@ -405,6 +405,10 @@
   }
   .jobTab img { width: 40px; height: 88%; max-height: 46px; object-fit: contain; }   /* v0.8.78 캐릭터 더 크게 */
   .jobTab[data-job="all"] { grid-column: 1 / -1; }
+  /* v0.8.83 탭 줄 — '전체'는 그대로, 캐릭터 세 줄이 남은 높이를 나눠 채운다 (줄 사이가 비지 않게) */
+  .board.withTabs .jobTabs { grid-template-rows: 44px; grid-auto-rows: 1fr; align-content: stretch; }
+  .board.withTabs .jobTab:not([data-job="all"]) { max-height: none; height: 100%; }
+  .board.withTabs .jobTab:not([data-job="all"]) img { width: 92%; height: 92%; max-height: none; }
   .jobTab.on {
     color: #05060d; background: #ffd23f; border-color: #ffd23f;
     box-shadow: 0 0 12px rgba(255,210,63,.55);
@@ -1349,7 +1353,7 @@
   const elTitle = document.getElementById("overTitle");
   const coinNote = document.getElementById("coinNote");
 
-  const GAME_VERSION = "v0.8.82";
+  const GAME_VERSION = "v0.8.83";
   /* 제작사 스플래시(bamhobak friends 로고) — 2026-09-20 끔. 다시 켜려면 true */
   const SPLASH_USE = false;   // 코드를 고칠 때마다 뒤 두 자리를 올린다
   document.getElementById("ver").textContent = GAME_VERSION;
