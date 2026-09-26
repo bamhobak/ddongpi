@@ -767,7 +767,7 @@
     font-size: clamp(24px, 6.5vw, 32px);
     letter-spacing: -1.5px; line-height: 1.15;
     display: flex; align-items: center; justify-content: center; gap: 2px;
-    margin-bottom: 10px;   /* v0.8.90 랭킹판과 사이를 벌린다 */
+    margin-bottom: 20px;   /* v0.8.90 랭킹판과 사이를 벌린다 (v0.8.99 10→20) */
   }
   /* 제목은 그림 한 장. 로고 안에 그려진 똥 두 마리가 곧 히든 버튼이다 —
      왼쪽 아래는 테스트 모드, 오른쪽 위는 통계. 누르는 자리를 그림 위에 겹쳐 둔다. */
@@ -784,7 +784,7 @@
   /* 화면이 짧은 폰에서는 제목을 조금 더 줄여 스크롤이 생기지 않게 한다 */
   @media (max-height: 670px) {
     #startScreen h1 img.ttl { width: min(46vw, 190px); }
-    #startScreen h1 { margin-bottom: 4px; }
+    #startScreen h1 { margin-bottom: 12px; }
     #startScreen .board .mini { padding: 2px 3px; }   /* 이름 줄 높이를 못 박은 만큼 여백을 되돌린다 */
   }
   /* v0.8.88 새 로고 — 숨은 버튼 자리를 새 그림에 맞췄다 */
@@ -1413,7 +1413,7 @@
   const elTitle = document.getElementById("overTitle");
   const coinNote = document.getElementById("coinNote");
 
-  const GAME_VERSION = "v0.8.98";
+  const GAME_VERSION = "v0.8.99";
   /* 제작사 스플래시(bamhobak friends 로고) — 2026-09-20 끔. 다시 켜려면 true */
   const SPLASH_USE = false;   // 코드를 고칠 때마다 뒤 두 자리를 올린다
   document.getElementById("ver").textContent = GAME_VERSION;
