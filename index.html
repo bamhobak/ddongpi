@@ -1328,7 +1328,7 @@
   const elTitle = document.getElementById("overTitle");
   const coinNote = document.getElementById("coinNote");
 
-  const GAME_VERSION = "v0.8.61";
+  const GAME_VERSION = "v0.8.62";
   /* 제작사 스플래시(bamhobak friends 로고) — 2026-09-20 끔. 다시 켜려면 true */
   const SPLASH_USE = false;   // 코드를 고칠 때마다 뒤 두 자리를 올린다
   document.getElementById("ver").textContent = GAME_VERSION;
@@ -8660,11 +8660,11 @@
     return false;
   }
   /* 어퍼컷 (v0.8.46) — 아래로 쓸면 가까운 상대 쪽으로 주먹을 올려 친다. 맞으면 상대가 위로 떠서 옆으로 밀려난다.
-     닿는 거리 옆으로 vsR×UPPER_REACH(4.2), 높이는 나보다 조금 아래~머리 위까지. 0.8초에 한 번. 목숨은 안 깎는다.
+     닿는 거리 옆으로 vsR×UPPER_REACH(4.2), 높이는 나보다 조금 아래~머리 위까지. 2초에 한 번(v0.8.62, 예전 0.8초). 목숨은 안 깎는다.
      두 폰이면 친 쪽 폰이 판정해 'launch'(v·kv)를 보내고, 휘두른 모습은 'upc' 로 알린다 */
   // 닿는 거리 — 몸끼리는 vsR×1.9 에서 부딪혀 튕기므로(몸싸움 뒤 보통 2~3.5배 떨어진다) 그보다 넉넉히
   // v0.8.56 띄우는 높이 20% 올림 — 680(약 89) → 745(약 107). 높이는 빠르기의 제곱이라 680 × √1.2
-  const UPPER_V = 745, UPPER_KV = 420, UPPER_CD = 0.8, UPPER_SHOW = 260, UPPER_REACH = 4.2;
+  const UPPER_V = 745, UPPER_KV = 420, UPPER_CD = 2, UPPER_SHOW = 260, UPPER_REACH = 4.2;
   function vsUpper(who) {
     const now = performance.now();
     const b = who === 1 ? player : rival, o = who === 1 ? rival : player;
