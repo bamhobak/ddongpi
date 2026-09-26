@@ -107,7 +107,7 @@
   .board li + li { border-top: 1px solid rgba(255,255,255,.06); }
   .board .rk { width: 22px; text-align: center; flex: none; color: #8b90a0; font-weight: 700; }
   .board .nm {
-    flex: 1; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+    flex: 1; min-width: 4em; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
     text-align: left; color: #fff;
   }
   /* 4위 이하는 굵게 하지 않는다 — 굵기는 1~3위 전용 */
@@ -154,7 +154,7 @@
     box-shadow: 0 0 14px rgba(255,210,63,.22);
   }
   .board li.p1 .nm { color: #fff6cf; font-weight: 800; text-shadow: 0 0 10px rgba(255,210,63,.45); }
-  .board li.p1 .sc { color: #ffd23f; font-size: 1.28em; font-weight: 800; text-shadow: 0 0 10px rgba(255,210,63,.6); }
+  .board li.p1 .sc { color: #ffd23f; font-size: 1.04em; font-weight: 800; text-shadow: 0 0 10px rgba(255,210,63,.6); }
   .board li.p1 .sc img.jic { width: 24px; height: 30px; vertical-align: -9px; }
   .board li.p2 .sc img.jic, .board li.p3 .sc img.jic { width: 21px; height: 27px; vertical-align: -8px; }
 
@@ -164,14 +164,14 @@
     box-shadow: 0 0 12px rgba(223,230,239,.14);
   }
   .board li.p2 .nm { color: #f4f7fc; font-weight: 700; text-shadow: 0 0 10px rgba(223,230,239,.35); }
-  .board li.p2 .sc { color: #e8eef7; font-size: 1.22em; font-weight: 700; }
+  .board li.p2 .sc { color: #e8eef7; font-size: 1.0em; font-weight: 700; }
 
   .board li.p3 {
     border-left-color: #cd7f32;
     background: linear-gradient(90deg, rgba(205,127,50,.20), rgba(205,127,50,.02));
   }
   .board li.p3 .nm { color: #efc79b; font-weight: 700; }
-  .board li.p3 .sc { color: #d99257; font-size: 1.20em; font-weight: 700; }
+  .board li.p3 .sc { color: #d99257; font-size: .98em; font-weight: 700; }
 
   .board li.p1 .rk, .board li.p2 .rk, .board li.p3 .rk { font-size: 1.15em; }
   /* 내 기록 강조 — 금·은·동 색을 덮지 않도록 테두리로만 표시 */
@@ -317,8 +317,12 @@
     border: 1px solid rgba(255,243,196,.85);
     box-shadow: 0 0 24px rgba(255,196,46,.55), 0 5px 0 #a8700a;
   }
+  #jobPetLine img { width: 44px; height: 44px; object-fit: contain; flex: none; }
+  #jobPetLine .pt { display: flex; flex-direction: column; gap: 2px; min-width: 0; }
+  #jobPetLine .pt b { font-size: 14px; font-weight: 800; color: #ffd23f; }
+  #jobPetLine .pt span { font-size: 12px; color: #ffe9a8; line-height: 1.35; }
   #jobPetLine {
-    width: 100%; display: flex; align-items: center; gap: 8px; text-align: left;
+    width: 100%; display: flex; align-items: center; gap: 10px; text-align: left;
     font-size: 12.5px; color: #ffe9a8;
     background: rgba(255,210,63,.08); border: 1px solid rgba(255,210,63,.3);
     border-radius: 6px; padding: 6px 10px;
@@ -353,7 +357,7 @@
   /* 순위표 직업 탭 — 전체 + 직업별 */
   /* 순위판 왼쪽 세로 레일 — 제목은 위에 가로로, 그 아래는 [탭 | 목록] */
   .board.withTabs {
-    display: grid; grid-template-columns: 74px minmax(0, 1fr); column-gap: 8px;
+    display: grid; grid-template-columns: 84px minmax(0, 1fr); column-gap: 6px;   /* v0.8.78 직업 탭 칸 74 → 84 */
     grid-template-areas: "h h" "tabs list";
     position: relative;
   }
@@ -366,9 +370,10 @@
   /* 자릿수가 많은 점수는 글자를 줄여 오른쪽이 잘리지 않게 */
   .board .sc.long  { font-size: .88em; }
   .board .sc.xlong { font-size: .74em; }
-  .board li.p1 .sc.long  { font-size: 1.18em; }
+  .board li.p1 .sc.long  { font-size: .98em; }
+  .board li.p1 .sc, .board li.p2 .sc, .board li.p3 .sc { white-space: nowrap; flex-shrink: 0; }
   .board li.p1 .sc.xlong { font-size: .96em; }
-  .board li.p2 .sc.long, .board li.p3 .sc.long   { font-size: 1.12em; }
+  .board li.p2 .sc.long, .board li.p3 .sc.long   { font-size: .96em; }
   .board li.p2 .sc.xlong, .board li.p3 .sc.xlong { font-size: .92em; }
   /* 초기화 안내는 제목 줄 오른쪽 끝에 작게 */
   .board.withTabs .note {
@@ -390,7 +395,7 @@
     background: rgba(53,240,255,.08); color: #9fb4d0;
     border: 1px solid rgba(53,240,255,.35); box-shadow: none;
   }
-  .jobTab img { width: 26px; height: 80%; max-height: 32px; object-fit: contain; }
+  .jobTab img { width: 40px; height: 88%; max-height: 46px; object-fit: contain; }   /* v0.8.78 캐릭터 더 크게 */
   .jobTab[data-job="all"] { grid-column: 1 / -1; }
   .jobTab.on {
     color: #05060d; background: #ffd23f; border-color: #ffd23f;
@@ -488,9 +493,9 @@
     position: absolute; z-index: 4; display: none;
     left: calc(12px + var(--lbx, 0px));
     bottom: calc(max(12px, env(safe-area-inset-bottom)) + var(--lby, 0px));
-    width: 46px; height: 46px; padding: 0; border-radius: 50%;
+    width: 64px; height: 64px; padding: 0; border-radius: 50%;   /* v0.8.78 1.5배 (46 → 64, 아이콘 18 → 27px) */
     background: rgba(255,255,255,.22); color: #fff;
-    font-size: 18px; opacity: .75;
+    font-size: 27px; opacity: .75;
   }
   #btnPause.on { display: block; }
   /* 대전 이모티콘 — 오른쪽 아래 (두 폰 대전의 판 중에만) */
@@ -833,13 +838,13 @@
     font-size: 14px; font-weight: 800; letter-spacing: 0; box-shadow: none; border: 0; border-radius: 0;
     background: center / 100% 100% no-repeat;
     color: #4a2408; text-shadow: 0 1px 0 rgba(255,255,255,.7);
-    filter: saturate(.45) brightness(1.08); opacity: .55; transition: filter .15s ease, transform .15s ease, opacity .15s ease;   /* v0.8.77 안 고른 카드는 더 연하게 */
+    filter: grayscale(.85) brightness(1.12) contrast(.82); transition: filter .15s ease, transform .15s ease;   /* v0.8.78 안 고른 카드는 흑백 느낌으로 연하게 (투명하지 않게) */
   }
   #modeSeg button[data-mode="item"]   { background-image: url(assets/ui/mode_item.webp); }
   #modeSeg button[data-mode="vs"]     { background-image: url(assets/ui/mode_vs.webp); }
   #modeSeg button[data-mode="pure"]   { background-image: url(assets/ui/mode_pure.webp); }
   #modeSeg button[data-mode="noitem"] { background-image: url(assets/ui/mode_noitem.webp); }
-  #modeSeg button.on { filter: drop-shadow(0 0 7px rgba(255,236,150,.85)); transform: scale(1.03); opacity: 1; }
+  #modeSeg button.on { filter: drop-shadow(0 0 7px rgba(255,236,150,.85)); transform: scale(1.03); }
   #modeSeg button.locked { opacity: .55; }
   #modeSeg button.locked::after { content: " 🔒"; font-size: 11px; }
   #modeDesc { display: none; }   /* 스테이지 설명 줄은 두지 않는다 (버튼 이름으로 충분) */
@@ -1336,7 +1341,7 @@
   const elTitle = document.getElementById("overTitle");
   const coinNote = document.getElementById("coinNote");
 
-  const GAME_VERSION = "v0.8.77";
+  const GAME_VERSION = "v0.8.78";
   /* 제작사 스플래시(bamhobak friends 로고) — 2026-09-20 끔. 다시 켜려면 true */
   const SPLASH_USE = false;   // 코드를 고칠 때마다 뒤 두 자리를 올린다
   document.getElementById("ver").textContent = GAME_VERSION;
@@ -6505,8 +6510,16 @@
     // 맨몸대결·똥탑등반의 방울이는 '고른 직업'으로 저장하지 않는다 (똥대잔치로 돌아오면 원래 직업)
     if (!jobLocked()) try { localStorage.setItem(LS_JOB, job); } catch (e) {}
     const j = JOBS[id];
-    document.getElementById("jobPetLine").textContent =
-      "펫 · " + PETS[pet].ic + " " + PETS[pet].nm + (pet === "none" ? "" : " — " + PETS[pet].ds);
+    {                                       // v0.8.78 펫 — 큰 그림 · 첫 줄 이름 · 둘째 줄 설명
+      const pl = document.getElementById("jobPetLine"), P = PETS[pet];
+      pl.innerHTML = "";
+      if (P.img) { const im = document.createElement("img"); im.src = P.img; im.alt = ""; pl.appendChild(im); }
+      const tx = document.createElement("div"); tx.className = "pt";
+      const nm = document.createElement("b"); nm.textContent = pet === "none" ? "펫 없음" : P.nm;
+      tx.appendChild(nm);
+      if (pet !== "none") { const ds = document.createElement("span"); ds.textContent = P.ds; tx.appendChild(ds); }
+      pl.appendChild(tx);
+    }
     document.getElementById("jobBig").src = jobPic(id);
     document.getElementById("jobBig").alt = j.nm;
     document.getElementById("jobName").textContent = j.nm;
@@ -13236,6 +13249,34 @@
     ctx.closePath();
   }
 
+  /* v0.8.78 점수 숫자 — Codex 로 그린 사탕 숫자 0~9 (assets/ui/digits.webp, 한 칸 85x96 · 글자 폭 DIGIT_W).
+     쉼표·m 같은 다른 글자는 그 자리에서 글자로 그린다. 높이 h 에 맞춰 줄이고, 그린 폭을 돌려준다(못 그리면 0) */
+  const DIGIT_W = [75, 58, 72, 70, 81, 70, 72, 71, 74, 73], DIGIT_CW = 85, DIGIT_CH = 96;
+  const digitImg = new Image(); let digitOk = false;
+  digitImg.onload = () => { digitOk = true; }; digitImg.src = "assets/ui/digits.webp";
+  function drawDigits(txt, x, y, h) {
+    if (!digitOk) return 0;
+    const k = h / DIGIT_CH, gap = -h * 0.06;
+    let cx = x;
+    for (const ch of String(txt)) {
+      const d = ch.charCodeAt(0) - 48;
+      if (d >= 0 && d <= 9) {
+        const w = DIGIT_W[d];
+        ctx.drawImage(digitImg, d * DIGIT_CW + (DIGIT_CW - w) / 2, 0, w, DIGIT_CH, cx, y, w * k, h);
+        cx += w * k + gap;
+      } else {                                   // 쉼표·공백·m — 글자로
+        ctx.save();
+        ctx.font = "900 " + Math.round(h * 0.8) + "px NanumBarunGothic, system-ui, sans-serif";
+        ctx.textBaseline = "alphabetic";
+        ctx.lineWidth = Math.max(2, h * 0.14); ctx.lineJoin = "round"; ctx.strokeStyle = "#4a1f06";
+        const ty = y + h * 0.92;
+        ctx.strokeText(ch, cx, ty); ctx.fillStyle = "#ffd23f"; ctx.fillText(ch, cx, ty);
+        cx += ctx.measureText(ch).width + (ch === "," ? -h * 0.02 : 0);
+        ctx.restore();
+      }
+    }
+    return cx - x || 1;
+  }
   function drawHud() {
     ctx.save();
     const top = 14;
@@ -13254,11 +13295,13 @@
       ctx.shadowColor = "rgba(255,196,60," + (0.9 * pk).toFixed(2) + ")";
       ctx.shadowBlur = 6 + pk * 18;
     }
-    ctx.fillStyle = "rgba(0,0,0,.35)";
-    ctx.fillText(stxt, 1, 1);
-    ctx.fillStyle = "rgb(255," + Math.round(255 - 45 * pk) + ","
-                              + Math.round(255 - 192 * pk) + ")";
-    ctx.fillText(stxt, 0, 0);
+    if (!drawDigits(stxt, 0, -2, 24)) {            // 숫자 그림(v0.8.78)이 아직 안 왔으면 글자로
+      ctx.fillStyle = "rgba(0,0,0,.35)";
+      ctx.fillText(stxt, 1, 1);
+      ctx.fillStyle = "rgb(255," + Math.round(255 - 45 * pk) + ","
+                                + Math.round(255 - 192 * pk) + ")";
+      ctx.fillText(stxt, 0, 0);
+    }
     ctx.restore();
 
 
