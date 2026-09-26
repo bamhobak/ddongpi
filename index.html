@@ -1341,7 +1341,7 @@
   const elTitle = document.getElementById("overTitle");
   const coinNote = document.getElementById("coinNote");
 
-  const GAME_VERSION = "v0.8.78";
+  const GAME_VERSION = "v0.8.79";
   /* 제작사 스플래시(bamhobak friends 로고) — 2026-09-20 끔. 다시 켜려면 true */
   const SPLASH_USE = false;   // 코드를 고칠 때마다 뒤 두 자리를 올린다
   document.getElementById("ver").textContent = GAME_VERSION;
@@ -1379,7 +1379,7 @@
        이미 차 있기 때문이다 (옛 기록과 순위표가 그 이름을 쓴다). */
     powerp2: { nm: "파워P", ic: "🎯", gone: true, ds: "증강을 4개 중에서 고른다" },
     powerp: { nm: "무무 · 무소유", ic: "🙏", ds: "달이 아예 안 나온다 · 별이 조금 잘 나온다 · 안 맞을수록 점수가 치솟는다" },
-    bangul: { nm: "방울이", ic: "🫧", ds: "목숨 대신 오염도 · 비누방울이 한 대를 대신 맞고 터진다 · 잠시 뒤 다시 맺힌다", f: "이핑재핑보다 귀엽다" }
+    bangul: { nm: "방울이", ic: "🫧", ds: "목숨 대신 오염도 · 비누방울이 한 대를 대신 맞고 터진다 · 잠시 뒤 다시 맺힌다" }
   };
   // v0.8.77 고르는 화면·순위 탭 순서 (두 줄씩: 방울이 버피 / 제이 소라 / 무무 루나) — 키를 다시 넣어 순서를 바꾼다
   for (const k of ["bangul", "fit", "powerj", "levitator", "powerp", "fortune"]) { const v = JOBS[k]; delete JOBS[k]; JOBS[k] = v; }
