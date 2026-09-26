@@ -1300,7 +1300,7 @@
   const elTitle = document.getElementById("overTitle");
   const coinNote = document.getElementById("coinNote");
 
-  const GAME_VERSION = "v0.8.56";
+  const GAME_VERSION = "v0.8.57";
   /* 제작사 스플래시(bamhobak friends 로고) — 2026-09-20 끔. 다시 켜려면 true */
   const SPLASH_USE = false;   // 코드를 고칠 때마다 뒤 두 자리를 올린다
   document.getElementById("ver").textContent = GAME_VERSION;
@@ -8599,7 +8599,8 @@
      HEADBUTT_V 로 날아간다(보통 점프의 두 배 높이). 떠 있는 시간이 길어 착지할 곳을 골라야 하고 똥에도 맞기 쉽다.
      v0.8.40 높이 30% 줄임 — 1075(높이 약 222) → 900(약 156). 높이는 빠르기의 제곱이라 1075 × √0.7.
      v0.8.46 기본 점프·들이받기 높이 10% 더 줄임(× √0.9) — 점프 760(약 111) → 721(약 100), 들이받기 900(약 156) → 854(약 140). */
-  const JUMP_V = 721, JUMP_G = 2600, STOMP_BOUNCE = 620, STOMP_STUN = 200, HEADBUTT_V = 854;
+  // v0.8.57 기본 점프 높이 15% 올림 — 721(약 100) → 773(약 115)
+  const JUMP_V = 773, JUMP_G = 2600, STOMP_BOUNCE = 620, STOMP_STUN = 200, HEADBUTT_V = 854;
   function stunned(b, now) { return now < (b.stun || 0); }
   const SWIPE_DY = 55, SWIPE_MS = 150;
   function vsJump(who) {
