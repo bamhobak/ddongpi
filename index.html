@@ -1300,7 +1300,7 @@
   const elTitle = document.getElementById("overTitle");
   const coinNote = document.getElementById("coinNote");
 
-  const GAME_VERSION = "v0.8.59";
+  const GAME_VERSION = "v0.8.60";
   /* 제작사 스플래시(bamhobak friends 로고) — 2026-09-20 끔. 다시 켜려면 true */
   const SPLASH_USE = false;   // 코드를 고칠 때마다 뒤 두 자리를 올린다
   document.getElementById("ver").textContent = GAME_VERSION;
@@ -7282,7 +7282,9 @@
       warns.length = 0;
     }
     // 겹쳐 먹어 남은 시간이 한 번 분량을 넘으면 게이지가 넘치므로 1로 묶는다
-    feverT = fever ? Math.min(1, (powerUntil - now) / feverDur) : 0;
+    /* 멈춰 있는 동안(증강 고르기·'준비!'·일시정지)은 게이지도 얼린다 (v0.8.60) — 마감 시각은 풀릴 때 멈춘 만큼 뒤로 밀리는데,
+       그 사이 실제 시계로 다시 재면 게이지가 줄었다가 풀리는 순간 도로 늘어났다 */
+    if (state === STATE.PLAY || !fever) feverT = fever ? Math.min(1, (powerUntil - now) / feverDur) : 0;
     // 뚜니핑 타임 끝나는 순간엔 화면이 똥으로 가득 차 있으니 1초 무적으로 숨 돌릴 틈을 준다
     if (wasFever && !fever && state === STATE.PLAY) {
       invUntil = Math.max(invUntil, now + 1500);
