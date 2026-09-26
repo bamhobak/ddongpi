@@ -15,6 +15,14 @@
 <style>
   /* 나눔바른고딕 — 흔히 쓰는 한글 5,362자만 남겨 받아 둔 것(둘이 합쳐 426KB).
      빠진 글자는 아래 대체 글꼴이 받아 준다. 파일을 함께 올려 두어 오프라인에서도 나온다. */
+  /* v0.8.82 게임 글꼴 — 넥슨 배찌체(무료 글꼴, 눈누 projectnoonnu). 파일을 함께 올려 두어 CDN 이 막혀도 나온다.
+     굵기가 하나뿐이라 가짜 굵게(font-synthesis)는 끈다. 없는 글자는 나눔바른고딕이 받아 준다 */
+  @font-face {
+    font-family: "NexonBazzi";
+    src: url("assets/fonts/bazzi.woff") format("woff"),
+         url("https://cdn.jsdelivr.net/gh/projectnoonnu/noonfonts_20-04@2.1/Bazzi.woff") format("woff");
+    font-weight: normal; font-display: swap;
+  }
   @font-face {
     font-family: "NanumBarunGothic";
     src: url("assets/fonts/nbg-400.woff2") format("woff2");
@@ -30,8 +38,8 @@
     width: 100%; height: 100%;
     background: #07070f;
     color: #fff;
-    font-family: "NanumBarunGothic", "Apple SD Gothic Neo", "Malgun Gothic", "맑은 고딕", system-ui, sans-serif;
-    overflow: hidden;
+    font-family: "NexonBazzi", "NanumBarunGothic", "Apple SD Gothic Neo", "Malgun Gothic", "맑은 고딕", system-ui, sans-serif;
+    overflow: hidden; font-synthesis: none;
     overscroll-behavior: none;
     -webkit-user-select: none; user-select: none;
     touch-action: none;
@@ -1341,7 +1349,7 @@
   const elTitle = document.getElementById("overTitle");
   const coinNote = document.getElementById("coinNote");
 
-  const GAME_VERSION = "v0.8.81";
+  const GAME_VERSION = "v0.8.82";
   /* 제작사 스플래시(bamhobak friends 로고) — 2026-09-20 끔. 다시 켜려면 true */
   const SPLASH_USE = false;   // 코드를 고칠 때마다 뒤 두 자리를 올린다
   document.getElementById("ver").textContent = GAME_VERSION;
@@ -6128,7 +6136,7 @@
     g.addColorStop(0, "#ff3d6a"); g.addColorStop(1, "#ffa03d");
     ctx.fillStyle = g;
     ctx.beginPath(); ctx.roundRect(bx, by, Math.max(2, bw * bossHp), 8, 4); ctx.fill();
-    ctx.font = "800 12px NanumBarunGothic, system-ui, sans-serif";
+    ctx.font = "800 12px NexonBazzi, NanumBarunGothic, system-ui, sans-serif";
     ctx.textAlign = "center"; ctx.textBaseline = "top";
     ctx.lineWidth = 3; ctx.strokeStyle = "rgba(0,0,0,.5)";
     ctx.strokeText("👑 " + pt.boss.nm, cx, by + 13);
@@ -6464,7 +6472,7 @@
     ctx.globalAlpha = Math.max(0, Math.min(1, alpha));
     ctx.translate(W / 2, H * 0.42);
     ctx.scale(scale, scale);
-    ctx.font = "900 64px NanumBarunGothic, system-ui, sans-serif";
+    ctx.font = "900 64px NexonBazzi, NanumBarunGothic, system-ui, sans-serif";
     ctx.textAlign = "center"; ctx.textBaseline = "middle";
     ctx.lineJoin = "round";
     ctx.lineWidth = 12; ctx.strokeStyle = "rgba(40,20,60,.85)";
@@ -9136,7 +9144,7 @@
   function drawVsTags(now) {
     const tag = (x, y, t, c) => {                    // v0.8.41 배경 없이 작은 글자만 (흰 테두리로 하늘 위에서도 보이게)
       ctx.save();
-      ctx.font = "800 12px NanumBarunGothic, system-ui, sans-serif";
+      ctx.font = "800 12px NexonBazzi, NanumBarunGothic, system-ui, sans-serif";
       ctx.textAlign = "center"; ctx.textBaseline = "middle";
       ctx.lineWidth = 3; ctx.lineJoin = "round"; ctx.strokeStyle = "rgba(255,255,255,.9)";
       ctx.strokeText(t, x, y);
@@ -9166,7 +9174,7 @@
   }
   // 위쪽 상태 — 왼쪽 P1, 오른쪽 P2 목숨 (조작하는 쪽과 같은 편에)
   function drawVsHud(top) {
-    ctx.font = "900 20px NanumBarunGothic, system-ui, sans-serif";
+    ctx.font = "900 20px NexonBazzi, NanumBarunGothic, system-ui, sans-serif";
     ctx.textBaseline = "middle";
     // v0.8.39 — 하트 줄 아래에 닉네임 (예전엔 하트 앞에 나/상대/봇). 증강 아이콘은 그 아래로
     const row = (x, al, label, c, n) => {
@@ -9176,7 +9184,7 @@
         heartPath(hx, top + 14, 9.5); ctx.fill();
       }
       ctx.save();
-      ctx.font = "900 14px NanumBarunGothic, system-ui, sans-serif";
+      ctx.font = "900 14px NexonBazzi, NanumBarunGothic, system-ui, sans-serif";
       ctx.textAlign = al;
       const maxW = W / 2 - 64;                               // 가운데 '직접 연결' 글자와 안 겹치게
       let t = label;
@@ -9195,11 +9203,11 @@
     drawVsAugRow(16, "left", top + 58, player, shields);
     drawVsAugRow(W - 16, "right", top + 58, rival, rival.shield || 0);
     ctx.textAlign = "center"; ctx.fillStyle = "rgba(255,255,255,.85)";
-    ctx.font = "700 15px NanumBarunGothic, system-ui, sans-serif";
+    ctx.font = "700 15px NexonBazzi, NanumBarunGothic, system-ui, sans-serif";
     ctx.fillText("⏱️ " + fmtSec(elapsed), W / 2, top + 14);
     if (NET.role) {                                   // 두 폰 — 지금 어떤 길로 잇고 있나
       const lb = RTC.open ? "직접 연결" : "서버 경유";
-      ctx.font = "800 12px NanumBarunGothic, system-ui, sans-serif";
+      ctx.font = "800 12px NexonBazzi, NanumBarunGothic, system-ui, sans-serif";
       ctx.lineWidth = 3; ctx.strokeStyle = "rgba(0,0,0,.55)"; ctx.strokeText(lb, W / 2, top + 32);
       ctx.fillStyle = RTC.open ? "#8cffaa" : "#ffd278";
       ctx.fillText(lb, W / 2, top + 32);
@@ -9370,16 +9378,16 @@
       const cy = H * 0.3, pop = spin ? 1 : 1 + 0.15 * Math.max(0, 1 - (elapsed - VS_RULE_SPIN) * 4);
       ctx.fillStyle = "rgba(10,14,30,.72)";
       ctx.beginPath(); ctx.roundRect(W / 2 - 150, cy - 46, 300, spin ? 70 : 96, 16); ctx.fill();
-      ctx.font = "800 13px NanumBarunGothic, system-ui, sans-serif"; ctx.fillStyle = "#ffd23f";
+      ctx.font = "800 13px NexonBazzi, NanumBarunGothic, system-ui, sans-serif"; ctx.fillStyle = "#ffd23f";
       ctx.fillText(spin ? "🎰 이번 판 규칙은…" : "🎰 이번 판 규칙", W / 2, cy - 30);
-      ctx.font = "900 " + Math.round(24 * pop) + "px NanumBarunGothic, system-ui, sans-serif"; ctx.fillStyle = "#fff";
+      ctx.font = "900 " + Math.round(24 * pop) + "px NexonBazzi, NanumBarunGothic, system-ui, sans-serif"; ctx.fillStyle = "#fff";
       ctx.fillText(show.ic + " " + show.nm, W / 2, cy);
       if (!spin) {
-        ctx.font = "700 12.5px NanumBarunGothic, system-ui, sans-serif"; ctx.fillStyle = "#cfe4ff";
+        ctx.font = "700 12.5px NexonBazzi, NanumBarunGothic, system-ui, sans-serif"; ctx.fillStyle = "#cfe4ff";
         ctx.fillText(r.ds, W / 2, cy + 30);
       }
     } else {
-      ctx.font = "800 12px NanumBarunGothic, system-ui, sans-serif";
+      ctx.font = "800 12px NexonBazzi, NanumBarunGothic, system-ui, sans-serif";
       const t = r.ic + " " + r.nm;
       ctx.lineWidth = 3; ctx.lineJoin = "round"; ctx.strokeStyle = "rgba(0,0,0,.5)"; ctx.strokeText(t, W / 2, top + 50);
       ctx.fillStyle = "#ffd23f"; ctx.fillText(t, W / 2, top + 50);
@@ -12959,7 +12967,7 @@
     ctx.beginPath(); ctx.roundRect(x + 3, y + 3, (w - 6) * (prophT / PROPH_SEC), h - 6, 12); ctx.fill();
     ctx.globalAlpha = Math.min(1, prophT / 0.4);
     if (ITEM_IMG.fortune) ctx.drawImage(ITEM_IMG.fortune, x + 6, y + 3, 24, 24);
-    ctx.fillStyle = "#fff"; ctx.font = "800 14px NanumBarunGothic, system-ui, sans-serif";
+    ctx.fillStyle = "#fff"; ctx.font = "800 14px NexonBazzi, NanumBarunGothic, system-ui, sans-serif";
     ctx.textAlign = "center"; ctx.textBaseline = "middle";
     ctx.fillText(prophecy.nm, W / 2 + 12, y + h / 2 + 1);   // 남은 시간은 글자 대신 막대로만
     ctx.restore();
@@ -13018,7 +13026,7 @@
       const S = 64, c = document.createElement("canvas");
       c.width = c.height = S * 2;
       const g = c.getContext("2d");
-      g.font = "700 " + S + "px NanumBarunGothic, system-ui, sans-serif";
+      g.font = "700 " + S + "px NexonBazzi, NanumBarunGothic, system-ui, sans-serif";
       g.textAlign = "center";
       g.textBaseline = "middle";
       g.fillStyle = "#fff";
@@ -13126,7 +13134,7 @@
       ctx.rotate(wn.ang || 0);
       ctx.globalAlpha = on ? 1 : 0.35;
       const fs = dk ? 56 : 46, rr = dk ? 38 : 32;
-      ctx.font = "700 " + fs + "px NanumBarunGothic, system-ui, sans-serif";
+      ctx.font = "700 " + fs + "px NexonBazzi, NanumBarunGothic, system-ui, sans-serif";
       ctx.textAlign = "center";
       ctx.textBaseline = "middle";
       ctx.beginPath();                       // 어두운 배경에서도 눈에 띄게 뒤에 원을 깐다
@@ -13269,7 +13277,7 @@
         cx += w * k + gap;
       } else {                                   // 쉼표·공백·m — 글자로
         ctx.save();
-        ctx.font = "900 " + Math.round(h * 0.8) + "px NanumBarunGothic, system-ui, sans-serif";
+        ctx.font = "900 " + Math.round(h * 0.8) + "px NexonBazzi, NanumBarunGothic, system-ui, sans-serif";
         ctx.textBaseline = "alphabetic";
         ctx.lineWidth = Math.max(2, h * 0.14); ctx.lineJoin = "round"; ctx.strokeStyle = "#4a1f06";
         const ty = y + h * 0.92;
@@ -13286,7 +13294,7 @@
     if (vsOn()) { drawVsFog(); drawVsHud(top); drawVsRule(top); ctx.restore(); return; }
     ctx.textAlign = "left";
     ctx.textBaseline = "top";
-    ctx.font = "700 21px NanumBarunGothic, system-ui, sans-serif";
+    ctx.font = "700 21px NexonBazzi, NanumBarunGothic, system-ui, sans-serif";
     // 100점 단위로만 바뀐다 — 생존 점수 때문에 뒷자리가 계속 떨리는 것을 막는다
     // 노템전은 점수가 아니라 올라간 거리
     const stxt = noItem() ? meters().toLocaleString() + " m" : (Math.floor(scoreShown / 100) * 100).toLocaleString();
@@ -13308,7 +13316,7 @@
     ctx.restore();
 
 
-    ctx.font = "600 13px NanumBarunGothic, system-ui, sans-serif";
+    ctx.font = "600 13px NexonBazzi, NanumBarunGothic, system-ui, sans-serif";
     ctx.fillStyle = "rgba(255,255,255,.9)";
     ctx.fillText(ZONES[zoneIdx()].ic + " " + ZONES[zoneIdx()].nm, 17, top + 32);
 
@@ -13316,14 +13324,14 @@
     // 목숨은 이모지 대신 직접 그린다.
     // iOS 이모지는 지정한 상단선보다 위로 튀어나와서 화면 밖으로 잘리는 문제가 있었다.
     if (testMode) {
-      ctx.font = "700 12px NanumBarunGothic, system-ui, sans-serif";
+      ctx.font = "700 12px NexonBazzi, NanumBarunGothic, system-ui, sans-serif";
       ctx.fillStyle = "#ff7b7b";
       ctx.fillText("TEST  목숨 ∞", 17, top + 54);
       /* 점수가 어디서 왔는지 — 많이 준 것부터. 어느 축이 세고 약한지 바로 보인다. */
       const rows = SRC_KEYS.filter(k => scoreSrc[k] > 0)
                            .sort((a, b) => scoreSrc[b] - scoreSrc[a]);
       const sum = rows.reduce((t, k) => t + scoreSrc[k], 0) || 1;
-      ctx.font = "700 11px NanumBarunGothic, system-ui, sans-serif";
+      ctx.font = "700 11px NexonBazzi, NanumBarunGothic, system-ui, sans-serif";
       if (rows.length) {                     // 낙하물이 지나가도 읽히도록 받침을 깐다
         let wide = 0;
         for (const k of rows) {
@@ -13361,7 +13369,7 @@
         ctx.fillStyle = "#fff";
         ctx.fillText(a.ic, x, ay);
         if (n > 1) {
-          ctx.font = "700 10px NanumBarunGothic, system-ui, sans-serif";
+          ctx.font = "700 10px NexonBazzi, NanumBarunGothic, system-ui, sans-serif";
           ctx.fillStyle = "#ffd23f";
           ctx.fillText("x" + n, x + 16, ay + 4);
         }
@@ -13371,7 +13379,7 @@
     // 하트가 많으면 작게 그리고 10개 단위로 줄을 바꾼다 (헬스걸은 최대 20개)
     if (job === "powerp") {                 // 무소유 — 안 맞고 버틴 만큼 붙은 배율
       ctx.textAlign = "right";
-      ctx.font = "700 13px NanumBarunGothic, system-ui, sans-serif";
+      ctx.font = "700 13px NexonBazzi, NanumBarunGothic, system-ui, sans-serif";
       ctx.fillStyle = "#ffe08a";
       /* 초가 아니라 점수에 곱해지는 배율을 그대로 보여 준다.
          시작이 ×1.0 이라 지금 몇 배인지가 바로 읽힌다. 소수 한 자리까지 —
@@ -13460,7 +13468,7 @@
       ctx.beginPath(); ctx.roundRect(bx + .7, by + .7, bw - 1.4, bh - 1.4, br); ctx.stroke();
 
       ctx.textAlign = "center"; ctx.textBaseline = "middle";
-      ctx.font = "800 12px NanumBarunGothic, system-ui, sans-serif";
+      ctx.font = "800 12px NexonBazzi, NanumBarunGothic, system-ui, sans-serif";
       ctx.lineWidth = 3.5; ctx.strokeStyle = "rgba(46,12,0,.66)";
       ctx.strokeText("뚜니핑 타임", W / 2, by + bh / 2 + 0.5);
       ctx.fillStyle = "#fff";
@@ -13486,7 +13494,7 @@
       ctx.beginPath(); ctx.arc(0, 0, 160, 0, 6.283); ctx.fill();
 
       ctx.textAlign = "center"; ctx.textBaseline = "middle";
-      ctx.font = "900 34px NanumBarunGothic, system-ui, sans-serif";
+      ctx.font = "900 34px NexonBazzi, NanumBarunGothic, system-ui, sans-serif";
       ctx.lineWidth = 8; ctx.lineJoin = "round";
       ctx.strokeStyle = "rgba(52,14,0,.7)";
       ctx.strokeText("뚜니핑 타임!", 0, 0);
@@ -13514,7 +13522,7 @@
       ctx.fillStyle = gl;
       ctx.beginPath(); ctx.arc(0, 0, 210, 0, 6.283); ctx.fill();
       ctx.textAlign = "center"; ctx.textBaseline = "middle";
-      ctx.font = "900 46px NanumBarunGothic, system-ui, sans-serif";
+      ctx.font = "900 46px NexonBazzi, NanumBarunGothic, system-ui, sans-serif";
       ctx.lineWidth = 11; ctx.lineJoin = "round";
       ctx.strokeStyle = "rgba(58,26,4,.75)";
       ctx.strokeText("풀소유 진화!", 0, 0);
@@ -13545,7 +13553,7 @@
       ctx.lineWidth = 7; ctx.lineJoin = "round";
       for (let i = 0; i < MOM_LINES.length; i++) {
         const big = i === MOM_LINES.length - 1;            // 마지막 줄(파이팅)은 크게
-        ctx.font = "900 " + (big ? 32 : 23) + "px NanumBarunGothic, system-ui, sans-serif";
+        ctx.font = "900 " + (big ? 32 : 23) + "px NexonBazzi, NanumBarunGothic, system-ui, sans-serif";
         const y = -16 + i * 40;
         ctx.strokeStyle = "rgba(58,26,4,.72)";
         ctx.strokeText(MOM_LINES[i], 0, y);
@@ -13737,7 +13745,7 @@
       ctx.save();
       ctx.translate(f.x, f.y);
       if (sc !== 1) ctx.scale(sc, sc);
-      ctx.font = "800 " + (f.size || 22) + "px NanumBarunGothic, system-ui, sans-serif";
+      ctx.font = "800 " + (f.size || 22) + "px NexonBazzi, NanumBarunGothic, system-ui, sans-serif";
       ctx.lineWidth = f.tier >= 1 ? 6 : 4;
       ctx.lineJoin = "round";
       ctx.strokeStyle = "rgba(0,0,0,.42)";
@@ -13891,7 +13899,7 @@
         ctx.fillRect(0, 0, W, H);
         ctx.globalAlpha = Math.min(1, (1 - frac) * 2.2);
         ctx.fillStyle = "#ffd23f";
-        ctx.font = "800 " + Math.round(46 + frac * 14) + "px NanumBarunGothic, system-ui, sans-serif";
+        ctx.font = "800 " + Math.round(46 + frac * 14) + "px NexonBazzi, NanumBarunGothic, system-ui, sans-serif";
         ctx.textAlign = "center"; ctx.textBaseline = "middle";
         ctx.fillText("준비!", W / 2, H * 0.45);
         ctx.restore();
@@ -13904,7 +13912,7 @@
         ctx.fillRect(0, 0, W, H);
         ctx.globalAlpha = 1 - frac * 0.6;
         ctx.fillStyle = "#ffd23f";
-        ctx.font = "800 " + Math.round(90 + frac * 40) + "px NanumBarunGothic, system-ui, sans-serif";
+        ctx.font = "800 " + Math.round(90 + frac * 40) + "px NexonBazzi, NanumBarunGothic, system-ui, sans-serif";
         ctx.textAlign = "center"; ctx.textBaseline = "middle";
         ctx.fillText(n, W / 2, H * 0.45);
         ctx.restore();
