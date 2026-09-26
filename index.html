@@ -813,7 +813,6 @@
   body.vsMode .board:not(.vsb), body.vsMode #coinNote, body.vsMode #overBest, body.vsMode #nameRow { display: none !important; }
   /* 대전 랭킹 (v0.8.45) — 대전모드에서만 */
   body:not(.vsMode) .board.vsb { display: none; }
-  .vsb h3 { display: flex; align-items: center; justify-content: space-between; }
   .vsbTabs { display: inline-flex; gap: 4px; }
   .vsbTabs button {
     padding: 2px 10px; border-radius: 6px; font-size: 11.5px; font-weight: 800; box-shadow: none;
@@ -877,6 +876,63 @@
   #btnHome { background: #33405e; color: #dfe6f5; }
   #btnRetryJob[hidden] { display: none; }
   .sub { font-size: 14px; color: #9aa0ae; }
+
+  /* ---- v0.8.53 Codex 그림 — 버튼·순위판 (그림 손질은 tools/build_ui.py) ----
+     버튼: 양 끝 반원(그림 높이 120 의 절반 = 60)은 그대로 두고 가운데만 늘린다. 버튼 높이 --bh 에 맞춰 반원 폭 = --bh/2.
+     순위판: 9칸 늘리기. 틀 두께(그림 픽셀) 위 62 · 좌우 80 · 아래 72 에 배율 --bf 를 곱해 그린다.
+     리본: 틀과 같은 배율이어야 테두리 선이 겹쳐 맞는다. 리본 위 끝은 판 위 모서리보다 그림 59px 위, 꼬리 폭 58, 글자 줄 가운데는 위에서 30 */
+  #btnStart, #btnRetry, #vsScreen #vsQuick, #vsScreen #vsBot, #retryRow #btnRetryJob {
+    --bh: 52px;
+    height: var(--bh); box-sizing: border-box;
+    border-style: solid; border-color: transparent; border-width: 0 calc(var(--bh) / 2);
+    border-image: url(assets/ui/btn_yellow.webp) 0 60 fill / 0 calc(var(--bh) / 2) / 0 stretch;
+    background: none; box-shadow: none; border-radius: 0;
+    padding: 0 12px calc(var(--bh) * .08); flex-shrink: 0;   /* 자리가 모자라도 눌리지 않게 */
+    color: #6b3300; text-shadow: 0 1px 0 rgba(255,255,255,.55); font-weight: 800;
+  }
+  #btnStart { --bh: 48px; padding-left: 24px; padding-right: 24px; animation: glowY 3.4s ease-in-out infinite; }
+  #btnStart:active { box-shadow: none; }
+  #vsScreen #vsQuick { --bh: 58px; }
+  #btnRetry { --bh: 50px; }
+  #retryRow #btnRetryJob { --bh: 40px; font-size: 13px; opacity: 1; }
+  #vsScreen #vsBot, #retryRow #btnRetryJob {
+    border-image-source: url(assets/ui/btn_blue.webp);
+    color: #fff; text-shadow: 0 1px 2px rgba(0,50,110,.65);
+  }
+  #vsScreen #vsBot {
+    --bh: 46px; border-image-source: url(assets/ui/btn_blue.webp);
+    color: #fff; text-shadow: 0 1px 2px rgba(0,50,110,.65);
+  }
+  @keyframes glowY {
+    0%, 100% { filter: drop-shadow(0 0 7px rgba(255,196,46,.45)); }
+    50%      { filter: drop-shadow(0 0 15px rgba(255,196,46,.85)); }
+  }
+  @media (prefers-reduced-motion: reduce) { #btnStart { animation: none; } }
+
+  /* 지난주 명예의 전당(.last)은 한 줄짜리라 틀을 씌우면 너무 두꺼워져 예전 모양 그대로 둔다 */
+  #startScreen .board:not(.last), #overScreen .board:not(.last) {
+    --bf: .30;
+    border-style: solid; border-color: transparent;
+    border-width: calc(62px * var(--bf)) calc(80px * var(--bf)) calc(72px * var(--bf));
+    border-image: url(assets/ui/board.webp) 62 80 72 fill / calc(62px * var(--bf)) calc(80px * var(--bf)) calc(72px * var(--bf)) / 0 stretch;
+    background: none; box-shadow: none; border-radius: 0;
+    padding: 2px 4px 3px;
+    margin-top: calc(59px * var(--bf));             /* 리본이 위로 튀어나오는 만큼 비워 둔다 */
+  }
+  #startScreen .board:not(.last) { margin-top: 0; }   /* 시작 화면은 자리가 빠듯해 리본을 로고 아래 여백에 걸친다 */
+  #startScreen .board:not(.last) > h3, #overScreen .board:not(.last) > h3 {
+    grid-area: h; justify-self: center;
+    display: block; width: max-content; min-width: 50%; max-width: 100%;
+    height: calc(111px * var(--bf)); box-sizing: border-box;
+    margin: calc(-121px * var(--bf) - 2px) auto 3px;
+    border-style: solid; border-color: transparent; border-width: 0 calc(58px * var(--bf));
+    border-image: url(assets/ui/ribbon.webp) 0 58 fill / 0 calc(58px * var(--bf)) / 0 stretch;
+    padding: 0 14px; line-height: calc(64px * var(--bf));
+    font-size: 11.5px; font-weight: 800; letter-spacing: 0; text-align: center; white-space: nowrap;
+    color: #6b3300; text-shadow: 0 1px 0 rgba(255,255,255,.55);
+  }
+  #startScreen .board.withTabs .note, #overScreen .board.withTabs .note { top: -2px; right: 0; }
+  .vsb .vsbTabs { display: flex; justify-content: center; gap: 6px; margin: 0 0 5px; }
 </style>
 </head>
 <body>
@@ -909,7 +965,8 @@
         <div class="note" id="noteStart"></div>
       </div>
       <div class="board vsb" data-k="wins">
-        <h3>⚔️ 대전 랭킹 <span class="vsbTabs"><button data-k="wins" class="on">다승</button><button data-k="rate">승률</button></span></h3>
+        <h3>⚔️ 대전 랭킹</h3>
+        <div class="vsbTabs"><button data-k="wins" class="on">다승</button><button data-k="rate">승률</button></div>
         <ol class="vsbList"><li class="empty">불러오는 중…</li></ol>
         <div class="vsbNote"></div>
       </div>
@@ -1047,7 +1104,8 @@
       </div>
 
       <div class="board vsb" data-k="wins">
-        <h3>⚔️ 대전 랭킹 <span class="vsbTabs"><button data-k="wins" class="on">다승</button><button data-k="rate">승률</button></span></h3>
+        <h3>⚔️ 대전 랭킹</h3>
+        <div class="vsbTabs"><button data-k="wins" class="on">다승</button><button data-k="rate">승률</button></div>
         <ol class="vsbList"><li class="empty">불러오는 중…</li></ol>
         <div class="vsbNote"></div>
       </div>
@@ -1212,7 +1270,7 @@
   const elTitle = document.getElementById("overTitle");
   const coinNote = document.getElementById("coinNote");
 
-  const GAME_VERSION = "v0.8.52";
+  const GAME_VERSION = "v0.8.53";
   /* 제작사 스플래시(bamhobak friends 로고) — 2026-09-20 끔. 다시 켜려면 true */
   const SPLASH_USE = false;   // 코드를 고칠 때마다 뒤 두 자리를 올린다
   document.getElementById("ver").textContent = GAME_VERSION;
