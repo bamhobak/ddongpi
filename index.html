@@ -1115,8 +1115,8 @@
       </div>
       <div id="modeBox">
         <div id="modeSeg" role="radiogroup" aria-label="스테이지">
-          <button data-mode="item" role="radio">똥대잔치</button>
-          <button data-mode="vs" role="radio">대전모드</button>
+          <button data-mode="item" role="radio">싱글플레이</button>
+          <button data-mode="vs" role="radio">멀티플레이</button>
         </div>
         <div id="modeDesc"></div>
       </div>
@@ -1213,7 +1213,7 @@
     </div>
 
     <div id="vsScreen" class="screen hidden">
-      <h2>⚔️ 대전모드</h2>
+      <h2>⚔️ 멀티플레이</h2>
       <div id="vsJobs"></div>
       <div id="vsJobDs"></div>
       <button id="vsQuick">⚡ 빠른 대전</button>
@@ -1413,7 +1413,7 @@
   const elTitle = document.getElementById("overTitle");
   const coinNote = document.getElementById("coinNote");
 
-  const GAME_VERSION = "v0.8.99";
+  const GAME_VERSION = "v0.9.00";
   /* 제작사 스플래시(bamhobak friends 로고) — 2026-09-20 끔. 다시 켜려면 true */
   const SPLASH_USE = false;   // 코드를 고칠 때마다 뒤 두 자리를 올린다
   document.getElementById("ver").textContent = GAME_VERSION;
@@ -1719,10 +1719,10 @@
               코인은 나온다. 직업 능력(엄마의 밥상·수정 구슬·방울)과 펫 능력은 그대로 — 캐릭터와 펫만으로 겨룬다.
      순위표도 스테이지마다 따로 선다. */
   const MODES = {
-    item:   { nm: "똥대잔치", ds: "아이템·증강이 쏟아지는 점수전" },
+    item:   { nm: "싱글플레이", ds: "아이템·증강이 쏟아지는 점수전" },
     pure:   { nm: "맨몸대결", ds: "아이템·증강 없이 직업과 펫만으로 겨루는 점수전 (코인은 나온다)" },
     noitem: { nm: "똥탑등반", ds: "패턴과 보스를 뚫고 몇 m까지 오르나 (아이템 없음)" },
-    vs:     { nm: "대전모드", ds: "둘이서 한 하늘에! 부딪혀 밀치고, 위로 쓸어 올려 점프해서 머리를 밟아라 — 먼저 목숨 3개를 다 잃으면 진다" }
+    vs:     { nm: "멀티플레이", ds: "둘이서 한 하늘에! 부딪혀 밀치고, 위로 쓸어 올려 점프해서 머리를 밟아라 — 먼저 목숨 3개를 다 잃으면 진다" }
   };
   const LS_MODE = "epjpddongpi_mode";
   let gameMode = "item";
