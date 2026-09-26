@@ -989,7 +989,10 @@
     font-size: 12.5px; font-weight: 800; letter-spacing: 0; text-align: center; white-space: nowrap;
     color: #6b3300; text-shadow: 0 1px 0 rgba(255,255,255,.55);
   }
-  #startScreen .board.withTabs .note, #overScreen .board.withTabs .note { top: -2px; right: 0; }
+  /* 초기화 안내는 판 바깥 — 틀 오른쪽 위 모서리 바로 위에 (v0.8.67) */
+  #startScreen .board.withTabs .note, #overScreen .board.withTabs .note {
+    top: calc(-62px * var(--bf) - 17px); right: calc(-80px * var(--bf) + 4px); z-index: 2;
+  }
   .vsb .vsbTabs { display: flex; justify-content: center; gap: 6px; margin: 0 0 5px; }
 </style>
 </head>
@@ -1331,7 +1334,7 @@
   const elTitle = document.getElementById("overTitle");
   const coinNote = document.getElementById("coinNote");
 
-  const GAME_VERSION = "v0.8.66";
+  const GAME_VERSION = "v0.8.67";
   /* 제작사 스플래시(bamhobak friends 로고) — 2026-09-20 끔. 다시 켜려면 true */
   const SPLASH_USE = false;   // 코드를 고칠 때마다 뒤 두 자리를 올린다
   document.getElementById("ver").textContent = GAME_VERSION;
