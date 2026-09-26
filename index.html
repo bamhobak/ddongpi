@@ -1334,7 +1334,7 @@
   const elTitle = document.getElementById("overTitle");
   const coinNote = document.getElementById("coinNote");
 
-  const GAME_VERSION = "v0.8.67";
+  const GAME_VERSION = "v0.8.68";
   /* 제작사 스플래시(bamhobak friends 로고) — 2026-09-20 끔. 다시 켜려면 true */
   const SPLASH_USE = false;   // 코드를 고칠 때마다 뒤 두 자리를 올린다
   document.getElementById("ver").textContent = GAME_VERSION;
@@ -1697,8 +1697,10 @@
     const fr = base.frames;
     if (!fr || !fr.length) return base;
     const moving = Math.abs(player.tx - player.x) > 1.5;
+    /* cyc — 시트가 원래 동작(3초)의 몇 할인가. 이음새 때문에 앞뒤를 잘라 낸 시트는 그만큼 빨리 돌려야 헤엄 속도가 같다 */
+    const ph = base.cyc ? swimPhase / base.cyc : swimPhase;
     const img = base.float
-      ? fr[Math.floor((swimPhase % 1) * fr.length) % fr.length]
+      ? fr[Math.floor((ph % 1) * fr.length) % fr.length]
       : moving ? fr[Math.floor(now / RUN_FRAME_MS) % fr.length] : fr[0];
     if (!img || img === base.img) return base;
     Object.assign(runSpr, base);
@@ -1842,13 +1844,15 @@
      정지 그림(powerj_right.png = 안경을 올리며 잘난 척하는 정면 pj_front_2)은 직업 카드·순위표에만 쓴다.
      얼굴 크기(adj)는 방울이와 같게 0.571 — head/cx/cy 는 칸에서 잰 얼굴 원(이마~턱). */
   const SPR_PJ = {
-    right: { img: null, aspect: 1.275, head: 0.490, cx: 0.716, cy: 0.450, adj: 0.5710, float: true },
+    // v0.8.68 끝·처음이 안 이어져 뚝 끊겼다 — 56장 중 자연스럽게 이어지는 17~43번(27장)만 돈다 (섞기는 반투명 겹침이 보여 버렸다)
+    right: { img: null, aspect: 1.275, head: 0.490, cx: 0.716, cy: 0.450, adj: 0.5710, float: true, cyc: 0.482 },
     hurt:  { img: null, aspect: 1.347, head: 0.550, cx: 0.714, cy: 0.475, adj: 0.5710 }   // pj_hurt_2 — 혹·'> <' 울음·종이 흩날림
   };
   /* 파워J 우주복(Codex pj_space2_1 — 꼬리까지 우주복 덮개, 안경은 헬멧 안) → Ludo 64장 시트(8x8, 칸 231x200).
      맞은 그림(pj_spacehurt_1)은 헬멧이 안 깨지고 별이 돈다 — 헬멧 지름이 헤엄 때와 같아지게 head 를 잡았다 */
   const SPR_PJ_SPACE = {
-    right: { img: null, aspect: 1.155, head: 0.460, cx: 0.716, cy: 0.390, adj: 0.5710, float: true },
+    // v0.8.68 64장 중 자연스럽게 이어지는 20~52번(33장)만 돈다 (끝→처음 차이가 이웃 프레임의 4.7배였다)
+    right: { img: null, aspect: 1.155, head: 0.460, cx: 0.716, cy: 0.390, adj: 0.5710, float: true, cyc: 0.516 },
     hurt:  { img: null, aspect: 1.230, head: 0.500, cx: 0.723, cy: 0.460, adj: 0.5710 }
   };
   const SPR_MONK = {
@@ -2131,8 +2135,8 @@
   // 방울이는 걷지 않고 허공에서 개헤엄 친다 — 땅 위·우주복 모두 Ludo 49장
   loadSheetFrames(SPR_BANGUL, "bangul_swim_sheet.webp", 7, 49, true);
   loadSheetFrames(SPR_BANGUL_SPACE, "bangul_space_swim_sheet.webp", 7, 49, true);
-  loadSheetFrames(SPR_PJ, "powerj_swim_sheet.webp", 8, 56, true);               // 파워J도 개헤엄 (v0.8.64)
-  loadSheetFrames(SPR_PJ_SPACE, "powerj_space_swim_sheet.webp", 8, 64, true);
+  loadSheetFrames(SPR_PJ, "powerj_swim_sheet.webp", 8, 27, true);               // 파워J도 개헤엄 (v0.8.64, 고리 v0.8.68)
+  loadSheetFrames(SPR_PJ_SPACE, "powerj_space_swim_sheet.webp", 8, 33, true);
 
   // 도와줘 정연핑 — 아래에서 위로 날아가며 지나간 자리의 똥을 부순다
   let helperImg = null, helperSpaceImg = null;
