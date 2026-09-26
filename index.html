@@ -1300,7 +1300,7 @@
   const elTitle = document.getElementById("overTitle");
   const coinNote = document.getElementById("coinNote");
 
-  const GAME_VERSION = "v0.8.58";
+  const GAME_VERSION = "v0.8.59";
   /* 제작사 스플래시(bamhobak friends 로고) — 2026-09-20 끔. 다시 켜려면 true */
   const SPLASH_USE = false;   // 코드를 고칠 때마다 뒤 두 자리를 올린다
   document.getElementById("ver").textContent = GAME_VERSION;
@@ -6602,7 +6602,7 @@
     // 바로 시험해볼 수 있게 1부터 시작한다.
     score = 0; lives = testMode ? 1 : 3; level = 1; elapsed = 0; levelTime = 0; starCount = 0;
     dirt = 0; dirtShown = 0;
-    spawnTimer = 0;
+    spawnTimer = 0; lastMoonAt = -99;
     invUntil = 0; powerUntil = 0; hurtUntil = 0; shields = 0;
     shake = 0; flash = 0; feverFlash = 0; fever = false; feverBgm = false;
     feverT = 0; feverBanner = 0;
@@ -7105,9 +7105,13 @@
     for (const b of BONUS) b.t = Math.max(0.4, bonusMean(b) * (0.25 + Math.random() * 0.60));
   }
 
+  const MOON_GAP = 5;                  // 달끼리 최소 간격(초, 판 시간)
+  let lastMoonAt = -99;
+  function isMoonT(b) { return b.type === "moon" || b.type === "fullmoon"; }
   function spawnBonus(picked) {
     let pick = picked;
     if ((pick.type === "moon" || pick.type === "fullmoon") && job === "powerp") return;   // 무소유 — 무계획 무증강
+    if (isMoonT(pick)) lastMoonAt = elapsed;
     if (pick.type === "umbrella" && job === "fit") {
       pick = BONUS.find(b => b.type === "heart");   // 헬스걸 — 우산 자리에 하트
     }
@@ -7904,7 +7908,14 @@
       for (const b of BONUS) {           // 종류별로 따로 세다가 각자 때가 되면 떨어진다
         b.t -= dt * tsc;
         if (b.t <= 0) {
-          if (!itemsOff()) spawnBonus(Math.random() < bonusSwap() ? pickBonus() : b);
+          let pk = Math.random() < bonusSwap() ? pickBonus() : b;
+          /* 달(🌙·🌕)은 나온 지 MOON_GAP 초 안에는 또 안 나온다 (v0.8.59) — 달 차례면 그때까지 미루고,
+             다른 아이템이 달로 바꿔치기된 것이면 원래 아이템을 떨군다 */
+          if (isMoonT(pk) && elapsed - lastMoonAt < MOON_GAP) {
+            if (isMoonT(b)) { b.t = MOON_GAP - (elapsed - lastMoonAt); continue; }
+            pk = b;
+          }
+          if (!itemsOff()) spawnBonus(pk);
           else if (b.type === "meal") spawnBonus(b);     // 노템전 — 쉬었음 청년의 밥상은 직업 능력이라 남긴다
           b.t = bonusInterval(b);
         }
