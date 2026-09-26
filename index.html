@@ -1410,7 +1410,7 @@
   const elTitle = document.getElementById("overTitle");
   const coinNote = document.getElementById("coinNote");
 
-  const GAME_VERSION = "v0.8.92";
+  const GAME_VERSION = "v0.8.93";
   /* 제작사 스플래시(bamhobak friends 로고) — 2026-09-20 끔. 다시 켜려면 true */
   const SPLASH_USE = false;   // 코드를 고칠 때마다 뒤 두 자리를 올린다
   document.getElementById("ver").textContent = GAME_VERSION;
@@ -13001,13 +13001,14 @@
     const fin = Math.min(1, (PROPH_SEC - prophT) / 0.6) * Math.min(1, prophT / 0.6);   // 서서히 들어왔다 나간다
     if (prophIs("fog")) {                    // 짙은 안개 — 화면 위쪽이 뿌옇게, 똥이 늦게 보인다
       ctx.save();
-      /* 위쪽 35%는 완전히 막는다 — 똥이 비쳐 보이면 안개가 아니다. 그 아래 62%까지 옅어진다 */
-      const g = ctx.createLinearGradient(0, 0, 0, H * 0.62);
+      /* v0.8.93 화면 1/3 만 — 위쪽 20%는 완전히 막고(똥이 비쳐 보이면 안개가 아니다) 34%까지 옅어진다.
+         예전엔 35% 불투명·62%까지라 화면 절반 가까이를 가려 너무 가혹했다 */
+      const g = ctx.createLinearGradient(0, 0, 0, H * 0.34);
       g.addColorStop(0, "rgba(214,222,232," + fin.toFixed(2) + ")");
-      g.addColorStop(0.565, "rgba(214,222,232," + fin.toFixed(2) + ")");   // 0.35H 까지 불투명
+      g.addColorStop(0.59, "rgba(214,222,232," + fin.toFixed(2) + ")");   // 0.2H 까지 불투명
       g.addColorStop(0.8, "rgba(214,222,232," + (0.6 * fin).toFixed(2) + ")");
       g.addColorStop(1, "rgba(214,222,232,0)");
-      ctx.fillStyle = g; ctx.fillRect(0, 0, W, H * 0.62);
+      ctx.fillStyle = g; ctx.fillRect(0, 0, W, H * 0.34);
       ctx.restore();
     }
     if (prophIs("wind")) {                   // 옆바람 — 흘러가는 바람 줄기
