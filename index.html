@@ -739,7 +739,9 @@
      남는 자리는 위아래로 나뉜다 (가운데 정렬). */
   #startScreen {
     gap: clamp(3px, 0.75vh, 7px);
-    padding-top: calc(max(10px, env(safe-area-inset-top)) + var(--lby, 0px));
+    /* v0.8.90 시작 화면은 게임판 비율(위아래 --lby 띠)에 갇힐 까닭이 없다 — 폰 높이를 다 쓰고, 아래는 코인·톱니 줄 자리만 남긴다 */
+    padding-top: calc(max(10px, env(safe-area-inset-top)) + min(var(--lby, 0px), 12px));
+    padding-bottom: calc(max(20px, env(safe-area-inset-bottom)) + min(var(--lby, 0px), 30px));
     padding-left: calc(10px + var(--lbx, 0px));
     padding-right: calc(10px + var(--lbx, 0px));
   }
@@ -751,21 +753,24 @@
     font-size: clamp(24px, 6.5vw, 32px);
     letter-spacing: -1.5px; line-height: 1.15;
     display: flex; align-items: center; justify-content: center; gap: 2px;
+    margin-bottom: 10px;   /* v0.8.90 랭킹판과 사이를 벌린다 */
   }
   /* 제목은 그림 한 장. 로고 안에 그려진 똥 두 마리가 곧 히든 버튼이다 —
      왼쪽 아래는 테스트 모드, 오른쪽 위는 통계. 누르는 자리를 그림 위에 겹쳐 둔다. */
   #startScreen h1 .logoWrap { position: relative; display: inline-block; line-height: 0; }
   #startScreen h1 img.ttl {
-    display: block; width: min(42vw, 196px); height: auto;   /* v0.8.88 새 로고(B, 가로세로 1.5)는 옛 로고보다 키가 커서 높이가 같도록 폭을 줄였다 */
+    display: block; width: min(60vw, 240px); height: auto;   /* v0.8.90 이름·소리 줄이 설정 창으로 빠진 자리만큼 키웠다. v0.8.88 새 로고(B, 가로세로 1.5)는 옛 로고보다 키가 커서 높이가 같도록 폭을 줄였다 */
     filter: drop-shadow(0 3px 10px rgba(0,0,0,.45));
   }
   #startScreen h1 #testDot, #startScreen h1 #devDot, #startScreen h1 #stageDot {
     position: absolute; display: block;
     transition: transform .18s ease;
   }
+  @media (max-height: 780px) { #startScreen h1 img.ttl { width: min(52vw, 200px); } }
   /* 화면이 짧은 폰에서는 제목을 조금 더 줄여 스크롤이 생기지 않게 한다 */
   @media (max-height: 670px) {
     #startScreen h1 img.ttl { width: min(37vw, 176px); }
+    #startScreen h1 { margin-bottom: 4px; }
     #startScreen .board .mini { padding: 2px 3px; }   /* 이름 줄 높이를 못 박은 만큼 여백을 되돌린다 */
   }
   /* v0.8.88 새 로고 — 숨은 버튼 자리를 새 그림에 맞췄다 */
@@ -1393,7 +1398,7 @@
   const elTitle = document.getElementById("overTitle");
   const coinNote = document.getElementById("coinNote");
 
-  const GAME_VERSION = "v0.8.89";
+  const GAME_VERSION = "v0.8.90";
   /* 제작사 스플래시(bamhobak friends 로고) — 2026-09-20 끔. 다시 켜려면 true */
   const SPLASH_USE = false;   // 코드를 고칠 때마다 뒤 두 자리를 올린다
   document.getElementById("ver").textContent = GAME_VERSION;
@@ -3174,7 +3179,7 @@
       once: true, go: () => { aug.magnet = 220; } },   // 끌어당기는 반지름(px)
     /* 조작이 끌기 하나뿐이라 실력을 드러낼 통로가 좁다. 기본 기능으로 넣지 않고 증강으로만 둔다 —
        조작이 복잡해지는 건 원하는 사람만 지게. 부양사는 이미 두 배 반으로 빠르니 안 나온다. */
-    { id: "dash",       ic: "💨", nm: "방귀 대시",   ds: "두 번 두드리면 방귀로 돌진 · 잠깐 무적 · 뚫은 똥은 스침 점수 (PC는 스페이스바)",
+    { id: "dash",       ic: "💨", nm: "방귀 대시",   ds: "두 번 두드리면 해당 위치로 대시",
       once: true, cond: () => job !== "levitator",
       go: () => { aug.dash = true; dashCd = 0; dashT = 0; } },
     { id: "lucky",      ic: "🍀", nm: "행운",       ds: "아이템이 더 자주 등장",
