@@ -53,7 +53,20 @@ rows = np.where(al.max(1) > 100)[0]
 cut = int(rows.min())
 ci = ci.crop((0, cut, ci.width, int(rows.max()) + 1))
 ci.save(O / "board.webp", quality=92)
-ri.save(O / "ribbon.webp", quality=92)
+# (v0.8.54 부터 리본은 아래 직사각형 리본(ui_ribbon2_2)을 쓴다 — 아치형은 ribbon_arch.webp 로 남김)
+ri.save(O / "ribbon_arch.webp", quality=92)
 # 틀 윗변과 리본의 위치 관계 (board.webp 픽셀 단위)
 rib_top = (rb[1] - bb[1]) * s - cut                 # 판 위 모서리에서 리본 위까지 (음수면 위로 튀어나옴) — CSS 의 59
 print("board", ci.size, "ribbon", ri.size, "ribbon top vs board top (webp px) = %.1f" % rib_top)
+
+
+# v0.8.54 — 직사각형 리본(가운데 0~94 가 글자 칸, 양 끝 125 고정) · 모드 탭(연보라 / 고르면 민트, 양 끝 50 고정)
+def strict(im):
+    al = np.array(im)[:, :, 3]
+    ys = np.where(al.max(1) > 100)[0]; xs = np.where(al.max(0) > 100)[0]
+    return im.crop((int(xs.min()), int(ys.min()), int(xs.max()) + 1, int(ys.max()) + 1))
+for src, dst in [("ui_ribbon2_2_raw", "ribbon"), ("ui_tab_on_1_raw", "tab_on"), ("ui_tab_off_1_raw", "tab_off")]:
+    im = strict(Image.open(G / (src + ".png")).convert("RGBA"))
+    im = im.resize((round(im.width * 120 / im.height), 120), Image.LANCZOS)
+    im.save(O / (dst + ".webp"), quality=92)
+    print(dst, im.size)
