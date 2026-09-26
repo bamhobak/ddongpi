@@ -1039,6 +1039,14 @@
     margin-top: 14px;                               /* 리본이 위로 튀어나오는 만큼 비워 둔다 */
   }
   #startScreen .board { margin-top: 0; }   /* 시작 화면은 자리가 빠듯해 리본을 로고 아래 여백에 걸친다 */
+  /* v0.8.97 금테 안쪽 빈 띠(테 두께 24px 중 금색은 11px)를 순위 목록이 좀 더 쓴다 — 직업 탭은 폭 그대로 왼쪽으로만 */
+  #startScreen .board.withTabs, #overScreen .board.withTabs { padding-left: 0; padding-right: 0; }
+  #startScreen .board.withTabs .jobTabs, #overScreen .board.withTabs .jobTabs { margin-left: -6px; }
+  #startScreen .board.withTabs ol, #overScreen .board.withTabs ol { margin-right: -6px; }
+  /* 메달 좌우 여백 줄이기 */
+  #startScreen .board li.p1, #startScreen .board li.p2, #startScreen .board li.p3,
+  #overScreen .board li.p1, #overScreen .board li.p2, #overScreen .board li.p3 { padding-left: 4px; gap: 5px; }
+  .board li.p1 .rk, .board li.p2 .rk, .board li.p3 .rk { width: auto; }
   #startScreen #lastBoard {                       /* 한 줄짜리라 틀을 얇게 (예전 .board.last 금테 스타일을 덮는다) */
     --bf: .22; margin-top: 12px; padding: 0 4px 1px;
     border-style: solid; border-color: transparent;
@@ -1412,7 +1420,7 @@
   const elTitle = document.getElementById("overTitle");
   const coinNote = document.getElementById("coinNote");
 
-  const GAME_VERSION = "v0.8.96";
+  const GAME_VERSION = "v0.8.97";
   /* 제작사 스플래시(bamhobak friends 로고) — 2026-09-20 끔. 다시 켜려면 true */
   const SPLASH_USE = false;   // 코드를 고칠 때마다 뒤 두 자리를 올린다
   document.getElementById("ver").textContent = GAME_VERSION;
