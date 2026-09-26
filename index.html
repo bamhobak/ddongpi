@@ -194,6 +194,17 @@
   .board li.p3 .sc { color: #d99257; font-size: .98em; font-weight: 700; }
 
   .board li.p1 .rk, .board li.p2 .rk, .board li.p3 .rk { font-size: 1.15em; }
+  .board li.p1, .board li.p2, .board li.p3 { font-size: .92em; }   /* v0.8.92 1~3위 글씨 조금 작게 */
+  @media (max-width: 400px) {   /* 390 폭 폰에서 1위 점수 끝자리가 잘렸다 */
+    .board li.p1, .board li.p2, .board li.p3 { font-size: .86em; }
+    .board li.p1 .nm, .board li.p2 .nm, .board li.p3 .nm { min-width: 3.4em; }
+    .board li.p1 .sc img.jic, .board li.p2 .sc img.jic, .board li.p3 .sc img.jic { width: 19px; height: 24px; vertical-align: -7px; }
+  }
+  @media (max-width: 370px) {
+    .board li.p1, .board li.p2, .board li.p3 { font-size: .76em; }
+    .board li.p1 .nm, .board li.p2 .nm, .board li.p3 .nm { min-width: 2.6em; }
+    .board li.p1 .sc img.jic, .board li.p2 .sc img.jic, .board li.p3 .sc img.jic { width: 16px; height: 20px; vertical-align: -6px; }
+  }
   /* 내 기록 강조 — 금·은·동 색을 덮지 않도록 테두리로만 표시 */
   .board li.me {
     outline: 2px solid rgba(255,210,63,.9);
@@ -741,8 +752,8 @@
   #startScreen {
     gap: clamp(3px, 0.75vh, 7px);
     /* v0.8.90 시작 화면은 게임판 비율(위아래 --lby 띠)에 갇힐 까닭이 없다 — 폰 높이를 다 쓰고, 아래는 코인·톱니 줄 자리만 남긴다 */
-    padding-top: calc(max(10px, env(safe-area-inset-top)) + min(var(--lby, 0px), 12px));
-    padding-bottom: calc(max(20px, env(safe-area-inset-bottom)) + min(var(--lby, 0px), 30px));
+    padding-top: calc(max(10px, env(safe-area-inset-top)) + min(var(--lby, 0px), 44px));   /* v0.8.92 시작하기 밑 빈자리를 위로 — 로고가 맨 위에 붙지 않게 */
+    padding-bottom: max(12px, env(safe-area-inset-bottom));
     padding-left: calc(10px + var(--lbx, 0px));
     padding-right: calc(10px + var(--lbx, 0px));
   }
@@ -1399,7 +1410,7 @@
   const elTitle = document.getElementById("overTitle");
   const coinNote = document.getElementById("coinNote");
 
-  const GAME_VERSION = "v0.8.91";
+  const GAME_VERSION = "v0.8.92";
   /* 제작사 스플래시(bamhobak friends 로고) — 2026-09-20 끔. 다시 켜려면 true */
   const SPLASH_USE = false;   // 코드를 고칠 때마다 뒤 두 자리를 올린다
   document.getElementById("ver").textContent = GAME_VERSION;
