@@ -70,3 +70,13 @@ for src, dst in [("ui_ribbon2_2_raw", "ribbon"), ("ui_tab_on_1_raw", "tab_on"), 
     im = im.resize((round(im.width * 120 / im.height), 120), Image.LANCZOS)
     im.save(O / (dst + ".webp"), quality=92)
     print(dst, im.size)
+
+
+# v0.8.55 — 모드 그림 카드(높이 150) · 이름 칸 · 소리 버튼(높이 120). 모드 카드는 늘리지 않고 그대로 깐다(가로세로 3.5:1)
+for src, dst, h in [("ui_C_item_1_raw", "mode_item", 150), ("ui_C_vs_1_raw", "mode_vs", 150), ("ui_C_pure_1_raw", "mode_pure", 150),
+                    ("ui_C_noitem_1_raw", "mode_noitem", 150), ("ui_C_name_1_raw", "name_card", 120),
+                    ("ui_C_music_1_raw", "snd_music", 120), ("ui_C_bell_2_raw", "snd_bell", 120)]:
+    im = strict(Image.open(G / (src + ".png")).convert("RGBA"))
+    im = im.resize((round(im.width * h / im.height), h), Image.LANCZOS)
+    im.save(O / (dst + ".webp"), quality=90)
+    print(dst, im.size)

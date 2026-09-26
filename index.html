@@ -712,7 +712,7 @@
      왼쪽 아래는 테스트 모드, 오른쪽 위는 통계. 누르는 자리를 그림 위에 겹쳐 둔다. */
   #startScreen h1 .logoWrap { position: relative; display: inline-block; line-height: 0; }
   #startScreen h1 img.ttl {
-    display: block; width: min(59vw, 268px); height: auto;
+    display: block; width: min(50vw, 236px); height: auto;   /* v0.8.55 59vw → 50vw: 모드 그림 카드가 커진 만큼 */
     filter: drop-shadow(0 3px 10px rgba(0,0,0,.45));
   }
   #startScreen h1 #testDot, #startScreen h1 #devDot, #startScreen h1 #stageDot {
@@ -721,7 +721,7 @@
   }
   /* 화면이 짧은 폰에서는 제목을 조금 더 줄여 스크롤이 생기지 않게 한다 */
   @media (max-height: 670px) {
-    #startScreen h1 img.ttl { width: min(50vw, 232px); }
+    #startScreen h1 img.ttl { width: min(44vw, 210px); }
     #startScreen .board .mini { padding: 2px 3px; }   /* 이름 줄 높이를 못 박은 만큼 여백을 되돌린다 */
   }
   #startScreen h1 #testDot { left: 4%;  top: 69%; width: 19%; height: 27%; }   /* 왼쪽 아래 똥 */
@@ -795,23 +795,46 @@
   #nameBox .who { font-size: 13px; color: #9fb4d0; }
   #nameBox .who b { color: #35f0ff; text-shadow: 0 0 10px rgba(53,240,255,.6); }
   #nameBox button, #nameEdit button { border-radius: 3px; }
+  /* v0.8.55 이름 칸 그림(Codex) — 왼쪽에 이름, 오른쪽 연필 그림을 누르면 수정 */
+  #optRow #nameBox {
+    position: relative; height: 36px; aspect-ratio: 3.9 / 1; box-sizing: border-box;
+    padding: 0 30% 0 12px; border: 0; border-radius: 0;
+    background: url(assets/ui/name_card.webp) center / 100% 100% no-repeat;
+  }
+  #optRow #nameBox .who b { color: #6b3a08; text-shadow: 0 1px 0 rgba(255,255,255,.7); font-size: 13.5px; font-weight: 800; max-width: 100%; }
+  #optRow #nameBox #btnEditName {
+    position: absolute; right: 0; top: 0; bottom: 0; width: 32%;
+    background: none; box-shadow: none; border: 0; padding: 0; font-size: 0; color: transparent;
+  }
+  /* 소리 버튼 그림(Codex) — 🎵 하늘색 · 🔔 복숭아색. 끄면 흐리게 */
+  #sndBox .ctrlBtn.sndBtn, #pauseSnd .ctrlBtn.sndBtn {
+    width: 36px; height: 36px; padding: 0; border: 0; border-radius: 0; box-shadow: none;
+    font-size: 0; color: transparent;
+    background: center / 100% 100% no-repeat;
+    filter: grayscale(.85) brightness(.75);
+  }
+  #sndBox .ctrlBtn.sndBtn.on, #pauseSnd .ctrlBtn.sndBtn.on { filter: none; }
+  .ctrlBtn.sndBtn[data-snd="bgm"] { background-image: url(assets/ui/snd_music.webp) !important; }
+  .ctrlBtn.sndBtn[data-snd="sfx"] { background-image: url(assets/ui/snd_bell.webp) !important; }
+  #optRow #sndBox { padding: 0; gap: 5px; background: none; border: 0; }
+  #optRow #sndBox .ctrlBtn.sndBtn { width: 36px; height: 36px; }
 
   /* 스테이지 고르기 — 시작 버튼 바로 위 */
   #modeBox { display: flex; flex-direction: column; align-items: center; gap: 5px; }
-  /* v0.8.54 모드 고르기 — Codex 그림 탭(연보라·고르면 민트) 2×2. 그림 높이 120 에서 양 끝 50px(둥근 모서리)만 두고 가운데를 늘린다 */
-  #modeSeg { display: grid; grid-template-columns: 1fr 1fr; gap: 5px 7px; width: min(320px, 88vw); }
+  /* v0.8.55 모드 고르기 — 모드마다 그림 카드(Codex, 왼쪽 그림 · 오른쪽 이름) 2×2. 고른 것만 밝고 나머지는 흐리게 */
+  #modeSeg { display: grid; grid-template-columns: 1fr 1fr; gap: 6px 8px; width: min(330px, 90vw); }
   #modeSeg button {
-    height: 34px; box-sizing: border-box; padding: 0 2px 2px; white-space: nowrap;
-    font-size: 13.5px; font-weight: 800; letter-spacing: 0; box-shadow: none; border-radius: 0; background: none;
-    border-style: solid; border-color: transparent; border-width: 0 14px;
-    border-image: url(assets/ui/tab_off.webp) 0 50 fill / 0 14px / 0 stretch;
-    color: #fff; text-shadow: 0 1px 2px rgba(60,30,110,.7);
+    aspect-ratio: 3.5 / 1; height: auto; box-sizing: border-box; padding: 0 4px 0 36%; white-space: nowrap;
+    font-size: 14px; font-weight: 800; letter-spacing: 0; box-shadow: none; border: 0; border-radius: 0;
+    background: center / 100% 100% no-repeat;
+    color: #4a2408; text-shadow: 0 1px 0 rgba(255,255,255,.7);
+    filter: saturate(.55) brightness(.86); opacity: .9; transition: filter .15s ease, transform .15s ease, opacity .15s ease;
   }
-  #modeSeg button.on {
-    border-image-source: url(assets/ui/tab_on.webp);
-    color: #0b3b3d; text-shadow: 0 1px 0 rgba(255,255,255,.55);
-    filter: drop-shadow(0 0 8px rgba(53,240,255,.55));
-  }
+  #modeSeg button[data-mode="item"]   { background-image: url(assets/ui/mode_item.webp); }
+  #modeSeg button[data-mode="vs"]     { background-image: url(assets/ui/mode_vs.webp); }
+  #modeSeg button[data-mode="pure"]   { background-image: url(assets/ui/mode_pure.webp); }
+  #modeSeg button[data-mode="noitem"] { background-image: url(assets/ui/mode_noitem.webp); }
+  #modeSeg button.on { filter: drop-shadow(0 0 7px rgba(255,236,150,.85)); transform: scale(1.03); opacity: 1; }
   #modeSeg button.locked { opacity: .55; }
   #modeSeg button.locked::after { content: " 🔒"; font-size: 11px; }
   #modeDesc { display: none; }   /* 스테이지 설명 줄은 두지 않는다 (버튼 이름으로 충분) */
@@ -999,10 +1022,10 @@
 
       <div id="modeBox">
         <div id="modeSeg" role="radiogroup" aria-label="스테이지">
-          <button data-mode="item" role="radio">🎉 똥대잔치</button>
-          <button data-mode="vs" role="radio">⚔️ 대전모드</button>
-          <button data-mode="pure" role="radio">🥊 맨몸대결</button>
-          <button data-mode="noitem" role="radio">🗼 똥탑등반</button>
+          <button data-mode="item" role="radio">똥대잔치</button>
+          <button data-mode="vs" role="radio">대전모드</button>
+          <button data-mode="pure" role="radio">맨몸대결</button>
+          <button data-mode="noitem" role="radio">똥탑등반</button>
         </div>
         <div id="modeDesc"></div>
       </div>
@@ -1277,7 +1300,7 @@
   const elTitle = document.getElementById("overTitle");
   const coinNote = document.getElementById("coinNote");
 
-  const GAME_VERSION = "v0.8.54";
+  const GAME_VERSION = "v0.8.55";
   /* 제작사 스플래시(bamhobak friends 로고) — 2026-09-20 끔. 다시 켜려면 true */
   const SPLASH_USE = false;   // 코드를 고칠 때마다 뒤 두 자리를 올린다
   document.getElementById("ver").textContent = GAME_VERSION;
