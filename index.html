@@ -1353,7 +1353,7 @@
   const elTitle = document.getElementById("overTitle");
   const coinNote = document.getElementById("coinNote");
 
-  const GAME_VERSION = "v0.8.84";
+  const GAME_VERSION = "v0.8.85";
   /* 제작사 스플래시(bamhobak friends 로고) — 2026-09-20 끔. 다시 켜려면 true */
   const SPLASH_USE = false;   // 코드를 고칠 때마다 뒤 두 자리를 올린다
   document.getElementById("ver").textContent = GAME_VERSION;
@@ -1613,6 +1613,7 @@
     return Math.max(22, Math.min(W - 22, player.x + off));
   }
   const JOB_DEFAULT = "fortune";                 // v0.8.70 쉬었음 청년을 빼면서 기본 직업은 루나(점술가)
+  function jobShort(j) { return JOBS[j].nm.split(" · ")[0]; }   // "버피 · 헬스견" → "버피"
   function jobOk(j) { return !!(JOBS[j] && !JOBS[j].gone); }
   let job = JOB_DEFAULT;
   try { const j = localStorage.getItem(LS_JOB); if (jobOk(j)) job = j; } catch (e) {}
@@ -10779,7 +10780,7 @@
               jobLists[job] = jl;
               jat = jl.findIndex(v => v.name + "|" + Number(v.score) === myRowKey);
             } catch (e) {}
-            if (jat >= 0) nameTag.textContent = "🎉 이번 주 " + JOBS[job].nm + " " + (jat + 1) + "위 달성! (" + nm + ")";
+            if (jat >= 0) nameTag.textContent = "🎉 이번 주 " + jobShort(job) + " " + (jat + 1) + "위 달성! (" + nm + ")";
             else nameRow.classList.remove("on");
           }
         } catch (e) {
@@ -11117,7 +11118,7 @@
   // 탭을 바꾸고(두 화면 모두) 목록을 다시 그린다
   /* 제목에 지금 보고 있는 직업을 넣는다 — 전체일 때는 넣지 않는다 */
   function syncBoardTitle() {
-    const nm = boardJob !== "all" && JOBS[boardJob] ? JOBS[boardJob].nm + " " : "";
+    const nm = boardJob !== "all" && JOBS[boardJob] ? jobShort(boardJob) + " " : "";   // v0.8.85 캐릭터 이름만
     const md = gameMode !== "item" ? MODES[gameMode].nm + " " : "";
     for (const h of document.querySelectorAll(".boardTitle"))
       h.textContent = "🏆 이번 주 " + md + nm + "TOP 10";
