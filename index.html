@@ -752,8 +752,10 @@
   #startScreen {
     gap: clamp(3px, 0.75vh, 7px);
     /* v0.8.90 시작 화면은 게임판 비율(위아래 --lby 띠)에 갇힐 까닭이 없다 — 폰 높이를 다 쓰고, 아래는 코인·톱니 줄 자리만 남긴다 */
-    padding-top: calc(max(10px, env(safe-area-inset-top)) + min(var(--lby, 0px), 44px));   /* v0.8.92 시작하기 밑 빈자리를 위로 — 로고가 맨 위에 붙지 않게 */
-    padding-bottom: max(12px, env(safe-area-inset-bottom));
+    /* v0.8.95 위아래 여백을 똑같이 → 내용이 화면 한가운데. 노치 자리는 body 가 이미 비워 두므로
+       여기서 safe-area 를 또 더하면 위만 두 번 비어(폰에 따라 위 여백만 커졌다) 넣지 않는다 */
+    padding-top: 10px;
+    padding-bottom: 10px;
     padding-left: calc(10px + var(--lbx, 0px));
     padding-right: calc(10px + var(--lbx, 0px));
   }
@@ -1410,7 +1412,7 @@
   const elTitle = document.getElementById("overTitle");
   const coinNote = document.getElementById("coinNote");
 
-  const GAME_VERSION = "v0.8.94";
+  const GAME_VERSION = "v0.8.95";
   /* 제작사 스플래시(bamhobak friends 로고) — 2026-09-20 끔. 다시 켜려면 true */
   const SPLASH_USE = false;   // 코드를 고칠 때마다 뒤 두 자리를 올린다
   document.getElementById("ver").textContent = GAME_VERSION;
