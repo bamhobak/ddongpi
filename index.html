@@ -1412,7 +1412,7 @@
   const elTitle = document.getElementById("overTitle");
   const coinNote = document.getElementById("coinNote");
 
-  const GAME_VERSION = "v0.8.95";
+  const GAME_VERSION = "v0.8.96";
   /* 제작사 스플래시(bamhobak friends 로고) — 2026-09-20 끔. 다시 켜려면 true */
   const SPLASH_USE = false;   // 코드를 고칠 때마다 뒤 두 자리를 올린다
   document.getElementById("ver").textContent = GAME_VERSION;
@@ -7389,6 +7389,7 @@
   }
 
   const MOON_GAP = 5;                  // 달끼리 최소 간격(초, 판 시간)
+  const FIRST_MOON_BY = 9;             // 똥대잔치 첫 달은 늦어도 이때 (v0.8.96)
   let lastMoonAt = -99;
   function isMoonT(b) { return b.type === "moon" || b.type === "fullmoon"; }
   function spawnBonus(picked) {
@@ -8190,6 +8191,12 @@
        붙는다 (뚜니핑 낙하물은 빼고). 1 이 못 되는 나머지는 다음으로 넘긴다. */
     while (coinDebt >= 1) { spawnCoin(); coinDebt -= 1; }
     if (!powered) {
+      /* v0.8.96 똥대잔치 — 운이 아무리 나빠도 판 시작 9초엔 첫 달이 떨어지기 시작한다
+         (첫 타이머는 평균의 25~85%라 보통 4~13초, 바꿔치기에 걸리면 20초 넘게도 안 왔다). 무소유는 원래 달이 없다 */
+      if (runMode === "item" && lastMoonAt < 0 && elapsed >= FIRST_MOON_BY && job !== "powerp") {
+        const mb = BONUS.find(b => b.type === "moon");
+        spawnBonus(mb); mb.t = bonusInterval(mb);
+      }
       for (const b of BONUS) {           // 종류별로 따로 세다가 각자 때가 되면 떨어진다
         b.t -= dt * tsc;
         if (b.t <= 0) {
