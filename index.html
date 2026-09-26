@@ -250,6 +250,7 @@
   #jobList img.ic { width: auto; height: 78px; object-fit: contain; flex: none; }
   /* v0.8.65 파워J 정면(서서 안경 올리는 자세)은 귀·발끝까지 길어 같은 높이에서 방울이(앉은 자세)보다 작아 보인다 — 20% 키워 보인다.
      transform 이라 칸 크기는 그대로. 강아지 모드 그림(assets/dogs/…)은 해당 없음 */
+  img[src$="assets/levitator_right.png"] { transform: scale(1.18); transform-origin: 50% 88%; }   /* v0.8.75 소라 정면 — 날개가 넓어 작아 보였다 */
   img[src$="assets/powerj_right.png"] { transform: scale(1.14); transform-origin: 50% 88%;   /* v0.8.66 1.2 → 5% 줄여 1.14 */ }
   /* 여덟 직업이 스크롤 없이 한 화면에 들어가도록 카드를 낮춘다.
      증강 카드와 같은 .augCard 를 쓰므로 여기서만 좁힌다. */
@@ -1334,7 +1335,7 @@
   const elTitle = document.getElementById("overTitle");
   const coinNote = document.getElementById("coinNote");
 
-  const GAME_VERSION = "v0.8.74";
+  const GAME_VERSION = "v0.8.75";
   /* 제작사 스플래시(bamhobak friends 로고) — 2026-09-20 끔. 다시 켜려면 true */
   const SPLASH_USE = false;   // 코드를 고칠 때마다 뒤 두 자리를 올린다
   document.getElementById("ver").textContent = GAME_VERSION;
@@ -1843,16 +1844,17 @@
     hurt:  { img: null, aspect: 1.423, head: 0.400, cx: 0.730, cy: 0.420, adj: 0.5710 }
   };
   const SPR_LEV_SPACE = {    // 소라 — 파피용(장난감 날개·실크햇·풍선)
-    right: { img: null, aspect: 1.225, head: 0.324, cx: 0.742, cy: 0.484, adj: 0.5710, float: true },
-    hurt:  { img: null, aspect: 1.442, head: 0.310, cx: 0.800, cy: 0.490, adj: 0.5710 }
+    right: { img: null, aspect: 1.225, head: 0.324, cx: 0.742, cy: 0.484, adj: 0.4800, float: true },
+    hurt:  { img: null, aspect: 1.442, head: 0.310, cx: 0.800, cy: 0.490, adj: 0.4800 }
   };
   const SPR_FIT_SPACE = {    // 버피 — 복서
     right: { img: null, aspect: 1.170, head: 0.374, cx: 0.655, cy: 0.412, adj: 0.5710, float: true },
     hurt:  { img: null, aspect: 1.420, head: 0.380, cx: 0.760, cy: 0.450, adj: 0.5710 }
   };
+  // v0.8.75 소라는 날개 때문에 커 보여서 그림만 16% 줄였다 (adj 0.571 → 0.48) — 피격 범위(판정원)는 그대로
   const SPR_LEV = {
-    right: { img: null, aspect: 1.180, head: 0.332, cx: 0.774, cy: 0.509, adj: 0.5710, float: true },
-    hurt:  { img: null, aspect: 1.317, head: 0.330, cx: 0.740, cy: 0.570, adj: 0.5710 }
+    right: { img: null, aspect: 1.180, head: 0.332, cx: 0.774, cy: 0.509, adj: 0.4800, float: true },
+    hurt:  { img: null, aspect: 1.317, head: 0.330, cx: 0.740, cy: 0.570, adj: 0.4800 }
   };
   const SPR_FIT = {
     right: { img: null, aspect: 1.415, head: 0.387, cx: 0.671, cy: 0.397, adj: 0.5710, float: true },
