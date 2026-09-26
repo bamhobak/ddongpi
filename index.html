@@ -509,7 +509,7 @@
   }
 
   /* ---- 개발자 통계 패널 (제목 오른쪽 💩 → 비밀번호) ---- */
-  #devDot, #testDot, #stageDot { cursor: pointer; }
+  #devDot, #testDot { cursor: pointer; }
   #testScreen { gap: 14px; }
   #testScreen h2 { font-size: 20px; color: #ffd23f; }
   #testRow { display: flex; gap: 8px; align-items: center; }
@@ -776,23 +776,21 @@
     display: block; width: min(60vw, 240px); height: auto;   /* v0.8.90 이름·소리 줄이 설정 창으로 빠진 자리만큼 키웠다. v0.8.88 새 로고(B, 가로세로 1.5)는 옛 로고보다 키가 커서 높이가 같도록 폭을 줄였다 */
     filter: drop-shadow(0 3px 10px rgba(0,0,0,.45));
   }
-  #startScreen h1 #testDot, #startScreen h1 #devDot, #startScreen h1 #stageDot {
+  #startScreen h1 #testDot, #startScreen h1 #devDot {
     position: absolute; display: block;
     transition: transform .18s ease;
   }
-  @media (max-height: 780px) { #startScreen h1 img.ttl { width: min(52vw, 200px); } }
+  @media (max-height: 780px) { #startScreen h1 img.ttl { width: min(58vw, 226px); } }
   /* 화면이 짧은 폰에서는 제목을 조금 더 줄여 스크롤이 생기지 않게 한다 */
   @media (max-height: 670px) {
-    #startScreen h1 img.ttl { width: min(37vw, 176px); }
+    #startScreen h1 img.ttl { width: min(46vw, 190px); }
     #startScreen h1 { margin-bottom: 4px; }
     #startScreen .board .mini { padding: 2px 3px; }   /* 이름 줄 높이를 못 박은 만큼 여백을 되돌린다 */
   }
   /* v0.8.88 새 로고 — 숨은 버튼 자리를 새 그림에 맞췄다 */
   #startScreen h1 #testDot { left: 0%;  top: 62%; width: 17%; height: 30%; }   /* 왼쪽 아래 구름·별 */
   #startScreen h1 #devDot  { left: 28%; top: 0%;  width: 32%; height: 38%; }   /* 가운데 위 큰 똥 */
-  #startScreen h1 #stageDot { left: 38%; top: 40%; width: 24%; height: 18%; }  /* '저피' */
-  #startScreen h1 #testDot:active, #startScreen h1 #devDot:active,
-  #startScreen h1 #stageDot:active { transform: scale(.88); }
+  #startScreen h1 #testDot:active, #startScreen h1 #devDot:active { transform: scale(.88); }
 
   /* 랭킹판 — 유리판 느낌 */
   /* 이번 판에 주운 코인 — 마지막 점수 바로 아래 */
@@ -906,8 +904,6 @@
   }
   #modeSeg button[data-mode="item"]   { background-image: url(assets/ui/mode_item.webp); }
   #modeSeg button[data-mode="vs"]     { background-image: url(assets/ui/mode_vs.webp); }
-  #modeSeg button[data-mode="pure"]   { background-image: url(assets/ui/mode_pure.webp); }
-  #modeSeg button[data-mode="noitem"] { background-image: url(assets/ui/mode_noitem.webp); }
   #modeSeg button.on { filter: drop-shadow(0 0 7px rgba(255,236,150,.85)); transform: scale(1.03); }
   #modeSeg button.locked { opacity: .55; }
   #modeSeg button.locked::after { content: " 🔒"; font-size: 11px; }
@@ -1097,7 +1093,6 @@
         <img class="ttl" src="assets/logo.webp" alt="이피저피똥피" decoding="async">
         <span id="testDot" aria-label="테스트 모드"></span>
         <span id="devDot" aria-label="통계"></span>
-        <span id="stageDot" aria-label="강아지로 시작"></span>
       </span></h1>
       <div id="boardSlot">
       <div class="board withTabs">
@@ -1122,8 +1117,6 @@
         <div id="modeSeg" role="radiogroup" aria-label="스테이지">
           <button data-mode="item" role="radio">똥대잔치</button>
           <button data-mode="vs" role="radio">대전모드</button>
-          <button data-mode="pure" role="radio">맨몸대결</button>
-          <button data-mode="noitem" role="radio">똥탑등반</button>
         </div>
         <div id="modeDesc"></div>
       </div>
@@ -1420,7 +1413,7 @@
   const elTitle = document.getElementById("overTitle");
   const coinNote = document.getElementById("coinNote");
 
-  const GAME_VERSION = "v0.8.97";
+  const GAME_VERSION = "v0.8.98";
   /* 제작사 스플래시(bamhobak friends 로고) — 2026-09-20 끔. 다시 켜려면 true */
   const SPLASH_USE = false;   // 코드를 고칠 때마다 뒤 두 자리를 올린다
   document.getElementById("ver").textContent = GAME_VERSION;
@@ -1736,7 +1729,8 @@
   /* 똥탑등반은 아직 개발 중이라 잠가 둔다 — 누르면 개발자 비밀번호를 묻고, 맞으면 이번 접속 동안만 열린다.
      (지난번에 똥탑등반을 골라 두었더라도 새로 들어오면 똥대잔치로 시작한다) */
   let towerOpen = true;              // 2026-09-19 모두에게 열었다 (잠그려면 false — 누르면 개발자 비밀번호)
-  try { const m = localStorage.getItem(LS_MODE); if (MODES[m] && (towerOpen || m !== "noitem")) gameMode = m; } catch (e) {}
+  /* v0.8.98 맨몸대결·똥탑등반은 고르는 버튼을 뺐다 — 예전에 골라 둔 사람도 똥대잔치로 시작한다 (판 코드는 남아 있다) */
+  try { const m = localStorage.getItem(LS_MODE); if (m === "item" || m === "vs") gameMode = m; } catch (e) {}
   let runMode = gameMode;            // 지금 판이 어느 스테이지인가 (판 도중에 안 바뀐다)
   function noItem() { return runMode === "noitem"; }                        // 똥탑등반 (패턴·보스·m 기록)
   function itemsOff() { return runMode === "noitem" || runMode === "pure" || runMode === "vs"; }   // 아이템·증강이 안 나오는 판 (코인은 대전모드 빼고 나온다)
@@ -6872,13 +6866,7 @@
     reset(false);
   });
   btnRetryJob.addEventListener("click", () => openJobSelect());
-  // 로고의 '재피' — 시작하기와 똑같이 들어가되 강아지로 뛴다
-  document.getElementById("stageDot").addEventListener("click", () => {
-    beep(1000, .08, "triangle", .05);
-    dogMode = true;
-    if (!savedName()) { startEditName(); return; }
-    openJobSelect();
-  });
+  // (로고 '저피'를 누르면 옛 강아지로 뛰던 숨은 입구는 v0.8.98 에 뺐다 — dogMode 는 늘 false)
 
   function reset(test) {
     testMode = (test === true);    // 정확히 true 일 때만 테스트 모드 (이벤트 객체가 새어들지 않게)
@@ -11762,11 +11750,7 @@
     testMsg.textContent = "";
     testPw.value = "";
     testScreen.classList.add("hidden");
-    if (pwPurpose === "tower") {           // 똥탑등반 열기 — 이번 접속 동안만
-      towerOpen = true;
-      setMode("noitem");
-      return;
-    }
+    if (pwPurpose === "tower") return;     // 똥탑등반은 v0.8.98 에 뺐다
     openJobSelect(true);                   // 테스트 모드도 직업을 고르고 시작
   }
 
