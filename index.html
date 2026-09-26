@@ -713,7 +713,8 @@
   /* ─────────── 시작 화면 ─────────── */
   #startScreen {
     gap: clamp(8px, 1.8vh, 14px);
-    background: rgba(10,11,16,.38);            /* 뒤 타이틀 그림이 비쳐 보이게 */
+    /* v0.8.91 새 배경(D, Codex) — 캔버스 그림은 게임판 비율이라 긴 폰에서 위아래 띠가 보였다. 시작 화면이 직접 화면 전체를 덮는다 */
+    background: linear-gradient(rgba(10,11,16,.38), rgba(10,11,16,.38)), url(assets/bg/title.webp) center top / cover no-repeat;
   }
   /* 화면 위쪽에 은은한 빛을 깔아 패널이 떠 보이게 한다 */
   #startScreen::before {
@@ -1398,7 +1399,7 @@
   const elTitle = document.getElementById("overTitle");
   const coinNote = document.getElementById("coinNote");
 
-  const GAME_VERSION = "v0.8.90";
+  const GAME_VERSION = "v0.8.91";
   /* 제작사 스플래시(bamhobak friends 로고) — 2026-09-20 끔. 다시 켜려면 true */
   const SPLASH_USE = false;   // 코드를 고칠 때마다 뒤 두 자리를 올린다
   document.getElementById("ver").textContent = GAME_VERSION;
