@@ -818,6 +818,7 @@
     filter: grayscale(.85) brightness(.75);
   }
   #sndBox .ctrlBtn.sndBtn.on, #pauseSnd .ctrlBtn.sndBtn.on { filter: none; }
+  .ctrlBtn.sndBtn .emj { display: none !important; }   /* v0.8.77 그림 카드 위에 옛 이모지 그림(🎵🔔)이 작게 겹쳐 있었다 */
   .ctrlBtn.sndBtn[data-snd="bgm"] { background-image: url(assets/ui/snd_music.webp) !important; }
   .ctrlBtn.sndBtn[data-snd="sfx"] { background-image: url(assets/ui/snd_bell.webp) !important; }
   #optRow #sndBox { padding: 0; gap: 5px; background: none; border: 0; }
@@ -832,7 +833,7 @@
     font-size: 14px; font-weight: 800; letter-spacing: 0; box-shadow: none; border: 0; border-radius: 0;
     background: center / 100% 100% no-repeat;
     color: #4a2408; text-shadow: 0 1px 0 rgba(255,255,255,.7);
-    filter: saturate(.55) brightness(.86); opacity: .9; transition: filter .15s ease, transform .15s ease, opacity .15s ease;
+    filter: saturate(.45) brightness(1.08); opacity: .55; transition: filter .15s ease, transform .15s ease, opacity .15s ease;   /* v0.8.77 안 고른 카드는 더 연하게 */
   }
   #modeSeg button[data-mode="item"]   { background-image: url(assets/ui/mode_item.webp); }
   #modeSeg button[data-mode="vs"]     { background-image: url(assets/ui/mode_vs.webp); }
@@ -1335,7 +1336,7 @@
   const elTitle = document.getElementById("overTitle");
   const coinNote = document.getElementById("coinNote");
 
-  const GAME_VERSION = "v0.8.76";
+  const GAME_VERSION = "v0.8.77";
   /* 제작사 스플래시(bamhobak friends 로고) — 2026-09-20 끔. 다시 켜려면 true */
   const SPLASH_USE = false;   // 코드를 고칠 때마다 뒤 두 자리를 올린다
   document.getElementById("ver").textContent = GAME_VERSION;
@@ -1375,6 +1376,8 @@
     powerp: { nm: "무무 · 무소유", ic: "🙏", ds: "달이 아예 안 나온다 · 별이 조금 잘 나온다 · 안 맞을수록 점수가 치솟는다" },
     bangul: { nm: "방울이", ic: "🫧", ds: "목숨 대신 오염도 · 비누방울이 한 대를 대신 맞고 터진다 · 잠시 뒤 다시 맺힌다", f: "이핑재핑보다 귀엽다" }
   };
+  // v0.8.77 고르는 화면·순위 탭 순서 (두 줄씩: 방울이 버피 / 제이 소라 / 무무 루나) — 키를 다시 넣어 순서를 바꾼다
+  for (const k of ["bangul", "fit", "powerj", "levitator", "powerp", "fortune"]) { const v = JOBS[k]; delete JOBS[k]; JOBS[k] = v; }
   // 직업별 캐릭터 그림(오른쪽 이동 모습) — 직업 카드와 순위표에서 함께 쓴다
   // (방울이의 bangul_right.png 만은 얌전히 앉은 정면 소개 그림이다 — 게임 안에서는 헤엄 16장을 쓰므로 소개 전용)
   const JOB_IMG = { none: "player", fortune: "fortune", gambler: "gambler", levitator: "levitator",
@@ -9569,9 +9572,9 @@
        방울이 — 비누방울: 판마다 한 번 똥을 대신 맞고 터진다
        점술가 — 수 읽기: 상대가 가려는 쪽(손가락 목표)이 화살표로 보인다 */
   const VS_JOBS = [
-    { id: "levitator", ds: "짧은 공중 부양 — 떨어질 때 잠깐 천천히" },
-    { id: "fit",       ds: "몸통 박치기 — 들이받으면 1.3배 멀리" },
     { id: "bangul",    ds: "비누방울 — 판마다 똥 한 번 막기" },
+    { id: "fit",       ds: "몸통 박치기 — 들이받으면 1.3배 멀리" },
+    { id: "levitator", ds: "짧은 공중 부양 — 떨어질 때 잠깐 천천히" },
     { id: "fortune",   ds: "수 읽기 — 상대가 가려는 쪽이 보인다" }
   ];
   const VS_FLOAT_SEC = 0.6, VS_FLOAT_G = 0.3, VS_FIT_RAM = 1.3;
