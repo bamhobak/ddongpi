@@ -1334,7 +1334,7 @@
   const elTitle = document.getElementById("overTitle");
   const coinNote = document.getElementById("coinNote");
 
-  const GAME_VERSION = "v0.8.69";
+  const GAME_VERSION = "v0.8.70";
   /* 제작사 스플래시(bamhobak friends 로고) — 2026-09-20 끔. 다시 켜려면 true */
   const SPLASH_USE = false;   // 코드를 고칠 때마다 뒤 두 자리를 올린다
   document.getElementById("ver").textContent = GAME_VERSION;
@@ -1357,19 +1357,21 @@
   /* ---------- 직업 ---------- */
   const LS_JOB = "epjpddongpi_job";
   const JOBS = {
-    none:    { nm: "쉬었음 청년", ic: "🏃",
+    /* v0.8.70 캐릭터 이름 — 표기는 "이름 · 직업" (한국어·영어 같은 이름: Luna·Sora·Buffy·Jay·Mumu·Bangul).
+       쉬었음 청년(none)·파워P(powerp2)는 직업에서 뺐다 — gone: 고르는 화면·순위 탭에 안 나온다 (옛 기록 이름·그림은 남긴다) */
+    none:    { nm: "쉬었음 청년", ic: "🏃", gone: true,
                ds: "힘들때마다 차려지는 엄마의 따뜻한 밥상 · 코인이 2배로 나온다" },
     /* 점술가 — 도박사 자리를 이어받았다. 가끔 떨어지는 수정 구슬(옛 포춘쿠키)을 먹으면 10초 동안 예언 하나가 이뤄진다.
        (옛 도박사 기록은 순위표에 도박사로 그대로 남는다 — JOB_NAMES·JOB_IMG 에만 남겨 두었다) */
-    fortune: { nm: "점술가", ic: "🔮", ds: "10초마다 예언이 저절로 바뀐다 · 좋은 예언 넷, 나쁜 예언 하나" },
-    levitator: { nm: "부양사", ic: "🎈", ds: "하늘 어디든 날 수 있다 · 높이 있을수록 점수 UP" },
-    fit: { nm: "헬스걸", ic: "💪", ds: "목숨 5개로 시작 · 우산이 안 나온다 · 하트가 어마무시하게 잘 나온다 · 벌크업 좀 된 상태" },
-    powerj: { nm: "파워J", ic: "📋", ds: "달이 잘 나온다 · 대신 증강은 계획대로 1개만" },
+    fortune: { nm: "루나 · 점술가", ic: "🔮", ds: "10초마다 예언이 저절로 바뀐다 · 좋은 예언 넷, 나쁜 예언 하나" },
+    levitator: { nm: "소라 · 부양사", ic: "🎈", ds: "하늘 어디든 날 수 있다 · 높이 있을수록 점수 UP" },
+    fit: { nm: "버피 · 헬스걸", ic: "💪", ds: "목숨 5개로 시작 · 우산이 안 나온다 · 하트가 어마무시하게 잘 나온다 · 벌크업 좀 된 상태" },
+    powerj: { nm: "제이 · 파워J", ic: "📋", ds: "달이 잘 나온다 · 대신 증강은 계획대로 1개만" },
     /* 파워P — 파워J 의 거울. 달은 남들만큼 오는데, 올 때마다 네 장을 펼쳐 놓고 고른다.
        아이디가 powerp2 인 것은, powerp 는 무소유가 예전에 파워P 였을 때 쓰던 이름이라
        이미 차 있기 때문이다 (옛 기록과 순위표가 그 이름을 쓴다). */
-    powerp2: { nm: "파워P", ic: "🎯", ds: "증강을 4개 중에서 고른다" },
-    powerp: { nm: "무소유", ic: "🙏", ds: "달이 아예 안 나온다 · 별이 조금 잘 나온다 · 안 맞을수록 점수가 치솟는다" },
+    powerp2: { nm: "파워P", ic: "🎯", gone: true, ds: "증강을 4개 중에서 고른다" },
+    powerp: { nm: "무무 · 무소유", ic: "🙏", ds: "달이 아예 안 나온다 · 별이 조금 잘 나온다 · 안 맞을수록 점수가 치솟는다" },
     bangul: { nm: "방울이", ic: "🫧", ds: "목숨 대신 오염도 · 비누방울이 한 대를 대신 맞고 터진다 · 잠시 뒤 다시 맺힌다", f: "이핑재핑보다 귀엽다" }
   };
   // 직업별 캐릭터 그림(오른쪽 이동 모습) — 직업 카드와 순위표에서 함께 쓴다
@@ -1589,8 +1591,10 @@
     const off = (k - ((n || 1) - 1) / 2) * gap;
     return Math.max(22, Math.min(W - 22, player.x + off));
   }
-  let job = "none";
-  try { const j = localStorage.getItem(LS_JOB); if (JOBS[j]) job = j; } catch (e) {}
+  const JOB_DEFAULT = "fortune";                 // v0.8.70 쉬었음 청년을 빼면서 기본 직업은 루나(점술가)
+  function jobOk(j) { return !!(JOBS[j] && !JOBS[j].gone); }
+  let job = JOB_DEFAULT;
+  try { const j = localStorage.getItem(LS_JOB); if (jobOk(j)) job = j; } catch (e) {}
   /* ---------- 펫 ----------
      직업과 별개로 하나를 데리고 나간다. 전에는 증강(정연핑·갤러그)이거나 직업 능력(도박사의 비둘기)
      이었던 것들 — 판 내내 따라다니며 제 몫을 한다. 펫에서 이어지는 히든 증강은 그 펫이 있을 때만 나온다. */
@@ -1944,9 +1948,9 @@
   // 제 우주복이 있는 직업만. 나머지(파워P 포함)는 공용 우주복을 입는다.
   const JOB_SPRS_SPACE = { bangul: SPR_BANGUL_SPACE, powerp: SPR_MONK_SPACE, powerj: SPR_PJ_SPACE };
   // 인트로의 이재는 매 루프마다 아무 직업이나 입고 나온다 (직업은 판마다 고르는 방식이라)
-  let introJob = "none";
+  let introJob = "fortune";
   function rollIntroJob() {
-    const keys = Object.keys(JOBS);
+    const keys = Object.keys(JOBS).filter(jobOk);
     introJob = keys[Math.floor(Math.random() * keys.length)];
   }
   rollIntroJob();                        // 첫 바퀴부터 무작위
@@ -6443,6 +6447,7 @@
       const lockJ = jobLocked();
       // 카드 앞에는 이모지 대신 그 직업의 이재(오른쪽 이동 모습)를 보여준다
       for (const id in JOBS) {
+        if (JOBS[id].gone) continue;                    // 뺀 직업
         const ic = document.createElement("img"); ic.className = "ic";
         ic.src = jobPic(id); ic.alt = JOBS[id].ic;
         const card = pickCard(id === job, ic, JOBS[id].nm, JOBS[id].ds, () => {
@@ -6598,7 +6603,7 @@
   function setMode(m) {
     gameMode = m;
     syncBoardTabs();
-    if (m === "item") { try { const j = localStorage.getItem(LS_JOB); job = JOBS[j] ? j : "none";
+    if (m === "item") { try { const j = localStorage.getItem(LS_JOB); job = jobOk(j) ? j : JOB_DEFAULT;
                               const q = localStorage.getItem(LS_PET); pet = PETS[q] && hasPet(q) ? q : "none"; } catch (e) {} }
     try { localStorage.setItem(LS_MODE, gameMode); } catch (e) {}
     syncMode();
@@ -8742,7 +8747,7 @@
     player.x = player.tx = W * (guest ? 0.7 : 0.3);
     rival.x = rival.tx = W * (guest ? 0.3 : 0.7);
     // 상대 차림 — 두 폰이면 상대가 고른 것, 한 폰 P2 는 방울이(P1 이 방울이면 쉬었음 청년)
-    rivalJob = NET.role && NET.oppJob ? NET.oppJob : vsGhostOn && vsGhost ? vsGhost.job : (job === "bangul" ? "none" : "bangul");
+    rivalJob = NET.role && NET.oppJob ? NET.oppJob : vsGhostOn && vsGhost ? vsGhost.job : (job === "bangul" ? "fortune" : "bangul");
     vsRecTrace = (NET.role || vsGhostOn) ? [] : null; vsRecT = 0;   // 두 폰·기록 대전은 내 움직임을 남긴다
     rival.y = player.y; rival.tilt = 0; rival.vx = 0; rival.hy = player.hy;
     rival.lives = VS_LIVES; rival.inv = 0; rival.hurt = 0; rival.facing = "left"; rival.kv = 0;
@@ -9438,7 +9443,6 @@
        방울이 — 비누방울: 판마다 한 번 똥을 대신 맞고 터진다
        점술가 — 수 읽기: 상대가 가려는 쪽(손가락 목표)이 화살표로 보인다 */
   const VS_JOBS = [
-    { id: "none",      ds: "능력 없음" },
     { id: "levitator", ds: "짧은 공중 부양 — 떨어질 때 잠깐 천천히" },
     { id: "fit",       ds: "몸통 박치기 — 들이받으면 1.3배 멀리" },
     { id: "bangul",    ds: "비누방울 — 판마다 똥 한 번 막기" },
@@ -9446,7 +9450,7 @@
   ];
   const VS_FLOAT_SEC = 0.6, VS_FLOAT_G = 0.3, VS_FIT_RAM = 1.3;
   const LS_VSJOB = "epjp_vs_job";
-  let vsJob = "none";
+  let vsJob = "fortune";
   try { const j = localStorage.getItem(LS_VSJOB); if (VS_JOBS.some(v => v.id === j)) vsJob = j; } catch (e) {}
   function jobOf(b) { return b === player ? job : rivalJob; }
   function renderVsJobs() {
@@ -10947,7 +10951,7 @@
         box.appendChild(b);
       };
       mk("all", "전체", null);
-      for (const jid in JOBS) mk(jid, "", JOB_IMG[jid], JOBS[jid].nm);   // 아이콘만 — 한 줄에
+      for (const jid in JOBS) if (!JOBS[jid].gone) mk(jid, "", JOB_IMG[jid], JOBS[jid].nm);   // 아이콘만 — 한 줄에 (뺀 직업은 탭 없음)
     }
   }
   buildJobTabs();
@@ -11066,7 +11070,7 @@
   AUG_NAMES.refill = "뚜니핑 무한리필(삭제됨)";
   AUG_NAMES.ghost = "유령화(삭제됨)";
   AUG_NAMES.subs = "뚜니핑 정기구독(삭제됨)";
-  const JOB_NAMES = { none: "쉬었음 청년", fortune: "점술가", gambler: "도박사", levitator: "부양사", fit: "헬스걸", powerj: "파워J", powerp: "무소유", powerp2: "파워P", bangul: "방울이", "(none)": "(기록 없음)" };
+  const JOB_NAMES = { none: "쉬었음 청년", fortune: "루나 · 점술가", gambler: "도박사", levitator: "소라 · 부양사", fit: "버피 · 헬스걸", powerj: "제이 · 파워J", powerp: "무무 · 무소유", powerp2: "파워P", bangul: "방울이", "(none)": "(기록 없음)" };
   const devScreen = document.getElementById("devScreen");
   const devPw     = document.getElementById("devPw");
   const devBody   = document.getElementById("devBody");
