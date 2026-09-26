@@ -1410,7 +1410,7 @@
   const elTitle = document.getElementById("overTitle");
   const coinNote = document.getElementById("coinNote");
 
-  const GAME_VERSION = "v0.8.93";
+  const GAME_VERSION = "v0.8.94";
   /* 제작사 스플래시(bamhobak friends 로고) — 2026-09-20 끔. 다시 켜려면 true */
   const SPLASH_USE = false;   // 코드를 고칠 때마다 뒤 두 자리를 올린다
   document.getElementById("ver").textContent = GAME_VERSION;
@@ -13123,7 +13123,7 @@
     if (prophIs("sight")) {
       /* 천리안 — 모든 똥의 떨어질 자리를 레이저 예고선처럼 보여 준다.
          곧게·비스듬히 떨어지는 똥은 궤적 그대로, 채보 똥은 머리 높이에서 설 칸으로. 지그재그는 그 자리에서 곧장 아래로 */
-      const L = H - GROUND_H;
+      const L = H;                          // v0.8.94 땅 높이에서 끊지 말고 화면 바닥 끝까지 (하늘에는 땅이 없다)
       ctx.save();
       ctx.globalAlpha = fin;
       for (const it of items) {
