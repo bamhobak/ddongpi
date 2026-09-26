@@ -685,6 +685,18 @@
 
   /* 모은 코인 — 판 번호(오른쪽 아래)와 마주 보게 왼쪽 아래에 둔다.
      떠 있는 자리라서 아래 패널들의 높이에 영향을 주지 않는다. */
+  /* v0.8.89 설정 — 이름·배경음·효과음 줄은 시작 화면에서 빼고 오른쪽 아래 톱니 버튼 안으로 */
+  #startScreen #btnSettings {
+    position: absolute; z-index: 3;
+    bottom: max(6px, env(safe-area-inset-bottom)); right: 12px;
+    width: 42px; height: 42px; padding: 0; border-radius: 50%;
+    font-size: 22px; line-height: 1; box-shadow: none;
+    background: rgba(8,9,16,.6); border: 1px solid rgba(255,210,63,.45); color: #ffd23f;
+  }
+  #startScreen #ver { right: 62px !important; }
+  #settingsScreen { z-index: 30; gap: 18px; background: rgba(5,6,13,.9); }
+  #settingsScreen h2 { font-size: 22px; color: #ffd23f; }
+  #settingsScreen #btnSettingsClose { padding: 10px 36px; font-size: 16px; }
   #startScreen #coinBox {
     position: absolute;
     bottom: max(8px, env(safe-area-inset-bottom));
@@ -852,6 +864,15 @@
   .ctrlBtn.sndBtn[data-snd="sfx"] { background-image: url(assets/ui/snd_bell.webp) !important; }
   #optRow #sndBox { padding: 0; gap: 5px; background: none; border: 0; }
   #optRow #sndBox .ctrlBtn.sndBtn { width: 36px; height: 36px; }
+  /* v0.8.89 설정 창 안에서는 크게 */
+  #settingsScreen #optRow { flex-direction: column; align-items: center; gap: 14px; }
+  #settingsScreen .setLbl { font-size: 13px; color: #9fb4d0; margin-bottom: -6px; }
+  #settingsScreen #optRow #nameBox { height: 50px; }
+  #settingsScreen #optRow #nameBox .who b { font-size: 17px; }
+  #settingsScreen #optRow #startName { width: 120px; font-size: 16px; padding: 8px 10px; }
+  #settingsScreen #optRow #nameEdit button { padding: 8px 14px; font-size: 15px; }
+  #settingsScreen #optRow #sndBox { gap: 16px; }
+  #settingsScreen #optRow #sndBox .ctrlBtn.sndBtn { width: 58px; height: 58px; }
 
   /* 스테이지 고르기 — 시작 버튼 바로 위 */
   #modeBox { display: flex; flex-direction: column; align-items: center; gap: 5px; }
@@ -1044,6 +1065,7 @@
     <div id="startScreen" class="screen">
       <div id="ver"></div>
       <div id="coinBox" title="모은 코인">🪙 0</div>
+      <button id="btnSettings" title="설정" aria-label="설정">⚙️</button>
       <h1><span class="logoWrap">
         <img class="ttl" src="assets/logo.webp" alt="이피저피똥피" decoding="async">
         <span id="testDot" aria-label="테스트 모드"></span>
@@ -1069,22 +1091,6 @@
         <div class="vsbHelp">둘이서 한 하늘에! 부딪혀 밀치고, 위로 쓸면 점프(머리 밟기) · 아래로 쓸면 어퍼컷 — 먼저 목숨 3개를 다 잃으면 진다</div>
       </div>
       </div>
-      <div id="optRow">
-        <div id="nameBox">
-          <span class="who"><b id="myName">-</b></span>
-          <button id="btnEditName" title="이름 수정" aria-label="이름 수정">✏️</button>
-        </div>
-        <div id="nameEdit">
-          <input id="startName" type="text" maxlength="5" placeholder="이름 (5자)"
-                 autocomplete="off" autocorrect="off" spellcheck="false">
-          <button id="btnSaveName">저장</button>
-        </div>
-        <div id="sndBox">
-          <button class="ctrlBtn sndBtn" data-snd="bgm" title="배경음" aria-label="배경음">🎵</button>
-          <button class="ctrlBtn sndBtn" data-snd="sfx" title="효과음" aria-label="효과음">🔔</button>
-        </div>
-      </div>
-
       <div id="modeBox">
         <div id="modeSeg" role="radiogroup" aria-label="스테이지">
           <button data-mode="item" role="radio">똥대잔치</button>
@@ -1120,6 +1126,28 @@
         <button class="ctrlBtn sndBtn" data-snd="sfx" title="효과음" aria-label="효과음">🔔</button>
       </div>
       <button id="btnPauseRetry">↻ 다시하기</button>
+    </div>
+
+    <div id="settingsScreen" class="screen hidden">
+      <h2>설정</h2>
+        <div id="optRow">
+          <div class="setLbl">내 이름</div>
+          <div id="nameBox">
+            <span class="who"><b id="myName">-</b></span>
+            <button id="btnEditName" title="이름 수정" aria-label="이름 수정">✏️</button>
+          </div>
+          <div id="nameEdit">
+            <input id="startName" type="text" maxlength="5" placeholder="이름 (5자)"
+                   autocomplete="off" autocorrect="off" spellcheck="false">
+            <button id="btnSaveName">저장</button>
+          </div>
+          <div class="setLbl">소리</div>
+          <div id="sndBox">
+            <button class="ctrlBtn sndBtn" data-snd="bgm" title="배경음" aria-label="배경음">🎵</button>
+            <button class="ctrlBtn sndBtn" data-snd="sfx" title="효과음" aria-label="효과음">🔔</button>
+          </div>
+        </div>
+      <button id="btnSettingsClose">닫기</button>
     </div>
 
     <div id="jobScreen" class="screen hidden">
@@ -1365,7 +1393,7 @@
   const elTitle = document.getElementById("overTitle");
   const coinNote = document.getElementById("coinNote");
 
-  const GAME_VERSION = "v0.8.88";
+  const GAME_VERSION = "v0.8.89";
   /* 제작사 스플래시(bamhobak friends 로고) — 2026-09-20 끔. 다시 켜려면 true */
   const SPLASH_USE = false;   // 코드를 고칠 때마다 뒤 두 자리를 올린다
   document.getElementById("ver").textContent = GAME_VERSION;
@@ -6390,6 +6418,7 @@
     else   { nameBox.classList.add("off");    nameEdit.classList.add("on"); }
   }
   function startEditName() {
+    document.getElementById("settingsScreen").classList.remove("hidden");   // v0.8.89 이름 칸은 설정 창 안에
     startName.value = savedName();
     nameBox.classList.add("off");
     nameEdit.classList.add("on");
@@ -6402,6 +6431,10 @@
     showNameView();
   }
   document.getElementById("btnEditName").addEventListener("click", startEditName);
+  // v0.8.89 설정 — 시작 화면 오른쪽 아래 톱니
+  document.getElementById("btnSettings").addEventListener("click", () => document.getElementById("settingsScreen").classList.remove("hidden"));
+  document.getElementById("btnSettingsClose").addEventListener("click", () => document.getElementById("settingsScreen").classList.add("hidden"));
+  document.getElementById("settingsScreen").addEventListener("click", e => { if (e.target.id === "settingsScreen") e.target.classList.add("hidden"); });
   document.getElementById("btnSaveName").addEventListener("click", saveName);
   startName.addEventListener("keydown", e => {
     e.stopPropagation();                       // 스페이스로 게임이 시작되지 않도록
