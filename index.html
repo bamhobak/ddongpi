@@ -1558,7 +1558,7 @@
   const elTitle = document.getElementById("overTitle");
   const coinNote = document.getElementById("coinNote");
 
-  const GAME_VERSION = "v0.9.20";
+  const GAME_VERSION = "v0.9.21";
   /* 제작사 스플래시(bamhobak friends 로고) — 2026-09-20 끔. 다시 켜려면 true */
   const SPLASH_USE = false;   // 코드를 고칠 때마다 뒤 두 자리를 올린다
   document.getElementById("ver").textContent = GAME_VERSION;
@@ -2069,21 +2069,23 @@
   /* v0.8.72 루나·소라·버피·무무도 강아지로 — 제이처럼 방울이 그림체로 다시 그리고(Codex·OpenAI) 허공 개헤엄(Ludo hydra 49장,
      첫 장면을 끝 장면으로도 줘서 이음새 없이). 땅·우주 모두 7x7 시트(칸 높이 200), 우주복은 저마다 따로.
      정지 그림(<직업>_right.png)은 직업 카드·순위표에만 쓴다. 얼굴 크기(adj)는 방울이와 같게 0.571 — head/cx/cy 는 칸에서 잰 얼굴 원 */
+  /* v0.9.21 — 캐릭터 그림을 15% 작게(판정은 그대로, 머리가 판정보다 1.3배 커 보였다), 판정 가운데(cx·cy)는 방울이와 같은 규칙
+     (두 눈 가운데에서 눈 사이의 1/4 만큼 뒤통수 쪽 · 눈높이)으로 다시 잡았다. 무무는 판정이 얼굴보다 오른쪽이었다 */
   const SPR_FORTUNE = {      // 루나 — 도베르만 점술가
-    right: { img: null, aspect: 1.360, head: 0.432, cx: 0.733, cy: 0.396, adj: 0.5644, lift: 0.262, float: true },
-    hurt:  { img: null, aspect: 1.3350, head: 0.4300, cx: 0.685, cy: 0.430, adj: 0.6022, lift: 0.262 }
+    right: { img: null, aspect: 1.360, head: 0.432, cx: 0.713, cy: 0.380, adj: 0.4797, lift: 0.223, float: true },
+    hurt:  { img: null, aspect: 1.3350, head: 0.4300, cx: 0.666, cy: 0.430, adj: 0.5119, lift: 0.223 }
   };
   const SPR_FORTUNE_SPACE = {
-    right: { img: null, aspect: 1.195, head: 0.345, cx: 0.709, cy: 0.379, adj: 0.5024, lift: 0.115, float: true },
-    hurt:  { img: null, aspect: 1.3711, head: 0.3855, cx: 0.632, cy: 0.405, adj: 0.5867, lift: 0.115 }
+    right: { img: null, aspect: 1.195, head: 0.345, cx: 0.701, cy: 0.416, adj: 0.4270, lift: 0.098, float: true },
+    hurt:  { img: null, aspect: 1.3711, head: 0.3855, cx: 0.625, cy: 0.405, adj: 0.4987, lift: 0.098 }
   };
   const SPR_LEV_SPACE = {    // 소라 — 파피용(장난감 날개·실크햇·풍선)
-    right: { img: null, aspect: 1.225, head: 0.324, cx: 0.742, cy: 0.484, adj: 0.4958, lift: 0.139, float: true },
-    hurt:  { img: null, aspect: 1.4142, head: 0.3039, cx: 0.696, cy: 0.480, adj: 0.4618, lift: 0.139 }
+    right: { img: null, aspect: 1.225, head: 0.324, cx: 0.765, cy: 0.432, adj: 0.4214, lift: 0.118, float: true },
+    hurt:  { img: null, aspect: 1.4142, head: 0.3039, cx: 0.716, cy: 0.480, adj: 0.3925, lift: 0.118 }
   };
   const SPR_FIT_SPACE = {    // 버피 — 복서
-    right: { img: null, aspect: 1.170, head: 0.374, cx: 0.655, cy: 0.412, adj: 0.6152, lift: -0.053, float: true },
-    hurt:  { img: null, aspect: 1.3148, head: 0.3519, cx: 0.640, cy: 0.417, adj: 0.5836, lift: -0.053 }
+    right: { img: null, aspect: 1.170, head: 0.374, cx: 0.656, cy: 0.386, adj: 0.5229, lift: -0.045, float: true },
+    hurt:  { img: null, aspect: 1.3148, head: 0.3519, cx: 0.641, cy: 0.417, adj: 0.4961, lift: -0.045 }
   };
   /* v0.8.80 크기·자리 다시 맞춤(tools/fairsize.py · 확인 그림 tools/lineup.py) — ① 헤엄 그림은 몸 넓이의 제곱근이 모든 캐릭터에서 같게(소라는 날개 몫 8%, 무무·풀소유는 복슬털 몫 10% 작게),
      ② 맞은 그림은 몸 넓이를 헤엄과 같게, 몸 한가운데가 헤엄 때 몸 한가운데와 같은 자리에 오게 — 그림 아래에 투명 여백을 붙여 올리고 cx 로 가로를 맞춘다
@@ -2092,12 +2094,12 @@
   // v0.8.75 소라는 날개 때문에 커 보여서 그림만 16% 줄였다 (adj 0.571 → 0.48) — 피격 범위(판정원)는 그대로
   /* v0.9.09 소라 크기·높이는 풍선과 날개를 빼고 잰 몸만으로 다른 캐릭터와 같게 (날개·풍선 테두리는 첫 헤엄 칸에 손으로 그려 잼 — 땅 38%·우주 22%) */
   const SPR_LEV = {
-    right: { img: null, aspect: 1.180, head: 0.332, cx: 0.774, cy: 0.509, adj: 0.5746, lift: 0.213, float: true },
-    hurt:  { img: null, aspect: 1.3077, head: 0.3275, cx: 0.741, cy: 0.566, adj: 0.5392, lift: 0.213 }
+    right: { img: null, aspect: 1.180, head: 0.332, cx: 0.724, cy: 0.488, adj: 0.4884, lift: 0.181, float: true },
+    hurt:  { img: null, aspect: 1.3077, head: 0.3275, cx: 0.694, cy: 0.566, adj: 0.4583, lift: 0.181 }
   };
   const SPR_FIT = {
-    right: { img: null, aspect: 1.415, head: 0.387, cx: 0.671, cy: 0.397, adj: 0.6957, lift: -0.286, float: true },
-    hurt:  { img: null, aspect: 1.1689, head: 0.4000, cx: 0.686, cy: 0.400, adj: 0.6628, lift: -0.286 }
+    right: { img: null, aspect: 1.415, head: 0.387, cx: 0.634, cy: 0.353, adj: 0.5913, lift: -0.243, float: true },
+    hurt:  { img: null, aspect: 1.1689, head: 0.4000, cx: 0.637, cy: 0.400, adj: 0.5634, lift: -0.243 }
   };
   /* v0.8.64 파워J 새 캐릭터 — 강아지 모드 파워J(흑백 보더콜리·동그란 안경·셔츠와 넥타이·클립보드·귀에 연필)를
      방울이 그림체로 다시 그리고(Codex pj_fly_2) 방울이처럼 허공 개헤엄(Ludo hydra 56장 → 시트 8열, 칸 255x200).
@@ -2106,19 +2108,19 @@
   const SPR_PJ = {
     /* v0.8.69 끝·처음이 이어지게 다시 뽑았다 — Ludo 에 첫 장면을 끝 장면(final_image)으로도 줘서 한 바퀴 돌아 제자리로 오는 49장
        (끝→처음 차이 5.3, 이웃 평균 12). 7x7 시트, 칸 243x200 */
-    right: { img: null, aspect: 1.214, head: 0.494, cx: 0.742, cy: 0.453, adj: 0.6839, lift: 0.211, float: true },
-    hurt:  { img: null, aspect: 1.3114, head: 0.5353, cx: 0.710, cy: 0.462, adj: 0.7747, lift: 0.211 }   // pj_hurt_2 — 혹·'> <' 울음·종이 흩날림
+    right: { img: null, aspect: 1.214, head: 0.494, cx: 0.691, cy: 0.416, adj: 0.5813, lift: 0.179, float: true },
+    hurt:  { img: null, aspect: 1.3114, head: 0.5353, cx: 0.665, cy: 0.462, adj: 0.6585, lift: 0.179 }   // pj_hurt_2 — 혹·'> <' 울음·종이 흩날림
   };
   /* 파워J 우주복(Codex pj_space2_1 — 꼬리까지 우주복 덮개, 안경은 헬멧 안) → Ludo 64장 시트(8x8, 칸 231x200).
      맞은 그림(pj_spacehurt_1)은 헬멧이 안 깨지고 별이 돈다 — 헬멧 지름이 헤엄 때와 같아지게 head 를 잡았다 */
   const SPR_PJ_SPACE = {
     // v0.8.69 우주도 첫 장면=끝 장면으로 49장 다시 (끝→처음 6.1). 7x7 시트, 칸 227x200
-    right: { img: null, aspect: 1.137, head: 0.461, cx: 0.721, cy: 0.382, adj: 0.6680, lift: 0.144, float: true },
-    hurt:  { img: null, aspect: 1.2029, head: 0.4890, cx: 0.711, cy: 0.450, adj: 0.6878, lift: 0.144 }
+    right: { img: null, aspect: 1.137, head: 0.461, cx: 0.650, cy: 0.421, adj: 0.5678, lift: 0.122, float: true },
+    hurt:  { img: null, aspect: 1.2029, head: 0.4890, cx: 0.642, cy: 0.450, adj: 0.5846, lift: 0.122 }
   };
   const SPR_MONK = {        // 무무 — 사모예드 스님 (v0.8.72)
-    right: { img: null, aspect: 1.175, head: 0.370, cx: 0.760, cy: 0.440, adj: 0.5472, lift: 0.051, float: true },
-    hurt:  { img: null, aspect: 1.2511, head: 0.2752, cx: 0.738, cy: 0.377, adj: 0.382, lift: 0.051 }
+    right: { img: null, aspect: 1.175, head: 0.370, cx: 0.706, cy: 0.400, adj: 0.4651, lift: 0.043, float: true },
+    hurt:  { img: null, aspect: 1.2511, head: 0.2752, cx: 0.684, cy: 0.377, adj: 0.3247, lift: 0.043 }
   };
   /* 파워P — 다른 직업과 같은 사진 캐리커처 그림. 뛸 때는 머리카락이 왼쪽으로
      흘러 머리 중심이 오른쪽에 있고, 맞을 때는 좌우로 퍼져 가운데에 온다. */
@@ -2147,12 +2149,12 @@
      시트(7x7, 칸 218x200). 앉은 소개 그림 b2_sit_2, 맞은 그림 b2_hurt2_4(두 귀 다 선 채 운다).
      아래 값은 새 칸에서 잰 것 — 얼굴 크기(adj 0.571)는 그대로. */
   const SPR_BANGUL = {
-    right: { img: null, aspect: 1.0650, head: 0.446, cx: 0.707, cy: 0.367, adj: 0.6955, lift: 0.0,
+    right: { img: null, aspect: 1.0650, head: 0.446, cx: 0.707, cy: 0.367, adj: 0.5912, lift: 0.000,
              bcx: 0.500, bcy: 0.530, brr: 0.530, float: true },
     /* 맞은 그림 — 같은 강아지가 머리에 혹이 나고 눈을 '> <' 로 질끈 감은 채 엉엉 운다 (OpenAI hurt25_3).
        (hurt25_2 는 머리 위로 올린 앞발이 귀와 섞여 다리가 셋으로 보여서 바꿨다)
        adj 를 헤엄 그림과 같게(0.571) 둬서 맞는 순간에도 머리가 같은 크기로 보인다. */
-    hurt:  { img: null, aspect: 1.0030, head: 0.3964, cx: 0.710, cy: 0.358, adj: 0.6499, lift: 0.0,
+    hurt:  { img: null, aspect: 1.0030, head: 0.3964, cx: 0.710, cy: 0.358, adj: 0.5524, lift: 0.000,
              bcx: 0.500, bcy: 0.532, brr: 0.503 }
   };
   // 방울이는 제 우주복이 따로 있다 (다른 직업은 공용 우주복을 입는다)
@@ -2175,27 +2177,27 @@
        맞은 그림은 헬멧 지름이 헤엄 때와 같아지게 adj 를 잡았다.
        v0.8.07 맞은 그림 교체 — 땅 위 맞은 그림처럼 엉덩방아 찧고 뒷다리를 앞으로 뻗는다. 헬멧이 머리를
        지켰으니 혹도, 유리 금도 없다 (Codex cx_spacehurt3_3 을 사용자가 손봄). */
-    right: { img: null, aspect: 1.0950, head: 0.396, cx: 0.696, cy: 0.376, adj: 0.6063, lift: 0.0,
+    right: { img: null, aspect: 1.0950, head: 0.396, cx: 0.696, cy: 0.376, adj: 0.5154, lift: 0.000,
              bcx: 0.500, bcy: 0.530, brr: 0.530, float: true },
-    hurt:  { img: null, aspect: 0.9115, head: 0.3398, cx: 0.730, cy: 0.378, adj: 0.5463, lift: 0.0,
+    hurt:  { img: null, aspect: 0.9115, head: 0.3398, cx: 0.730, cy: 0.378, adj: 0.4644, lift: 0.000,
              bcx: 0.500, bcy: 0.510, brr: 0.491 }
   };
   /* 무소유 전용 우주복 —
      헬멧이 판정원이라 지름·중심을 재어 넣었다 (몸 높이는 다른 직업과 같은 1.475D). */
   const SPR_MONK_SPACE = {
-    right: { img: null, aspect: 1.130, head: 0.340, cx: 0.700, cy: 0.460, adj: 0.4642, lift: 0.276, float: true },
-    hurt:  { img: null, aspect: 1.2393, head: 0.2875, cx: 0.674, cy: 0.494, adj: 0.3822, lift: 0.276 }
+    right: { img: null, aspect: 1.130, head: 0.340, cx: 0.688, cy: 0.411, adj: 0.3946, lift: 0.235, float: true },
+    hurt:  { img: null, aspect: 1.2393, head: 0.2875, cx: 0.663, cy: 0.494, adj: 0.3249, lift: 0.235 }
   };
   /* 풀소유 — 무소유가 코인을 연달아 세 개 쥐면 이 모습이 된다.
      다만 우주에서는 우주복이 먼저라, 땅 위에서만 이 차림이 보인다. */
   /* v0.8.74 풀소유도 강아지 — 무무에 명품 승복·금 염주·선글라스·쇼핑백. 우주에서는 무무 우주복에 금 염주·선글라스(SPR_FULL_SPACE) */
   const SPR_FULL = {
-    right: { img: null, aspect: 1.080, head: 0.360, cx: 0.720, cy: 0.440, adj: 0.5336, lift: 0.092, float: true },
-    hurt:  { img: null, aspect: 1.2185, head: 0.2807, cx: 0.648, cy: 0.405, adj: 0.3985, lift: 0.092 }
+    right: { img: null, aspect: 1.080, head: 0.360, cx: 0.681, cy: 0.362, adj: 0.4536, lift: 0.078, float: true },
+    hurt:  { img: null, aspect: 1.2185, head: 0.2807, cx: 0.612, cy: 0.405, adj: 0.3387, lift: 0.078 }
   };
   const SPR_FULL_SPACE = {
-    right: { img: null, aspect: 1.150, head: 0.330, cx: 0.640, cy: 0.470, adj: 0.4696, lift: 0.142, float: true },
-    hurt:  { img: null, aspect: 1.1432, head: 0.2643, cx: 0.600, cy: 0.456, adj: 0.3702, lift: 0.142 }
+    right: { img: null, aspect: 1.150, head: 0.330, cx: 0.689, cy: 0.406, adj: 0.3992, lift: 0.121, float: true },
+    hurt:  { img: null, aspect: 1.1432, head: 0.2643, cx: 0.650, cy: 0.456, adj: 0.3147, lift: 0.121 }
   };
   const SPACE_Z = 6;                 // 오로라 지대 — 여기부터 우주복 차림
   /* 우주에 올라서면 체감 난이도를 이 배율만큼 올린다.
