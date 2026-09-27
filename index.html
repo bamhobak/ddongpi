@@ -936,7 +936,8 @@
   #modeSeg button.on { filter: drop-shadow(0 0 7px rgba(255,236,150,.85)); transform: scale(1.03); }
   #modeSeg button.locked { opacity: .55; }
   #modeSeg button.locked::after { content: " 🔒"; font-size: 11px; }
-  #modeDesc { display: none; }   /* 스테이지 설명 줄은 두지 않는다 (버튼 이름으로 충분) */
+  #modeDesc { display: none; }
+  #startScreen #modeBox { display: none; }   /* v0.9.23 모드 카드 없음 — 시작하기 = 싱글플레이 */   /* 스테이지 설명 줄은 두지 않는다 (버튼 이름으로 충분) */
   /* 대전모드 — 순위표·코인은 없고, 대신 조작 설명을 보인다 */
   body.vsMode #modeDesc { display: block; font-size: 12.5px; color: #cfe4ff; text-align: center; line-height: 1.5; }
   body.vsMode #overScreen .board:not(.vsb), body.vsMode #coinNote, body.vsMode #overBest, body.vsMode #nameRow { display: none !important; }
@@ -1558,7 +1559,7 @@
   const elTitle = document.getElementById("overTitle");
   const coinNote = document.getElementById("coinNote");
 
-  const GAME_VERSION = "v0.9.22";
+  const GAME_VERSION = "v0.9.23";
   /* 제작사 스플래시(bamhobak friends 로고) — 2026-09-20 끔. 다시 켜려면 true */
   const SPLASH_USE = false;   // 코드를 고칠 때마다 뒤 두 자리를 올린다
   document.getElementById("ver").textContent = GAME_VERSION;
@@ -1875,7 +1876,7 @@
      (지난번에 똥탑등반을 골라 두었더라도 새로 들어오면 똥대잔치로 시작한다) */
   let towerOpen = true;              // 2026-09-19 모두에게 열었다 (잠그려면 false — 누르면 개발자 비밀번호)
   /* v0.8.98 맨몸대결·똥탑등반은 고르는 버튼을 뺐다 — 예전에 골라 둔 사람도 똥대잔치로 시작한다 (판 코드는 남아 있다) */
-  try { const m = localStorage.getItem(LS_MODE); if (m === "item" || m === "vs") gameMode = m; } catch (e) {}
+  // v0.9.23 싱글/멀티 고르기를 뺐다 — 시작하기는 늘 싱글플레이 (멀티 코드는 남아 있다)
   let runMode = gameMode;            // 지금 판이 어느 스테이지인가 (판 도중에 안 바뀐다)
   function noItem() { return runMode === "noitem"; }                        // 똥탑등반 (패턴·보스·m 기록)
   function itemsOff() { return runMode === "noitem" || runMode === "pure" || runMode === "vs" || runMode === "party"; }   // 아이템·증강이 안 나오는 판 (코인은 대전모드 빼고 나온다)
