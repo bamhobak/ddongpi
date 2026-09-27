@@ -1080,6 +1080,29 @@
     border-image: url(assets/ui/btn_back.webp) 0 60 0 90 fill / 0 calc(var(--bh) / 2) 0 calc(var(--bh) * .75) / 0 stretch;
     color: #4a3d6e; text-shadow: 0 1px 0 rgba(255,255,255,.6);
   }
+  /* ---- v0.9.13 버튼은 둥근 알약 대신 네모난 심플한 그림(Codex rb_*) — 파일 이름은 그대로라 위 규칙들이 그대로 쓴다.
+     아이콘이 붙은 버튼(메인으로·다시하기·처음으로)은 왼쪽 아이콘 칸(그림 90~100px)을 늘리지 않는다 ---- */
+  #btnResume, #btnPauseRetry, #btnPauseHome, #btnHome, #vsScreen #vsBack, #btnSettingsClose {
+    --bh: 44px; height: var(--bh); box-sizing: border-box; flex-shrink: 0; min-width: 170px;
+    border-style: solid; border-color: transparent; border-radius: 0; box-shadow: none; background: none; opacity: 1;
+    border-width: 0 calc(var(--bh) / 2) 0 calc(var(--bh) * .8);
+    border-image: url(assets/ui/btn_back.webp) 0 60 0 96 fill / 0 calc(var(--bh) / 2) 0 calc(var(--bh) * .8) / 0 stretch;
+    padding: 0 4px calc(var(--bh) * .08); font-size: 14px; font-weight: 800; margin-top: 0;
+    color: #3f3560; text-shadow: 0 1px 0 rgba(255,255,255,.6);
+  }
+  #btnResume {
+    --bh: 52px; min-width: 200px; font-size: 18px; letter-spacing: 2px;
+    border-width: 0 calc(var(--bh) / 2);
+    border-image: url(assets/ui/btn_yellow.webp) 0 60 fill / 0 calc(var(--bh) / 2) / 0 stretch;
+    color: #6b3300; text-shadow: 0 1px 0 rgba(255,255,255,.55);
+  }
+  #btnPauseRetry { border-image-source: url(assets/ui/btn_retry.webp); color: #1f5a2c; }
+  #btnPauseHome, #btnHome { border-image-source: url(assets/ui/btn_home.webp); color: #7a2e22; }
+  #btnSettingsClose {
+    border-width: 0 calc(var(--bh) / 2);
+    border-image: url(assets/ui/tab_off.webp) 0 60 fill / 0 calc(var(--bh) / 2) / 0 stretch;
+    color: #fff; text-shadow: 0 1px 2px rgba(60,20,110,.6);
+  }
   @keyframes glowY {
     0%, 100% { filter: drop-shadow(0 0 7px rgba(255,196,46,.45)); }
     50%      { filter: drop-shadow(0 0 15px rgba(255,196,46,.85)); }
@@ -1201,13 +1224,13 @@
 
     <div id="pauseScreen" class="screen hidden">
       <h2>일시정지</h2>
-      <button id="btnResume">▶ 계속하기</button>
+      <button id="btnResume">계속하기</button>
       <div id="pauseSnd">
         <button class="ctrlBtn sndBtn" data-snd="bgm" title="배경음" aria-label="배경음">🎵</button>
         <button class="ctrlBtn sndBtn" data-snd="sfx" title="효과음" aria-label="효과음">🔔</button>
       </div>
-      <button id="btnPauseRetry">↻ 다시하기</button>
-      <button id="btnPauseHome">🏠 처음으로</button>
+      <button id="btnPauseRetry">다시하기</button>
+      <button id="btnPauseHome">처음으로</button>
     </div>
 
     <div id="settingsScreen" class="screen hidden">
@@ -1289,7 +1312,7 @@
       <button id="vsLocal">한 폰으로 둘이서</button>
       <button id="vsBot">🤖 봇과 연습</button>
       <button id="vsParty">👥 여럿이 연습 (8명)</button>
-      <button id="vsBack">← 메인으로</button>
+      <button id="vsBack">메인으로</button>
     </div>
 
     <div id="overScreen" class="screen hidden">
@@ -1325,7 +1348,7 @@
       <div id="retryRow">
         <button id="btnRetry">다시 하기</button>
         <button id="btnRetryJob" hidden>직업 바꾸기</button>
-        <button id="btnHome">🏠 메인으로</button>
+        <button id="btnHome">메인으로</button>
       </div>
     </div>
   </div>
@@ -1485,7 +1508,7 @@
   const elTitle = document.getElementById("overTitle");
   const coinNote = document.getElementById("coinNote");
 
-  const GAME_VERSION = "v0.9.12";
+  const GAME_VERSION = "v0.9.13";
   /* 제작사 스플래시(bamhobak friends 로고) — 2026-09-20 끔. 다시 켜려면 true */
   const SPLASH_USE = false;   // 코드를 고칠 때마다 뒤 두 자리를 올린다
   document.getElementById("ver").textContent = GAME_VERSION;
