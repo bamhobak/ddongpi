@@ -1416,7 +1416,7 @@
   const elTitle = document.getElementById("overTitle");
   const coinNote = document.getElementById("coinNote");
 
-  const GAME_VERSION = "v0.9.04";
+  const GAME_VERSION = "v0.9.05";
   /* 제작사 스플래시(bamhobak friends 로고) — 2026-09-20 끔. 다시 켜려면 true */
   const SPLASH_USE = false;   // 코드를 고칠 때마다 뒤 두 자리를 올린다
   document.getElementById("ver").textContent = GAME_VERSION;
@@ -10777,14 +10777,7 @@
   // 위쪽 글자판 — 남은 시간 · 내 맞은 횟수 · 지금 등수 · 전체 지도 (화면 좌표)
   function drawPartyHud(top) {
     const VW = W;
-    if (drag && drag.ox !== undefined && state === STATE.PLAY) {   // 조이스틱 — 누른 자리에 흐린 원, 민 쪽에 손잡이
-      ctx.save();
-      ctx.globalAlpha = 0.35; ctx.fillStyle = "#ffffff";
-      ctx.beginPath(); ctx.arc(drag.fx, drag.fy, PARTY_JOY_R, 0, Math.PI * 2); ctx.fill();
-      ctx.globalAlpha = 0.7; ctx.fillStyle = "#2f8cff";
-      ctx.beginPath(); ctx.arc(drag.fx + drag.ox, drag.fy, 20, 0, Math.PI * 2); ctx.fill();
-      ctx.restore();
-    }
+    // (조이스틱 원·손잡이는 v0.9.05 에 그리지 않기로 — 조작은 그대로 조이스틱)
     const sec = Math.ceil(PARTY.left);
     ctx.textBaseline = "middle"; ctx.textAlign = "center";
     ctx.font = "900 26px NationalPension, NanumBarunGothic, system-ui, sans-serif";
