@@ -549,7 +549,7 @@
   #vsJobDs { font-size: 12.5px; color: #ffd23f; min-height: 18px; text-align: center; }
   #btnPause:active { opacity: .9; }
   #pauseScreen h2 { color: #ffd23f; }
-  #btnPauseRetry {
+  #btnPauseRetry, #btnPauseHome {
     font-size: 12px; padding: 7px 16px; margin-top: -2px;
     background: rgba(255,255,255,.08); color: #b8bdcc;
     border: 1px solid rgba(255,255,255,.12); box-shadow: none;
@@ -1147,6 +1147,7 @@
         <button class="ctrlBtn sndBtn" data-snd="sfx" title="효과음" aria-label="효과음">🔔</button>
       </div>
       <button id="btnPauseRetry">↻ 다시하기</button>
+      <button id="btnPauseHome">🏠 처음으로</button>
     </div>
 
     <div id="settingsScreen" class="screen hidden">
@@ -1415,7 +1416,7 @@
   const elTitle = document.getElementById("overTitle");
   const coinNote = document.getElementById("coinNote");
 
-  const GAME_VERSION = "v0.9.03";
+  const GAME_VERSION = "v0.9.04";
   /* 제작사 스플래시(bamhobak friends 로고) — 2026-09-20 끔. 다시 켜려면 true */
   const SPLASH_USE = false;   // 코드를 고칠 때마다 뒤 두 자리를 올린다
   document.getElementById("ver").textContent = GAME_VERSION;
@@ -6513,6 +6514,11 @@
     beep(700, .08, "sine", .04);
   });
 
+  // 일시정지에서 처음으로 — 이번 판은 기록 없이 버리고 시작 화면으로 (v0.9.04)
+  document.getElementById("btnPauseHome").addEventListener("click", () => {
+    resumeCountEnd = 0;
+    goHome();
+  });
   // 일시정지에서 다시하기 — 이번 판은 기록 없이 버리고 직업 선택부터 다시
   document.getElementById("btnPauseRetry").addEventListener("click", () => {
     pauseScreen.classList.add("hidden");
