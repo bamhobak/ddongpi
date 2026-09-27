@@ -1416,7 +1416,7 @@
   const elTitle = document.getElementById("overTitle");
   const coinNote = document.getElementById("coinNote");
 
-  const GAME_VERSION = "v0.9.08";
+  const GAME_VERSION = "v0.9.09";
   /* 제작사 스플래시(bamhobak friends 로고) — 2026-09-20 끔. 다시 켜려면 true */
   const SPLASH_USE = false;   // 코드를 고칠 때마다 뒤 두 자리를 올린다
   document.getElementById("ver").textContent = GAME_VERSION;
@@ -1936,8 +1936,8 @@
     hurt:  { img: null, aspect: 1.3711, head: 0.3855, cx: 0.632, cy: 0.405, adj: 0.5867, lift: 0.115 }
   };
   const SPR_LEV_SPACE = {    // 소라 — 파피용(장난감 날개·실크햇·풍선)
-    right: { img: null, aspect: 1.225, head: 0.324, cx: 0.742, cy: 0.484, adj: 0.4399, lift: 0.269, float: true },
-    hurt:  { img: null, aspect: 1.4142, head: 0.3039, cx: 0.696, cy: 0.480, adj: 0.4098, lift: 0.269 }
+    right: { img: null, aspect: 1.225, head: 0.324, cx: 0.742, cy: 0.484, adj: 0.4958, lift: 0.139, float: true },
+    hurt:  { img: null, aspect: 1.4142, head: 0.3039, cx: 0.696, cy: 0.480, adj: 0.4618, lift: 0.139 }
   };
   const SPR_FIT_SPACE = {    // 버피 — 복서
     right: { img: null, aspect: 1.170, head: 0.374, cx: 0.655, cy: 0.412, adj: 0.6152, lift: -0.053, float: true },
@@ -1948,10 +1948,10 @@
      (그림은 아래 끝이 발선 FOOT 에 붙어 그려져서, 몸이 그림 아래까지 차 있는 맞은 그림이 더 낮고 작아 보였다). 원본은 assets/_gen/hurt_orig/ */
   /* v0.8.76 맞은 그림 크기를 헤엄 그림에 맞췄다 — 얼굴(헬멧) 크기가 같게 보이도록 hurt 의 adj 만 조정(무무·풀소유·소라가 특히 컸다) */
   // v0.8.75 소라는 날개 때문에 커 보여서 그림만 16% 줄였다 (adj 0.571 → 0.48) — 피격 범위(판정원)는 그대로
-  /* v0.9.08 소라 크기는 풍선을 빼고 잰 몸(날개 포함) 넓이로 다른 캐릭터와 같게 — 땅 2.24→2.25, 우주(풍선 없음) 2.38→2.25 */
+  /* v0.9.09 소라 크기·높이는 풍선과 날개를 빼고 잰 몸만으로 다른 캐릭터와 같게 (날개·풍선 테두리는 첫 헤엄 칸에 손으로 그려 잼 — 땅 38%·우주 22%) */
   const SPR_LEV = {
-    right: { img: null, aspect: 1.180, head: 0.332, cx: 0.774, cy: 0.509, adj: 0.48, lift: 0.114, float: true },
-    hurt:  { img: null, aspect: 1.3077, head: 0.3275, cx: 0.741, cy: 0.566, adj: 0.4505, lift: 0.114 }
+    right: { img: null, aspect: 1.180, head: 0.332, cx: 0.774, cy: 0.509, adj: 0.5746, lift: 0.213, float: true },
+    hurt:  { img: null, aspect: 1.3077, head: 0.3275, cx: 0.741, cy: 0.566, adj: 0.5392, lift: 0.213 }
   };
   const SPR_FIT = {
     right: { img: null, aspect: 1.415, head: 0.387, cx: 0.671, cy: 0.397, adj: 0.6957, lift: -0.286, float: true },
