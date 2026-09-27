@@ -1020,6 +1020,66 @@
     --bh: 46px; border-image-source: url(assets/ui/btn_blue.webp);
     color: #fff; text-shadow: 0 1px 2px rgba(0,50,110,.65);
   }
+  /* ---- v0.9.12 직업·펫 고르기 화면 새 옷 (Codex: jobcard·jobcard_sel·btn_back, 제목은 순위판 리본, 탭은 알약 버튼) ----
+     카드는 9칸 늘리기 — 모서리는 그대로, 가운데만 늘린다. 아래 이름 띠는 아래 테두리 칸(그림 92px) 안에 들어 있어서
+     이름 글자는 카드 아래 테두리 자리에 얹는다 */
+  #jobScreen h2 {
+    height: 44px; box-sizing: border-box; width: max-content; min-width: 52%;
+    border-style: solid; border-color: transparent; border-width: 0 45px;
+    border-image: url(assets/ui/ribbon.webp) 0 125 fill / 0 45px / 0 stretch;
+    padding: 0 8px; line-height: 35px; font-size: 19px; font-weight: 800; letter-spacing: 1px;
+    color: #6b3300; text-shadow: 0 1px 0 rgba(255,255,255,.55);
+  }
+  #pickTabs { gap: 8px; }
+  #pickTabs button {
+    --bh: 40px; height: var(--bh); box-sizing: border-box; padding: 0 2px calc(var(--bh) * .08);
+    border-style: solid; border-color: transparent; border-width: 0 calc(var(--bh) / 2); border-radius: 0; box-shadow: none;
+    border-image: url(assets/ui/tab_off.webp) 0 60 fill / 0 calc(var(--bh) / 2) / 0 stretch;
+    background: none; color: #fff; font-weight: 800; text-shadow: 0 1px 2px rgba(60,20,110,.6);
+  }
+  #pickTabs button small { color: #f1e8ff; }
+  #pickTabs button.on {
+    border-image-source: url(assets/ui/btn_yellow.webp); background: none;
+    color: #6b3300; text-shadow: 0 1px 0 rgba(255,255,255,.55);
+  }
+  #pickTabs button.on small { color: #8a4a0c; }
+  #jobList { gap: 8px 10px; }
+  #jobList .augCard {
+    position: relative; padding: 2px 0 0; gap: 0; border-radius: 0; box-shadow: none; background: none;
+    border-style: solid; border-color: transparent; border-width: 12px 14px 32px;
+    border-image: url(assets/ui/jobcard.webp) 36 40 92 fill / 12px 14px 32px / 0 stretch;
+  }
+  #jobList .augCard.sel {
+    background: none; box-shadow: none;
+    border-image: url(assets/ui/jobcard_sel.webp) 36 40 97 fill / 12px 14px 32px / 0 stretch;
+    filter: drop-shadow(0 0 9px rgba(255,210,63,.6));
+  }
+  #jobList .augCard .tx {
+    position: absolute; left: -4px; right: -4px; top: calc(100% + 3px); height: 23px;
+    display: flex; align-items: center; justify-content: center;
+  }
+  #jobList .augCard .nm2 { font-size: 14px; font-weight: 800; color: #4a2466; text-shadow: 0 1px 0 rgba(255,255,255,.7); white-space: nowrap; }
+  #jobList .augCard.sel .nm2 { color: #6b3300; }
+  #jobList .augCard .ds { display: none; }
+  #jobList .augCard .lock { top: -6px; right: -8px; }
+  #jobScreen h2, #pickTabs, #pickTabs button, #btnPickOk, #btnJobGo, #btnJobBack, #btnJobList { flex-shrink: 0; }   /* 넘쳐도 눌려 납작해지지 않게 */
+  #jobList img.ic, #jobList .petNone { height: 70px; }
+  #jobScreen { gap: clamp(8px, 1.6vh, 14px); }
+  #btnPickOk, #btnJobGo {
+    --bh: 50px; height: var(--bh); box-sizing: border-box; padding: 0 30px calc(var(--bh) * .08); letter-spacing: 4px;
+    border-style: solid; border-color: transparent; border-width: 0 calc(var(--bh) / 2); border-radius: 0;
+    border-image: url(assets/ui/btn_yellow.webp) 0 60 fill / 0 calc(var(--bh) / 2) / 0 stretch;
+    background: none; box-shadow: none; color: #6b3300; text-shadow: 0 1px 0 rgba(255,255,255,.55); font-weight: 800;
+    animation: glowY 3.4s ease-in-out infinite;
+  }
+  #btnJobBack, #btnJobList {
+    --bh: 40px; height: var(--bh); box-sizing: border-box; margin-top: 4px;
+    padding: 0 6px calc(var(--bh) * .08) 4px; font-size: 13.5px; font-weight: 800;
+    border-style: solid; border-color: transparent; border-radius: 0; box-shadow: none; background: none;
+    border-width: 0 calc(var(--bh) / 2) 0 calc(var(--bh) * .75);
+    border-image: url(assets/ui/btn_back.webp) 0 60 0 90 fill / 0 calc(var(--bh) / 2) 0 calc(var(--bh) * .75) / 0 stretch;
+    color: #4a3d6e; text-shadow: 0 1px 0 rgba(255,255,255,.6);
+  }
   @keyframes glowY {
     0%, 100% { filter: drop-shadow(0 0 7px rgba(255,196,46,.45)); }
     50%      { filter: drop-shadow(0 0 15px rgba(255,196,46,.85)); }
@@ -1192,9 +1252,9 @@
         </div>
         <div id="jobPetLine"></div>
         <button id="btnJobGo">시작</button>
-        <button id="btnJobList">← 다시 고르기</button>
+        <button id="btnJobList">다시 고르기</button>
       </div>
-      <button id="btnJobBack">← 메인으로 돌아가기</button>
+      <button id="btnJobBack">메인으로 돌아가기</button>
     </div>
 
     <div id="testScreen" class="screen hidden">
@@ -1425,7 +1485,7 @@
   const elTitle = document.getElementById("overTitle");
   const coinNote = document.getElementById("coinNote");
 
-  const GAME_VERSION = "v0.9.11";
+  const GAME_VERSION = "v0.9.12";
   /* 제작사 스플래시(bamhobak friends 로고) — 2026-09-20 끔. 다시 켜려면 true */
   const SPLASH_USE = false;   // 코드를 고칠 때마다 뒤 두 자리를 올린다
   document.getElementById("ver").textContent = GAME_VERSION;
