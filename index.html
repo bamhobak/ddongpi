@@ -1034,36 +1034,36 @@
   #pickTabs button {
     --bh: 40px; height: var(--bh); box-sizing: border-box; padding: 0 2px calc(var(--bh) * .08);
     border-style: solid; border-color: transparent; border-width: 0 calc(var(--bh) / 2); border-radius: 0; box-shadow: none;
-    border-image: url(assets/ui/tab_off.webp) 0 60 fill / 0 calc(var(--bh) / 2) / 0 stretch;
-    background: none; color: #fff; font-weight: 800; text-shadow: 0 1px 2px rgba(60,20,110,.6);
+    border-image: url(assets/ui/btn_gray.webp) 0 60 fill / 0 calc(var(--bh) / 2) / 0 stretch;
+    background: none; color: #3f3560; font-weight: 800; text-shadow: 0 1px 0 rgba(255,255,255,.6);
   }
-  #pickTabs button small { color: #f1e8ff; }
+  #pickTabs button small { color: #5d5480; }
   #pickTabs button.on {
     border-image-source: url(assets/ui/btn_yellow.webp); background: none;
     color: #6b3300; text-shadow: 0 1px 0 rgba(255,255,255,.55);
   }
   #pickTabs button.on small { color: #8a4a0c; }
-  #jobList { gap: 8px 10px; }
+  /* v0.9.14 카드는 심플한 네모 타일(Codex rb_card) — 캐릭터를 크게, 이름은 그 아래 글자로 */
+  #jobList { gap: 10px; }
   #jobList .augCard {
-    position: relative; padding: 2px 0 0; gap: 0; border-radius: 0; box-shadow: none; background: none;
-    border-style: solid; border-color: transparent; border-width: 12px 14px 32px;
-    border-image: url(assets/ui/jobcard.webp) 36 40 92 fill / 12px 14px 32px / 0 stretch;
+    position: relative; padding: 4px 0 2px; gap: 2px; border-radius: 0; box-shadow: none; background: none;
+    border-style: solid; border-color: transparent; border-width: 8px 8px 12px;
+    border-image: url(assets/ui/jobcard.webp) 24 24 34 fill / 8px 8px 12px / 0 stretch;
+    transition: transform .12s ease;
   }
   #jobList .augCard.sel {
-    background: none; box-shadow: none;
-    border-image: url(assets/ui/jobcard_sel.webp) 36 40 97 fill / 12px 14px 32px / 0 stretch;
-    filter: drop-shadow(0 0 9px rgba(255,210,63,.6));
+    background: none; box-shadow: none; transform: scale(1.04);
+    border-image: url(assets/ui/jobcard_sel.webp) 24 24 34 fill / 8px 8px 12px / 0 stretch;
+    filter: drop-shadow(0 0 10px rgba(255,210,63,.65));
   }
-  #jobList .augCard .tx {
-    position: absolute; left: -4px; right: -4px; top: calc(100% + 3px); height: 23px;
-    display: flex; align-items: center; justify-content: center;
-  }
-  #jobList .augCard .nm2 { font-size: 14px; font-weight: 800; color: #4a2466; text-shadow: 0 1px 0 rgba(255,255,255,.7); white-space: nowrap; }
+  #jobList .augCard .tx { display: flex; justify-content: center; }
+  #jobList .augCard .nm2 { font-size: 14px; font-weight: 800; color: #4a3322; white-space: nowrap; }
   #jobList .augCard.sel .nm2 { color: #6b3300; }
   #jobList .augCard .ds { display: none; }
   #jobList .augCard .lock { top: -6px; right: -8px; }
   #jobScreen h2, #pickTabs, #pickTabs button, #btnPickOk, #btnJobGo, #btnJobBack, #btnJobList { flex-shrink: 0; }   /* 넘쳐도 눌려 납작해지지 않게 */
-  #jobList img.ic, #jobList .petNone { height: 70px; }
+  #jobList img.ic, #jobList .petNone { height: 84px; filter: drop-shadow(0 3px 3px rgba(80,50,20,.18)); }
+  #jobScreen.petTab #jobList img.ic, #jobScreen.petTab #jobList .petNone { height: 66px; }
   #jobScreen { gap: clamp(8px, 1.6vh, 14px); }
   #btnPickOk, #btnJobGo {
     --bh: 50px; height: var(--bh); box-sizing: border-box; padding: 0 30px calc(var(--bh) * .08); letter-spacing: 4px;
@@ -1072,7 +1072,7 @@
     background: none; box-shadow: none; color: #6b3300; text-shadow: 0 1px 0 rgba(255,255,255,.55); font-weight: 800;
     animation: glowY 3.4s ease-in-out infinite;
   }
-  #btnJobBack, #btnJobList {
+  #btnJobBack {
     --bh: 40px; height: var(--bh); box-sizing: border-box; margin-top: 4px;
     padding: 0 6px calc(var(--bh) * .08) 4px; font-size: 13.5px; font-weight: 800;
     border-style: solid; border-color: transparent; border-radius: 0; box-shadow: none; background: none;
@@ -1082,7 +1082,7 @@
   }
   /* ---- v0.9.13 버튼은 둥근 알약 대신 네모난 심플한 그림(Codex rb_*) — 파일 이름은 그대로라 위 규칙들이 그대로 쓴다.
      아이콘이 붙은 버튼(메인으로·다시하기·처음으로)은 왼쪽 아이콘 칸(그림 90~100px)을 늘리지 않는다 ---- */
-  #btnResume, #btnPauseRetry, #btnPauseHome, #btnHome, #vsScreen #vsBack, #btnSettingsClose {
+  #btnResume, #btnPauseRetry, #btnPauseHome, #btnHome, #vsScreen #vsBack, #btnSettingsClose, #btnJobList {
     --bh: 44px; height: var(--bh); box-sizing: border-box; flex-shrink: 0; min-width: 170px;
     border-style: solid; border-color: transparent; border-radius: 0; box-shadow: none; background: none; opacity: 1;
     border-width: 0 calc(var(--bh) / 2) 0 calc(var(--bh) * .8);
@@ -1096,12 +1096,22 @@
     border-image: url(assets/ui/btn_yellow.webp) 0 60 fill / 0 calc(var(--bh) / 2) / 0 stretch;
     color: #6b3300; text-shadow: 0 1px 0 rgba(255,255,255,.55);
   }
-  #btnPauseRetry { border-image-source: url(assets/ui/btn_retry.webp); color: #1f5a2c; }
-  #btnPauseHome, #btnHome { border-image-source: url(assets/ui/btn_home.webp); color: #7a2e22; }
-  #btnSettingsClose {
+  /* v0.9.14 색은 기능별로 셋만 — 주요(노랑) · 보조(파랑) · 나가기(회색+화살표). 탭의 안 고른 쪽은 회색 민무늬 */
+  #btnReroll, #btnPetBuy {
+    --bh: 44px; height: var(--bh); box-sizing: border-box; flex-shrink: 0; min-width: 170px;
+    border-style: solid; border-color: transparent; border-radius: 0; box-shadow: none; background: none;
+    padding: 0 4px calc(var(--bh) * .08); font-size: 14px; font-weight: 800;
+  }
+  #btnReroll:hover { background: none; }
+  #btnPetBuy:disabled {
+    border-width: 0 calc(var(--bh) / 2); background: none; box-shadow: none;
+    border-image: url(assets/ui/btn_gray.webp) 0 60 fill / 0 calc(var(--bh) / 2) / 0 stretch;
+    color: #6d6690; text-shadow: none;
+  }
+  #btnPauseRetry, #btnJobList, #btnReroll, #btnPetBuy:not(:disabled) {
     border-width: 0 calc(var(--bh) / 2);
-    border-image: url(assets/ui/tab_off.webp) 0 60 fill / 0 calc(var(--bh) / 2) / 0 stretch;
-    color: #fff; text-shadow: 0 1px 2px rgba(60,20,110,.6);
+    border-image: url(assets/ui/btn_blue.webp) 0 60 fill / 0 calc(var(--bh) / 2) / 0 stretch;
+    color: #fff; text-shadow: 0 1px 2px rgba(0,50,110,.65);
   }
   @keyframes glowY {
     0%, 100% { filter: drop-shadow(0 0 7px rgba(255,196,46,.45)); }
@@ -1508,7 +1518,7 @@
   const elTitle = document.getElementById("overTitle");
   const coinNote = document.getElementById("coinNote");
 
-  const GAME_VERSION = "v0.9.13";
+  const GAME_VERSION = "v0.9.14";
   /* 제작사 스플래시(bamhobak friends 로고) — 2026-09-20 끔. 다시 켜려면 true */
   const SPLASH_USE = false;   // 코드를 고칠 때마다 뒤 두 자리를 올린다
   document.getElementById("ver").textContent = GAME_VERSION;
@@ -6780,6 +6790,7 @@
     tabJob.classList.toggle("on", pickTab === "job");
     tabPet.classList.toggle("on", pickTab === "pet");
     document.querySelector("#jobScreen h2").textContent = pickTab === "job" ? "직업 선택" : "펫 선택";
+    jobScreen.classList.toggle("petTab", pickTab !== "job");   // 펫은 네 줄이라 그림을 조금 작게
     // 탭에 지금 고른 것을 같이 적어 둔다 — 다른 탭에 있어도 무엇을 골랐는지 보이게
     tabJob.innerHTML = "직업<small></small>"; tabJob.lastChild.textContent = JOBS[job].nm;
     tabPet.innerHTML = "펫<small></small>";   tabPet.lastChild.textContent = PETS[pet].nm;
