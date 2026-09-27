@@ -16,6 +16,8 @@ def params(name):
     for key in ["right", "hurt"]:
         m = re.search(key + r":\s*\{[^}]*?aspect:\s*([\d.]+),\s*head:\s*([\d.]+),\s*cx:\s*([\d.]+),\s*cy:\s*([\d.]+),\s*adj:\s*([\d.]+)", b)
         out[key] = dict(zip(["aspect", "head", "cx", "cy", "adj"], map(float, m.groups())))
+        ml = re.search(key + r":\s*\{[^}]*?lift:\s*(-?[\d.]+)", b)
+        out[key]["lift"] = float(ml.group(1)) if ml else 0.0      # v0.9.06 몸 가운데 높이 맞춤
     return out
 
 
@@ -30,7 +32,7 @@ for k, (name, f_) in enumerate(SETS):
         q = p[key]; sh = 2 * R * q["adj"] / q["head"]; sw = sh * q["aspect"]
         im = imgs[key].resize((max(1, int(sw)), max(1, int(sh))))
         x0 = k * W + W // 2; y0 = row * H
-        c.alpha_composite(im, (int(x0 - sw * q["cx"]), int(y0 + FOOT - sh)))
+        c.alpha_composite(im, (int(x0 - sw * q["cx"]), int(y0 + FOOT - sh - q["lift"] * R)))
         d.line((k * W, y0 + FOOT, k * W + W, y0 + FOOT), fill=(255, 80, 80, 120))
         d.line((x0, y0, x0, y0 + H), fill=(80, 255, 80, 60))
         d.text((k * W + 4, y0 + 4), nm.replace("SPR_", "") + " " + key, fill=(255, 210, 63), font=f)

@@ -1416,7 +1416,7 @@
   const elTitle = document.getElementById("overTitle");
   const coinNote = document.getElementById("coinNote");
 
-  const GAME_VERSION = "v0.9.06";
+  const GAME_VERSION = "v0.9.07";
   /* 제작사 스플래시(bamhobak friends 로고) — 2026-09-20 끔. 다시 켜려면 true */
   const SPLASH_USE = false;   // 코드를 고칠 때마다 뒤 두 자리를 올린다
   document.getElementById("ver").textContent = GAME_VERSION;
@@ -1936,8 +1936,8 @@
     hurt:  { img: null, aspect: 1.3711, head: 0.3855, cx: 0.632, cy: 0.405, adj: 0.5867, lift: 0.115 }
   };
   const SPR_LEV_SPACE = {    // 소라 — 파피용(장난감 날개·실크햇·풍선)
-    right: { img: null, aspect: 1.225, head: 0.324, cx: 0.742, cy: 0.484, adj: 0.4046, lift: 0.376, float: true },
-    hurt:  { img: null, aspect: 1.4142, head: 0.3039, cx: 0.696, cy: 0.480, adj: 0.3770, lift: 0.376 }
+    right: { img: null, aspect: 1.225, head: 0.324, cx: 0.742, cy: 0.484, adj: 0.4653, lift: 0.192, float: true },
+    hurt:  { img: null, aspect: 1.4142, head: 0.3039, cx: 0.696, cy: 0.480, adj: 0.4335, lift: 0.192 }
   };
   const SPR_FIT_SPACE = {    // 버피 — 복서
     right: { img: null, aspect: 1.170, head: 0.374, cx: 0.655, cy: 0.412, adj: 0.6152, lift: -0.053, float: true },
@@ -1949,8 +1949,8 @@
   /* v0.8.76 맞은 그림 크기를 헤엄 그림에 맞췄다 — 얼굴(헬멧) 크기가 같게 보이도록 hurt 의 adj 만 조정(무무·풀소유·소라가 특히 컸다) */
   // v0.8.75 소라는 날개 때문에 커 보여서 그림만 16% 줄였다 (adj 0.571 → 0.48) — 피격 범위(판정원)는 그대로
   const SPR_LEV = {
-    right: { img: null, aspect: 1.180, head: 0.332, cx: 0.774, cy: 0.509, adj: 0.4156, lift: 0.311, float: true },
-    hurt:  { img: null, aspect: 1.3077, head: 0.3275, cx: 0.741, cy: 0.566, adj: 0.3900, lift: 0.311 }
+    right: { img: null, aspect: 1.180, head: 0.332, cx: 0.774, cy: 0.509, adj: 0.4779, lift: 0.121, float: true },
+    hurt:  { img: null, aspect: 1.3077, head: 0.3275, cx: 0.741, cy: 0.566, adj: 0.4485, lift: 0.121 }
   };
   const SPR_FIT = {
     right: { img: null, aspect: 1.415, head: 0.387, cx: 0.671, cy: 0.397, adj: 0.6957, lift: -0.286, float: true },
@@ -1974,8 +1974,8 @@
     hurt:  { img: null, aspect: 1.2029, head: 0.4890, cx: 0.711, cy: 0.450, adj: 0.6878, lift: 0.144 }
   };
   const SPR_MONK = {        // 무무 — 사모예드 스님 (v0.8.72)
-    right: { img: null, aspect: 1.175, head: 0.370, cx: 0.760, cy: 0.440, adj: 0.5211, lift: 0.124, float: true },
-    hurt:  { img: null, aspect: 1.2511, head: 0.2752, cx: 0.738, cy: 0.377, adj: 0.3638, lift: 0.124 }
+    right: { img: null, aspect: 1.175, head: 0.370, cx: 0.760, cy: 0.440, adj: 0.5472, lift: 0.051, float: true },
+    hurt:  { img: null, aspect: 1.2511, head: 0.2752, cx: 0.738, cy: 0.377, adj: 0.382, lift: 0.051 }
   };
   /* 파워P — 다른 직업과 같은 사진 캐리커처 그림. 뛸 때는 머리카락이 왼쪽으로
      흘러 머리 중심이 오른쪽에 있고, 맞을 때는 좌우로 퍼져 가운데에 온다. */
@@ -2040,19 +2040,19 @@
   /* 무소유 전용 우주복 —
      헬멧이 판정원이라 지름·중심을 재어 넣었다 (몸 높이는 다른 직업과 같은 1.475D). */
   const SPR_MONK_SPACE = {
-    right: { img: null, aspect: 1.130, head: 0.340, cx: 0.700, cy: 0.460, adj: 0.4421, lift: 0.339, float: true },
-    hurt:  { img: null, aspect: 1.2393, head: 0.2875, cx: 0.674, cy: 0.494, adj: 0.3640, lift: 0.339 }
+    right: { img: null, aspect: 1.130, head: 0.340, cx: 0.700, cy: 0.460, adj: 0.4642, lift: 0.276, float: true },
+    hurt:  { img: null, aspect: 1.2393, head: 0.2875, cx: 0.674, cy: 0.494, adj: 0.3822, lift: 0.276 }
   };
   /* 풀소유 — 무소유가 코인을 연달아 세 개 쥐면 이 모습이 된다.
      다만 우주에서는 우주복이 먼저라, 땅 위에서만 이 차림이 보인다. */
   /* v0.8.74 풀소유도 강아지 — 무무에 명품 승복·금 염주·선글라스·쇼핑백. 우주에서는 무무 우주복에 금 염주·선글라스(SPR_FULL_SPACE) */
   const SPR_FULL = {
-    right: { img: null, aspect: 1.080, head: 0.360, cx: 0.720, cy: 0.440, adj: 0.5082, lift: 0.163, float: true },
-    hurt:  { img: null, aspect: 1.2185, head: 0.2807, cx: 0.648, cy: 0.405, adj: 0.3795, lift: 0.163 }
+    right: { img: null, aspect: 1.080, head: 0.360, cx: 0.720, cy: 0.440, adj: 0.5336, lift: 0.092, float: true },
+    hurt:  { img: null, aspect: 1.2185, head: 0.2807, cx: 0.648, cy: 0.405, adj: 0.3985, lift: 0.092 }
   };
   const SPR_FULL_SPACE = {
-    right: { img: null, aspect: 1.150, head: 0.330, cx: 0.640, cy: 0.470, adj: 0.4472, lift: 0.211, float: true },
-    hurt:  { img: null, aspect: 1.1432, head: 0.2643, cx: 0.600, cy: 0.456, adj: 0.3526, lift: 0.211 }
+    right: { img: null, aspect: 1.150, head: 0.330, cx: 0.640, cy: 0.470, adj: 0.4696, lift: 0.142, float: true },
+    hurt:  { img: null, aspect: 1.1432, head: 0.2643, cx: 0.600, cy: 0.456, adj: 0.3702, lift: 0.142 }
   };
   const SPACE_Z = 6;                 // 오로라 지대 — 여기부터 우주복 차림
   /* 우주에 올라서면 체감 난이도를 이 배율만큼 올린다.
