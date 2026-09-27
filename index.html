@@ -1415,7 +1415,7 @@
   const elTitle = document.getElementById("overTitle");
   const coinNote = document.getElementById("coinNote");
 
-  const GAME_VERSION = "v0.9.02";
+  const GAME_VERSION = "v0.9.03";
   /* 제작사 스플래시(bamhobak friends 로고) — 2026-09-20 끔. 다시 켜려면 true */
   const SPLASH_USE = false;   // 코드를 고칠 때마다 뒤 두 자리를 올린다
   document.getElementById("ver").textContent = GAME_VERSION;
@@ -6333,6 +6333,7 @@
   }
   function dragAnchor(e) {
     drag = { fx: pointerX(e), fy: pointerY(e), px: player.tx, py: flyOn ? player.ty : groundY };
+    if (partyOn()) drag.ox = 0;                      // 여럿이 — 조이스틱: 누른 자리에서 옆으로 민 만큼 계속 간다
     if (vsLike()) { swipeUp(drag, drag.fy, performance.now()); swipeDown(drag, drag.fy, performance.now()); }   // 대전모드 — 누른 자리가 쓸기의 첫 기준
   }
   function dragStart(e) {
@@ -6350,6 +6351,13 @@
     }
     if (dragBlocked(e)) { drag = null; if (e.cancelable) e.preventDefault(); return; }
     if (!drag) { dragAnchor(e); if (e.cancelable) e.preventDefault(); return; }   // 막혀 있던 손가락은 여기서 기준점을 잡는다
+    if (partyOn()) {                                 // 여럿이 — 조이스틱 (끝까지 밀면 기준점이 손가락을 따라온다)
+      let ox = pointerX(e) - drag.fx;
+      if (Math.abs(ox) > PARTY_JOY_R) { drag.fx += ox - Math.sign(ox) * PARTY_JOY_R; ox = Math.sign(ox) * PARTY_JOY_R; }
+      drag.ox = ox;
+      if (e.cancelable) e.preventDefault();
+      return;
+    }
     const kd = (prophIs("reverse") || (vsOn() && vsReversed(player, performance.now()))) ? -1 : 1;   // 거꾸로 가는 날·어지럼 저주 — 끄는 방향과 반대로
     const wantX = drag.px + (pointerX(e) - drag.fx) * DRAG_GAIN * kd;
     const x = Math.max(player.r, Math.min(worldW() - player.r, wantX));   // 여럿이 판은 하늘이 화면보다 넓다
@@ -6369,6 +6377,7 @@
     // 여러 손가락 중 하나만 뗐으면 남은 손가락으로 기준점을 다시 잡는다
     if (e.touches && e.touches.length) { if (!dragBlocked(e)) dragAnchor(e); return; }
     drag = null;
+    if (partyOn()) player.tx = player.x;             // 여럿이 — 손을 떼면 그 자리에 선다
   }
   cv.addEventListener("touchstart", dragStart, { passive: false });
   cv.addEventListener("touchmove", dragMove, { passive: false });
@@ -6376,7 +6385,7 @@
   cv.addEventListener("touchcancel", dragEnd);
   cv.addEventListener("mousedown", e => { if (e.button === 0) dragStart(e); });
   cv.addEventListener("mousemove", e => { if (e.buttons & 1) dragMove(e); });
-  window.addEventListener("mouseup", () => { drag = null; vsTouches.delete("m"); });
+  window.addEventListener("mouseup", () => { drag = null; vsTouches.delete("m"); if (partyOn()) player.tx = player.x; });
 
   /* ---------- 두 번 두드리기 → 방귀 대시 ----------
      끌기 조작과 섞이지 않는 게 제일 중요하다. '짧게 눌렀다 뗀' 것만 한 번의 두드림으로 치고
@@ -7653,6 +7662,10 @@
       player.ty = Math.max(H * FLY_TOP, Math.min(groundY, player.ty));
     }
 
+    if (partyOn() && drag && drag.ox !== undefined) {   // 여럿이 — 조이스틱: 민 정도만큼 빠르기 (vsMoveBody 는 (tx-x)×20 으로 간다)
+      const k = Math.max(0, Math.min(1, (Math.abs(drag.ox) - PARTY_JOY_DEAD) / (PARTY_JOY_R * 0.8 - PARTY_JOY_DEAD)));
+      player.tx = Math.max(player.r, Math.min(W - player.r, player.x + Math.sign(drag.ox) * k * PLAYER_MAX_SPEED * VS_MOVE / 20));
+    }
     const prev = player.x;
     // 손가락을 반대편에 찍어도 순간이동하지 않도록 최고 속도를 제한한다
     // 대전모드 — 밟혀서 멈춘 동안은 제자리 (손가락 목표는 그대로 두어 풀리면 가던 쪽으로 간다)
@@ -10497,6 +10510,7 @@
      목숨은 없다 — 맞으면 1초 무적·아픈 그림, 맞은 횟수만 오른다. 점프·몸싸움·머리 밟기(잠깐 멈춤)는 대전모드와 같다.
      2단계(사람끼리)는 빠른 대전으로 사람을 모으고 모자란 자리를 이 봇들로 채울 예정. */
   const PARTY_W_MUL = 2.6, PARTY_SEC = 60, PARTY_N = 8;
+  const PARTY_JOY_R = 55, PARTY_JOY_DEAD = 6;         // 조이스틱 — 이만큼(80%) 밀면 최고 속도, 이 안쪽은 멈춤
   const PARTY = { WW: 0, VW: 0, camX: 0, left: 0, others: [], bumpCd: new Map(), roster: null };
   let partyWant = false;
   const PARTY_BOT_NAMES = ["초코", "콩이", "보리", "두부", "모찌", "호두", "감자", "뭉치", "라떼", "쿠키", "망고", "구름", "단비", "토리", "율무", "까미", "밤이", "솜이"];
@@ -10757,6 +10771,14 @@
   // 위쪽 글자판 — 남은 시간 · 내 맞은 횟수 · 지금 등수 · 전체 지도 (화면 좌표)
   function drawPartyHud(top) {
     const VW = W;
+    if (drag && drag.ox !== undefined && state === STATE.PLAY) {   // 조이스틱 — 누른 자리에 흐린 원, 민 쪽에 손잡이
+      ctx.save();
+      ctx.globalAlpha = 0.35; ctx.fillStyle = "#ffffff";
+      ctx.beginPath(); ctx.arc(drag.fx, drag.fy, PARTY_JOY_R, 0, Math.PI * 2); ctx.fill();
+      ctx.globalAlpha = 0.7; ctx.fillStyle = "#2f8cff";
+      ctx.beginPath(); ctx.arc(drag.fx + drag.ox, drag.fy, 20, 0, Math.PI * 2); ctx.fill();
+      ctx.restore();
+    }
     const sec = Math.ceil(PARTY.left);
     ctx.textBaseline = "middle"; ctx.textAlign = "center";
     ctx.font = "900 26px NationalPension, NanumBarunGothic, system-ui, sans-serif";
