@@ -549,11 +549,16 @@
     display: flex; align-items: center; justify-content: center; white-space: nowrap; opacity: .92;
   }
   #partyPad button:active { transform: scale(.94); }
-  #partyPad .pslot { border-image-source: url(assets/ui/btn_gray.webp); opacity: .55; position: relative; }
-  #partyPad .pslot.full { opacity: 1; }
+  /* v0.9.19 조작 버튼 그림(Codex pad_*) — 네모 아이콘 타일, 살짝 비치게 */
+  #partyPad button { border: 0; border-image: none; padding: 0; width: 66px; height: 66px; opacity: .8;
+                     background: center / 100% 100% no-repeat; }
+  #partyPad #padJump { background-image: url(assets/ui/pad_jump.webp); }
+  #partyPad #padUpper { background-image: url(assets/ui/pad_upper.webp); }
+  #partyPad .pslot { background-image: url(assets/ui/pad_slot.webp); opacity: .6; position: relative; }
+  #partyPad .pslot.full { opacity: .9; }
   #partyPad .pslot .pic { font-size: 30px; line-height: 1; }
   #partyPad .pslot .pn {
-    position: absolute; right: -24px; top: -6px; min-width: 20px; height: 20px; border-radius: 10px;
+    position: absolute; right: -4px; top: -6px; min-width: 20px; height: 20px; border-radius: 10px;
     background: #ffd23f; color: #5a2a00; font-size: 12px; line-height: 20px; text-align: center; text-shadow: none;
   }
   /* 대전 이모티콘 — 오른쪽 아래 (두 폰 대전의 판 중에만) */
@@ -1203,8 +1208,8 @@
     <div id="partyPad">
       <button class="pslot" data-k="0" title="빈 칸"></button>
       <button class="pslot" data-k="1" title="빈 칸"></button>
-      <button id="padUpper">어퍼컷</button>
-      <button id="padJump">점프</button>
+      <button id="padUpper" aria-label="어퍼컷"></button>
+      <button id="padJump" aria-label="점프"></button>
     </div>
     <div id="vsEmo"><button data-e="0">😜</button><button data-e="1">💩</button><button data-e="2">😭</button><button data-e="3">👍</button></div>
     <button id="btnTestEnd">테스트 종료</button>
@@ -1553,7 +1558,7 @@
   const elTitle = document.getElementById("overTitle");
   const coinNote = document.getElementById("coinNote");
 
-  const GAME_VERSION = "v0.9.18";
+  const GAME_VERSION = "v0.9.19";
   /* 제작사 스플래시(bamhobak friends 로고) — 2026-09-20 끔. 다시 켜려면 true */
   const SPLASH_USE = false;   // 코드를 고칠 때마다 뒤 두 자리를 올린다
   document.getElementById("ver").textContent = GAME_VERSION;
@@ -10666,7 +10671,7 @@
      하늘이 화면의 PARTY_W_MUL 배로 넓고 화면(카메라)은 내 캐릭터를 따라간다. PARTY_SEC 초 동안 똥을 제일 적게 맞은 사람이 이긴다.
      목숨은 없다 — 맞으면 1초 무적·아픈 그림, 맞은 횟수만 오른다. 점프·몸싸움·머리 밟기(잠깐 멈춤)는 대전모드와 같다.
      2단계(사람끼리)는 빠른 대전으로 사람을 모으고 모자란 자리를 이 봇들로 채울 예정. */
-  const PARTY_W_MUL = 2.6, PARTY_SEC = 60, PARTY_N = 8;
+  const PARTY_W_MUL = 1.8, PARTY_SEC = 60, PARTY_N = 4;   // v0.9.19 4인 (나 + 봇 3) — 하늘도 사람 수에 맞춰 2.6 → 1.8배
   const PARTY_JOY_R = 55, PARTY_JOY_DEAD = 6;         // 조이스틱 — 이만큼(80%) 밀면 최고 속도, 이 안쪽은 멈춤
   const PARTY = { WW: 0, VW: 0, camX: 0, left: 0, others: [], bumpCd: new Map(), roster: null, cmds: [] };
   let partyWant = false;
