@@ -1416,7 +1416,7 @@
   const elTitle = document.getElementById("overTitle");
   const coinNote = document.getElementById("coinNote");
 
-  const GAME_VERSION = "v0.9.05";
+  const GAME_VERSION = "v0.9.06";
   /* 제작사 스플래시(bamhobak friends 로고) — 2026-09-20 끔. 다시 켜려면 true */
   const SPLASH_USE = false;   // 코드를 고칠 때마다 뒤 두 자리를 올린다
   document.getElementById("ver").textContent = GAME_VERSION;
@@ -1823,12 +1823,14 @@
     }
     const sh = spriteHeight(spr), sw = sh * spr.aspect;
     const off = sw * (spr.bcx - spr.cx) * (sprFlipped(now) ? -1 : 1);
-    return { x: player.x + off, y: player.y + FOOT - sh + sh * spr.bcy, r: sh * spr.brr };
+    return { x: player.x + off, y: player.y + FOOT - sh + sh * spr.bcy - sprLift(spr), r: sh * spr.brr };
   }
   // 판정·그림 크기 배율 — 스테로이드 약발 중에는 두 배
   function hitMul() { return aug.hitboxMul * (roidT > 0 ? 2 : 1) * (prophIs("heavy") ? 1.3 : 1); }
   function spriteHeight(spr) { return (player.r * 2 * hitMul()) / spr.head * spr.adj; }
-  function headOffset(spr) { return spr ? FOOT - spriteHeight(spr) * (1 - spr.cy) : 0; }  // 실제 크기 = 도안의 80%
+  /* v0.9.06 캐릭터마다 몸 가운데 높이가 달랐다(판정 반지름의 1.2~1.9배) — 세트마다 lift 만큼 그림과 판정을 함께 올려 방울이에 맞춘다 */
+  function sprLift(spr) { return spr && spr.lift ? spr.lift * player.r * hitMul() : 0; }
+  function headOffset(spr) { return spr ? FOOT - spriteHeight(spr) * (1 - spr.cy) - sprLift(spr) : 0; }  // 실제 크기 = 도안의 80%
 
   /* 놀이판 비율을 못 박는다. 예전에는 기기 화면 비율을 그대로 따라가서
      폰마다 논리 가로 폭이 340~446 으로 달랐고, 넓을수록 피하기 쉬웠다.
@@ -1926,20 +1928,20 @@
      첫 장면을 끝 장면으로도 줘서 이음새 없이). 땅·우주 모두 7x7 시트(칸 높이 200), 우주복은 저마다 따로.
      정지 그림(<직업>_right.png)은 직업 카드·순위표에만 쓴다. 얼굴 크기(adj)는 방울이와 같게 0.571 — head/cx/cy 는 칸에서 잰 얼굴 원 */
   const SPR_FORTUNE = {      // 루나 — 도베르만 점술가
-    right: { img: null, aspect: 1.360, head: 0.432, cx: 0.733, cy: 0.396, adj: 0.5644, float: true },
-    hurt:  { img: null, aspect: 1.3350, head: 0.4300, cx: 0.685, cy: 0.430, adj: 0.6022 }
+    right: { img: null, aspect: 1.360, head: 0.432, cx: 0.733, cy: 0.396, adj: 0.5644, lift: 0.262, float: true },
+    hurt:  { img: null, aspect: 1.3350, head: 0.4300, cx: 0.685, cy: 0.430, adj: 0.6022, lift: 0.262 }
   };
   const SPR_FORTUNE_SPACE = {
-    right: { img: null, aspect: 1.195, head: 0.345, cx: 0.709, cy: 0.379, adj: 0.5024, float: true },
-    hurt:  { img: null, aspect: 1.3711, head: 0.3855, cx: 0.632, cy: 0.405, adj: 0.5867 }
+    right: { img: null, aspect: 1.195, head: 0.345, cx: 0.709, cy: 0.379, adj: 0.5024, lift: 0.115, float: true },
+    hurt:  { img: null, aspect: 1.3711, head: 0.3855, cx: 0.632, cy: 0.405, adj: 0.5867, lift: 0.115 }
   };
   const SPR_LEV_SPACE = {    // 소라 — 파피용(장난감 날개·실크햇·풍선)
-    right: { img: null, aspect: 1.225, head: 0.324, cx: 0.742, cy: 0.484, adj: 0.4046, float: true },
-    hurt:  { img: null, aspect: 1.4142, head: 0.3039, cx: 0.696, cy: 0.480, adj: 0.3770 }
+    right: { img: null, aspect: 1.225, head: 0.324, cx: 0.742, cy: 0.484, adj: 0.4046, lift: 0.376, float: true },
+    hurt:  { img: null, aspect: 1.4142, head: 0.3039, cx: 0.696, cy: 0.480, adj: 0.3770, lift: 0.376 }
   };
   const SPR_FIT_SPACE = {    // 버피 — 복서
-    right: { img: null, aspect: 1.170, head: 0.374, cx: 0.655, cy: 0.412, adj: 0.6152, float: true },
-    hurt:  { img: null, aspect: 1.3148, head: 0.3519, cx: 0.640, cy: 0.417, adj: 0.5836 }
+    right: { img: null, aspect: 1.170, head: 0.374, cx: 0.655, cy: 0.412, adj: 0.6152, lift: -0.053, float: true },
+    hurt:  { img: null, aspect: 1.3148, head: 0.3519, cx: 0.640, cy: 0.417, adj: 0.5836, lift: -0.053 }
   };
   /* v0.8.80 크기·자리 다시 맞춤(tools/fairsize.py · 확인 그림 tools/lineup.py) — ① 헤엄 그림은 몸 넓이의 제곱근이 모든 캐릭터에서 같게(소라는 날개 몫 8%, 무무·풀소유는 복슬털 몫 10% 작게),
      ② 맞은 그림은 몸 넓이를 헤엄과 같게, 몸 한가운데가 헤엄 때 몸 한가운데와 같은 자리에 오게 — 그림 아래에 투명 여백을 붙여 올리고 cx 로 가로를 맞춘다
@@ -1947,12 +1949,12 @@
   /* v0.8.76 맞은 그림 크기를 헤엄 그림에 맞췄다 — 얼굴(헬멧) 크기가 같게 보이도록 hurt 의 adj 만 조정(무무·풀소유·소라가 특히 컸다) */
   // v0.8.75 소라는 날개 때문에 커 보여서 그림만 16% 줄였다 (adj 0.571 → 0.48) — 피격 범위(판정원)는 그대로
   const SPR_LEV = {
-    right: { img: null, aspect: 1.180, head: 0.332, cx: 0.774, cy: 0.509, adj: 0.4156, float: true },
-    hurt:  { img: null, aspect: 1.3077, head: 0.3275, cx: 0.741, cy: 0.566, adj: 0.3900 }
+    right: { img: null, aspect: 1.180, head: 0.332, cx: 0.774, cy: 0.509, adj: 0.4156, lift: 0.311, float: true },
+    hurt:  { img: null, aspect: 1.3077, head: 0.3275, cx: 0.741, cy: 0.566, adj: 0.3900, lift: 0.311 }
   };
   const SPR_FIT = {
-    right: { img: null, aspect: 1.415, head: 0.387, cx: 0.671, cy: 0.397, adj: 0.6957, float: true },
-    hurt:  { img: null, aspect: 1.1689, head: 0.4000, cx: 0.686, cy: 0.400, adj: 0.6628 }
+    right: { img: null, aspect: 1.415, head: 0.387, cx: 0.671, cy: 0.397, adj: 0.6957, lift: -0.286, float: true },
+    hurt:  { img: null, aspect: 1.1689, head: 0.4000, cx: 0.686, cy: 0.400, adj: 0.6628, lift: -0.286 }
   };
   /* v0.8.64 파워J 새 캐릭터 — 강아지 모드 파워J(흑백 보더콜리·동그란 안경·셔츠와 넥타이·클립보드·귀에 연필)를
      방울이 그림체로 다시 그리고(Codex pj_fly_2) 방울이처럼 허공 개헤엄(Ludo hydra 56장 → 시트 8열, 칸 255x200).
@@ -1961,19 +1963,19 @@
   const SPR_PJ = {
     /* v0.8.69 끝·처음이 이어지게 다시 뽑았다 — Ludo 에 첫 장면을 끝 장면(final_image)으로도 줘서 한 바퀴 돌아 제자리로 오는 49장
        (끝→처음 차이 5.3, 이웃 평균 12). 7x7 시트, 칸 243x200 */
-    right: { img: null, aspect: 1.214, head: 0.494, cx: 0.742, cy: 0.453, adj: 0.6839, float: true },
-    hurt:  { img: null, aspect: 1.3114, head: 0.5353, cx: 0.710, cy: 0.462, adj: 0.7747 }   // pj_hurt_2 — 혹·'> <' 울음·종이 흩날림
+    right: { img: null, aspect: 1.214, head: 0.494, cx: 0.742, cy: 0.453, adj: 0.6839, lift: 0.211, float: true },
+    hurt:  { img: null, aspect: 1.3114, head: 0.5353, cx: 0.710, cy: 0.462, adj: 0.7747, lift: 0.211 }   // pj_hurt_2 — 혹·'> <' 울음·종이 흩날림
   };
   /* 파워J 우주복(Codex pj_space2_1 — 꼬리까지 우주복 덮개, 안경은 헬멧 안) → Ludo 64장 시트(8x8, 칸 231x200).
      맞은 그림(pj_spacehurt_1)은 헬멧이 안 깨지고 별이 돈다 — 헬멧 지름이 헤엄 때와 같아지게 head 를 잡았다 */
   const SPR_PJ_SPACE = {
     // v0.8.69 우주도 첫 장면=끝 장면으로 49장 다시 (끝→처음 6.1). 7x7 시트, 칸 227x200
-    right: { img: null, aspect: 1.137, head: 0.461, cx: 0.721, cy: 0.382, adj: 0.6680, float: true },
-    hurt:  { img: null, aspect: 1.2029, head: 0.4890, cx: 0.711, cy: 0.450, adj: 0.6878 }
+    right: { img: null, aspect: 1.137, head: 0.461, cx: 0.721, cy: 0.382, adj: 0.6680, lift: 0.144, float: true },
+    hurt:  { img: null, aspect: 1.2029, head: 0.4890, cx: 0.711, cy: 0.450, adj: 0.6878, lift: 0.144 }
   };
   const SPR_MONK = {        // 무무 — 사모예드 스님 (v0.8.72)
-    right: { img: null, aspect: 1.175, head: 0.370, cx: 0.760, cy: 0.440, adj: 0.5211, float: true },
-    hurt:  { img: null, aspect: 1.2511, head: 0.2752, cx: 0.738, cy: 0.377, adj: 0.3638 }
+    right: { img: null, aspect: 1.175, head: 0.370, cx: 0.760, cy: 0.440, adj: 0.5211, lift: 0.124, float: true },
+    hurt:  { img: null, aspect: 1.2511, head: 0.2752, cx: 0.738, cy: 0.377, adj: 0.3638, lift: 0.124 }
   };
   /* 파워P — 다른 직업과 같은 사진 캐리커처 그림. 뛸 때는 머리카락이 왼쪽으로
      흘러 머리 중심이 오른쪽에 있고, 맞을 때는 좌우로 퍼져 가운데에 온다. */
@@ -2002,12 +2004,12 @@
      시트(7x7, 칸 218x200). 앉은 소개 그림 b2_sit_2, 맞은 그림 b2_hurt2_4(두 귀 다 선 채 운다).
      아래 값은 새 칸에서 잰 것 — 얼굴 크기(adj 0.571)는 그대로. */
   const SPR_BANGUL = {
-    right: { img: null, aspect: 1.0650, head: 0.446, cx: 0.707, cy: 0.367, adj: 0.6955,
+    right: { img: null, aspect: 1.0650, head: 0.446, cx: 0.707, cy: 0.367, adj: 0.6955, lift: 0.0,
              bcx: 0.500, bcy: 0.530, brr: 0.530, float: true },
     /* 맞은 그림 — 같은 강아지가 머리에 혹이 나고 눈을 '> <' 로 질끈 감은 채 엉엉 운다 (OpenAI hurt25_3).
        (hurt25_2 는 머리 위로 올린 앞발이 귀와 섞여 다리가 셋으로 보여서 바꿨다)
        adj 를 헤엄 그림과 같게(0.571) 둬서 맞는 순간에도 머리가 같은 크기로 보인다. */
-    hurt:  { img: null, aspect: 1.0030, head: 0.3964, cx: 0.710, cy: 0.358, adj: 0.6499,
+    hurt:  { img: null, aspect: 1.0030, head: 0.3964, cx: 0.710, cy: 0.358, adj: 0.6499, lift: 0.0,
              bcx: 0.500, bcy: 0.532, brr: 0.503 }
   };
   // 방울이는 제 우주복이 따로 있다 (다른 직업은 공용 우주복을 입는다)
@@ -2030,27 +2032,27 @@
        맞은 그림은 헬멧 지름이 헤엄 때와 같아지게 adj 를 잡았다.
        v0.8.07 맞은 그림 교체 — 땅 위 맞은 그림처럼 엉덩방아 찧고 뒷다리를 앞으로 뻗는다. 헬멧이 머리를
        지켰으니 혹도, 유리 금도 없다 (Codex cx_spacehurt3_3 을 사용자가 손봄). */
-    right: { img: null, aspect: 1.0950, head: 0.396, cx: 0.696, cy: 0.376, adj: 0.6063,
+    right: { img: null, aspect: 1.0950, head: 0.396, cx: 0.696, cy: 0.376, adj: 0.6063, lift: 0.0,
              bcx: 0.500, bcy: 0.530, brr: 0.530, float: true },
-    hurt:  { img: null, aspect: 0.9115, head: 0.3398, cx: 0.730, cy: 0.378, adj: 0.5463,
+    hurt:  { img: null, aspect: 0.9115, head: 0.3398, cx: 0.730, cy: 0.378, adj: 0.5463, lift: 0.0,
              bcx: 0.500, bcy: 0.510, brr: 0.491 }
   };
   /* 무소유 전용 우주복 —
      헬멧이 판정원이라 지름·중심을 재어 넣었다 (몸 높이는 다른 직업과 같은 1.475D). */
   const SPR_MONK_SPACE = {
-    right: { img: null, aspect: 1.130, head: 0.340, cx: 0.700, cy: 0.460, adj: 0.4421, float: true },
-    hurt:  { img: null, aspect: 1.2393, head: 0.2875, cx: 0.674, cy: 0.494, adj: 0.3640 }
+    right: { img: null, aspect: 1.130, head: 0.340, cx: 0.700, cy: 0.460, adj: 0.4421, lift: 0.339, float: true },
+    hurt:  { img: null, aspect: 1.2393, head: 0.2875, cx: 0.674, cy: 0.494, adj: 0.3640, lift: 0.339 }
   };
   /* 풀소유 — 무소유가 코인을 연달아 세 개 쥐면 이 모습이 된다.
      다만 우주에서는 우주복이 먼저라, 땅 위에서만 이 차림이 보인다. */
   /* v0.8.74 풀소유도 강아지 — 무무에 명품 승복·금 염주·선글라스·쇼핑백. 우주에서는 무무 우주복에 금 염주·선글라스(SPR_FULL_SPACE) */
   const SPR_FULL = {
-    right: { img: null, aspect: 1.080, head: 0.360, cx: 0.720, cy: 0.440, adj: 0.5082, float: true },
-    hurt:  { img: null, aspect: 1.2185, head: 0.2807, cx: 0.648, cy: 0.405, adj: 0.3795 }
+    right: { img: null, aspect: 1.080, head: 0.360, cx: 0.720, cy: 0.440, adj: 0.5082, lift: 0.163, float: true },
+    hurt:  { img: null, aspect: 1.2185, head: 0.2807, cx: 0.648, cy: 0.405, adj: 0.3795, lift: 0.163 }
   };
   const SPR_FULL_SPACE = {
-    right: { img: null, aspect: 1.150, head: 0.330, cx: 0.640, cy: 0.470, adj: 0.4472, float: true },
-    hurt:  { img: null, aspect: 1.1432, head: 0.2643, cx: 0.600, cy: 0.456, adj: 0.3526 }
+    right: { img: null, aspect: 1.150, head: 0.330, cx: 0.640, cy: 0.470, adj: 0.4472, lift: 0.211, float: true },
+    hurt:  { img: null, aspect: 1.1432, head: 0.2643, cx: 0.600, cy: 0.456, adj: 0.3526, lift: 0.211 }
   };
   const SPACE_Z = 6;                 // 오로라 지대 — 여기부터 우주복 차림
   /* 우주에 올라서면 체감 난이도를 이 배율만큼 올린다.
@@ -8926,7 +8928,7 @@
   function stepJump(b, dt) {
     if (!b.jh && !b.jv) return;
     let g = JUMP_G * (ruleOn("lowgrav") ? RULE_LOWGRAV : 1);
-    if (b.jv < 0 && jobOf(b) === "levitator" && (b.floatT || 0) < VS_FLOAT_SEC) {   // 부양사 — 떨어질 때 잠깐 둥실
+    if (MULTI_ABIL && b.jv < 0 && jobOf(b) === "levitator" && (b.floatT || 0) < VS_FLOAT_SEC) {   // 부양사 — 떨어질 때 잠깐 둥실
       b.floatT = (b.floatT || 0) + dt; g *= VS_FLOAT_G;
       if (b.jv < -160) b.jv = -160;
     }
@@ -9017,7 +9019,7 @@
     vsRule = null; vsRuleSlim = false;
     if (NET.role !== "guest") vsRuleRoll();               // 판 규칙 — 들어온 쪽은 방장 것을 받는다
     player.emo = rival.emo = null;
-    bubbleOn = job === "bangul"; rival.bubble = rivalJob === "bangul";   // 방울이 — 판마다 한 번 막는 비누방울
+    bubbleOn = MULTI_ABIL && job === "bangul"; rival.bubble = MULTI_ABIL && rivalJob === "bangul";   // 방울이 — 판마다 한 번 막는 비누방울
     player.floatT = rival.floatT = 0;
     vsPeels = []; vsIce = []; vsPigeons = [];
     for (const b of [player, rival]) { b.slipUntil = 0; b.revUntil = 0; b.stinkT = 0; b.iv = 0; }
@@ -9187,7 +9189,7 @@
       if (vsBumpCd <= 0) {
         const a1 = Math.max(0, p1vx * dir), a2 = Math.max(0, -rival.vx * dir);   // 상대 쪽으로 달려든 빠르기
         // 박치기면 1.6배 멀리, 무거운 몸이면 절반만 밀린다
-        const fitK = b => jobOf(b) === "fit" ? VS_FIT_RAM : 1;   // 헬스걸 몸통 박치기
+        const fitK = b => MULTI_ABIL && jobOf(b) === "fit" ? VS_FIT_RAM : 1;   // 헬스걸 몸통 박치기
         const kv2 = dir * VS_KNOCK * (ruleOn("shove2x") ? 2 : 1) * (260 + a1 * 1.35) * (vsHas(player, "ram") ? 1.6 : 1) * fitK(player) * (vsHas(rival, "heavy") ? 0.5 : 1);
         p1kv -= dir * VS_KNOCK * (ruleOn("shove2x") ? 2 : 1) * (260 + a2 * 1.35) * (vsHas(rival, "ram") ? 1.6 : 1) * fitK(rival) * (vsHas(player, "heavy") ? 0.5 : 1);
         vsBumpCd = 0.22;
@@ -9709,6 +9711,7 @@
     { id: "fortune",   ds: "수 읽기 — 상대가 가려는 쪽이 보인다" }
   ];
   const VS_FLOAT_SEC = 0.6, VS_FLOAT_G = 0.3, VS_FIT_RAM = 1.3;
+  const MULTI_ABIL = false;          // v0.9.06 멀티(1:1·여럿이)는 모습만 고르고 능력은 모두 같다 (방울·박치기·부양·수 읽기 끔)
   const LS_VSJOB = "epjp_vs_job";
   let vsJob = "fortune";
   try { const j = localStorage.getItem(LS_VSJOB); if (VS_JOBS.some(v => v.id === j)) vsJob = j; } catch (e) {}
@@ -9731,10 +9734,11 @@
       });
       box.appendChild(b);
     }
-    document.getElementById("vsJobDs").textContent = VS_JOBS.find(v => v.id === vsJob).ds;
+    document.getElementById("vsJobDs").textContent = MULTI_ABIL ? VS_JOBS.find(v => v.id === vsJob).ds : "모습만 달라요 — 능력은 모두 같아요";
   }
   // 점술가 — 상대 머리 위에 가려는 쪽 화살표
   function drawVsRead(now) {
+    if (!MULTI_ABIL) return;
     for (const [me, op] of [[player, rival], [rival, player]]) {
       if (jobOf(me) !== "fortune") continue;
       if (me !== player && !vsSplit()) continue;        // 내 화살표만 — 상대(봇·두 폰)의 수읽기는 내 화면에 안 그린다 (v0.8.39)
@@ -10459,7 +10463,7 @@
       vsShift(1, -dir * (minD - ad) / 2);                    // 겹친 만큼의 절반 — 나머지 절반은 상대 폰이 제 몸을 비킨다
       if (vsBumpCd <= 0) {
         const a1 = Math.max(0, myvx * dir), a2 = Math.max(0, -(rival.vx || 0) * dir);
-        const fitK = b => jobOf(b) === "fit" ? VS_FIT_RAM : 1;
+        const fitK = b => MULTI_ABIL && jobOf(b) === "fit" ? VS_FIT_RAM : 1;
         p1kv -= dir * VS_KNOCK * (ruleOn("shove2x") ? 2 : 1) * (260 + a2 * 1.35) * (vsHas(rival, "ram") ? 1.6 : 1) * fitK(rival) * (vsHas(player, "heavy") ? 0.5 : 1);
         vsBumpCd = 0.22;
         const hard = Math.max(a1, a2) > 350 * VS_MOVE, cx = (player.x + rival.x) / 2, cy = player.y + player.hy;
@@ -10636,7 +10640,7 @@
   function partyClash(dt, now) {
     const R = vsR(), all = [player, ...PARTY.others], minD = R * VS_BUMP;
     for (const [k, v] of PARTY.bumpCd) { if (v - dt <= 0) PARTY.bumpCd.delete(k); else PARTY.bumpCd.set(k, v - dt); }
-    const fitK = q => (q === player ? job : q.job) === "fit" ? VS_FIT_RAM : 1;
+    const fitK = q => MULTI_ABIL && (q === player ? job : q.job) === "fit" ? VS_FIT_RAM : 1;
     for (let i = 0; i < all.length; i++) for (let j = i + 1; j < all.length; j++) {
       const a = all[i], b = all[j];
       const d = b.x - a.x, ad = Math.abs(d);
@@ -12989,7 +12993,7 @@
       const gst = g.st || 1, gz = 1 + (1 - k) * 0.1;
       ctx.scale(gz * (1 + (gst - 1) * k), gz / (1 + (gst - 1) * k * 0.45));
       if (g.flip) ctx.scale(-1, 1);
-      drawSpr(g.spr.img, -gw * g.spr.cx, FOOT - gh, gw, gh);
+      drawSpr(g.spr.img, -gw * g.spr.cx, FOOT - gh - sprLift(g.spr), gw, gh);
       ctx.restore();
     }
 
@@ -13016,6 +13020,8 @@
       ctx.ellipse(0, FOOT - 4 + (groundY - player.y), sw * .3 * (1 - air * .34), 7 * (1 - air * .34), 0, 0, 6.283);
       ctx.fill();
       ctx.restore();
+      const lift = sprLift(spr);                        // v0.9.06 몸 가운데 높이 맞춤 — 그림자 빼고 전부 함께 올린다
+      if (lift) ctx.translate(0, -lift);
 
       /* 떠 있는 그림(방울이) — 걷지 않고 둥둥 떠 있다. 헤엄 프레임에는 둥실거림이 이미
          들어 있어서 코드로는 살짝 기우뚱하는 것만 얹는다 (프레임이 오기 전에만 ±4px 오르내림).
