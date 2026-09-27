@@ -1558,7 +1558,7 @@
   const elTitle = document.getElementById("overTitle");
   const coinNote = document.getElementById("coinNote");
 
-  const GAME_VERSION = "v0.9.19";
+  const GAME_VERSION = "v0.9.20";
   /* 제작사 스플래시(bamhobak friends 로고) — 2026-09-20 끔. 다시 켜려면 true */
   const SPLASH_USE = false;   // 코드를 고칠 때마다 뒤 두 자리를 올린다
   document.getElementById("ver").textContent = GAME_VERSION;
@@ -10957,14 +10957,15 @@
         b.banT = (b.banT || 0) - dt;
         if (b.banT <= 0) {
           b.banT = PA_BANANA_GAP; b.pa.banana--;
-          vsPeels.push({ x: Math.max(10, Math.min(W - 10, b.x - paFace(b) * vsR() * 2.2)), ownerB: b, t: 25 });
+          vsPeels.push({ x: Math.max(10, Math.min(W - 10, b.x - paFace(b) * vsR() * 2.2)), ownerB: b, t: 25, safe: now + 1500 });
         }
       }
       if ((b.jh || 0) > 4 || now < (b.slipUntil || 0)) continue;
-      const k = vsPeels.findIndex(pl => pl.ownerB !== b && Math.abs(pl.x - b.x) < vsR() * 0.9);
+      // v0.9.20 제 껍질도 밟으면 미끄러진다 (깐 직후 1.5초만 봐준다 — 예전엔 제 것은 아예 안 밟혀서 '아무 변화 없다'로 보였다)
+      const k = vsPeels.findIndex(pl => (pl.ownerB !== b || now > (pl.safe || 0)) && Math.abs(pl.x - b.x) < vsR() * 1.1);
       if (k < 0) continue;
       vsPeels.splice(k, 1);
-      b.slipUntil = now + VS_SLIP_MS; b.slipV = paFace(b) * 460;
+      b.slipUntil = now + VS_SLIP_MS; b.slipV = paFace(b) * 620;
       if (b === player || partyOnScreen(b.x)) {
         popText(b.x, groundY - vsR() * 3, "미끄덩!", "#ffe066", 20);
         beep(300, .08, "sine", b === player ? .05 : .02);
@@ -11081,7 +11082,7 @@
         if (o === player || partyOnScreen(o.x)) popText(o.x, groundY - (o.jh || 0) - vsR() * 3.4, "😵 좌우 반대!", "#c9a2ff", 20);
       }
     } else if (id === "banana") {
-      vsPeels.push({ x: Math.max(10, Math.min(W - 10, b.x - paFace(b) * vsR() * 2.2)), ownerB: b, t: 25 });
+      vsPeels.push({ x: Math.max(10, Math.min(W - 10, b.x - paFace(b) * vsR() * 2.2)), ownerB: b, t: 25, safe: now + 1500 });
       if (b === player) beep(500, .05, "triangle", .03);
     } else if (id === "dash" && b === player) {
       const k = aug.dash; aug.dash = true;
@@ -11208,7 +11209,10 @@
       b.hy = partyAs(b, () => headOffset(currentSprite(now)));
     }
     const damp = Math.exp(-7 * dt);
-    for (const b of [player, ...PARTY.others]) { b.kv = (b.kv || 0) * damp; if (Math.abs(b.kv) < 5) b.kv = 0; }
+    for (const b of [player, ...PARTY.others]) {
+      b.kv = (b.kv || 0) * damp; if (Math.abs(b.kv) < 5) b.kv = 0;
+      if (now < (b.slipUntil || 0)) b.tilt = Math.sin(now / 55) * 1.1;   // 🍌 미끄러지는 동안 기우뚱기우뚱
+    }
     // 똥 — 다른 몸들 (내 몸은 update 의 원래 판정이 맡는다). 🦍 튕겨냄 · 👻 잔상 · 🙅 책임 전가
     for (let i = items.length - 1; i >= 0; i--) {
       const it = items[i];
