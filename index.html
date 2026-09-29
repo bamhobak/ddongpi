@@ -1559,7 +1559,7 @@
   const elTitle = document.getElementById("overTitle");
   const coinNote = document.getElementById("coinNote");
 
-  const GAME_VERSION = "v0.9.26";
+  const GAME_VERSION = "v0.9.27";
   /* 제작사 스플래시(bamhobak friends 로고) — 2026-09-20 끔. 다시 켜려면 true */
   const SPLASH_USE = false;   // 코드를 고칠 때마다 뒤 두 자리를 올린다
   document.getElementById("ver").textContent = GAME_VERSION;
@@ -13898,13 +13898,18 @@
       ctx.font = "800 14px NationalPension, NanumBarunGothic, system-ui, sans-serif";
       const bh = 32, k = bh / 60, tw = ctx.measureText(prophecy.nm).width;
       const bw = Math.min(W - 16, Math.max(w + 30, tw + (55 + 15) * k + 28)), bx = W / 2 - bw / 2, by = y - 1;   // 글자 길이에 맞춰 늘린다
+      ctx.globalAlpha *= 0.6;                          // v0.9.27 바는 40% 비치게 (글자는 또렷하게)
       const g = drawPBarImg(bx, by, bw, bh, prophT / PROPH_SEC, prophecy.c);
+      ctx.globalAlpha = Math.min(1, prophT / 0.4);
       if (ITEM_IMG.fortune) ctx.drawImage(ITEM_IMG.fortune, g.ix - g.ir * 1.2, g.iy - g.ir * 1.2, g.ir * 2.4, g.ir * 2.4);
       ctx.fillStyle = "#fff"; ctx.font = "800 14px NationalPension, NanumBarunGothic, system-ui, sans-serif";
-      ctx.textAlign = "center"; ctx.textBaseline = "middle";
+      /* v0.9.27 글자 위아래 가운데 — 'middle' 은 한글이 아래로 처져 보여서 실제 글자 윗끝·아랫끝으로 맞춘다 */
+      ctx.textAlign = "center"; ctx.textBaseline = "alphabetic";
+      const tm = ctx.measureText(prophecy.nm);
+      const ty = by + bh / 2 + ((tm.actualBoundingBoxAscent || 10) - (tm.actualBoundingBoxDescent || 1)) / 2;
       ctx.lineWidth = 3; ctx.lineJoin = "round"; ctx.strokeStyle = "rgba(40,10,50,.7)";
-      ctx.strokeText(prophecy.nm, g.gx + g.gw / 2, g.gy + g.gh / 2 + 1);
-      ctx.fillText(prophecy.nm, g.gx + g.gw / 2, g.gy + g.gh / 2 + 1);
+      ctx.strokeText(prophecy.nm, g.gx + g.gw / 2, ty);
+      ctx.fillText(prophecy.nm, g.gx + g.gw / 2, ty);
       ctx.restore();
       return;
     }
