@@ -1559,7 +1559,7 @@
   const elTitle = document.getElementById("overTitle");
   const coinNote = document.getElementById("coinNote");
 
-  const GAME_VERSION = "v0.9.30";
+  const GAME_VERSION = "v0.9.31";
   /* 제작사 스플래시(bamhobak friends 로고) — 2026-09-20 끔. 다시 켜려면 true */
   const SPLASH_USE = false;   // 코드를 고칠 때마다 뒤 두 자리를 올린다
   document.getElementById("ver").textContent = GAME_VERSION;
@@ -2421,7 +2421,7 @@
   function helperPic()    { return (inSpace() && helperSpaceImg) ? helperSpaceImg : helperImg; }
   function helperAspect() { return (inSpace() && helperSpaceImg) ? HELPER_ASPECT_SPACE : HELPER_ASPECT; }
   const HELPER_H = 99;           // 화면에 그릴 높이 (110에서 10% 축소)
-  const HELPER_R = 43;           // 똥을 부수는 반경 (48 → 43, 면적 20% 감소)
+  const HELPER_R = 39;           // v0.9.31 43 → 39 (피지컬 쪽으로 — 똥 없애는 증강 살짝 너프)           // 똥을 부수는 반경 (48 → 43, 면적 20% 감소)
   function helperScale() { return aug.helperRush ? 1.2 : 1; } // 히든 '대폭주' 시 1.2배 (1.3에서 완화)
   let helpers = [];
   let helperTimer = 0;
@@ -3327,9 +3327,9 @@
     { id: "hungry",     ic: "😋", nm: "마운자로를 이겨낸 정연핑", ds: "정연핑이 아이템을 대신 먹어준다",
       hidden: true, once: true, cond: () => pet === "helper" && aug.magnet > 0,   // 정연핑 펫 + 자석
       go: () => { aug.hungry = true; } },
-    { id: "roid",       ic: "💉", nm: "스테로이드 과다 복용", ds: "7초 동안 몸이 2배로 부풀고, 모든 똥을 튕겨낸다",
+    { id: "roid",       ic: "💉", nm: "스테로이드 과다 복용", ds: "6초 동안 몸이 2배로 부풀고, 모든 똥을 튕겨낸다",
       max: 99, noCount: true, cond: () => job === "fit" && level >= 7,   // 헬스걸 전용 — 우산 다발 자리
-      go: () => { roidT = 7; } },
+      go: () => { roidT = 6; } },   // v0.9.31 7 → 6초
     { id: "doveWhat",   ic: "🕊️", nm: "비둘기 무엇?", ds: "비둘기가 1.5배 빠르고 커진다 · 더 자주 출격",
       hidden: true, once: true,
       cond: () => pet === "dove" && (augCount["doveFlock"] || 0) + (augCount["doveHome"] || 0) >= 2,   // 비둘기 증강 2개 이상
@@ -3679,8 +3679,8 @@
      선물 요정: GIFT_EVERY 마다 날아가 떨어지는 똥 하나를 펑 터뜨려 아이템으로 바꾼다.
      코인 고양이: CAT_EVERY 마다 위에서 고개를 내밀어 코인을 떨어뜨린다 (세 번째마다 5코인).
      백만볼트 뱀장어: EEL_EVERY 마다 가장 가까운 똥에 번개 — 옆 똥으로 EEL_CHAIN 개까지 옮겨붙는다. */
-  const ANGEL_SEC = 10, ANGEL_R = 118;
-  const GIFT_EVERY = 8, CAT_EVERY = 7, EEL_EVERY = 4.5, EEL_CHAIN = 4, EEL_HOP = 120;   // 뱀장어 옮겨붙는 거리 150 → 120
+  const ANGEL_SEC = 10, ANGEL_R = 106;   // v0.9.31 118 → 106
+  const GIFT_EVERY = 9, CAT_EVERY = 7, EEL_EVERY = 5, EEL_CHAIN = 3, EEL_HOP = 120;   // v0.9.31 요정 8→9초 · 뱀장어 4.5→5초, 4→3개   // 뱀장어 옮겨붙는 거리 150 → 120
   let angelUsed = false, angelAura = 0, angelFx = 0;
   /* 어깨 위 펫(수호천사·뱀장어)의 자리 — 캐릭터 뒤쪽 어깨를 목표로 부드럽게 쫓아간다.
      방향을 바꾸면 반대편 어깨로 순간이동하지 않고, 머리 위로 살짝 떠올라 건너간다. */
@@ -6392,9 +6392,9 @@
   /* 우주선 한 대가 다시 쏘기까지. 대수가 늘수록 각자 느긋해진다 —
      1대 0.6초 · 2대 0.8초 · 3대 1.0초 … (겹칠수록 총 화력의 상승폭이 줄어든다) */
   // 대수별 발사 간격 0.5 / 0.7 / 0.9 / 1.1 / 1.3 초
-  const SHIP_GAP = 0.5, SHIP_GAP_STEP = 0.2;
+  const SHIP_GAP = 0.56, SHIP_GAP_STEP = 0.22;   // v0.9.31 0.5/0.2 → 0.56/0.22 (갤러그 화력 약 10%↓)
   function shipGap(n) { return SHIP_GAP + SHIP_GAP_STEP * (n - 1); }
-  const M_PX = 12, DOVE_EVERY = 80 * M_PX;   // 100m 에서 20% 줄여 80m 마다
+  const M_PX = 12, DOVE_EVERY = 90 * M_PX;   // v0.9.31 80m → 90m   // 100m 에서 20% 줄여 80m 마다
   // 히든 '비둘기 무엇?' — 속도·크기·폭발은 1.5배, 출격은 3/4 거리마다
   function doveMul()   { return aug.doveWhat ? 1.5 : 1; }
   function doveEvery() { return DOVE_EVERY * (aug.doveWhat ? 0.75 : 1) * aug.doveFreq; }
@@ -7258,8 +7258,8 @@
      낙하 속도에는 그대로, 생성 빈도에는 제곱근만큼 나눠 곱한다. */
   function lateMul() {
     let m = 1;
-    if (level > 10) m *= Math.pow(1.015, level - 10);
-    if (level > 17) m *= Math.pow(1.025, level - 17);   // 블랙홀 뒤 레벨당 (예전 +5%)
+    if (level > 10) m *= Math.pow(1.012, level - 10);   // v0.9.31 1.015 → 1.012
+    if (level > 17) m *= Math.pow(1.02, level - 17);    // v0.9.31 1.025 → 1.02   // 블랙홀 뒤 레벨당 (예전 +5%)
     return m;
   }
 
@@ -7297,7 +7297,7 @@
   const HUGE_R = 50.35;        // 반지름 — 66 → 53 (20%) → 다시 5% 축소
   /* 까다로운 똥이 나올 확률 — 레벨 7에서 SPEC_BASE 로 시작해 레벨마다 SPEC_STEP 씩 오른다.
      상한 SPEC_CAP — 절반까지만. 나머지 절반은 언제나 평범한 똥이다. */
-  const SPEC_FROM = 7, SPEC_BASE = 0.016, SPEC_STEP = 0.028, SPEC_CAP = 0.5;   // 처음·오름폭 둘 다 30% 낮춤
+  const SPEC_FROM = 7, SPEC_BASE = 0.016, SPEC_STEP = 0.025, SPEC_CAP = 0.45;   // v0.9.31 오름폭 0.028→0.025 · 상한 0.5→0.45   // 처음·오름폭 둘 다 30% 낮춤
   /* 특수똥의 '독한 정도' — 처음 나오는 레벨(7)에서 0, 8레벨 뒤(15)에 1 (예전 강도). 똥마다 태어날 때 값을 기억한다.
        초거대: 반지름 30 남짓(평범한 똥보다 조금 큼) → 50~60
        레이저: 예고 1.6초·동시 1개 → 예고 0.9초·동시 3개
@@ -8022,7 +8022,7 @@
              지그재그똥은 방향이 뒤집힌다 (예전에는 전부 통째로 사라졌다). */
           smashPoopsAround(bu.x, bu.y, 8);
           burst(bu.x, bu.y, "#9fe8ff", 10);
-          if (aug.chainZap) zapChain(bu.x, bu.y, 2, 120, null, 120);   // 히든 '연쇄 전류' — 가까운(120px 안) 똥 두 개까지만 번진다
+          if (aug.chainZap) zapChain(bu.x, bu.y, 2, 100, null, 100);   // v0.9.31 번지는 거리 120 → 100   // 히든 '연쇄 전류' — 가까운(120px 안) 똥 두 개까지만 번진다
         }
         hit = true;
         break;
@@ -8222,7 +8222,7 @@
     // ---- 도와줘 정연핑 ----
     if (aug.helper > 0) {
       // 1명이면 4.5초, 2명이면 5.5초, 3명이면 6.5초… 인원이 늘수록 주기가 1초씩 길어진다
-      const cycle = 4.0 + 1.0 * aug.helper;   // 3.5 → 4.0, 출격이 조금 뜸해진다
+      const cycle = 4.5 + 1.0 * aug.helper;   // v0.9.31 4.0 → 4.5   // 3.5 → 4.0, 출격이 조금 뜸해진다
       helperTimer -= dt * tsc;
       if (helperTimer <= 0 && helperQueue <= 0) {
         helperTimer = cycle;
@@ -8330,8 +8330,8 @@
         spawnTimer += (4.5 / 59) * aug.feverRateMul * widthFactor;
       } else {
         spawnPoop();
-        if (level >= 3 && Math.random() < .35) spawnPoop();
-        if (level >= 6 && Math.random() < .30) spawnPoop(1.6);   // 초고속 똥
+        if (level >= 3 && Math.random() < .32) spawnPoop();          // v0.9.31 .35 → .32
+        if (level >= 6 && Math.random() < .27) spawnPoop(1.6);   // 초고속 똥 (v0.9.31 .30 → .27)   // 초고속 똥
         // 까다로운 똥 — 레벨 7에 아주 드물게 시작해서 레벨마다 조금씩 늘어난다
         if (level >= SPEC_FROM && Math.random() < Math.min(SPEC_CAP, SPEC_BASE + (level - SPEC_FROM) * SPEC_STEP)) {
           const kind = SPECIAL_KINDS[Math.floor(Math.random() * SPECIAL_KINDS.length)];
@@ -8645,7 +8645,7 @@
                    반경은 화면의 2/3 넘게 덮도록 잡는다 (까다로운 똥도 함께 부순다).
                    지금 부딪힌 똥(i)은 바로 아래 공용 splice 가 지우므로 건드리지 않는다. */
                 const bx = player.x, by = player.y + player.hy;
-                const bR = Math.sqrt(4 * W * H / (3 * Math.PI)) * 1.0;   // 1.15 → 1.0 (반경 13% 축소)
+                const bR = Math.sqrt(4 * W * H / (3 * Math.PI)) * 0.88;   // v0.9.31 1.0 → 0.88   // 1.15 → 1.0 (반경 13% 축소)
                 for (let k = items.length - 1; k >= 0; k--) {
                   const q = items[k];
                   if (q.type !== "poop" || k === i || q.blast || q.dark) continue;
@@ -8748,7 +8748,7 @@
       beep(300, .07, "square", .04);
     }
     for (const w of waks) {
-      smashPoopsAround(w.x, w.y, 50, true);       // 부딪힌 똥과 반경 안의 똥이 함께 터진다
+      smashPoopsAround(w.x, w.y, 42, true);   // v0.9.31 50 → 42       // 부딪힌 똥과 반경 안의 똥이 함께 터진다
       burst(w.x, w.y, "#ff8a6a", 30);
       wakBooms.push({ x: w.x, y: w.y, t: 0 });
       shake = Math.max(shake, 10);
@@ -8797,7 +8797,7 @@
         if (cnt) {
           bonus = Math.round(bonus);
           score += sc("별핑별", bonus);
-          spawnHold = Math.max(spawnHold, 1);   // 쓸어낸 뒤 1초는 새 똥이 없다
+          spawnHold = Math.max(spawnHold, 0.5);   // 쓸어낸 뒤 잠깐 새 똥이 없다 (v0.9.31 1 → 0.5초)
           shake = Math.max(shake, 18);
           feverFlash = Math.max(feverFlash, 0.7);
           popGain(player.x, player.y - 110, bonus,
