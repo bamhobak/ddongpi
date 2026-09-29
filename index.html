@@ -1559,7 +1559,7 @@
   const elTitle = document.getElementById("overTitle");
   const coinNote = document.getElementById("coinNote");
 
-  const GAME_VERSION = "v0.9.28";
+  const GAME_VERSION = "v0.9.29";
   /* 제작사 스플래시(bamhobak friends 로고) — 2026-09-20 끔. 다시 켜려면 true */
   const SPLASH_USE = false;   // 코드를 고칠 때마다 뒤 두 자리를 올린다
   document.getElementById("ver").textContent = GAME_VERSION;
@@ -13906,7 +13906,7 @@
       /* v0.9.27 글자 위아래 가운데 — 'middle' 은 한글이 아래로 처져 보여서 실제 글자 윗끝·아랫끝으로 맞춘다 */
       ctx.textAlign = "center"; ctx.textBaseline = "alphabetic";
       const tm = ctx.measureText(prophecy.nm);
-      const ty = by + bh / 2 + ((tm.actualBoundingBoxAscent || 10) - (tm.actualBoundingBoxDescent || 1)) / 2 + 1;   // +1 — 폰에서 살짝 떠 보였다
+      const ty = by + bh / 2 + ((tm.actualBoundingBoxAscent || 10) - (tm.actualBoundingBoxDescent || 1)) / 2;   // v0.9.29 +1 은 되돌렸다 (사용자 확인)
       ctx.lineWidth = 3; ctx.lineJoin = "round"; ctx.strokeStyle = "rgba(40,10,50,.7)";
       ctx.strokeText(prophecy.nm, g.gx + g.gw / 2, ty);
       ctx.fillText(prophecy.nm, g.gx + g.gw / 2, ty);
