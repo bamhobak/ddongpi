@@ -1559,7 +1559,7 @@
   const elTitle = document.getElementById("overTitle");
   const coinNote = document.getElementById("coinNote");
 
-  const GAME_VERSION = "v0.9.24";
+  const GAME_VERSION = "v0.9.25";
   /* 제작사 스플래시(bamhobak friends 로고) — 2026-09-20 끔. 다시 켜려면 true */
   const SPLASH_USE = false;   // 코드를 고칠 때마다 뒤 두 자리를 올린다
   document.getElementById("ver").textContent = GAME_VERSION;
@@ -9443,6 +9443,7 @@
     const row = (x, al, label, c, n) => {
       for (let i = 0; i < Math.max(VS_LIVES, n); i++) {       // 하트 증강으로 5개까지
         const hx = al === "left" ? x + 10 + i * 26 : x - 10 - i * 26;
+        if (hudOk(hudHeart)) { ctx.save(); if (i >= n) ctx.globalAlpha *= 0.3; drawHeartImg(hx, top + 14, 9.5); ctx.restore(); continue; }
         ctx.fillStyle = i < n ? "#ff3d68" : "rgba(255,255,255,.28)";
         heartPath(hx, top + 14, 9.5); ctx.fill();
       }
@@ -13893,6 +13894,20 @@
     const w = Math.min(W - 40, prophecy.both ? 250 : 190), h = 30, x = W / 2 - w / 2, y = Math.round(H / 2 + 20);
     ctx.save();
     ctx.globalAlpha = Math.min(1, prophT / 0.4);
+    if (hudOk(hudBar)) {
+      ctx.font = "800 14px NationalPension, NanumBarunGothic, system-ui, sans-serif";
+      const bh = 36, k = bh / 60, tw = ctx.measureText(prophecy.nm).width;
+      const bw = Math.min(W - 16, Math.max(w + 30, tw + (62 + 24) * k + 28)), bx = W / 2 - bw / 2, by = y - 3;   // 글자 길이에 맞춰 늘린다
+      const g = drawPBarImg(bx, by, bw, bh, prophT / PROPH_SEC, prophecy.c);
+      if (ITEM_IMG.fortune) ctx.drawImage(ITEM_IMG.fortune, g.ix - g.ir * 1.2, g.iy - g.ir * 1.2, g.ir * 2.4, g.ir * 2.4);
+      ctx.fillStyle = "#fff"; ctx.font = "800 14px NationalPension, NanumBarunGothic, system-ui, sans-serif";
+      ctx.textAlign = "center"; ctx.textBaseline = "middle";
+      ctx.lineWidth = 3; ctx.lineJoin = "round"; ctx.strokeStyle = "rgba(40,10,50,.7)";
+      ctx.strokeText(prophecy.nm, g.gx + g.gw / 2, g.gy + g.gh / 2 + 1);
+      ctx.fillText(prophecy.nm, g.gx + g.gw / 2, g.gy + g.gh / 2 + 1);
+      ctx.restore();
+      return;
+    }
     ctx.fillStyle = "rgba(40,16,70,.72)";
     ctx.strokeStyle = prophecy.c; ctx.lineWidth = 2;
     ctx.beginPath(); ctx.roundRect(x, y, w, h, 15); ctx.fill(); ctx.stroke();
@@ -14182,6 +14197,29 @@
   }
 
   // 위쪽 두 봉우리가 둥글고 아래가 뾰족한 통통한 하트
+  /* v0.9.25 하트·예언 바 그림(Codex hud_heart_2 · hud_bar_1). 그림이 아직 안 왔으면 예전처럼 그린다 */
+  const hudHeart = new Image(), hudBar = new Image();
+  hudHeart.src = "assets/ui/heart.webp"; hudBar.src = "assets/ui/pbar.webp";
+  function hudOk(im) { return im.complete && im.naturalWidth > 0; }
+  function drawHeartImg(cx, cy, r) {           // r = 예전 heartPath 반지름 — 폭 2.4r
+    const w = r * 2.4, h = w * hudHeart.naturalHeight / hudHeart.naturalWidth;
+    ctx.drawImage(hudHeart, cx - w / 2, cy - h * 0.52, w, h);
+  }
+  /* 예언 바 — 그림 420x60 을 세 조각으로: 왼쪽(아이콘 칸) 64 · 가운데(늘림) · 오른쪽 24. 홈은 x 62~396, y 17~43 */
+  function drawPBarImg(x, y, w, h, frac, color) {
+    const k = h / 60, L = 64 * k, Rw = 24 * k, iw = hudBar.naturalWidth;
+    ctx.drawImage(hudBar, 0, 0, 64, 60, x, y, L, h);
+    ctx.drawImage(hudBar, 64, 0, iw - 88, 60, x + L, y, w - L - Rw, h);
+    ctx.drawImage(hudBar, iw - 24, 0, 24, 60, x + w - Rw, y, Rw, h);
+    const gx = x + 62 * k, gy = y + 17 * k, gw = (x + w - 24 * k) - gx, gh = 26 * k;
+    if (frac > 0) {
+      ctx.save();
+      ctx.globalAlpha *= 0.7; ctx.fillStyle = color;
+      ctx.beginPath(); ctx.roundRect(gx + 1, gy + 1, Math.max(gh, (gw - 2) * frac), gh - 2, (gh - 2) / 2); ctx.fill();
+      ctx.restore();
+    }
+    return { gx, gy, gw, gh, ix: x + 33 * k, iy: y + 30 * k, ir: 13 * k };
+  }
   function heartPath(cx, cy, r) {
     ctx.beginPath();
     ctx.moveTo(cx, cy + r * 1.00);
@@ -14343,6 +14381,7 @@
     for (let i = 0; dirtJob() ? false : i < lives; i++) {
       const cx = W - 18 - hr * 1.32 - (i % 10) * hgap;
       const hy = top + 16 + Math.floor(i / 10) * 19;
+      if (hudOk(hudHeart)) { drawHeartImg(cx, hy, hr); continue; }
       ctx.fillStyle = "rgba(70,8,20,.32)";                // 그림자
       heartPath(cx, hy + 2.5, hr * 1.06);
       ctx.fill();
