@@ -1559,7 +1559,7 @@
   const elTitle = document.getElementById("overTitle");
   const coinNote = document.getElementById("coinNote");
 
-  const GAME_VERSION = "v0.9.29";
+  const GAME_VERSION = "v0.9.30";
   /* 제작사 스플래시(bamhobak friends 로고) — 2026-09-20 끔. 다시 켜려면 true */
   const SPLASH_USE = false;   // 코드를 고칠 때마다 뒤 두 자리를 올린다
   document.getElementById("ver").textContent = GAME_VERSION;
@@ -3446,7 +3446,7 @@
 
   /* 다시 뽑기 — 마음에 드는 카드가 없으면 그 자리를 통째로 바꾼다. 한 판에 기본 REROLLS 번,
      주사위 증강으로 늘릴 수 있다. 파워J는 애초에 한 장뿐이라(계획은 하나) 쓸 수 없다. */
-  const REROLLS = 1;
+  const REROLLS = 0;       // v0.9.30 기본 1회를 뺐다 — 주사위 증강으로만 생긴다 (0 이면 버튼이 숨는다)
   let rerolls = REROLLS;
   const btnReroll = document.getElementById("btnReroll");
   function syncReroll() {
