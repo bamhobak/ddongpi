@@ -1559,7 +1559,7 @@
   const elTitle = document.getElementById("overTitle");
   const coinNote = document.getElementById("coinNote");
 
-  const GAME_VERSION = "v0.9.31";
+  const GAME_VERSION = "v0.9.32";
   /* 제작사 스플래시(bamhobak friends 로고) — 2026-09-20 끔. 다시 켜려면 true */
   const SPLASH_USE = false;   // 코드를 고칠 때마다 뒤 두 자리를 올린다
   document.getElementById("ver").textContent = GAME_VERSION;
@@ -8485,14 +8485,15 @@
       /* 코인은 자석이 없어도 늘 끌려온다 — 자석 증강의 절반(반경 110 · 힘 0.5).
          자석·복이 굴러온다가 있으면 둘 중 센 쪽을 쓴다. */
       const COIN_R0 = 110, COIN_F0 = 0.5;
-      if ((magR > 0 && (it.type !== "poop" || it.gold)) || it.type === "coin") {
+      const coinBase = !(job === "powerp" && !fullOwn);   // v0.9.32 무무(무소유)는 코인이 저절로 끌려오지 않는다 (자석 증강·풀소유면 끌려온다)
+      if ((magR > 0 && (it.type !== "poop" || it.gold)) || (it.type === "coin" && (coinBase || magR > 0))) {
         const d = Math.hypot(dx, dy);
         /* 무지개똥과 코인은 아이템의 절반 반경·절반 힘.
            (무지개똥은 수집가를 먹으면 그 2배가 되어 아이템과 같아진다) */
         const goldF = it.gold ? (aug.goldLord ? 1 : 0.5)
                     : (it.type === "coin" ? 0.5 : 1);
-        const R = it.type === "coin" ? Math.max(magR * goldF, COIN_R0) : magR * goldF;
-        const F = it.type === "coin" ? Math.max(magF * goldF, COIN_F0) : magF * goldF;
+        const R = it.type === "coin" ? Math.max(magR * goldF, coinBase ? COIN_R0 : 0) : magR * goldF;
+        const F = it.type === "coin" ? Math.max(magF * goldF, coinBase ? COIN_F0 : 0) : magF * goldF;
         if (d < R && d > 1) {
           const near = 1 - d / R;              // 가장자리 0, 코앞 1
           const pull = (676 * near + 78) * dt * F;
