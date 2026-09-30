@@ -1728,7 +1728,7 @@
   const elTitle = document.getElementById("overTitle");
   const coinNote = document.getElementById("coinNote");
 
-  const GAME_VERSION = "v0.9.53";
+  const GAME_VERSION = "v0.9.54";
   /* 제작사 스플래시(bamhobak friends 로고) — 2026-09-20 끔. 다시 켜려면 true */
   const SPLASH_USE = false;   // 코드를 고칠 때마다 뒤 두 자리를 올린다
   document.getElementById("ver").textContent = GAME_VERSION;
@@ -7302,7 +7302,8 @@
   function renderBook() {
     const list = document.getElementById("bookList"), desc = document.getElementById("bookDesc");
     list.innerHTML = "";
-    const all = AUGMENTS.filter(a => !a.gone);
+    const live = AUGMENTS.filter(a => !a.gone);
+    const all = live.filter(a => !a.hidden).concat(live.filter(a => a.hidden));   // v0.9.54 히든 증강은 아래쪽으로 몰아 둔다(각 묶음 안 순서는 그대로)
     let open = 0;
     const show = (a, ok) => {
       desc.innerHTML = "";
