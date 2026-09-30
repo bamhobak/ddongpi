@@ -1349,9 +1349,9 @@
     </div>
 
     <div id="jobScreen" class="screen hidden">
-      <h2>직업 선택</h2>
+      <h2>캐릭터 선택</h2>
       <div id="pickTabs">
-        <button id="tabJob" class="on">직업</button>
+        <button id="tabJob" class="on">캐릭터</button>
         <button id="tabPet">펫</button>
       </div>
       <div id="jobList"></div>
@@ -1440,7 +1440,7 @@
 
       <div id="retryRow">
         <button id="btnRetry">다시 하기</button>
-        <button id="btnRetryJob" hidden>직업 바꾸기</button>
+        <button id="btnRetryJob" hidden>캐릭터 바꾸기</button>
         <button id="btnHome">메인으로</button>
       </div>
     </div>
@@ -1601,7 +1601,7 @@
   const elTitle = document.getElementById("overTitle");
   const coinNote = document.getElementById("coinNote");
 
-  const GAME_VERSION = "v0.9.45";
+  const GAME_VERSION = "v0.9.46";
   /* 제작사 스플래시(bamhobak friends 로고) — 2026-09-20 끔. 다시 켜려면 true */
   const SPLASH_USE = false;   // 코드를 고칠 때마다 뒤 두 자리를 올린다
   document.getElementById("ver").textContent = GAME_VERSION;
@@ -3754,7 +3754,7 @@
      출발점 역할을 한다. */
   function groundless() { return state !== STATE.READY; }
   let levelTime = 0;               // 레벨이 오르는 시계 — 간식 타임에는 멈춰 있다
-  const LEVEL_SEC = 13;            // 레벨 한 칸의 길이(초). 지대 하나의 길이이기도 하다
+  const LEVEL_SEC = 14;            // 레벨 한 칸의 길이(초). 지대 하나의 길이이기도 하다 (v0.9.46 13 → 14)
   const LEVEL_SEC_NOITEM = 8;      // 노템전은 레벨이 8초 — 패턴 하나가 8초
   // 시작 화면의 배경 여행(인트로)은 늘 13초 기준 — 판이 돌 때만 노템전 8초
   const LEVEL_SEC_PURE = 6.5;       // 맨몸대결은 레벨이 두 배 빨리 오른다
@@ -6946,10 +6946,10 @@
     if (petLocked()) { pet = "none"; petView = "none"; }
     tabJob.classList.toggle("on", pickTab === "job");
     tabPet.classList.toggle("on", pickTab === "pet");
-    document.querySelector("#jobScreen h2").textContent = pickTab === "job" ? "직업 선택" : "펫 선택";
+    document.querySelector("#jobScreen h2").textContent = pickTab === "job" ? "캐릭터 선택" : "펫 선택";
     jobScreen.classList.toggle("petTab", pickTab !== "job");   // 펫은 네 줄이라 그림을 조금 작게
     // 탭에 지금 고른 것을 같이 적어 둔다 — 다른 탭에 있어도 무엇을 골랐는지 보이게
-    tabJob.innerHTML = "직업<small></small>"; tabJob.lastChild.textContent = JOBS[job].nm;
+    tabJob.innerHTML = "캐릭터<small></small>"; tabJob.lastChild.textContent = JOBS[job].nm;
     tabPet.innerHTML = "펫<small></small>";   tabPet.lastChild.textContent = PETS[pet].nm;
     jobList.innerHTML = "";
     if (pickTab === "job") {
@@ -11841,7 +11841,7 @@
     box.hidden = !owned.length;
     // 다시 하기 — 똥대잔치는 같은 직업으로 바로(큰 버튼) + 직업 바꾸기(작은 버튼)
     const locked = jobLocked();
-    btnRetry.textContent = locked ? "다시 하기" : "같은 직업으로 바로";
+    btnRetry.textContent = locked ? "다시 하기" : "같은 캐릭터로 바로";
     btnRetryJob.hidden = locked;
   }
   function gameOver() {
@@ -12125,6 +12125,7 @@
 
   /* 그 판에서 데리고 간 펫 — 증강 기록에 'pet:<id>' 로 남아 있다 (펫 없이 뛴 판·예전 판은 없음) */
   function boardPet(row) {
+    return null;   // v0.9.46 펫은 이제 판 중 증강이라 순위판엔 캐릭터만 보인다
     if (!row || !row.augs) return null;
     for (const k in row.augs) {
       const id = k.slice(0, 4) === "pet:" ? k.slice(4) : null;
@@ -12278,7 +12279,7 @@
         jobLists[boardJob] = await fetchRange(weekStartMs(0), null, TOP_N, boardJob);
       } catch (e) {
         els.forEach(el => renderBoard(el, null, gameMode !== "item"
-          ? MODES[gameMode].nm + " 순위판 준비 중입니다" : "직업별 랭킹을 불러오지 못했습니다"));
+          ? MODES[gameMode].nm + " 순위판 준비 중입니다" : "캐릭터별 랭킹을 불러오지 못했습니다"));
         return;
       }
     }
@@ -12504,8 +12505,8 @@
 
     const jb = data.jobs || [];
     if (jb.length) {
-      P.sum.appendChild(devSection("직업별",
-        ["직업", "판수", "평균점수", "최고점수", "평균생존"],
+      P.sum.appendChild(devSection("캐릭터별",
+        ["캐릭터", "판수", "평균점수", "최고점수", "평균생존"],
         jb.map(q => [
           JOB_NAMES[q.job] || q.job,
           { t: q.runs, c: "num" },
@@ -12560,7 +12561,7 @@
       pane.innerHTML = "";
       const no = md === "noitem";
       const sec = devSection((md !== "item" ? MODES[md].nm + " " : "") + "최근 " + rows.length + "판" + (note || ""),
-        no ? ["이름", "직업", "거리", "생존", "펫·증강"] : ["이름", "직업", "점수", "생존", "증강"],
+        no ? ["이름", "캐릭터", "거리", "생존", "펫·증강"] : ["이름", "캐릭터", "점수", "생존", "증강"],
         rows.length ? rows.map(r => [
           r.name || "-",
           r.job ? (JOB_NAMES[r.job] || r.job) : "-",
@@ -12731,7 +12732,7 @@
         try {
           const rows = await fetchRange(weekStartMs(0), null, TOP_N, null, md);
           const topSec = devSection(ttl,
-            ["#", "이름", "직업", no ? "거리" : "점수", "Lv", no ? "펫" : "증강"],
+            ["#", "이름", "캐릭터", no ? "거리" : "점수", "Lv", no ? "펫" : "증강"],
             rows.length ? rows.map((r, i) => [
               (i + 1) + "",
               r.name,
