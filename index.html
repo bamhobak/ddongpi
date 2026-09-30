@@ -1762,7 +1762,7 @@
   const elTitle = document.getElementById("overTitle");
   const coinNote = document.getElementById("coinNote");
 
-  const GAME_VERSION = "v0.9.61";
+  const GAME_VERSION = "v0.9.62";
   /* 제작사 스플래시(bamhobak friends 로고) — 2026-09-20 끔. 다시 켜려면 true */
   const SPLASH_USE = false;   // 코드를 고칠 때마다 뒤 두 자리를 올린다
   document.getElementById("ver").textContent = GAME_VERSION;
@@ -1799,7 +1799,8 @@
        아이디가 powerp2 인 것은, powerp 는 무소유가 예전에 파워P 였을 때 쓰던 이름이라
        이미 차 있기 때문이다 (옛 기록과 순위표가 그 이름을 쓴다). */
     powerp2: { nm: "파워P", ic: "🎯", gone: true, ds: "증강을 4개 중에서 고른다" },
-    powerp: { nm: "무무 · 무소유", ic: "🙏", ds: "달이 아예 안 나온다 · 별이 조금 잘 나온다 · 안 맞을수록 점수가 치솟는다" },
+    powerp: { nm: "무무 · 무소유", ic: "🙏", needUnlock: "코인을 하나도 안 먹고 100초 버티기",   // v0.9.62 잠긴 캐릭터
+              ds: "달이 아예 안 나온다 · 별이 조금 잘 나온다 · 안 맞을수록 점수가 치솟는다" },
     bangul: { nm: "방울이 · 백수", ic: "🫧", ds: "목숨 대신 오염도 · 비누방울이 한 대를 대신 맞고 터진다 · 잠시 뒤 다시 맺힌다" }
   };
   // v0.8.77 고르는 화면·순위 탭 순서 (두 줄씩: 방울이 버피 / 제이 소라 / 무무 루나) — 키를 다시 넣어 순서를 바꾼다
@@ -2663,7 +2664,7 @@
   function helperAspect() { return (inSpace() && helperSpaceImg) ? HELPER_ASPECT_SPACE : HELPER_ASPECT; }
   const HELPER_H = 99;           // 화면에 그릴 높이 (110에서 10% 축소)
   const HELPER_R = 35;   // v0.9.45 39 → 35 (펫 여러 마리 동시)           // v0.9.31 43 → 39 (피지컬 쪽으로 — 똥 없애는 증강 살짝 너프)           // 똥을 부수는 반경 (48 → 43, 면적 20% 감소)
-  function helperScale() { return 0.88 + 0.12 * Math.max(0, aug.helper - 1); }   // v0.9.60 펫만 0.88배, '도와줘 뿌잉' 1개가 1배, 하나마다 +0.12 (4개 1.36배) — 대폭주는 없앰
+  function helperScale() { return 1 + 0.12 * Math.max(0, aug.helper - 1); }   // v0.9.62 처음(펫만) 1배, '도와줘 뿌잉' 하나마다 +0.12 (4개 1.48배) — 대폭주는 없앰
   let helpers = [];
   let helperTimer = 0;
   let fetchers = [];        // 배고픈 뿌잉 — 아이템을 대신 먹으러 가는 뿌잉
@@ -3615,6 +3616,7 @@
   }
   function achTick(dt) {                     // 매 프레임 — 버티기·레벨 업적, 쌓인 횟수 저장
     if (!achLive()) return;
+    if (elapsed >= 100 && coinGot === 0) jobUnlock("powerp");   // 무무 — 100초 넘게 코인을 하나도 안 먹기
     if (level >= 15) achUnlock("inter");
     if (level >= 6 && runHits === 0) achUnlock("afterimage");
     if (dirtJob()) { if (dirt >= 75 && (dirtHiT += dt) >= 30) achUnlock("dungy"); }
@@ -7234,21 +7236,28 @@
   carL.className = "carArrow l"; carL.textContent = "‹"; carL.setAttribute("aria-label", "앞 캐릭터");
   carR.className = "carArrow r"; carR.textContent = "›"; carR.setAttribute("aria-label", "다음 캐릭터");
   let carW = 0, carPos = 0, carTo = 0, carRaf = 0, carDrag = null, carNoClick = 0;
-  function jobOwned(id) { return !JOBS[id] || !JOBS[id].needUnlock || jobUnlocked.has(id); }   // v0.9.61 잠긴 캐릭터(JOBS[id].needUnlock) — 지금은 없다. 생기면 고리에 실루엣으로
-  const jobUnlocked = new Set();
+  function jobOwned(id) { return !JOBS[id] || !JOBS[id].needUnlock || jobUnlocked.has(id); }   // v0.9.61 잠긴 캐릭터(JOBS[id].needUnlock = 여는 조건) — 고리에 실루엣으로
+  const jobUnlocked = new Set(Array.isArray(achData.j) ? achData.j : []);   // v0.9.62 업적 기록(LS_ACH)의 j 에 함께 저장
+  if (!jobOwned(job)) job = JOB_DEFAULT;
+  function jobUnlock(id) {
+    if (jobOwned(id) || !achLive()) return;
+    jobUnlocked.add(id); achData.j = [...jobUnlocked]; achSave();
+    achToast("🏆 캐릭터 해금!  " + JOBS[id].nm);
+    if (!sfx("aug")) { beep(1046, .1, "triangle", .05); beep(1568, .16, "triangle", .05); }
+  }
   function carChrome(on) { carWrap.classList.toggle("off", !on); carDots.classList.toggle("off", !on); homeTraits.classList.toggle("off", !on); if (!on) jobList.style.height = ""; }
   function carInfo() {                       // 점 · 화살표 · 특징
     const cards = [...jobList.children], i = cards.findIndex(c => c.dataset.job === job);
     [...carDots.children].forEach((d, k) => d.classList.toggle("on", k === i));
     carL.disabled = carR.disabled = cards.length < 2;   // v0.9.56 끝에서 더 가면 반대쪽 끝으로 돈다
     homeTraits.innerHTML = "";
-    if (!jobOwned(job)) { const d = document.createElement("div"); d.textContent = "🔒 아직 열리지 않은 캐릭터"; homeTraits.appendChild(d); return; }
+    if (!jobOwned(job)) { const d = document.createElement("div"); d.textContent = "🔒 아직 열리지 않은 캐릭터"; const d2 = document.createElement("div"); d2.textContent = "여는 법 — " + JOBS[job].needUnlock; homeTraits.append(d, d2); return; }
     for (const line of jobTraitLines(JOBS[job])) { const d = document.createElement("div"); d.textContent = line; homeTraits.appendChild(d); }
   }
   function carSet(id) {                      // 고른 캐릭터를 바꾼다(다시 그리지 않는다)
     if (id === job || !JOBS[id]) return;
     job = id;
-    try { localStorage.setItem(LS_JOB, job); } catch (e) {}
+    if (jobOwned(job)) try { localStorage.setItem(LS_JOB, job); } catch (e) {}   // 잠긴 캐릭터는 구경만 — 저장하지 않는다
     for (const c of jobList.children) c.classList.toggle("sel", c.dataset.job === job);
     carInfo();
   }
@@ -7508,7 +7517,7 @@
   function setMode(m) {
     gameMode = m;
     syncBoardTabs();
-    if (m === "item") { try { const j = localStorage.getItem(LS_JOB); job = jobOk(j) ? j : JOB_DEFAULT;
+    if (m === "item") { try { const j = localStorage.getItem(LS_JOB); job = jobOk(j) && jobOwned(j) ? j : JOB_DEFAULT;
                               const q = localStorage.getItem(LS_PET); pet = PETS[q] && hasPet(q) ? q : "none"; } catch (e) {} }
     try { localStorage.setItem(LS_MODE, gameMode); } catch (e) {}
     syncMode();
