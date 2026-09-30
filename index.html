@@ -896,6 +896,11 @@
   #growList .pips { display: inline-flex; gap: 3px; font-style: normal; }
   #growList .pips em { width: 8px; height: 8px; border-radius: 2px; background: #d9c9a3; border: 1px solid #8a5a2b; }
   #growList .pips em.on { background: #ffc42e; }
+  #btnGrowReset { --bh: 44px; height: var(--bh); box-sizing: border-box; align-self: center; min-width: 220px; margin: 8px 0 4px;
+    border-style: solid; border-color: transparent; border-radius: 0; box-shadow: none; background: none; border-width: 0 calc(var(--bh) / 2);
+    border-image: url(assets/ui/btn_gray.webp) 0 60 fill / 0 calc(var(--bh) / 2) / 0 stretch;
+    padding: 0 6px calc(var(--bh) * .08); font-size: 14px; font-weight: 800; color: #3f3560; text-shadow: 0 1px 0 rgba(255,255,255,.6); }
+  #btnGrowReset:disabled { opacity: .5; }
   #btnOptBack { --bh: 44px; height: var(--bh); box-sizing: border-box; min-width: 170px; margin-top: 8px;
     border-style: solid; border-color: transparent; border-radius: 0; box-shadow: none; background: none;
     border-width: 0 calc(var(--bh) / 2) 0 calc(var(--bh) * .97);
@@ -1822,7 +1827,7 @@
   const elTitle = document.getElementById("overTitle");
   const coinNote = document.getElementById("coinNote");
 
-  const GAME_VERSION = "v0.9.72";
+  const GAME_VERSION = "v0.9.73";
   /* 제작사 스플래시(bamhobak friends 로고) — 2026-09-20 끔. 다시 켜려면 true */
   const SPLASH_USE = false;   // 코드를 고칠 때마다 뒤 두 자리를 올린다
   document.getElementById("ver").textContent = GAME_VERSION;
@@ -7752,6 +7757,7 @@
     { id: "slim",   ic: "🎯", nm: "날씬함",   ds: "몸(판정) -3%",            max: 5, cost: n => 40 * (n + 1) },
     { id: "mag",    ic: "🧲", nm: "자석",     ds: "아이템 끌어오는 범위 +10%", max: 5, cost: n => 25 * (n + 1) },
     { id: "luck",   ic: "🍀", nm: "행운",     ds: "아이템 나올 확률 +5%",     max: 5, cost: n => 30 * (n + 1) },
+    { id: "fmoon",  ic: "🌕", nm: "달맞이",   ds: "보름달이 나올 확률 +1%",    max: 5, cost: n => 35 * (n + 1) },   // v0.9.73
     { id: "greed",  ic: "💰", nm: "탐욕",     ds: "코인 나올 확률 +10%",      max: 5, cost: n => 25 * (n + 1) },
     { id: "score",  ic: "✨", nm: "성장",     ds: "점수 +3%",                max: 5, cost: n => 40 * (n + 1) },
     { id: "snack",  ic: "🍖", nm: "간식 시간", ds: "간식 타임 +0.5초",         max: 5, cost: n => 20 * (n + 1) },
@@ -7771,6 +7777,8 @@
   function gGreed() { return grOn() ? 0.75 + 0.10 * gl("greed") : 1; }       // 최대 +50% → 기본 -25%
   function gScore() { return grOn() ? 0.925 + 0.03 * gl("score") : 1; }      // 최대 +15% → 기본 -7.5%
   function gSnackMs() { return grOn() ? -1250 + 500 * gl("snack") : 0; }     // 최대 +2.5초 → 기본 -1.25초
+  /* 달맞이 — 달이 뜰 때 보름달일 확률. 예전 6.7%(초승달 92.4 : 보름달 6.6)에서 기본은 -2.5%p, 단계마다 +1%p */
+  function gFullShare() { return grOn() ? 0.0667 - 0.025 + 0.01 * gl("fmoon") : 0.0667; }
   function gPet()   { return grOn() ? 0.875 + 0.05 * gl("pet") : 1; }        // 최대 +25% → 기본 -12.5%
   let reviveUsed = false;
   function reviveSave(now) {                  // 성장 '부활' — 한 판에 한 번
@@ -7820,6 +7828,25 @@
       row.append(ic, st, btn);
       box.appendChild(row);
     }
+    /* v0.9.73 초기화 — 모든 성장을 0 으로, 쓴 코인은 전부 돌려받는다 */
+    let spent = 0;
+    for (const g of GROW) for (let k = 0; k < Math.min(gl(g.id), g.max); k++) spent += g.cost(k);
+    const rb = document.createElement("button"); rb.id = "btnGrowReset";
+    rb.textContent = spent ? "초기화 (🪙 " + spent + " 돌려받기)" : "초기화";
+    rb.disabled = !spent;
+    rb.addEventListener("click", () => {
+      if (!spent) return;
+      askYesNo("모든 성장을 초기화하고\n🪙 " + spent + "코인을 돌려받으시겠습니까?", () => {
+        coins += spent;
+        try { localStorage.setItem(LS_COINS, String(coins)); } catch (e) {}
+        showCoins();
+        growLv = {};
+        try { localStorage.setItem(LS_GROW, "{}"); } catch (e) {}
+        beep(660, .08, "triangle", .05);
+        renderGrow();
+      });
+    });
+    box.appendChild(rb);
   }
   /* v0.9.70 예/아니오 묻는 창 — 예(노랑)·아니오(회색) */
   function askYesNo(msg, onYes) {
@@ -8437,7 +8464,10 @@
   function spawnBonus(picked) {
     let pick = picked;
     if ((pick.type === "moon" || pick.type === "fullmoon") && job === "powerp") return;   // 무소유 — 무계획 무증강
-    if (isMoonT(pick)) lastMoonAt = elapsed;
+    if (isMoonT(pick)) {
+      lastMoonAt = elapsed;
+      const mt = Math.random() < gFullShare() ? "fullmoon" : "moon"; pick = BONUS.find(b => b.type === mt);   // v0.9.73 달이 뜨면 보름달인지는 달맞이로 정한다 (달이 뜨는 횟수는 그대로)
+    }
     if (pick.type === "umbrella" && job === "fit") {
       pick = BONUS.find(b => b.type === "heart");   // 헬스걸 — 우산 자리에 하트
     }
