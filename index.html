@@ -1559,7 +1559,7 @@
   const elTitle = document.getElementById("overTitle");
   const coinNote = document.getElementById("coinNote");
 
-  const GAME_VERSION = "v0.9.33";
+  const GAME_VERSION = "v0.9.34";
   /* 제작사 스플래시(bamhobak friends 로고) — 2026-09-20 끔. 다시 켜려면 true */
   const SPLASH_USE = false;   // 코드를 고칠 때마다 뒤 두 자리를 올린다
   document.getElementById("ver").textContent = GAME_VERSION;
@@ -1856,7 +1856,7 @@
   const PET_PRICE = 100;
   const petOwned = new Set(["none"]);
   try { for (const id of JSON.parse(localStorage.getItem(LS_PET_OWN) || "[]")) if (PETS[id]) petOwned.add(id); } catch (e) {}
-  function hasPet(id) { return petOwned.has(id); }
+  function hasPet(id) { return !!PETS[id]; }   // v0.9.34 펫은 모두 열려 있다 (100코인 해금 없앰 — 사는 코드는 남겨 둠)
   let pet = "none";
   try { const q = localStorage.getItem(LS_PET); if (PETS[q] && hasPet(q)) pet = q; } catch (e) {}   // 안 산 펫은 없음으로
   /* ---------- 스테이지 ----------
