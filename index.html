@@ -1572,7 +1572,7 @@
   const elTitle = document.getElementById("overTitle");
   const coinNote = document.getElementById("coinNote");
 
-  const GAME_VERSION = "v0.9.38";
+  const GAME_VERSION = "v0.9.39";
   /* 제작사 스플래시(bamhobak friends 로고) — 2026-09-20 끔. 다시 켜려면 true */
   const SPLASH_USE = false;   // 코드를 고칠 때마다 뒤 두 자리를 올린다
   document.getElementById("ver").textContent = GAME_VERSION;
@@ -3651,8 +3651,9 @@
           return;
         }
         closeAugScreen();
-        popText(player.x, player.y - 70, a.ic + " " + picked, "#ffd23f", 24);
-        if (twoRandGot) twoRandGot.forEach((t, i) => popText(player.x, player.y - 100 - i * 30, t, "#9fe8ff", 20));   // 대충 두 개로 받은 것
+        /* v0.9.39 대충 두 개 — '대충 두 개' 글자는 빼고 받은 두 개만 오래(2.5초) 보여 준다 */
+        if (twoRandGot) twoRandGot.forEach((t, i) => popText(player.x, player.y - 70 - i * 32, t, "#9fe8ff", 22, 2.5));
+        else popText(player.x, player.y - 70, a.ic + " " + picked, "#ffd23f", 24);
       });
       augList.appendChild(card);
     }
@@ -7685,9 +7686,9 @@
                        life: .6 + Math.random() * .4, t: 0, c: color, r: 2 + Math.random() * 4 });
     }
   }
-  function popText(x, y, text, color, size) {
+  function popText(x, y, text, color, size, life) {   // life — 떠 있는 시간(초, 기본 1)
     if (floats.length >= FLOAT_MAX) floats.shift();   // 글씨도 너무 쌓이면 오래된 것부터
-    floats.push({ x, y, text, color, t: 0, life: 1, size: size || 22 });
+    floats.push({ x, y, text, color, t: 0, life: life || 1, size: size || 22 });
   }
   /* 점수를 딴 순간은 액수만큼 크게 말한다.
      푼돈은 조용히 떠오르고, 큰돈은 고리가 퍼지면서 화면이 흔들린다. */
@@ -7736,7 +7737,7 @@
     if (pw > fxCap) particles.splice(0, pw - fxCap);   // 상한을 넘으면 오래된 것부터
     for (let i = floats.length - 1; i >= 0; i--) {
       const f = floats[i];
-      f.t += dt; f.y -= 40 * dt; f.x += (f.vx || 0) * dt;
+      f.t += dt; f.y -= 40 * dt / f.life; f.x += (f.vx || 0) * dt;   // 오래 떠 있는 글자도 떠오르는 거리는 같게
       if (f.t > f.life) floats.splice(i, 1);
     }
     for (let i = rings.length - 1; i >= 0; i--) {
@@ -7852,15 +7853,15 @@
     }
     if (zi !== zoneShown) {
       if (zoneShown >= 0) {
-        popText(W / 2, H * 0.40, ZONES[zi].ic + " " + ZONES[zi].nm, "#cfe4ff", 30);
+        popText(W / 2, H * 0.40, ZONES[zi].ic + " " + ZONES[zi].nm, "#cfe4ff", 30, 2.4);   // v0.9.39 1 → 2.4초
         beep(760, .1, "sine", .05);
         beep(1140, .14, "sine", .04);
         if (zi === SPACE_Z) {          // 공기가 없는 높이 — 우주복으로 갈아입는다
-          popText(W / 2, H * 0.48, "🧑‍🚀 우주복 착용!", "#ffd23f", 26);
+          popText(W / 2, H * 0.48, "🧑‍🚀 우주복 착용!", "#ffd23f", 26, 2.4);
           beep(520, .16, "triangle", .05);
         }
         if (zi === BH_Z) {             // 빨려 들어갔다 — 모든 것이 두 배
-          popText(W / 2, H * 0.48, "모든 것이 2배!", "#ff8a5c", 28);
+          popText(W / 2, H * 0.48, "모든 것이 2배!", "#ff8a5c", 28, 2.4);
           shake = Math.max(shake, 26);
           feverFlash = Math.max(feverFlash, 0.5);
           beep(90, .5, "sawtooth", .07);
