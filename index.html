@@ -1770,7 +1770,7 @@
   const elTitle = document.getElementById("overTitle");
   const coinNote = document.getElementById("coinNote");
 
-  const GAME_VERSION = "v0.9.64";
+  const GAME_VERSION = "v0.9.65";
   /* 제작사 스플래시(bamhobak friends 로고) — 2026-09-20 끔. 다시 켜려면 true */
   const SPLASH_USE = false;   // 코드를 고칠 때마다 뒤 두 자리를 올린다
   document.getElementById("ver").textContent = GAME_VERSION;
@@ -1809,7 +1809,7 @@
     powerp2: { nm: "파워P", ic: "🎯", gone: true, ds: "증강을 4개 중에서 고른다" },
     powerp: { nm: "무무 · 무소유", ic: "🙏", needUnlock: "코인을 하나도 안 먹고 100초 버티기",   // v0.9.62 잠긴 캐릭터
               ds: "달이 아예 안 나온다 · 별이 조금 잘 나온다 · 안 맞을수록 점수가 치솟는다" },
-    bangul: { nm: "방울이 · 백수", ic: "🫧", ds: "목숨 대신 오염도 · 비누방울이 한 대를 대신 맞고 터진다 · 잠시 뒤 다시 맺힌다" }
+    bangul: { nm: "방울이 · 백수", ic: "🫧", ds: "비누방울이 한 대를 대신 맞고 터진다 · 잠시 뒤 다시 맺힌다" }
   };
   // v0.8.77 고르는 화면·순위 탭 순서 (두 줄씩: 방울이 버피 / 제이 소라 / 무무 루나) — 키를 다시 넣어 순서를 바꾼다
   for (const k of ["bangul", "fit", "powerj", "levitator", "powerp", "fortune"]) { const v = JOBS[k]; delete JOBS[k]; JOBS[k] = v; }
@@ -3553,7 +3553,7 @@
     doveFlock: 0,       // 비둘기 떼 — 한 번 출격에 더 나가는 마리 수
     doveFreq: 1,        // 귀소 본능 — 출격 거리 배율 (작을수록 자주)
     dodge: 0,           // 그건 제 잔상입니다만? — 맞을 때 피할 확률 (0~0.30)
-    dungy: false,       // 방울이: 똥묻히기 (오염도만큼 모든 점수가 오른다)
+    dungy: false,       // 똥묻히기 (하트가 적을수록 모든 점수가 오른다)
     momMeal: false,     // 쉬었음 청년: 엄마는 우리 딸 믿어 (엄마의 밥상이 떨어진다)
     chainZap: false,    // 히든: 연쇄 전류 (갤러그 총알이 옆 똥 두 개로 번진다)
     wak: false,         // 히든: 고무고무노 피스톨 (주먹이 똥을 튕겨 올리고, 부딪히면 같이 터진다)
@@ -3575,7 +3575,7 @@
   const ACH = {
     blackhole:  { t: "블랙홀에 처음 도달하기" },
     angryUmb:   { t: "한 판에 우산 5개 줍기" },
-    dungy:      { t: "방울이로 오염 75% 이상인 채 30초 버티기" },
+    dungy:      { t: "하트 1개로 50초 버티기" },
     goldLord:   { t: "무지개똥 20개 먹기", key: "gold", n: 20 },
     starburst:  { t: "한 판에 별 5개 먹기" },
     legion:     { t: "왕뼈다귀 10개 먹기", key: "giant", n: 10 },
@@ -3627,8 +3627,7 @@
     if (elapsed >= 100 && coinGot === 0) jobUnlock("powerp");   // 무무 — 100초 넘게 코인을 하나도 안 먹기
     if (level >= 15) achUnlock("inter");
     if (level >= 6 && runHits === 0) achUnlock("afterimage");
-    if (dirtJob()) { if (dirt >= 75 && (dirtHiT += dt) >= 30) achUnlock("dungy"); }
-    else if (lives === 1 && (lowT += dt) >= 30) achUnlock("clone");
+    if (lives === 1) { lowT += dt; if (lowT >= 30) achUnlock("clone"); if (lowT >= 50) achUnlock("dungy"); }
     if (achDirty && (achFlushT -= dt) <= 0) { achSave(); achFlushT = 3; }
   }
 
@@ -3743,8 +3742,8 @@
       // 목숨을 파는 증강이라, 목숨 대신 오염도로 버티는 방울이에게는 나오지 않는다
       max: 5, cond: () => !dirtJob() && lives >= 2,
       go: () => { lives = Math.max(1, lives - 1); aug.scoreMul *= 1.2; } },
-    { id: "dungy",      ic: "💩", nm: "똥묻히기", ds: "더러울수록 모든 점수가 오른다 · 오염 100%면 2배",
-      once: true, cond: () => dirtJob(),        // 방울이 전용 — 당근거래 자리
+    { id: "dungy",      ic: "💩", nm: "똥묻히기", ds: "하트가 적을수록 모든 점수가 오른다 · 하트 1개면 2배",
+      once: true,                               // v0.9.65 모든 캐릭터 공통 (예전엔 방울이 전용 · 오염도 기준)
       go: () => { aug.dungy = true; } },
     { id: "goldLord",   ic: "🦄", nm: "무지개 수집가", ds: "무지개똥이 두 배 멀리서 세게 끌려오고, 점수 2배",
       // 무지개똥 연금술 + 자석 — 무지개똥을 만들 수 있고, 끌어올 수 있어야 뜻이 산다
@@ -4035,7 +4034,7 @@
      한 칸이 25씩이라 뚝 끊기면 얼마나 찼는지 눈이 못 따라간다. */
   let dirtShown = 0;
   const DIRT_SLIDE = 70;                   // 초당 몇 % 씩 움직이는지 (25 는 0.36초)
-  function dirtJob() { return job === "bangul" && !vsLike(); }   // 대전모드 방울이는 목숨으로 겨룬다
+  function dirtJob() { return false; }   // v0.9.65 방울이도 하트로 통일 — 오염도·빗방울은 이제 안 쓴다 (예전: job === "bangul" && !vsLike())
   /* 바닥 없는 판 — 하늘로 올라가는 게임인데 발밑에 바닥이 늘 따라 올라오면 어색하다.
      바닥·바닥색 띠·발밑 그림자를 그리지 않는다. 처음엔 방울이 판에서만 뺐다가(v0.7.89),
      2026-09-22 사용자 지시로 모든 직업에서 뺐다 (v0.7.94). 1단계 배경 맨 아래의 잔디 언덕이
@@ -7574,10 +7573,10 @@
     roid: "버피 전용 · 레벨 7부터", doveWhat: "비둘기 증강(비둘기 떼·귀소 본능)을 2개 이상 먹었을 때",
     steelUmb: "'우산 다발'을 먹은 뒤 (버피 제외)", starburst: "'별빛 증폭'을 먹은 뒤", blackhole: "'자석'을 먹은 뒤",
     legion: "'왕뼈다귀'를 먹은 뒤", angryUmb: "우산이 5개 이상일 때 (버피 제외)",
-    carrot: "목숨이 2개 이상일 때 (방울이 제외)", dungy: "방울이 전용",
+    carrot: "목숨이 2개 이상일 때",
     goldLord: "'무지개똥 연금술' + '자석'을 가졌을 때", inter: "'느린 하늘'을 2개 먹은 뒤",
     chainZap: "똥을 부수는 펫(뿌잉·갤러그·비둘기·선물 요정·뱀장어)을 먹은 뒤", pierce: "게임 중 '펫 갤러그'를 먼저 먹어야 나와요",
-    snackBig: "간식 증강을 4개 이상 먹었을 때", toilet: "하트 3개 이상 · 레벨 7 이하일 때 (방울이 제외)", wak: "갤러그가 2대 이상일 때",
+    snackBig: "간식 증강을 4개 이상 먹었을 때", toilet: "하트 3개 이상 · 레벨 7 이하일 때", wak: "갤러그가 2대 이상일 때",
     clone: "레벨 7부터 · 목숨이 2개 이하일 때"
   };
   function bookOpen(a) { const p = BOOK_PET[a.id]; return (!p || hasPet(p)) && (!ACH[a.id] || achU.has(a.id)); }   // v0.9.61 업적으로 여는 증강도 잠긴 채 보인다
@@ -13584,7 +13583,7 @@
   /* 똥묻히기 — 지금 오염도에 비례해 점수가 오른다. 0%면 1배, 100%면 2배.
      한 번만 먹는 증강이고, 빗방울로 씻으면 배율도 같이 내려간다.
      (100% 는 곧 끝이라, 실제로 누리는 최대는 75% = 1.75배다) */
-  function dungyMul() { return aug.dungy ? 1 + (dirt / DIRT_MAX) : 1; }
+  function dungyMul() { return aug.dungy ? 1 + 1 / Math.max(1, lives) : 1; }   // 하트 1개 2배 · 2개 1.5배 · 3개 1.33배 …
   function scoreMul() { return SCORE_SCALE * aug.scoreMul * bhMul() * levMul() * monkMul() * dungyMul() * (prophIs("double") ? 2 : prophIs("dice") ? 3 : 1); }
 
   function zoneIdx() { return Math.min(LAST_Z, level - 1); }
