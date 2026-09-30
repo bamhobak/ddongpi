@@ -854,7 +854,9 @@
     background: linear-gradient(180deg, #fff8e6, #f3e3bf); border: 2px solid #8a5a2b; box-shadow: 0 2px 0 #6b4520; }
   #bookList .bk.hid { background: linear-gradient(180deg, #efe4ff, #d9c7ff); border-color: #6c4bb8; box-shadow: 0 2px 0 #4a3386; }
   #bookList .bk.lock { background: linear-gradient(180deg, #d5d8e0, #b6bac6); border-color: #6d7282; box-shadow: 0 2px 0 #50545f; filter: grayscale(1); }
-  #bookList .bk.lock::after { content: "?"; position: absolute; font-size: 22px; font-weight: 900; color: #fff; text-shadow: 0 1px 3px #000; }
+  #bookList .bk.lock { opacity: .7; }
+  #bookList .bk.lock::after { content: "🔒"; position: absolute; right: -3px; bottom: -4px; font-size: 13px; filter: none; }
+  #bookDesc .how.lockHow { color: #ffb37a; font-weight: 800; }
   #bookList .bk.sel { outline: 3px solid #ffd23f; outline-offset: 1px; }
   #bookDesc { width: 100%; max-width: 360px; min-height: 64px; box-sizing: border-box; padding: 10px 12px; border-radius: 12px;
     background: rgba(10,12,30,.75); border: 1px solid rgba(255,210,63,.4); color: #e8ecf7; font-size: 13.5px; line-height: 1.5; text-align: center; }
@@ -1724,7 +1726,7 @@
   const elTitle = document.getElementById("overTitle");
   const coinNote = document.getElementById("coinNote");
 
-  const GAME_VERSION = "v0.9.50";
+  const GAME_VERSION = "v0.9.51";
   /* 제작사 스플래시(bamhobak friends 로고) — 2026-09-20 끔. 다시 켜려면 true */
   const SPLASH_USE = false;   // 코드를 고칠 때마다 뒤 두 자리를 올린다
   document.getElementById("ver").textContent = GAME_VERSION;
@@ -7274,34 +7276,58 @@
   document.getElementById("homeJobs").appendChild(document.getElementById("jobList"));
   document.getElementById("pgOpt").appendChild(document.getElementById("optRow"));
   /* 도감 — 지금은 모두 열림. 나중에 잠금이 들어오면 bookOpen() 이 false 인 것은 회색 '?' 로, 여는 법(BOOK_HOW)을 보여 준다 */
-  const BOOK_HOW = {};
-  function bookOpen(a) { return true; }
+  /* v0.9.51 도감 — 못 쓰는 증강(그 펫을 상점에서 안 산 것)은 회색. 누르면 해금 조건, 열린 것은 게임 중 나오는 조건 */
+  const BOOK_PET = { "pet:helper": "helper", helper: "helper", helperRush: "helper", hungry: "helper",
+                     "pet:galaga": "galaga", galaga: "galaga", chainZap: "galaga", wak: "galaga",
+                     "pet:dove": "dove", doveFlock: "dove", doveHome: "dove", doveWhat: "dove",
+                     "pet:angel": "angel", "pet:gift": "gift", "pet:coincat": "coincat", "pet:eel": "eel" };
+  const BOOK_COND = {
+    small: "버피는 못 먹어요", umbrella3: "버피는 못 먹어요", dash: "도도는 못 먹어요", dice: "제이는 못 먹어요",
+    "pet:angel": "레벨 4부터 나와요",
+    helper: "게임 중 '펫 뿌잉'을 먼저 먹어야 나와요", galaga: "게임 중 '펫 갤러그'를 먼저 먹어야 나와요",
+    doveFlock: "게임 중 '펫 비둘기'를 먼저 먹어야 나와요", doveHome: "게임 중 '펫 비둘기'를 먼저 먹어야 나와요",
+    helperRush: "뿌잉이 2마리 이상일 때", hungry: "뿌잉 + 자석을 가졌을 때",
+    roid: "버피 전용 · 레벨 7부터", doveWhat: "비둘기 증강(비둘기 떼·귀소 본능)을 2개 이상 먹었을 때",
+    steelUmb: "'우산 다발'을 먹은 뒤 (버피 제외)", starburst: "'별빛 증폭'을 먹은 뒤", blackhole: "'자석'을 먹은 뒤",
+    legion: "'왕뼈다귀'를 먹은 뒤", angryUmb: "우산이 5개 이상일 때 (버피 제외)",
+    carrot: "목숨이 2개 이상일 때 (방울이 제외)", dungy: "방울이 전용",
+    goldLord: "'무지개똥 연금술' + '자석'을 가졌을 때", inter: "'느린 하늘'을 2개 먹은 뒤",
+    chainZap: "게임 중 '펫 갤러그'를 먹은 뒤", wak: "갤러그가 2대 이상일 때",
+    clone: "레벨 7부터 · 목숨이 2개 이하일 때"
+  };
+  function bookOpen(a) { const p = BOOK_PET[a.id]; return !p || hasPet(p); }
   let bookSel = null;
   function renderBook() {
     const list = document.getElementById("bookList"), desc = document.getElementById("bookDesc");
     list.innerHTML = "";
     const all = AUGMENTS.filter(a => !a.gone);
     let open = 0;
+    const show = (a, ok) => {
+      desc.innerHTML = "";
+      const b = document.createElement("b"); b.textContent = (ok ? "" : "🔒 ") + a.ic + " " + a.nm;
+      desc.append(b, document.createElement("br"), document.createTextNode(a.ds || ""));
+      const how = document.createElement("span"); how.className = "how" + (ok ? "" : " lockHow");
+      const pid = BOOK_PET[a.id];
+      how.textContent = !ok ? "해금 조건 — 상점에서 펫 '" + PETS[pid].nm + "' 구매 (" + PET_PRICE + "코인)"
+        : BOOK_COND[a.id] ? (a.hidden ? "✨ 히든 · " : "나오는 조건 · ") + BOOK_COND[a.id]
+        : a.hidden ? "✨ 히든 증강" : "";
+      if (how.textContent) desc.appendChild(how);
+    };
     for (const a of all) {
       const ok = bookOpen(a); if (ok) open++;
       const el = document.createElement("div");
       el.className = "bk" + (a.hidden ? " hid" : "") + (ok ? "" : " lock") + (bookSel === a.id ? " sel" : "");
-      el.textContent = ok ? a.ic : "";
+      el.textContent = a.ic;
       el.addEventListener("click", () => {
         bookSel = a.id;
         for (const q of list.children) q.classList.remove("sel");
         el.classList.add("sel");
-        desc.innerHTML = "";
-        const b = document.createElement("b");
-        b.textContent = ok ? a.ic + " " + a.nm : "??? (잠김)";
-        desc.append(b, document.createElement("br"), document.createTextNode(ok ? (a.ds || "") : ""));
-        const how = document.createElement("span"); how.className = "how";
-        how.textContent = !ok ? "여는 법 — " + (BOOK_HOW[a.id] || "게임에서 한 번 뽑아 보기") : a.hidden ? "✨ 히든 증강 — 특정 조건을 만족할 때만 나와요" : "";
-        if (how.textContent) desc.appendChild(how);
+        show(a, ok);
       });
       list.appendChild(el);
+      if (bookSel === a.id) show(a, ok);
     }
-    document.getElementById("bookCount").textContent = "모은 증강 " + open + " / " + all.length;
+    document.getElementById("bookCount").textContent = "쓸 수 있는 증강 " + open + " / " + all.length;
   }
   function renderShop() {
     document.getElementById("shopCoins").textContent = "🪙 " + coins.toLocaleString() + " coin";
