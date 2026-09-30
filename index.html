@@ -881,6 +881,26 @@
   #overUnlock .ur { display: flex; flex-direction: column; padding: 3px 0; }
   #overUnlock .un { font-weight: 800; color: #fff; font-size: 14px; }
   #overUnlock .uw { font-size: 11.5px; opacity: .8; }
+  #startScreen #btnOpt { position: absolute; z-index: 7; top: max(8px, env(safe-area-inset-top)); right: 10px; width: 38px; height: 38px; padding: 0;
+    border: 0; background: none; box-shadow: none; filter: drop-shadow(0 2px 3px rgba(0,0,0,.5)); }
+  #startScreen #btnOpt img { width: 100%; height: 100%; object-fit: contain; }
+  #startScreen #btnOpt:active { transform: scale(.9); }
+  #startScreen #ver { right: 54px !important; }
+  #pgGrow { justify-content: flex-start !important; }
+  #growCoins { font-size: 16px; font-weight: 800; color: #ffd23f; text-shadow: 0 1px 2px rgba(0,0,0,.6); }
+  #growList { display: flex; flex-direction: column; gap: 7px; width: 100%; max-width: 350px; }
+  #growList .shopItem { padding: 6px 10px; gap: 10px; }
+  #growList .shopItem .si { font-size: 26px; width: 34px; text-align: center; }
+  #growList .shopItem .st b { font-size: 15px; display: flex; align-items: center; gap: 6px; }
+  #growList .shopItem .st span { font-size: 11.5px; }
+  #growList .pips { display: inline-flex; gap: 3px; font-style: normal; }
+  #growList .pips em { width: 8px; height: 8px; border-radius: 2px; background: #d9c9a3; border: 1px solid #8a5a2b; }
+  #growList .pips em.on { background: #ffc42e; }
+  #btnOptBack { --bh: 44px; height: var(--bh); box-sizing: border-box; min-width: 170px; margin-top: 8px;
+    border-style: solid; border-color: transparent; border-radius: 0; box-shadow: none; background: none;
+    border-width: 0 calc(var(--bh) / 2) 0 calc(var(--bh) * .97);
+    border-image: url(assets/ui/btn_back.webp) 0 60 0 116 fill / 0 calc(var(--bh) / 2) 0 calc(var(--bh) * .97) / 0 stretch;
+    padding: 0 4px calc(var(--bh) * .08); font-size: 15px; font-weight: 800; color: #3f3560; text-shadow: 0 1px 0 rgba(255,255,255,.6); }
   #askBox { position: fixed; inset: 0; z-index: 10000; display: none; align-items: center; justify-content: center; background: rgba(8,8,16,.62); }
   #askBox.on { display: flex; }
   #askBox .askIn { width: min(84vw, 320px); padding: 22px 18px 18px; border-radius: 16px; background: #fff8e6; border: 3px solid #8a5a2b; box-shadow: 0 6px 0 #6b4520, 0 10px 30px rgba(0,0,0,.45); text-align: center; }
@@ -1427,6 +1447,7 @@
     <div id="startScreen" class="screen">
       <div id="ver"></div>
       <div id="coinBox" title="모은 코인">🪙 0</div>
+      <button id="btnOpt" aria-label="옵션"><img src="assets/ui/tab_opt.webp" alt=""></button>
       <section class="page on" id="pgHome">
       <h1><span class="logoWrap">
         <img class="ttl" src="assets/logo.webp" alt="이피저피똥피" decoding="async">
@@ -1467,13 +1488,17 @@
         <h2 class="pgTitle">상점</h2>
         <div id="shopCoins"></div>
         <div id="shopList">
-          <div class="shopItem"><div class="si">💖</div><div class="st"><b>부활 아이템</b><span>쓰러져도 그 자리에서 한 번 더</span></div><button disabled>준비 중</button></div>
         </div>
         <div class="shopSub">펫 — 사 두면 게임 중 증강으로 나와요</div>
         <div id="shopPets"></div>
       </section>
       <section class="page" id="pgOpt">
         <h2 class="pgTitle">옵션</h2>
+      </section>
+      <section class="page" id="pgGrow">
+        <h2 class="pgTitle">성장</h2>
+        <div id="growCoins"></div>
+        <div id="growList"></div>
       </section>
       <div id="modeBox">
         <div id="modeSeg" role="radiogroup" aria-label="스테이지">
@@ -1487,7 +1512,7 @@
         <button data-pg="book"><img src="assets/ui/tab_book.webp" alt=""><span>도감</span></button>
         <button data-pg="home" class="on home"><img src="assets/ui/tab_home.webp" alt=""><span>시작</span></button>
         <button data-pg="shop"><img src="assets/ui/tab_shop.webp" alt=""><span>상점</span></button>
-        <button data-pg="opt"><img src="assets/ui/tab_opt.webp" alt=""><span>옵션</span></button>
+        <button data-pg="grow"><img src="assets/ui/tab_grow.webp" alt=""><span>성장</span></button>
       </nav>
     </div>
 
@@ -1797,7 +1822,7 @@
   const elTitle = document.getElementById("overTitle");
   const coinNote = document.getElementById("coinNote");
 
-  const GAME_VERSION = "v0.9.71";
+  const GAME_VERSION = "v0.9.72";
   /* 제작사 스플래시(bamhobak friends 로고) — 2026-09-20 끔. 다시 켜려면 true */
   const SPLASH_USE = false;   // 코드를 고칠 때마다 뒤 두 자리를 올린다
   document.getElementById("ver").textContent = GAME_VERSION;
@@ -1847,7 +1872,7 @@
                     bangul: "bangul" };
   // 이동 속도 배율 — 부양사 2.5배. 대전모드는 모두 같게, 대신 절반 속도(v0.8.38 VS_MOVE)
   const VS_MOVE = 0.425;                    // v0.8.38 0.5 → v0.8.47 15% 더 줄여 0.425
-  function spdMul() { return vsLike() ? VS_MOVE : job === "levitator" ? 2.5 : 1; }
+  function spdMul() { return vsLike() ? VS_MOVE : (job === "levitator" ? 2.5 : 1) * gSpd(); }   // v0.9.72 성장 날렵함
   /* 평화의 비둘기 — 활짝 펼친 날개에 깃 모양이 물결치고, 꼬리는 부채처럼 갈라진다.
      (흰 실루엣 한 덩어리로 그려야 작게 그려도 비둘기로 읽힌다) */
   function drawDove(x, y, ph, target, hdir) {
@@ -2214,7 +2239,7 @@
     return { x: player.x + off, y: player.y + FOOT - sh + sh * spr.bcy - sprLift(spr), r: sh * spr.brr };
   }
   // 판정·그림 크기 배율 — 스테로이드 약발 중에는 두 배
-  function hitMul() { return aug.hitboxMul * (roidT > 0 ? 2 : 1) * (prophIs("heavy") ? 1.3 : 1) * (aug.snackBig && performance.now() < powerUntil ? 1.5 : 1); }   // 간식은 살 안쪄요 — 간식 타임 1.5배
+  function hitMul() { return aug.hitboxMul * (roidT > 0 ? 2 : 1) * (prophIs("heavy") ? 1.3 : 1) * (aug.snackBig && performance.now() < powerUntil ? 1.5 : 1) * gSlim(); }   // v0.9.72 성장 날씬함   // 간식은 살 안쪄요 — 간식 타임 1.5배
   function spriteHeight(spr) { return (player.r * 2 * hitMul()) / spr.head * spr.adj; }
   /* v0.9.06 캐릭터마다 몸 가운데 높이가 달랐다(판정 반지름의 1.2~1.9배) — 세트마다 lift 만큼 그림과 판정을 함께 올려 방울이에 맞춘다 */
   function sprLift(spr) { return spr && spr.lift ? spr.lift * player.r * hitMul() : 0; }
@@ -7637,7 +7662,17 @@
     if (pg === "home") { pickTab = "job"; renderPick(); }
     if (pg === "book") renderBook();
     if (pg === "shop") renderShop();
+    if (pg === "grow") renderGrow();
+    if (pg === "opt" && !document.getElementById("btnOptBack")) {       // 옵션 — 탭이 아니라 톱니로 여니 돌아가는 버튼을 둔다
+      const b = document.createElement("button"); b.id = "btnOptBack"; b.textContent = "돌아가기";
+      b.addEventListener("click", () => { beep(700, .04, "triangle", .04); setPage("home"); });
+      document.getElementById("pgOpt").appendChild(b);
+    }
   }
+  document.getElementById("btnOpt").addEventListener("click", () => {
+    if (curPage === "opt") { setPage("home"); return; }
+    beep(700, .04, "triangle", .04); setPage("opt");
+  });
   for (const b of document.querySelectorAll("#tabBar button")) b.addEventListener("click", () => {
     if (b.dataset.pg === curPage) return;
     beep(700, .04, "triangle", .04);
@@ -7707,6 +7742,84 @@
       if (bookSel === a.id) show(a, ok);
     }
     document.getElementById("bookCount").textContent = "쓸 수 있는 증강 " + open + " / " + all.length;
+  }
+  /* v0.9.72 성장 — 코인으로 사는 영구 강화. 기본 능력치는 강화 최대치의 절반만큼 깎아 두었다(다 올리면 예전보다 절반만큼 세다).
+     값은 GROW[id].cost(현재 단계) 코인. 기기에 저장(LS_GROW). 대전·여럿이·테스트 모드에는 쓰지 않는다. */
+  const LS_GROW = "epjpddongpi_grow";
+  const GROW = [
+    { id: "hp",     ic: "❤️", nm: "튼튼함",   ds: "시작 하트 +1",            max: 2, cost: n => 80 * (n + 1) },
+    { id: "spd",    ic: "👟", nm: "날렵함",   ds: "이동 속도 +4%",           max: 5, cost: n => 30 * (n + 1) },
+    { id: "slim",   ic: "🎯", nm: "날씬함",   ds: "몸(판정) -3%",            max: 5, cost: n => 40 * (n + 1) },
+    { id: "mag",    ic: "🧲", nm: "자석",     ds: "아이템 끌어오는 범위 +10%", max: 5, cost: n => 25 * (n + 1) },
+    { id: "luck",   ic: "🍀", nm: "행운",     ds: "아이템 나올 확률 +5%",     max: 5, cost: n => 30 * (n + 1) },
+    { id: "greed",  ic: "💰", nm: "탐욕",     ds: "코인 나올 확률 +10%",      max: 5, cost: n => 25 * (n + 1) },
+    { id: "score",  ic: "✨", nm: "성장",     ds: "점수 +3%",                max: 5, cost: n => 40 * (n + 1) },
+    { id: "snack",  ic: "🍖", nm: "간식 시간", ds: "간식 타임 +0.5초",         max: 5, cost: n => 20 * (n + 1) },
+    { id: "umb",    ic: "☂️", nm: "준비성",   ds: "우산 1개 들고 시작",        max: 1, cost: n => 60 },
+    { id: "pet",    ic: "🐹", nm: "펫 훈련",  ds: "펫 공격 속도 +5%",         max: 5, cost: n => 30 * (n + 1) },
+    { id: "revive", ic: "💖", nm: "부활",     ds: "한 판에 한 번 부활",        max: 1, cost: n => 150 }
+  ];
+  let growLv = {};
+  try { const d = JSON.parse(localStorage.getItem(LS_GROW) || "{}"); if (d && typeof d === "object") growLv = d; } catch (e) {}
+  function gl(id) { return Math.max(0, growLv[id] | 0); }
+  function grOn() { return typeof runMode === "undefined" || (!vsLike() && runMode !== "party"); }
+  /* 기본값(강화 0) = 예전 값에서 최대 강화의 절반만큼 뺀 것 */
+  function gSpd()   { return grOn() ? 0.90 + 0.04 * gl("spd") : 1; }          // 최대 +20% → 기본 -10%
+  function gSlim()  { return grOn() ? 1.075 - 0.03 * gl("slim") : 1; }       // 최대 -15% → 기본 +7.5%
+  function gMag()   { return grOn() ? 0.75 + 0.10 * gl("mag") : 1; }         // 최대 +50% → 기본 -25%
+  function gLuck()  { return grOn() ? 0.875 + 0.05 * gl("luck") : 1; }       // 최대 +25% → 기본 -12.5%
+  function gGreed() { return grOn() ? 0.75 + 0.10 * gl("greed") : 1; }       // 최대 +50% → 기본 -25%
+  function gScore() { return grOn() ? 0.925 + 0.03 * gl("score") : 1; }      // 최대 +15% → 기본 -7.5%
+  function gSnackMs() { return grOn() ? -1250 + 500 * gl("snack") : 0; }     // 최대 +2.5초 → 기본 -1.25초
+  function gPet()   { return grOn() ? 0.875 + 0.05 * gl("pet") : 1; }        // 최대 +25% → 기본 -12.5%
+  let reviveUsed = false;
+  function reviveSave(now) {                  // 성장 '부활' — 한 판에 한 번
+    if (!grOn() || gl("revive") < 1 || reviveUsed || testMode) return false;
+    reviveUsed = true;
+    lives = 1;
+    invUntil = now + 2000; hurtUntil = 0;
+    feverFlash = Math.max(feverFlash, 0.8); shake = Math.max(shake, 16);
+    burst(player.x, player.y, "#ff9fc8", 40); burst(player.x, player.y, "#ffffff", 30);
+    rings.push({ x: player.x, y: player.y + player.hy, t: 0, life: 0.6, r1: 180, color: "#ffb3d6" });
+    popText(player.x, player.y - 90, "💖 부활!", "#ffb3d6", 26);
+    if (!sfx("gold")) { beep(880, .12, "triangle", .06); beep(1320, .2, "triangle", .05); }
+    return true;
+  }
+  function renderGrow() {
+    document.getElementById("growCoins").textContent = "🪙 " + coins.toLocaleString() + " coin";
+    const box = document.getElementById("growList"); box.innerHTML = "";
+    for (const g of GROW) {
+      const lv = gl(g.id), full = lv >= g.max, c = full ? 0 : g.cost(lv);
+      const row = document.createElement("div"); row.className = "shopItem growItem" + (full ? " owned" : "");
+      const ic = document.createElement("div"); ic.className = "si"; ic.textContent = g.ic;
+      const st = document.createElement("div"); st.className = "st";
+      const b = document.createElement("b"); b.textContent = g.nm;
+      const pips = document.createElement("i"); pips.className = "pips";
+      for (let k = 0; k < g.max; k++) { const p = document.createElement("em"); if (k < lv) p.className = "on"; pips.appendChild(p); }
+      b.appendChild(pips);
+      const sp = document.createElement("span"); sp.textContent = g.ds + "  ·  " + lv + "/" + g.max;
+      st.append(b, sp);
+      const btn = document.createElement("button");
+      if (full) { btn.className = "own"; btn.textContent = "최대"; btn.disabled = true; }
+      else {
+        btn.className = coins >= c ? "buy" : ""; btn.textContent = "🪙 " + c; btn.disabled = coins < c;
+        btn.addEventListener("click", () => {
+          if (gl(g.id) >= g.max || coins < c) return;
+          askYesNo("🪙 " + c + "코인으로\n'" + g.nm + "' " + (lv + 1) + "단계를 올리시겠습니까?", () => {
+            if (gl(g.id) !== lv || coins < c) return;
+            coins -= c;
+            try { localStorage.setItem(LS_COINS, String(coins)); } catch (e) {}
+            showCoins();
+            growLv[g.id] = lv + 1;
+            try { localStorage.setItem(LS_GROW, JSON.stringify(growLv)); } catch (e) {}
+            if (!sfx("giant")) { beep(880, .1, "triangle", .06); beep(1320, .16, "triangle", .05); }
+            renderGrow();
+          });
+        });
+      }
+      row.append(ic, st, btn);
+      box.appendChild(row);
+    }
   }
   /* v0.9.70 예/아니오 묻는 창 — 예(노랑)·아니오(회색) */
   function askYesNo(msg, onYes) {
@@ -7841,7 +7954,7 @@
     runMode = partyWant ? "party" : gameMode;
     patReset();
     if (runMode !== "item") augCount["mode:" + runMode] = 1;   // 통계(판 기록)에서 똥탑등반·맨몸대결 판을 가려낼 수 있게
-    angelUsed = false; angelAura = 0; angelFx = 0; petFon = false;
+    angelUsed = false; angelAura = 0; angelFx = 0; petFon = false; reviveUsed = false;
     fairies = []; giftT = GIFT_EVERY * 0.6;
     cats = []; catT = CAT_EVERY * 0.7; catN = 0;
     eelT = EEL_EVERY * 0.6; bolts = [];
@@ -7854,6 +7967,7 @@
        타이머를 잡기 전에 켜 두어야 엄마의 밥상 시계가 제대로 돌아간다
        (꺼져 있으면 평균 간격이 무한이라 영영 안 떨어진다). */
     aug.momMeal = (job === "none" && !vsLike());   // 대전모드 P1 은 직업 능력 없이
+    aug.itemRateMul = 1 / gLuck();   // v0.9.72 성장 행운
     resetBonusTimers();          // 증강 배율을 되돌린 뒤라야 첫 타이머가 제대로 잡힌다
     aug.helper = 0; aug.helperRush = false; aug.hungry = false; aug.galaga = 0;
     helpers = []; fetchers = [];
@@ -7872,6 +7986,10 @@
       lives = 5;
       aug.maxLives = 30;              // 하트를 쌓아 올리는 직업
       aug.hitboxMul *= 1.3;           // 몸이 커서 잘 맞는다
+    }
+    if (grOn() && !testMode) {        // v0.9.72 성장 — 시작 하트는 기본 1개 적게(튼튼함으로 +1씩), 준비성 우산
+      lives = Math.max(1, lives - 1 + gl("hp"));
+      if (job !== "fit") shields = Math.min(10, shields + gl("umb"));
     }
     augScreen.classList.add("hidden");
     facing = "right";
@@ -7957,7 +8075,7 @@
     let r = COIN_RATIO;
     if (job === "none" || job === "powerp") r *= 2;
     if (job === "powerp" && fullOwn) r *= FULL_MUL;
-    return r;
+    return r * gGreed();                          // v0.9.72 성장 탐욕
   }
   let coinDebt = 0;               // 아직 안 떨어뜨린 코인 (소수점을 다음 차례로 넘긴다)
   /* 무소유의 계산용 — 이번 판에 나온 코인과 주운 코인의 개수(값이 아니라 낱개).
@@ -8612,7 +8730,7 @@
     if (dashCd > 0) dashCd -= dt;
     if (dashT > 0) dashT = Math.max(0, dashT - dt);   // 자리는 tryDash 에서 이미 옮겼다 (순간이동)
     if (petOn.dove && state === STATE.PLAY) {
-      moveDist += Math.abs(player.x - prev);
+      moveDist += Math.abs(player.x - prev) * gPet();
       const need = doveEvery();
       if (moveDist >= need) {
         moveDist -= need;
@@ -8760,7 +8878,7 @@
          한 대는 shipGap(n) 마다 쏘되, k 번째는 그 주기를 n 등분한 만큼 늦게 쏜다.
          시계 하나로 재기 때문에 대수가 바뀌어도 박자가 저절로 다시 갈린다. */
       const n = aug.galaga, was = shipClock, gap = shipGap(n);
-      shipClock += dt * tsc;
+      shipClock += dt * tsc * gPet();   // v0.9.72 성장 펫 훈련
       for (let k = 0; k < n; k++) {
         const ph = gap * k / n;
         if (Math.floor((shipClock - ph) / gap) === Math.floor((was - ph) / gap)) continue;
@@ -8871,7 +8989,7 @@
     }
     // ---- 선물 요정 — 떨어지는 똥에 날아가 펑! 아이템으로 바꾼다 ----
     if (petOn.gift && state === STATE.PLAY) {
-      giftT -= dt * tsc;
+      giftT -= dt * tsc * gPet();   // v0.9.72 성장 펫 훈련
       if (giftT <= 0) {
         const busy = new Set(fairies.map(f => f.t));
         let best = null, bd = 1e9;
@@ -8927,7 +9045,7 @@
     }
     // ---- 코인 고양이 — 위에서 고개를 내밀어 코인을 떨어뜨린다 ----
     if (petOn.coincat && state === STATE.PLAY) {
-      catT -= dt * tsc;
+      catT -= dt * tsc * gPet();   // v0.9.72 성장 펫 훈련
       if (catT <= 0) {
         catT = CAT_EVERY;
         catN++;
@@ -8947,7 +9065,7 @@
     }
     // ---- 백만볼트 뱀장어 — 가까운 똥에 번개, 옆 똥으로 옮겨붙는다 ----
     if (petOn.eel && state === STATE.PLAY) {
-      eelT -= dt * tsc;
+      eelT -= dt * tsc * gPet();   // v0.9.72 성장 펫 훈련
       if (eelT <= 0) {
         const ex = petFx, ey = petFy + petArc() + 4;     // 번개는 뱀장어가 있는 자리에서
         const n = zapChain(ex, ey, EEL_CHAIN + (aug.chainZap ? 2 : 0), 9999, true);
@@ -9002,7 +9120,7 @@
     if (aug.helper > 0) {
       // 1명이면 4.5초, 2명이면 5.5초, 3명이면 6.5초… 인원이 늘수록 주기가 1초씩 길어진다
       const cycle = 6.5 * Math.pow(0.88, aug.helper - 1);   // v0.9.59 늘 한 마리씩, 단계마다 12% 자주 (6.5 → 5.7 → 5.0 → 4.4 → 3.9초)   // 예전: 5.5 + 1.0 * aug.helper;   // v0.9.45 4.5 → 5.5   // v0.9.31 4.0 → 4.5   // 3.5 → 4.0, 출격이 조금 뜸해진다
-      helperTimer -= dt * tsc;
+      helperTimer -= dt * tsc * gPet();   // v0.9.72 성장 펫 훈련
       if (helperTimer <= 0 && helperQueue <= 0) {
         helperTimer = cycle;
         helperQueue = 1;                          // 늘 한 마리
@@ -9286,11 +9404,11 @@
       }
       /* 부양사는 자석이 없어도 기본 흡인(자석의 약 20%)을 갖고 시작한다.
          자석 증강을 먹으면 온전한 자석으로 덮어쓴다. 반경 110 → 121 (10% 확장). */
-      const magR = prophIs("magnet") ? 2400 : aug.magnet > 0 ? aug.magnet : (job === "levitator" ? 121 : 0);
+      const magR = (prophIs("magnet") ? 2400 : aug.magnet > 0 ? aug.magnet : (job === "levitator" ? 121 : 0)) * gMag();   // v0.9.72 성장 자석
       const magF = prophIs("magnet") ? 1.8 : aug.magnet > 0 ? 1 : 0.45;   // 복이 굴러온다 — 화면 어디서든 끌려온다
       /* 코인은 자석이 없어도 늘 끌려온다 — 자석 증강의 절반(반경 110 · 힘 0.5).
          자석·복이 굴러온다가 있으면 둘 중 센 쪽을 쓴다. */
-      const COIN_R0 = 110, COIN_F0 = 0.5;
+      const COIN_R0 = 110 * gMag(), COIN_F0 = 0.5;
       const coinBase = !(job === "powerp" && !fullOwn);   // v0.9.32 무무(무소유)는 코인이 저절로 끌려오지 않는다 (자석 증강·풀소유면 끌려온다)
       if (!stoneOn && ((magR > 0 && (it.type !== "poop" || it.gold)) || (it.type === "coin" && (coinBase || magR > 0)))) {
         const d = Math.hypot(dx, dy);
@@ -9501,6 +9619,7 @@
               if (navigator.vibrate) navigator.vibrate(70);
               if (dirtJob() ? dirt >= DIRT_MAX : lives <= 0) {
                 if (angelSave(now)) { items.splice(i, 1); continue; }   // 수호천사 — 한 번 되살린다
+                if (reviveSave(now)) { items.splice(i, 1); continue; }  // v0.9.72 성장 부활
                 return startDeath();               // 마지막 똥은 남겨 둔 채 느린 화면으로
               }
             }
@@ -9577,7 +9696,7 @@
     if (partyOn() && it.type === "moon") { paTakeMoon(player); return false; }   // 여럿이 — 바로 무작위 증강
     if (it.type === "paper") {
       achBump("fever");
-      feverDur = 7000 + aug.feverBonus;
+      feverDur = Math.max(2000, 7000 + aug.feverBonus + gSnackMs());   // v0.9.72 성장 간식 시간
       // 이미 간식 중이면 남은 시간에 이어붙인다 (초기화하면 남은 시간이 버려진다)
       powerUntil = Math.max(powerUntil, now) + feverDur;
       feverFlash = 1;
@@ -13691,7 +13810,7 @@
      한 번만 먹는 증강이고, 빗방울로 씻으면 배율도 같이 내려간다.
      (100% 는 곧 끝이라, 실제로 누리는 최대는 75% = 1.75배다) */
   function dungyMul() { return aug.dungy ? 1 + 1 / Math.max(1, lives) : 1; }   // 하트 1개 2배 · 2개 1.5배 · 3개 1.33배 …
-  function scoreMul() { return SCORE_SCALE * aug.scoreMul * bhMul() * levMul() * monkMul() * dungyMul() * (prophIs("double") ? 2 : prophIs("dice") ? 3 : 1); }
+  function scoreMul() { return SCORE_SCALE * gScore() * aug.scoreMul * bhMul() * levMul() * monkMul() * dungyMul() * (prophIs("double") ? 2 : prophIs("dice") ? 3 : 1); }
 
   function zoneIdx() { return Math.min(LAST_Z, level - 1); }
   // 지금 단계와 다음 단계 사이의 진행도 — 색이 뚝 끊기지 않고 이어지도록
