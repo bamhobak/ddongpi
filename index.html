@@ -1774,7 +1774,7 @@
   const elTitle = document.getElementById("overTitle");
   const coinNote = document.getElementById("coinNote");
 
-  const GAME_VERSION = "v0.9.66";
+  const GAME_VERSION = "v0.9.67";
   /* 제작사 스플래시(bamhobak friends 로고) — 2026-09-20 끔. 다시 켜려면 true */
   const SPLASH_USE = false;   // 코드를 고칠 때마다 뒤 두 자리를 올린다
   document.getElementById("ver").textContent = GAME_VERSION;
@@ -1813,7 +1813,7 @@
     powerp2: { nm: "파워P", ic: "🎯", gone: true, ds: "증강을 4개 중에서 고른다" },
     powerp: { nm: "무무 · 무소유", ic: "🙏", needUnlock: "코인을 하나도 안 먹고 100초 버티기",   // v0.9.62 잠긴 캐릭터
               ds: "달이 아예 안 나온다 · 별이 조금 잘 나온다 · 안 맞을수록 점수가 치솟는다" },
-    bangul: { nm: "방울이 · 백수", ic: "🫧", ds: "비누방울이 한 대를 대신 맞고 터진다 · 잠시 뒤 다시 맺힌다" }
+    bangul: { nm: "방울이 · 집순이", ic: "🫧", ds: "비누방울이 한 대를 대신 맞고 터진다 · 잠시 뒤 다시 맺힌다" }
   };
   // v0.8.77 고르는 화면·순위 탭 순서 (두 줄씩: 방울이 버피 / 제이 소라 / 무무 루나) — 키를 다시 넣어 순서를 바꾼다
   for (const k of ["bangul", "fit", "powerj", "levitator", "powerp", "fortune"]) { const v = JOBS[k]; delete JOBS[k]; JOBS[k] = v; }
@@ -13026,7 +13026,7 @@
   AUG_NAMES.refill = "간식 무한리필(삭제됨)";
   AUG_NAMES.ghost = "유령화(삭제됨)";
   AUG_NAMES.subs = "간식 정기구독(삭제됨)";
-  const JOB_NAMES = { none: "쉬었음 청년", fortune: "루나 · 점술가", gambler: "도박사", levitator: "도도 · 부양사", fit: "버피 · 헬스견", powerj: "제이 · 계획러", powerp: "무무 · 무소유", powerp2: "파워P", bangul: "방울이 · 백수", "(none)": "(기록 없음)" };
+  const JOB_NAMES = { none: "쉬었음 청년", fortune: "루나 · 점술가", gambler: "도박사", levitator: "도도 · 부양사", fit: "버피 · 헬스견", powerj: "제이 · 계획러", powerp: "무무 · 무소유", powerp2: "파워P", bangul: "방울이 · 집순이", "(none)": "(기록 없음)" };
   const devScreen = document.getElementById("devScreen");
   const devPw     = document.getElementById("devPw");
   const devBody   = document.getElementById("devBody");
