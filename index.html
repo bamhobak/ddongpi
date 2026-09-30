@@ -1774,7 +1774,7 @@
   const elTitle = document.getElementById("overTitle");
   const coinNote = document.getElementById("coinNote");
 
-  const GAME_VERSION = "v0.9.67";
+  const GAME_VERSION = "v0.9.68";
   /* 제작사 스플래시(bamhobak friends 로고) — 2026-09-20 끔. 다시 켜려면 true */
   const SPLASH_USE = false;   // 코드를 고칠 때마다 뒤 두 자리를 올린다
   document.getElementById("ver").textContent = GAME_VERSION;
@@ -2303,8 +2303,8 @@
     hurt:  { img: null, aspect: 1.3711, head: 0.3855, cx: 0.625, cy: 0.405, adj: 0.4987, lift: 0.098 }
   };
   const SPR_LEV_SPACE = {    // 도도(옛 소라) — 삽살개 도사 (v0.9.47, 예전 파피용)
-    right: { img: null, aspect: 1.1250, head: 0.420, cx: 0.735, cy: 0.420, adj: 0.5016, lift: 0.160, float: true },
-    hurt:  { img: null, aspect: 1.1675, head: 0.420, cx: 0.722, cy: 0.430, adj: 0.4996, lift: 0.153 }
+    right: { img: null, aspect: 1.1750, head: 0.420, cx: 0.750, cy: 0.460, adj: 0.4976, lift: 0.169, float: true },
+    hurt:  { img: null, aspect: 1.1675, head: 0.420, cx: 0.741, cy: 0.430, adj: 0.4996, lift: 0.153 }
   };
   const SPR_FIT_SPACE = {    // 버피 — 복서
     right: { img: null, aspect: 1.170, head: 0.374, cx: 0.656, cy: 0.386, adj: 0.5229, lift: -0.045, float: true },
@@ -2317,8 +2317,8 @@
   // v0.8.75 소라는 날개 때문에 커 보여서 그림만 16% 줄였다 (adj 0.571 → 0.48) — 피격 범위(판정원)는 그대로
   /* v0.9.09 소라 크기·높이는 풍선과 날개를 빼고 잰 몸만으로 다른 캐릭터와 같게 (날개·풍선 테두리는 첫 헤엄 칸에 손으로 그려 잼 — 땅 38%·우주 22%) */
   const SPR_LEV = {
-    right: { img: null, aspect: 1.2000, head: 0.420, cx: 0.730, cy: 0.340, adj: 0.4844, lift: 0.168, float: true },
-    hurt:  { img: null, aspect: 1.1700, head: 0.420, cx: 0.732, cy: 0.440, adj: 0.5035, lift: 0.215 }
+    right: { img: null, aspect: 1.1800, head: 0.420, cx: 0.750, cy: 0.450, adj: 0.4961, lift: 0.128, float: true },
+    hurt:  { img: null, aspect: 1.1100, head: 0.420, cx: 0.762, cy: 0.500, adj: 0.5078, lift: 0.190 }
   };
   const SPR_FIT = {
     right: { img: null, aspect: 1.415, head: 0.387, cx: 0.634, cy: 0.353, adj: 0.5913, lift: -0.243, float: true },
