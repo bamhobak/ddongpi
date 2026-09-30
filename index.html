@@ -857,6 +857,7 @@
   #bookList .bk.lock { opacity: .7; }
   #bookList .bk.lock::after { content: "🔒"; position: absolute; right: -3px; bottom: -4px; font-size: 13px; filter: none; }
   #bookDesc .how.lockHow { color: #ffb37a; font-weight: 800; }
+  #bookDesc .how.top { margin: 0 0 5px; font-size: 13.5px; }
   #bookList .bk.sel { outline: 3px solid #ffd23f; outline-offset: 1px; }
   #bookDesc { width: 100%; max-width: 360px; min-height: 64px; box-sizing: border-box; padding: 10px 12px; border-radius: 12px;
     background: rgba(10,12,30,.75); border: 1px solid rgba(255,210,63,.4); color: #e8ecf7; font-size: 13.5px; line-height: 1.5; text-align: center; }
@@ -1726,7 +1727,7 @@
   const elTitle = document.getElementById("overTitle");
   const coinNote = document.getElementById("coinNote");
 
-  const GAME_VERSION = "v0.9.51";
+  const GAME_VERSION = "v0.9.52";
   /* 제작사 스플래시(bamhobak friends 로고) — 2026-09-20 끔. 다시 켜려면 true */
   const SPLASH_USE = false;   // 코드를 고칠 때마다 뒤 두 자리를 올린다
   document.getElementById("ver").textContent = GAME_VERSION;
@@ -7304,12 +7305,16 @@
     let open = 0;
     const show = (a, ok) => {
       desc.innerHTML = "";
-      const b = document.createElement("b"); b.textContent = (ok ? "" : "🔒 ") + a.ic + " " + a.nm;
-      desc.append(b, document.createElement("br"), document.createTextNode(a.ds || ""));
-      const how = document.createElement("span"); how.className = "how" + (ok ? "" : " lockHow");
       const pid = BOOK_PET[a.id];
-      how.textContent = !ok ? "해금 조건 — 상점에서 펫 '" + PETS[pid].nm + "' 구매 (" + PET_PRICE + "코인)"
-        : BOOK_COND[a.id] ? (a.hidden ? "✨ 히든 · " : "나오는 조건 · ") + BOOK_COND[a.id]
+      if (!ok) {                                   // v0.9.52 잠긴 것은 해금 조건이 맨 윗줄 (자물쇠와 함께)
+        const lk = document.createElement("span"); lk.className = "how lockHow top";
+        lk.textContent = "🔒 해금 조건 — 상점에서 펫 '" + PETS[pid].nm + "' 구매 (" + PET_PRICE + "코인)";
+        desc.appendChild(lk);
+      }
+      const b = document.createElement("b"); b.textContent = a.ic + " " + a.nm;
+      desc.append(b, document.createElement("br"), document.createTextNode(a.ds || ""));
+      const how = document.createElement("span"); how.className = "how";
+      how.textContent = !ok ? "" : BOOK_COND[a.id] ? (a.hidden ? "✨ 히든 · " : "나오는 조건 · ") + BOOK_COND[a.id]
         : a.hidden ? "✨ 히든 증강" : "";
       if (how.textContent) desc.appendChild(how);
     };
