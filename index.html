@@ -1827,7 +1827,7 @@
   const elTitle = document.getElementById("overTitle");
   const coinNote = document.getElementById("coinNote");
 
-  const GAME_VERSION = "v0.9.73";
+  const GAME_VERSION = "v0.9.74";
   /* 제작사 스플래시(bamhobak friends 로고) — 2026-09-20 끔. 다시 켜려면 true */
   const SPLASH_USE = false;   // 코드를 고칠 때마다 뒤 두 자리를 올린다
   document.getElementById("ver").textContent = GAME_VERSION;
@@ -7805,7 +7805,7 @@
       const pips = document.createElement("i"); pips.className = "pips";
       for (let k = 0; k < g.max; k++) { const p = document.createElement("em"); if (k < lv) p.className = "on"; pips.appendChild(p); }
       b.appendChild(pips);
-      const sp = document.createElement("span"); sp.textContent = g.ds + "  ·  " + lv + "/" + g.max;
+      const sp = document.createElement("span"); sp.textContent = g.ds;
       st.append(b, sp);
       const btn = document.createElement("button");
       if (full) { btn.className = "own"; btn.textContent = "최대"; btn.disabled = true; }
@@ -7813,7 +7813,7 @@
         btn.className = coins >= c ? "buy" : ""; btn.textContent = "🪙 " + c; btn.disabled = coins < c;
         btn.addEventListener("click", () => {
           if (gl(g.id) >= g.max || coins < c) return;
-          askYesNo("🪙 " + c + "코인으로\n'" + g.nm + "' " + (lv + 1) + "단계를 올리시겠습니까?", () => {
+          {   // v0.9.74 성장은 묻지 않고 바로 산다
             if (gl(g.id) !== lv || coins < c) return;
             coins -= c;
             try { localStorage.setItem(LS_COINS, String(coins)); } catch (e) {}
@@ -7822,7 +7822,7 @@
             try { localStorage.setItem(LS_GROW, JSON.stringify(growLv)); } catch (e) {}
             if (!sfx("giant")) { beep(880, .1, "triangle", .06); beep(1320, .16, "triangle", .05); }
             renderGrow();
-          });
+          }
         });
       }
       row.append(ic, st, btn);
