@@ -1572,7 +1572,7 @@
   const elTitle = document.getElementById("overTitle");
   const coinNote = document.getElementById("coinNote");
 
-  const GAME_VERSION = "v0.9.39";
+  const GAME_VERSION = "v0.9.40";
   /* 제작사 스플래시(bamhobak friends 로고) — 2026-09-20 끔. 다시 켜려면 true */
   const SPLASH_USE = false;   // 코드를 고칠 때마다 뒤 두 자리를 올린다
   document.getElementById("ver").textContent = GAME_VERSION;
@@ -3388,7 +3388,7 @@
     { id: "hungry",     ic: "😋", nm: "먹보 뿌잉", ds: "뿌잉이 아이템을 대신 먹어준다",
       hidden: true, once: true, cond: () => pet === "helper" && aug.magnet > 0,   // 뿌잉 펫 + 자석
       go: () => { aug.hungry = true; } },
-    { id: "roid",       ic: "💉", nm: "스테로이드 과다 복용", ds: "6초 동안 몸이 2배로 부풀고, 모든 똥을 튕겨낸다",
+    { id: "roid",       ic: "💪", nm: "벌크업", ds: "6초 동안 몸이 2배로 부풀고, 모든 똥을 튕겨낸다",   // v0.9.40 옛 이름 '스테로이드 과다 복용' 
       max: 99, noCount: true, cond: () => job === "fit" && level >= 7,   // 헬스걸 전용 — 우산 다발 자리
       go: () => { roidT = 6; } },   // v0.9.31 7 → 6초
     { id: "doveWhat",   ic: "🕊️", nm: "비둘기 무엇?", ds: "비둘기가 1.5배 빠르고 커진다 · 더 자주 출격",
@@ -7970,7 +7970,8 @@
       roidT -= dt;
       if (roidT <= 0) {
         roidT = 0;
-        popText(player.x, player.y - 70, "💉 약발 끝", "#ff8f8f", 22);
+        invUntil = Math.max(invUntil, performance.now() + 500);   // v0.9.40 줄어드는 순간 코앞 똥에 바로 맞지 않게 0.5초 무적
+        popText(player.x, player.y - 70, "💪 벌크업 끝", "#ff8f8f", 22);
         beep(300, .12, "sine", .04);
       }
     }
