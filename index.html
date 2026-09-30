@@ -836,6 +836,36 @@
   #pgHome h1 { margin-bottom: 0 !important; }
   #homeJobs { width: 100%; max-width: 340px; display: flex; justify-content: center; }
   #homeJobs #jobList { width: 100%; }
+  /* v0.9.55 홈 캐릭터 고르기 = 좌우로 넘기는 한 줄(아이작처럼) — 가운데 온 캐릭터가 크게, 곧 고른 캐릭터. 아래에 특징 */
+  #homeJobs { flex-direction: column; align-items: center; gap: 6px; max-width: 400px; }
+  #homeJobs .carWrap { position: relative; width: 100%; }
+  #homeJobs #jobList.car {
+    position: relative; display: flex; gap: 0; max-width: none; overflow-x: auto; overflow-y: hidden;
+    scroll-snap-type: x mandatory; padding: 12px 0 16px; scrollbar-width: none; -webkit-overflow-scrolling: touch; overscroll-behavior-x: contain;
+  }
+  #homeJobs #jobList.car::-webkit-scrollbar { display: none; }
+  #homeJobs #jobList.car::before, #homeJobs #jobList.car::after { content: ""; flex: 0 0 25%; }   /* 첫·끝 카드도 가운데 올 수 있게 */
+  #homeJobs #jobList.car .augCard { flex: 0 0 50%; scroll-snap-align: center; transition: none; padding: 6px 0 12px; gap: 8px; will-change: transform; }
+  #pgHome #jobList.car img.ic { height: clamp(104px, 23vh, 180px); }
+  #homeJobs #jobList.car .augCard .nm2 { font-size: 17px; }
+  #homeJobs .carArrow {
+    position: absolute; top: 50%; transform: translateY(-50%); z-index: 2; width: 36px; height: 56px; padding: 0;
+    border-radius: 12px; background: rgba(255,248,230,.94); border: 2px solid #8a5a2b; box-shadow: 0 3px 0 #6b4520;
+    color: #6b3300; font-size: 24px; font-weight: 800; line-height: 1;
+  }
+  #homeJobs .carArrow:active { transform: translateY(-50%) scale(.92); }
+  #homeJobs .carArrow.l { left: 2px; } #homeJobs .carArrow.r { right: 2px; }
+  #homeJobs .carArrow[disabled] { opacity: .3; }
+  #homeJobs .carDots { display: flex; gap: 7px; justify-content: center; }
+  #homeJobs .carDots i { width: 8px; height: 8px; border-radius: 50%; background: rgba(255,255,255,.35); }
+  #homeJobs .carDots i.on { background: #ffd23f; box-shadow: 0 0 6px rgba(255,210,63,.8); }
+  #homeTraits {
+    width: 100%; max-width: 330px; min-height: 76px; box-sizing: border-box; padding: 8px 12px; border-radius: 12px;
+    background: rgba(255,248,230,.93); border: 2px solid #8a5a2b; color: #4a3322; font-size: 13px; line-height: 1.45; text-align: center;
+    display: flex; flex-direction: column; justify-content: center; gap: 1px;
+  }
+  #homeJobs .carWrap.off .carArrow, #homeJobs .carDots.off, #homeTraits.off { display: none; }
+  @media (max-height: 700px) { #homeTraits { font-size: 12px; min-height: 66px; padding: 6px 10px; } }
   @media (max-height: 760px) { #pgHome h1 img.ttl { width: min(36vw, 150px) !important; } #pgHome #jobList img.ic { height: 70px; } }
   /* 쪽 제목 — 리본 */
   .pgTitle {
@@ -1728,7 +1758,7 @@
   const elTitle = document.getElementById("overTitle");
   const coinNote = document.getElementById("coinNote");
 
-  const GAME_VERSION = "v0.9.54";
+  const GAME_VERSION = "v0.9.55";
   /* 제작사 스플래시(bamhobak friends 로고) — 2026-09-20 끔. 다시 켜려면 true */
   const SPLASH_USE = false;   // 코드를 고칠 때마다 뒤 두 자리를 올린다
   document.getElementById("ver").textContent = GAME_VERSION;
@@ -7056,7 +7086,7 @@
   const pickFoot = document.getElementById("pickFoot");
   const tabJob = document.getElementById("tabJob"), tabPet = document.getElementById("tabPet");
   let pickTab = "job";
-  function pickCard(sel, pic, name, title, onPick) {
+  function pickCard(sel, pic, name, title, onPick, noRender) {
     const card = document.createElement("button");
     card.className = "augCard";
     const tx = document.createElement("div"); tx.className = "tx";
@@ -7065,9 +7095,71 @@
     if (sel) card.classList.add("sel");
     tx.append(nm);
     card.append(pic, tx);
-    card.addEventListener("click", () => { beep(900, .08, "square", .05); onPick(); renderPick(); });
+    card.addEventListener("click", () => { beep(900, .08, "square", .05); onPick(); if (!noRender) renderPick(); });
     return card;
   }
+  /* v0.9.55 홈 캐릭터 넘기기 — 한 줄로 늘어놓고 좌우로 민다. 가운데 온 카드가 곧 고른 캐릭터(크게·노란 카드),
+     옆 카드는 작고 흐리게. 카드·화살표를 누르면 그 카드가 가운데로 미끄러진다. 아래에는 그 캐릭터 특징. */
+  const carWrap = document.createElement("div"); carWrap.className = "carWrap off";
+  const carDots = document.createElement("div"); carDots.className = "carDots off";
+  const homeTraits = document.createElement("div"); homeTraits.id = "homeTraits"; homeTraits.className = "off";
+  const carL = document.createElement("button"), carR = document.createElement("button");
+  carL.className = "carArrow l"; carL.textContent = "‹"; carL.setAttribute("aria-label", "앞 캐릭터");
+  carR.className = "carArrow r"; carR.textContent = "›"; carR.setAttribute("aria-label", "다음 캐릭터");
+  let carAim = null, carAimT = 0, carRaf = 0;
+  function carChrome(on) { carWrap.classList.toggle("off", !on); carDots.classList.toggle("off", !on); homeTraits.classList.toggle("off", !on); }
+  function carInfo() {                       // 점 · 화살표 · 특징
+    const cards = [...jobList.children], i = cards.findIndex(c => c.dataset.job === job);
+    [...carDots.children].forEach((d, k) => d.classList.toggle("on", k === i));
+    carL.disabled = i <= 0; carR.disabled = i < 0 || i >= cards.length - 1;
+    homeTraits.innerHTML = "";
+    for (const line of jobTraitLines(JOBS[job])) { const d = document.createElement("div"); d.textContent = line; homeTraits.appendChild(d); }
+  }
+  function carSet(id) {                      // 고른 캐릭터를 바꾼다(다시 그리지 않는다)
+    if (id === job || !JOBS[id]) return;
+    job = id;
+    try { localStorage.setItem(LS_JOB, job); } catch (e) {}
+    for (const c of jobList.children) c.classList.toggle("sel", c.dataset.job === job);
+    carInfo();
+  }
+  const carLeft = c => c.offsetLeft + c.offsetWidth / 2 - jobList.clientWidth / 2;
+  function carShape(pick) {                  // 가운데에서 먼 만큼 작고 흐리게. pick 이면 가운데 카드를 고른다
+    if (!jobList.classList.contains("car") || !jobList.clientWidth) return;
+    const mid = jobList.scrollLeft + jobList.clientWidth / 2;
+    let best = null, bd = 1e9;
+    for (const c of jobList.children) {
+      const d = Math.abs(c.offsetLeft + c.offsetWidth / 2 - mid), k = Math.min(1, d / c.offsetWidth);
+      c.style.transform = "scale(" + (1 - .22 * k).toFixed(3) + ")";
+      c.style.opacity = (1 - .45 * k).toFixed(2);
+      if (d < bd) { bd = d; best = c; }
+    }
+    if (!pick || !best) return;
+    if (carAim) {                             // 눌러서 미끄러지는 중 — 도착할 때까지 지나가는 카드는 안 고른다
+      if (best.dataset.job === carAim || performance.now() - carAimT > 900) carAim = null; else return;
+    }
+    if (best.dataset.job !== job) { carSet(best.dataset.job); beep(760, .03, "triangle", .03); }
+  }
+  function carCenter() {                     // 고른 카드를 곧바로 가운데에
+    const c = [...jobList.children].find(x => x.dataset.job === job);
+    if (!c || !jobList.clientWidth) return;
+    jobList.scrollTo({ left: carLeft(c), behavior: "instant" });
+    carShape(false);
+  }
+  function carGo(id) {                       // 그 카드로 미끄러져 간다
+    const c = [...jobList.children].find(x => x.dataset.job === id);
+    if (!c) return;
+    carAim = id; carAimT = performance.now();
+    carSet(id);
+    jobList.scrollTo({ left: carLeft(c), behavior: "smooth" });
+  }
+  function carStep(d) {
+    const cards = [...jobList.children], i = cards.findIndex(c => c.dataset.job === job), n = cards[i + d];
+    if (n) { beep(900, .06, "square", .04); carGo(n.dataset.job); }
+  }
+  carL.addEventListener("click", () => carStep(-1));
+  carR.addEventListener("click", () => carStep(1));
+  jobList.addEventListener("scroll", () => { cancelAnimationFrame(carRaf); carRaf = requestAnimationFrame(() => carShape(true)); }, { passive: true });
+  if (window.ResizeObserver) new ResizeObserver(() => { if (jobList.classList.contains("car")) carCenter(); }).observe(jobList);   // 가려져 있다 보일 때·화면 돌릴 때
   function renderPick() {
     if (jobLocked()) job = "bangul";          // 맨몸대결·똥탑등반 — 탭 글자부터 방울이로
     if (petLocked()) { pet = "none"; petView = "none"; }
@@ -7079,6 +7171,9 @@
     tabJob.innerHTML = "캐릭터<small></small>"; tabJob.lastChild.textContent = JOBS[job].nm;
     tabPet.innerHTML = "펫<small></small>";   tabPet.lastChild.textContent = PETS[pet].nm;
     jobList.innerHTML = "";
+    const car = pickTab === "job" && !jobLocked() && jobList.parentElement && jobList.parentElement.classList.contains("carWrap");   // v0.9.55 홈 — 좌우 넘기기
+    jobList.classList.toggle("car", car);
+    carChrome(car);
     if (pickTab === "job") {
       const lockJ = jobLocked();
       // 카드 앞에는 이모지 대신 그 직업의 이재(오른쪽 이동 모습)를 보여준다
@@ -7088,9 +7183,11 @@
         ic.src = jobPic(id); ic.alt = JOBS[id].ic;
         const card = pickCard(id === job, ic, JOBS[id].nm, JOBS[id].ds, () => {
           if (lockJ) return;                  // 맨몸대결·똥탑등반은 방울이만
+          if (car) { carGo(id); return; }     // 넘기기 — 그 카드를 가운데로 (고르기는 carSet)
           job = id;
           try { localStorage.setItem(LS_JOB, job); } catch (e) {}
-        });
+        }, car);
+        card.dataset.job = id;
         if (lockJ && id !== "bangul") {
           card.classList.add("locked");
           const lk = document.createElement("span"); lk.className = "lock"; lk.textContent = "🔒";
@@ -7100,6 +7197,7 @@
       }
       document.getElementById("pickDesc").textContent = lockJ
         ? MODES[gameMode].nm + "은 방울이만 뛸 수 있어요 (비누방울 없이)" : "";
+      if (car) { carDots.innerHTML = ""; for (const _ of jobList.children) carDots.appendChild(document.createElement("i")); carInfo(); carCenter(); }
     } else {
       if (!PETS[petView]) petView = pet;
       for (const id in PETS) {
@@ -7275,7 +7373,8 @@
     setPage(b.dataset.pg);
   });
   // 캐릭터 카드(#jobList)와 옵션(#optRow)은 원래 자리에서 옮겨 온다
-  document.getElementById("homeJobs").appendChild(document.getElementById("jobList"));
+  carWrap.append(document.getElementById("jobList"), carL, carR);      // v0.9.55 넘기기 틀 안에
+  document.getElementById("homeJobs").append(carWrap, carDots, homeTraits);
   document.getElementById("pgOpt").appendChild(document.getElementById("optRow"));
   /* 도감 — 지금은 모두 열림. 나중에 잠금이 들어오면 bookOpen() 이 false 인 것은 회색 '?' 로, 여는 법(BOOK_HOW)을 보여 준다 */
   /* v0.9.51 도감 — 못 쓰는 증강(그 펫을 상점에서 안 산 것)은 회색. 누르면 해금 조건, 열린 것은 게임 중 나오는 조건 */
