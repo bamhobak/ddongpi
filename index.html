@@ -665,7 +665,8 @@
     text-align: center; font-size: 11px; font-weight: 700; color: #9fd8ff;
     background: rgba(5,6,13,.6); border-radius: 999px; padding: 3px 0;
   }
-  #devScreen { justify-content: flex-start; padding-top: 28px; gap: 12px; }
+  #devScreen { justify-content: flex-start; padding-top: 28px; gap: 12px; z-index: 30; }
+  #testScreen { z-index: 30; }   /* v0.9.43 시작 화면 순위판의 '초기화까지' 딱지가 위로 비쳐 나왔다 */
   #devScreen h2 { font-size: 20px; color: #ffd23f; }
   #devHead { display: flex; align-items: center; gap: 10px; }
   #devHome {
@@ -1138,7 +1139,7 @@
   }
   /* ---- v0.9.13 버튼은 둥근 알약 대신 네모난 심플한 그림(Codex rb_*) — 파일 이름은 그대로라 위 규칙들이 그대로 쓴다.
      아이콘이 붙은 버튼(메인으로·다시하기·처음으로)은 왼쪽 아이콘 칸(그림 90~100px)을 늘리지 않는다 ---- */
-  #btnResume, #btnPauseRetry, #btnPauseHome, #btnHome, #vsScreen #vsBack, #btnSettingsClose, #btnJobList {
+  #btnResume, #btnPauseRetry, #btnPauseHome, #btnHome, #vsScreen #vsBack, #btnSettingsClose, #btnJobList, #devClose, #testClose {
     --bh: 44px; height: var(--bh); box-sizing: border-box; flex-shrink: 0; min-width: 170px;
     border-style: solid; border-color: transparent; border-radius: 0; box-shadow: none; background: none; opacity: 1;
     border-width: 0 calc(var(--bh) / 2) 0 calc(var(--bh) * .97);
@@ -1174,7 +1175,7 @@
     --bh: 50px !important; min-width: 240px; font-size: 17px !important; letter-spacing: 1px !important; margin: 0;
   }
   #retryRow #btnRetryJob, #btnPauseRetry, #btnJobList, #btnReroll, #btnPetBuy, #vsScreen #vsBot,
-  #btnHome, #btnJobBack, #btnPauseHome, #vsScreen #vsBack, #btnSettingsClose {
+  #btnHome, #btnJobBack, #btnPauseHome, #vsScreen #vsBack, #btnSettingsClose, #devClose, #testClose {
     --bh: 44px !important; min-width: 240px; font-size: 15px !important; letter-spacing: 0 !important; font-weight: 800; margin: 0; opacity: 1;
   }
   #btnPetBuy:disabled { min-width: 240px; }
@@ -1599,7 +1600,7 @@
   const elTitle = document.getElementById("overTitle");
   const coinNote = document.getElementById("coinNote");
 
-  const GAME_VERSION = "v0.9.42";
+  const GAME_VERSION = "v0.9.43";
   /* 제작사 스플래시(bamhobak friends 로고) — 2026-09-20 끔. 다시 켜려면 true */
   const SPLASH_USE = false;   // 코드를 고칠 때마다 뒤 두 자리를 올린다
   document.getElementById("ver").textContent = GAME_VERSION;
@@ -12660,6 +12661,8 @@
   const DEV_TABS = [["요약", "sum"], ["증강", "aug"], ["최근 판", "rec"], ["랭킹", "rank"],
                     ["똥탑 최근 판", "nrec"], ["똥탑 랭킹", "nrank"],
                     ["맨몸 최근 판", "prec"], ["맨몸 랭킹", "prank"]];
+  /* v0.9.43 똥탑등반·맨몸대결은 뺀 모드라 탭 버튼을 숨긴다 (판은 만들어 둔다 — 불러오는 코드가 거기에 채우므로) */
+  const DEV_TABS_HIDDEN = new Set(["nrec", "nrank", "prec", "prank"]);
   let devPanes = {};
   function devInitTabs() {
     const bar = document.getElementById("devTabs");
@@ -12672,6 +12675,7 @@
       pane.dataset.key = key;
       devBody.appendChild(pane);
       devPanes[key] = pane;
+      if (DEV_TABS_HIDDEN.has(key)) continue;
       const btn = document.createElement("button");
       btn.textContent = label;
       btn.dataset.key = key;
