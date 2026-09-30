@@ -1559,7 +1559,7 @@
   const elTitle = document.getElementById("overTitle");
   const coinNote = document.getElementById("coinNote");
 
-  const GAME_VERSION = "v0.9.36";
+  const GAME_VERSION = "v0.9.37";
   /* 제작사 스플래시(bamhobak friends 로고) — 2026-09-20 끔. 다시 켜려면 true */
   const SPLASH_USE = false;   // 코드를 고칠 때마다 뒤 두 자리를 올린다
   document.getElementById("ver").textContent = GAME_VERSION;
@@ -1611,23 +1611,27 @@
   function spdMul() { return vsLike() ? VS_MOVE : job === "levitator" ? 2.5 : 1; }
   /* 평화의 비둘기 — 활짝 펼친 날개에 깃 모양이 물결치고, 꼬리는 부채처럼 갈라진다.
      (흰 실루엣 한 덩어리로 그려야 작게 그려도 비둘기로 읽힌다) */
-  function drawDove(x, y, ph, target) {
+  function drawDove(x, y, ph, target, hdir) {
     const S = 15 * doveMul();
     const flap = Math.sin(ph);                       // -1 ~ 1
+    const doveImg = doveImgNow();
+    if (doveImg) {                                   // v0.9.37 오른쪽 위로 솟구치는 3/4 정면 — 과녁(또는 hdir) 쪽이 왼쪽이면 뒤집는다
+      ctx.save();
+      ctx.translate(x, y);
+      const dx = target ? target.x - x : (hdir || 1), dy = target ? target.y - y : -1;
+      const dir = dx < 0 ? -1 : 1;
+      ctx.scale(dir, 1);
+      ctx.rotate(Math.max(-0.6, Math.min(0.9, (Math.atan2(Math.abs(dx), -dy) - 0.44) * 0.8)));
+      const h = S * 3.2, w = h * (doveImg.width / doveImg.height);
+      ctx.scale(1, 1 - Math.abs(flap) * 0.12);       // 날갯짓처럼 살짝 눌린다
+      ctx.drawImage(doveImg, -w / 2, -h / 2, w, h);
+      ctx.restore();
+      return;
+    }
     ctx.save();
     ctx.translate(x, y);
     const ang = target ? Math.atan2(target.y - y, target.x - x) + Math.PI / 2 : 0;
     ctx.rotate(ang);
-    // 오른쪽으로 날아갈 때는 좌우를 뒤집어 준다
-    const mirror = target && target.x > x ? -1 : 1;
-    const doveImg = doveImgNow();
-    if (doveImg) {                                   // 그림이 있으면 그걸 쓴다
-      const h = S * 3.12, w = h * (doveImg.width / doveImg.height);   // 예전 2.6 에서 1.2배
-      ctx.scale(mirror, 1 - Math.abs(flap) * 0.14);  // 날갯짓처럼 살짝 눌린다
-      ctx.drawImage(doveImg, -w / 2, -h * 0.52, w, h);
-      ctx.restore();
-      return;
-    }
     ctx.fillStyle = "#ffffff";
     ctx.shadowColor = "rgba(0,0,0,.25)";
     ctx.shadowBlur = 4;
@@ -2420,6 +2424,12 @@
   const HELPER_ASPECT = 0.714;   // 이미지 가로/세로
   const HELPER_ASPECT_SPACE = 0.657;
   function helperPic()    { return (inSpace() && helperSpaceImg) ? helperSpaceImg : helperImg; }
+  /* v0.9.37 날아가는 모습 — 예전 정연핑 구도(위로 솟구치며 몸이 오른쪽으로 25°쯤 기운 3/4 정면, Codex). 왼쪽으로 갈 땐 뒤집는다 */
+  let helperSide = null, helperSideS = null;
+  { const a = new Image(); a.onload = () => { helperSide = a; }; a.src = "assets/hamster_fly.png";
+    const b = new Image(); b.onload = () => { helperSideS = b; }; b.src = "assets/space_hamster_fly.png"; }
+  function helperSidePic() { return (inSpace() && helperSideS) ? helperSideS : helperSide; }
+  const HELPER_SIDE_H = 96;
   function helperAspect() { return (inSpace() && helperSpaceImg) ? HELPER_ASPECT_SPACE : HELPER_ASPECT; }
   const HELPER_H = 99;           // 화면에 그릴 높이 (110에서 10% 축소)
   const HELPER_R = 39;           // v0.9.31 43 → 39 (피지컬 쪽으로 — 똥 없애는 증강 살짝 너프)           // 똥을 부수는 반경 (48 → 43, 면적 20% 감소)
@@ -2523,10 +2533,12 @@
   }
   function feverSkyFor(zi) { return FEVER_SKY[zi <= 2 ? 0 : zi <= 5 ? 1 : zi <= 9 ? 2 : zi <= 12 ? 3 : 4]; }
   // 비둘기 펫 그림 (없으면 아래 도안으로 그린다)
-  let doveImgG = null, doveImgS = null, fairyImgS = null;   // v0.9.35 우주 구간엔 우주복 입은 비둘기·선물 요정 (Codex)
-  { const di = new Image(); di.onload = () => { doveImgG = di; }; di.src = "assets/dove.png"; }
-  { const di = new Image(); di.onload = () => { doveImgS = di; }; di.src = "assets/dove_space.png"; }
-  { const fi = new Image(); fi.onload = () => { fairyImgS = fi; }; fi.src = "assets/pet_fairy_space.png"; }
+  let doveImgG = null, doveImgS = null, fairyImgS = null, fairyImgG = null;   // v0.9.35 우주 구간엔 우주복 입은 비둘기·선물 요정 (Codex)
+  /* v0.9.37 날아가는 비둘기·선물 요정은 오른쪽을 보는 옆모습 — 왼쪽으로 갈 땐 뒤집는다 (카드는 정면 그림 그대로) */
+  { const di = new Image(); di.onload = () => { doveImgG = di; }; di.src = "assets/dove_fly.png"; }
+  { const di = new Image(); di.onload = () => { doveImgS = di; }; di.src = "assets/dove_space_fly.png"; }
+  { const fi = new Image(); fi.onload = () => { fairyImgG = fi; }; fi.src = "assets/pet_fairy_fly.png"; }
+  { const fi = new Image(); fi.onload = () => { fairyImgS = fi; }; fi.src = "assets/pet_fairy_space_fly.png"; }
   function doveImgNow() { return (inSpace() && doveImgS) ? doveImgS : doveImgG; }
 
   /* 캔버스 필터(ctx.filter)가 실제로 먹는지 — 사파리(아이폰)에는 아예 없다.
@@ -2798,11 +2810,9 @@
       ctx.save();
       ctx.translate(c.x, c.y);
       if (c.kind === "helper") {
-        const pic = helperPic();
-        if (pic) {
-          const hh = HELPER_H, hw = hh * helperAspect();
-          ctx.drawImage(pic, -hw / 2, -hh / 2, hw, hh);
-        }
+        ctx.restore();
+        drawHelperAt(c.x, c.y, c.vx, c.vy);     // v0.9.37 옆모습
+        continue;
       } else {
         ctx.rotate(c.rot);
         const fp = snackPic(c);
@@ -10042,7 +10052,7 @@
       }
       ctx.restore();
     }
-    for (const pg of vsPigeons) drawDove(pg.x, pg.y + Math.sin(pg.ph) * 4, pg.ph, null);
+    for (const pg of vsPigeons) drawDove(pg.x, pg.y + Math.sin(pg.ph) * 4, pg.ph, null, pg.dir);
   }
 
   /* ---------- 빠른 대전 · 기록 대전 (v0.8.33) ----------
@@ -11052,7 +11062,7 @@
       }
       ctx.restore();
     }
-    for (const pg of vsPigeons) drawDove(pg.x, pg.y + Math.sin(pg.ph) * 4, pg.ph, null);
+    for (const pg of vsPigeons) drawDove(pg.x, pg.y + Math.sin(pg.ph) * 4, pg.ph, null, pg.dir);
   }
   // 위쪽 글자판 아래 — 내가 가진 증강 (횟수제는 남은 횟수)
   function drawPaHud(y) {
@@ -13759,14 +13769,23 @@
     ctx.restore();
   }
 
-  // 원본 그림이 '오른쪽 → 왼쪽' 방향이라, 왼쪽 → 오른쪽으로 날 때만 좌우를 뒤집는다
+  // v0.9.37 옆모습(오른쪽을 봄) — 진행 방향으로 머리를 돌리고, 왼쪽으로 갈 땐 좌우를 뒤집는다
   function drawHelperAt(x, y, vx, vy) {
-    const hh = HELPER_H * helperScale(), hw = hh * helperAspect();
+    const pic = helperSidePic();
     ctx.save();
     ctx.translate(x, y);
-    ctx.rotate(Math.atan2(vx, -vy) * 0.8);   // 진행 방향으로 기울이기
-    if (vx > 0) ctx.scale(-1, 1);            // 오른쪽으로 갈 때 반전
-    ctx.drawImage(helperPic(), -hw / 2, -hh / 2, hw, hh);
+    if (!pic) {                               // 옆모습이 아직이면 정면 그림
+      const hh = HELPER_H * helperScale(), hw = hh * helperAspect();
+      ctx.rotate(Math.atan2(vx, -vy) * 0.8);
+      ctx.drawImage(helperPic(), -hw / 2, -hh / 2, hw, hh);
+      ctx.restore(); return;
+    }
+    const hh = HELPER_SIDE_H * helperScale(), hw = hh * pic.width / pic.height;
+    const dir = vx < 0 ? -1 : 1;
+    ctx.scale(dir, 1);
+    // 그림이 이미 오른쪽 위(약 25°)로 기울어 있으니 진행 방향과의 차이만 조금 더 돌린다
+    ctx.rotate(Math.max(-0.6, Math.min(0.6, (Math.atan2(Math.abs(vx), -vy) - 0.44) * 0.8)));
+    ctx.drawImage(pic, -hw / 2, -hh / 2, hw, hh);
     ctx.restore();
   }
 
@@ -13848,9 +13867,11 @@
       ctx.save();
       ctx.globalAlpha = a;
       ctx.translate(f.x, f.y + Math.sin(f.ph) * 3);
-      if (f.fl === false) ctx.scale(-1, 1);
+      if (f.fl === false) ctx.scale(-1, 1);          // 옆모습은 오른쪽을 본다 — 왼쪽으로 갈 때만 뒤집는다
       ctx.shadowColor = "#ffc2ec"; ctx.shadowBlur = 14;
-      ctx.drawImage((inSpace() && fairyImgS) ? fairyImgS : PET_IMG.gift, -sz / 2, -sz / 2, sz, sz);
+      const fim = (inSpace() && fairyImgS) ? fairyImgS : (fairyImgG || PET_IMG.gift);
+      const fw = sz * 1.1 * Math.sqrt(fim.width / fim.height), fh = fw * fim.height / fim.width;
+      ctx.drawImage(fim, -fw / 2, -fh / 2, fw, fh);
       ctx.restore();
       if (f.st === 0 && Math.random() < 0.5) particles.push({ x: f.x, y: f.y, vx: (Math.random() - .5) * 40, vy: 20,
         life: .4, t: 0, c: Math.random() < .5 ? "#ffd6f5" : "#fff3a8", r: 1.5 + Math.random() * 2 });
