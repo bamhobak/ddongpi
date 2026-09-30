@@ -847,7 +847,9 @@
   #homeJobs #jobList.car::before, #homeJobs #jobList.car::after { content: ""; flex: 0 0 25%; }   /* 첫·끝 카드도 가운데 올 수 있게 */
   #homeJobs #jobList.car .augCard { flex: 0 0 50%; scroll-snap-align: center; transition: none; padding: 6px 0 12px; gap: 8px; will-change: transform; }
   #pgHome #jobList.car img.ic { height: clamp(104px, 23vh, 180px); }
-  #homeJobs #jobList.car .augCard .nm2 { font-size: 17px; }
+  #homeJobs #jobList.car .augCard .nm2, #homeJobs #jobList.car .augCard.sel .nm2 { font-size: 18px; color: #fff; text-shadow: 0 2px 0 #4a2a10, 0 0 6px rgba(40,20,0,.75), 1px 0 0 #4a2a10, -1px 0 0 #4a2a10, 0 -1px 0 #4a2a10; }
+  #homeJobs #jobList.car .augCard, #homeJobs #jobList.car .augCard.sel { border-image: none; border-color: transparent; outline: none; background: none; box-shadow: none; filter: none; }   /* v0.9.56 카드 바탕 없이 캐릭터만 */
+  #homeJobs #jobList.car img.ic { filter: drop-shadow(0 5px 5px rgba(30,20,10,.35)); }
   #homeJobs .carArrow {
     position: absolute; top: 50%; transform: translateY(-50%); z-index: 2; width: 36px; height: 56px; padding: 0;
     border-radius: 12px; background: rgba(255,248,230,.94); border: 2px solid #8a5a2b; box-shadow: 0 3px 0 #6b4520;
@@ -1758,7 +1760,7 @@
   const elTitle = document.getElementById("overTitle");
   const coinNote = document.getElementById("coinNote");
 
-  const GAME_VERSION = "v0.9.55";
+  const GAME_VERSION = "v0.9.56";
   /* 제작사 스플래시(bamhobak friends 로고) — 2026-09-20 끔. 다시 켜려면 true */
   const SPLASH_USE = false;   // 코드를 고칠 때마다 뒤 두 자리를 올린다
   document.getElementById("ver").textContent = GAME_VERSION;
@@ -7111,7 +7113,7 @@
   function carInfo() {                       // 점 · 화살표 · 특징
     const cards = [...jobList.children], i = cards.findIndex(c => c.dataset.job === job);
     [...carDots.children].forEach((d, k) => d.classList.toggle("on", k === i));
-    carL.disabled = i <= 0; carR.disabled = i < 0 || i >= cards.length - 1;
+    carL.disabled = carR.disabled = cards.length < 2;   // v0.9.56 끝에서 더 가면 반대쪽 끝으로 돈다
     homeTraits.innerHTML = "";
     for (const line of jobTraitLines(JOBS[job])) { const d = document.createElement("div"); d.textContent = line; homeTraits.appendChild(d); }
   }
@@ -7153,13 +7155,34 @@
     jobList.scrollTo({ left: carLeft(c), behavior: "smooth" });
   }
   function carStep(d) {
-    const cards = [...jobList.children], i = cards.findIndex(c => c.dataset.job === job), n = cards[i + d];
+    const cards = [...jobList.children], i = cards.findIndex(c => c.dataset.job === job), n = cards[(i + d + cards.length) % cards.length];
     if (n) { beep(900, .06, "square", .04); carGo(n.dataset.job); }
   }
+  function carFit() {                        // v0.9.56 설명 칸 높이를 가장 긴 캐릭터에 맞춰 둔다 (넘길 때 들썩이지 않게)
+    if (!homeTraits.offsetWidth) return;
+    const keep = job; let mx = 0;
+    homeTraits.style.minHeight = "";
+    for (const c of jobList.children) { job = c.dataset.job; carInfo(); mx = Math.max(mx, homeTraits.offsetHeight); }
+    job = keep; carInfo();
+    if (mx) homeTraits.style.minHeight = mx + "px";
+  }
+  let carTx = null;                          // 끝 카드에서 더 밀면 반대쪽 끝으로
+  jobList.addEventListener("touchstart", e => {
+    if (!jobList.classList.contains("car")) { carTx = null; return; }
+    const cards = [...jobList.children], i = cards.findIndex(c => c.dataset.job === job);
+    carTx = { x: e.touches[0].clientX, y: e.touches[0].clientY, i, n: cards.length };
+  }, { passive: true });
+  jobList.addEventListener("touchend", e => {
+    if (!carTx) return;
+    const t = e.changedTouches[0], dx = t.clientX - carTx.x, dy = t.clientY - carTx.y, c = carTx; carTx = null;
+    if (Math.abs(dx) < 40 || Math.abs(dx) < Math.abs(dy) || c.n < 2) return;
+    if (c.i === c.n - 1 && dx < 0) carStep(1);
+    else if (c.i === 0 && dx > 0) carStep(-1);
+  }, { passive: true });
   carL.addEventListener("click", () => carStep(-1));
   carR.addEventListener("click", () => carStep(1));
   jobList.addEventListener("scroll", () => { cancelAnimationFrame(carRaf); carRaf = requestAnimationFrame(() => carShape(true)); }, { passive: true });
-  if (window.ResizeObserver) new ResizeObserver(() => { if (jobList.classList.contains("car")) carCenter(); }).observe(jobList);   // 가려져 있다 보일 때·화면 돌릴 때
+  if (window.ResizeObserver) new ResizeObserver(() => { if (jobList.classList.contains("car")) { carCenter(); carFit(); } }).observe(jobList);   // 가려져 있다 보일 때·화면 돌릴 때
   function renderPick() {
     if (jobLocked()) job = "bangul";          // 맨몸대결·똥탑등반 — 탭 글자부터 방울이로
     if (petLocked()) { pet = "none"; petView = "none"; }
@@ -7197,7 +7220,7 @@
       }
       document.getElementById("pickDesc").textContent = lockJ
         ? MODES[gameMode].nm + "은 방울이만 뛸 수 있어요 (비누방울 없이)" : "";
-      if (car) { carDots.innerHTML = ""; for (const _ of jobList.children) carDots.appendChild(document.createElement("i")); carInfo(); carCenter(); }
+      if (car) { carDots.innerHTML = ""; for (const _ of jobList.children) carDots.appendChild(document.createElement("i")); carInfo(); carCenter(); carFit(); }
     } else {
       if (!PETS[petView]) petView = pet;
       for (const id in PETS) {
