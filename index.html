@@ -1457,7 +1457,7 @@
   if (ICON_RE) {
     const P = CanvasRenderingContext2D.prototype, fill0 = P.fillText, stroke0 = P.strokeText;
     const cache = new Map();
-    const split = s => {                     // "🔥 뚜니핑" → [{t:"🔥", i:3}, {t:" 뚜니핑"}] (이모지 없으면 null)
+    const split = s => {                     // "🔥 간식" → [{t:"🔥", i:3}, {t:" 간식"}] (이모지 없으면 null)
       let r = cache.get(s);
       if (r !== undefined) return r;
       r = null; ICON_RE.lastIndex = 0;
@@ -1559,7 +1559,7 @@
   const elTitle = document.getElementById("overTitle");
   const coinNote = document.getElementById("coinNote");
 
-  const GAME_VERSION = "v0.9.34";
+  const GAME_VERSION = "v0.9.35";
   /* 제작사 스플래시(bamhobak friends 로고) — 2026-09-20 끔. 다시 켜려면 true */
   const SPLASH_USE = false;   // 코드를 고칠 때마다 뒤 두 자리를 올린다
   document.getElementById("ver").textContent = GAME_VERSION;
@@ -1620,6 +1620,7 @@
     ctx.rotate(ang);
     // 오른쪽으로 날아갈 때는 좌우를 뒤집어 준다
     const mirror = target && target.x > x ? -1 : 1;
+    const doveImg = doveImgNow();
     if (doveImg) {                                   // 그림이 있으면 그걸 쓴다
       const h = S * 3.12, w = h * (doveImg.width / doveImg.height);   // 예전 2.6 에서 1.2배
       ctx.scale(mirror, 1 - Math.abs(flap) * 0.14);  // 날갯짓처럼 살짝 눌린다
@@ -1824,11 +1825,11 @@
   let job = JOB_DEFAULT;
   try { const j = localStorage.getItem(LS_JOB); if (jobOk(j)) job = j; } catch (e) {}
   /* ---------- 펫 ----------
-     직업과 별개로 하나를 데리고 나간다. 전에는 증강(정연핑·갤러그)이거나 직업 능력(도박사의 비둘기)
+     직업과 별개로 하나를 데리고 나간다. 전에는 증강(뿌잉·갤러그)이거나 직업 능력(도박사의 비둘기)
      이었던 것들 — 판 내내 따라다니며 제 몫을 한다. 펫에서 이어지는 히든 증강은 그 펫이 있을 때만 나온다. */
   const PETS = {
     none:   { nm: "없음",   ic: "🚫", ds: "펫 없이 혼자 뛴다" },
-    helper: { nm: "정연핑", ic: "🦸", img: "assets/helper.png",
+    helper: { nm: "뿌잉", ic: "🐹", img: "assets/hamster.png",
               ds: "때때로 날아올라 지나간 자리의 똥을 부순다" },
     galaga: { nm: "갤러그", ic: "🚀", img: "assets/pet_galaga.png",
               ds: "우주선이 땅에서 총알을 쏘아 올린다" },
@@ -2406,18 +2407,18 @@
     loadSheetFrames(sp, f + "_space_swim_sheet.webp", 7, 49, true);
   }
 
-  // 도와줘 정연핑 — 아래에서 위로 날아가며 지나간 자리의 똥을 부순다
+  // 도와줘 뿌잉 — 아래에서 위로 날아가며 지나간 자리의 똥을 부순다
   let helperImg = null, helperSpaceImg = null;
   {
     const img = new Image();
     img.onload = () => { helperImg = img; };
-    img.src = "assets/helper.png";
+    img.src = "assets/hamster.png";          // v0.9.35 로켓 햄스터 뿌잉 (Codex)
     const si = new Image();
     si.onload = () => { helperSpaceImg = si; };
-    si.src = "assets/space_helper.png";
+    si.src = "assets/space_hamster.png";
   }
-  const HELPER_ASPECT = 0.793;   // 이미지 가로/세로
-  const HELPER_ASPECT_SPACE = 0.771;
+  const HELPER_ASPECT = 0.714;   // 이미지 가로/세로
+  const HELPER_ASPECT_SPACE = 0.657;
   function helperPic()    { return (inSpace() && helperSpaceImg) ? helperSpaceImg : helperImg; }
   function helperAspect() { return (inSpace() && helperSpaceImg) ? HELPER_ASPECT_SPACE : HELPER_ASPECT; }
   const HELPER_H = 99;           // 화면에 그릴 높이 (110에서 10% 축소)
@@ -2425,23 +2426,26 @@
   function helperScale() { return aug.helperRush ? 1.2 : 1; } // 히든 '대폭주' 시 1.2배 (1.3에서 완화)
   let helpers = [];
   let helperTimer = 0;
-  let fetchers = [];        // 배고픈 정연핑 — 아이템을 대신 먹으러 가는 정연핑
+  let fetchers = [];        // 배고픈 뿌잉 — 아이템을 대신 먹으러 가는 뿌잉
   const FETCH_DELAY = 1.2;  // 아이템이 보이고 몇 초 뒤에 출발하는지
   const FETCH_SPEED = 714;   // 840 에서 15% 감속
   let helperQueue = 0;      // 이번 차례에 아직 안 나온 인원
   let helperGap = 0;        // 다음 한 명까지 남은 시간
-  const FETCH_REST = 2;     // 배고픈 정연핑이 다녀온 뒤 쉬는 시간(초)
+  const FETCH_REST = 2;     // 배고픈 뿌잉이 다녀온 뒤 쉬는 시간(초)
   let fetchRest = 0;        // 남은 쉬는 시간
 
-  // 뚜니핑 타임에는 똥 이모지 대신 이 이미지가 떨어진다
-  let feverPoop = null, feverPoopSpace = null;
-  {
-    const img = new Image();
-    img.onload = () => { feverPoop = img; };
-    img.src = "assets/poop_fever.png";
-    const si = new Image();
-    si.onload = () => { feverPoopSpace = si; };
-    si.src = "assets/space_poop.png";
+  // 간식 타임에는 똥 이모지 대신 이 이미지가 떨어진다
+  /* v0.9.35 간식(Codex) — 뼈다귀·개껌·육포가 섞여 쏟아지고, 대왕은 왕뼈다귀. 우주에서도 같은 그림 */
+  const SNACK_IMG = [], SNACK_FILES = ["snack_bone", "snack_chew", "snack_jerky"];
+  let snackKing = null;
+  for (const f of SNACK_FILES) { const im = new Image(); im.onload = () => SNACK_IMG.push(im); im.src = "assets/" + f + ".png"; }
+  { const im = new Image(); im.onload = () => { snackKing = im; }; im.src = "assets/snack_king.png"; }
+  function snackPic(it) {
+    if (it && it.giant && snackKing) return snackKing;
+    if (!SNACK_IMG.length) return null;
+    if (!it) return SNACK_IMG[0];
+    if (it.snk === undefined) it.snk = Math.floor(Math.random() * 3);
+    return SNACK_IMG[it.snk % SNACK_IMG.length];
   }
 
   /* ---------- 시작 화면 인트로 ----------
@@ -2457,7 +2461,7 @@
      아직 안 불러졌으면 예전처럼 글자 이모지로 그린다.
      v0.8.10 코인·별·초승달·보름달·우산·하트·물방울은 방울이 그림체로 새로 그렸다(Codex, 얼굴 없이 —
      얼굴 달린 똥과 한눈에 갈리게). 3·5코인은 금화 그림의 색만 바꾼 것.
-     v0.8.11 휴지(뚜니핑 타임)도 같은 그림체로. v0.8.12 점술가 아이템(떨어지는 것·예언 막대 아이콘)은 포춘쿠키 대신 수정 구슬. 똥은 그대로. */
+     v0.8.11 휴지(간식 타임)도 같은 그림체로. v0.8.12 점술가 아이템(떨어지는 것·예언 막대 아이콘)은 포춘쿠키 대신 수정 구슬. 똥은 그대로. */
   const ITEM_IMG = {};
   for (const [type, file] of [["moon", "crescent_moon"], ["fullmoon", "full_moon"], ["paper", "roll_of_paper"],
                               ["umbrella", "umbrella"], ["star", "star"], ["heart", "red_heart"],
@@ -2506,11 +2510,11 @@
     bi.onload = () => { ZONE_IMG[k] = bi; };
     bi.src = "assets/bg/zone" + (zi + 1 < 10 ? "0" : "") + (zi + 1) + ".webp";
   }
-  // 뚜니핑 타임 하늘 — 땅 위에서는 황금빛, 우주에서는 보랏빛 워프 (v0.7.98 방울이 그림체로 새로 — OpenAI)
-  /* v0.8.23 뚜니핑 타임 하늘을 새로 — 높이에 따라 다섯 장 (Codex, 기존 디자인과 무관하게 '보너스 폭주' 느낌으로).
+  // 간식 타임 하늘 — 땅 위에서는 황금빛, 우주에서는 보랏빛 워프 (v0.7.98 방울이 그림체로 새로 — OpenAI)
+  /* v0.8.23 간식 타임 하늘을 새로 — 높이에 따라 다섯 장 (Codex, 기존 디자인과 무관하게 '보너스 폭주' 느낌으로).
      1 땅 초반(0~2 지대) 파스텔 무지개 빛살 · 2 땅 높은 곳(3~5) 파티 하늘 · 3 우주 낮은 곳(6~9) 빛의 속도 워프 ·
      4 우주 높은 곳(10~12) 성운 파티 · 5 블랙홀 지대부터(13~) 무지개 고리 터널.
-     뚜니핑 타임엔 레벨 시계가 멈춰 지대가 안 바뀌므로 도중에 그림이 갈릴 일은 없다. */
+     간식 타임엔 레벨 시계가 멈춰 지대가 안 바뀌므로 도중에 그림이 갈릴 일은 없다. */
   const FEVER_SKY = [];
   for (let k = 0; k < 5; k++) {
     const fi = new Image();
@@ -2519,8 +2523,11 @@
   }
   function feverSkyFor(zi) { return FEVER_SKY[zi <= 2 ? 0 : zi <= 5 ? 1 : zi <= 9 ? 2 : zi <= 12 ? 3 : 4]; }
   // 비둘기 펫 그림 (없으면 아래 도안으로 그린다)
-  let doveImg = null;
-  { const di = new Image(); di.onload = () => { doveImg = di; }; di.src = "assets/dove.png"; }
+  let doveImgG = null, doveImgS = null, fairyImgS = null;   // v0.9.35 우주 구간엔 우주복 입은 비둘기·선물 요정 (Codex)
+  { const di = new Image(); di.onload = () => { doveImgG = di; }; di.src = "assets/dove.png"; }
+  { const di = new Image(); di.onload = () => { doveImgS = di; }; di.src = "assets/dove_space.png"; }
+  { const fi = new Image(); fi.onload = () => { fairyImgS = fi; }; fi.src = "assets/pet_fairy_space.png"; }
+  function doveImgNow() { return (inSpace() && doveImgS) ? doveImgS : doveImgG; }
 
   /* 캔버스 필터(ctx.filter)가 실제로 먹는지 — 사파리(아이폰)에는 아예 없다.
      있는 척만 하는 브라우저도 있을 수 있어, 검은 점에 invert 를 걸어 하얘지는지 직접 본다. */
@@ -2636,7 +2643,7 @@
   }   // 그림에 여백이 있어 글자 이모지와 같은 덩치가 되게 살짝 키운다
 
   let introT = 0, introPoops = [], introSpawn = 0, introSuit = false, introBoom = 0;
-  let introCameo = [], introCameoT = 5;     // 이따금 지나가는 정연핑·뚜니핑
+  let introCameo = [], introCameoT = 5;     // 이따금 지나가는 뿌잉·간식
 
   function introUpdate(dt, now) {
     introT += dt;
@@ -2675,7 +2682,7 @@
       if (q.y - q.r > H + 50) introPoops.splice(i, 1);
     }
 
-    /* 아주 가끔 정연핑이 아래에서 위로 날아가고, 뚜니핑 낙하물이 무리지어 지나간다 */
+    /* 아주 가끔 뿌잉이 아래에서 위로 날아가고, 간식 낙하물이 무리지어 지나간다 */
     introCameoT -= dt;
     if (introCameoT <= 0) {
       introCameoT = 7 + Math.random() * 6;
@@ -2684,7 +2691,7 @@
                           y: H + 90, vx: (Math.random() - .5) * 90, vy: -(430 + Math.random() * 180),
                           rot: 0 });
       } else {
-        const n = 4 + Math.floor(Math.random() * 4);      // 뚜니핑 낙하물 한 무리
+        const n = 4 + Math.floor(Math.random() * 4);      // 간식 낙하물 한 무리
         for (let k = 0; k < n; k++) {
           introCameo.push({ kind: "fever", x: 24 + Math.random() * Math.max(1, W - 48),
                             y: -60 - k * (60 + Math.random() * 70), vx: (Math.random() - .5) * 60,
@@ -2786,7 +2793,7 @@
       ctx.restore();
     }
 
-    // 카메오 — 정연핑과 뚜니핑 낙하물
+    // 카메오 — 뿌잉과 간식 낙하물
     for (const c of introCameo) {
       ctx.save();
       ctx.translate(c.x, c.y);
@@ -2798,7 +2805,7 @@
         }
       } else {
         ctx.rotate(c.rot);
-        const fp = (inSpace() && feverPoopSpace) ? feverPoopSpace : feverPoop;
+        const fp = snackPic(c);
         if (fp) ctx.drawImage(fp, -c.r, -c.r, c.r * 2, c.r * 2);
       }
       ctx.restore();
@@ -2899,7 +2906,7 @@
                      angry: 0.8, laser: 0.9, fpick: 3.4, giant: 2.4, magnet: 0.55,
                      dodge: 0.9, boing: 0.9, wakboom: 0.9, reroll: 0.7,
                      coin: 1.8 };
-  /* 꼬리가 긴 녹음을 짧게 잘라 쓴다 (초 단위). 뚜니핑 줍는 소리는 초당 여러 번
+  /* 꼬리가 긴 녹음을 짧게 잘라 쓴다 (초 단위). 간식 줍는 소리는 초당 여러 번
      겹쳐 울리므로, 1초를 다 울리게 두면 소리가 뭉개진다. 끝에서 부드럽게 잦아든다. */
   const SFX_CUT = { fpick: 0.30 };
   const SFX_VOL = 0.55;              // 전체 크기
@@ -2979,7 +2986,7 @@
   /* ---------- 배경음악 ----------
      곡 하나가 수백KB라 필요할 때 한 곡씩 받는다 (음소거면 아예 받지 않는다).
      대기화면·게임오버는 menu, 게임 중은 play, 우주는 space, 블랙홀은 blackhole,
-     뚜니핑 타임에는 fever.
+     간식 타임에는 fever.
 
      한 곡을 두 벌 만들어 두고, 끝나기 3.5초 전부터 다른 벌을 처음부터 겹쳐 튼다.
      브라우저의 loop 로 그냥 되감으면 mp3 앞뒤 여백만큼 소리가 비고 마디도 뚝 끊기는데,
@@ -3194,7 +3201,7 @@
     other.volume = V * (1 - k);
     if (left <= 0.06) { bgmFadeOut(bgmCur, 0.15); bgmCur = other; }
   }
-  /* 직업마다 제 곡 — 땅 위에서 뛸 때 흐른다. 우주·블랙홀·뚜니핑은 그 자리의 곡이 앞선다.
+  /* 직업마다 제 곡 — 땅 위에서 뛸 때 흐른다. 우주·블랙홀·간식은 그 자리의 곡이 앞선다.
      쉬었음 청년은 원래 곡(play) 그대로. */
   const JOB_BGM = { fortune: "fortune", levitator: "levitator", fit: "fit", powerj: "powerj",
                     powerp2: "powerp2", powerp: "powerp", bangul: "bangul" };
@@ -3243,25 +3250,25 @@
   /* ---------- 🌙 증강 ----------
      달을 먹으면 게임이 멈추고 3개 중 하나를 고른다. 같은 것을 또 고르면 효과가 쌓인다. */
   const aug = {
-    feverBonus: 0,      // 뚜니핑 타임 추가 시간(ms)
+    feverBonus: 0,      // 간식 타임 추가 시간(ms)
     starMul: 1,         // 별 점수 배율
     timeMul: 1,         // 생존 점수 배율
-    feverScoreMul: 1,   // 뚜니핑 낙하물 점수 배율
+    feverScoreMul: 1,   // 간식 낙하물 점수 배율
     fallMul: 1,         // 낙하 속도 배율
     galaga: 0,          // 갤러그 우주선 수 (펫이면 1)
     hitboxMul: 1,       // 피격 판정 + 캐릭터 크기 배율
     poopMul: 1,         // 똥 크기 배율
     itemRateMul: 1,     // 아이템 등장 간격 배율(작을수록 자주)
-    feverRateMul: 1,    // 뚜니핑 낙하 간격 배율(작을수록 많이 쏟아짐)
-    giant: 0,           // 대왕 뚜니핑 등장 스택
+    feverRateMul: 1,    // 간식 낙하 간격 배율(작을수록 많이 쏟아짐)
+    giant: 0,           // 왕뼈다귀 등장 스택
     magnet: 0,          // 아이템 자석 반경 (1회 한정 증강)
-    helper: 0,          // 정연핑 인원 (펫이면 1)
-    helperRush: false,  // 히든: 정연핑 대폭주 (크기 확대)
-    hungry: false,      // 히든: 배고픈 정연핑 (아이템을 대신 먹어준다)
+    helper: 0,          // 뿌잉 인원 (펫이면 1)
+    helperRush: false,  // 히든: 뿌잉 대폭주 (크기 확대)
+    hungry: false,      // 히든: 배고픈 뿌잉 (아이템을 대신 먹어준다)
     steelUmb: false,    // 히든: 강철 우산 (방패가 없으면 6.5초마다 하나 생긴다)
     starburst: false,   // 히든: 별똥별 (별을 먹으면 화면의 똥이 전부 사라진다)
-    blackhole: false,   // 히든: 블랙홀 (자석 강화 + 뚜니핑 낙하물도 조금 끌어당김)
-    legion: false,      // 히든: 대왕 뚜니핑 군단 (대왕 등장·점수 강화)
+    blackhole: false,   // 히든: 블랙홀 (자석 강화 + 간식 낙하물도 조금 끌어당김)
+    legion: false,      // 히든: 왕뼈다귀 군단 (대왕 등장·점수 강화)
     doveWhat: false,    // 히든: 비둘기 무엇? (비둘기 펫이 세지고 자주 나온다)
     doveFlock: 0,       // 비둘기 떼 — 한 번 출격에 더 나가는 마리 수
     doveFreq: 1,        // 귀소 본능 — 출격 거리 배율 (작을수록 자주)
@@ -3278,7 +3285,7 @@
 
   /* 같은 증강을 또 고를 때 효과를 조금씩 덜 준다.
      go() 는 augCount 를 올리기 전에 불리므로, 여기서 읽는 값이 '이전까지 고른 횟수'다.
-     첫 획득은 1배, 두 번째 0.85배, 세 번째 0.72배… (정연핑 계열은 적용하지 않는다) */
+     첫 획득은 1배, 두 번째 0.85배, 세 번째 0.72배… (뿌잉 계열은 적용하지 않는다) */
   function dim(id) { return Math.pow(0.85, augCount[id] || 0); }
 
   // 증강별 보유 상한 (지정이 없으면 5개, once 는 1개)
@@ -3287,19 +3294,19 @@
   function nameOf(a) { return a.nmFn ? a.nmFn() : a.nm; }
 
   const AUGMENTS = [
-    { id: "fever_time", ic: "🔥", nm: "뚜니핑 연장", ds: "뚜니핑 타임 증가",
+    { id: "fever_time", ic: "🔥", nm: "간식 연장", ds: "간식 타임 증가",
       go: () => { aug.feverBonus += 1500; } },   // 먹을 때마다 +1.5초, 감쇠 없음
     { id: "star50",     ic: "⭐", nm: "별빛 증폭",   ds: "별 점수 증가",
       go: () => { aug.starMul += 0.25 * dim("star50"); } },
     { id: "time2x",     ic: "⏱️", nm: "시간 가속",   ds: "생존 점수 증가",
       go: () => { aug.timeMul *= 1 + 0.5 * dim("time2x"); } },
-    { id: "fever50",    ic: "🌙", nm: "뚜니핑 대박", ds: "뚜니핑 낙하물 점수 증가",
+    { id: "fever50",    ic: "🌙", nm: "간식 대박", ds: "간식 낙하물 점수 증가",
       go: () => { aug.feverScoreMul += 0.20; } },   // 먹을 때마다 +20%, 감쇠 없음
     { id: "slow",       ic: "🐢", nm: "느린 하늘",   ds: "똥이 느리게 떨어진다",
       go: () => { aug.fallMul *= 1 - 0.12 * dim("slow"); } },
-    { id: "small",      ic: "🎯", nm: "마운자로 이재", ds: "몸집이 작아진다",
+    { id: "small",      ic: "🎯", nm: "다이어트 성공", ds: "몸집이 작아진다",
       cond: () => job !== "fit",   // 헬스걸은 벌크업이 정체성 — 마운자로를 맞지 않는다
-      nmFn: () => "마운자로 " + ((augCount["small"] || 0) + 1) + "단계 이재",
+      nmFn: () => "다이어트 " + ((augCount["small"] || 0) + 1) + "단계",
       go: () => { aug.hitboxMul *= 1 - 0.12 * dim("small"); } },
     { id: "tinypoop",   ic: "🫧", nm: "작아진 똥",   ds: "똥이 작아진다",
       go: () => { aug.poopMul *= 1 - 0.12 * dim("tinypoop"); } },
@@ -3309,7 +3316,7 @@
       noCount: true,              // 방패 수는 화면에 우산으로 보이니 보유 뱃지는 생략
       go: () => { shields = Math.min(shields + 3, 10); } },   // 증강으로는 최대 10개까지
     /* ── 펫 전용 증강 — 그 펫을 데리고 있을 때만 후보에 나온다 ── */
-    { id: "helper",     ic: "🦸", nm: "도와줘 정연핑", ds: "정연핑이 한 명 더 날아온다",
+    { id: "helper",     ic: "🐹", nm: "도와줘 뿌잉", ds: "뿌잉이 한 마리 더 날아온다",
       max: 4, cond: () => pet === "helper",                    // 펫 1명 + 증강 4 = 최대 5명
       go: () => { aug.helper++; helperTimer = Math.min(helperTimer, 0.6); } },
     { id: "galaga",     ic: "🚀", nm: "갤러그 편대", ds: "우주선이 한 대 더 늘어난다 · 늘어날수록 각자 느긋해진다",
@@ -3321,11 +3328,11 @@
     { id: "doveHome",   ic: "📯", nm: "귀소 본능", ds: "비둘기가 더 자주 출격한다",
       max: 3, cond: () => pet === "dove",
       go: () => { aug.doveFreq *= 1 - 0.2 * dim("doveHome"); } },   // 80m → 64m → 53m …
-    { id: "helperRush", ic: "💥", nm: "정연핑 대폭주", ds: "정연핑!!!?? 무엇!!?!",
-      hidden: true, once: true, cond: () => pet === "helper" && aug.helper >= 2,   // 정연핑 2명 이상
+    { id: "helperRush", ic: "💥", nm: "뿌잉 대폭주", ds: "뿌잉!!!?? 무엇!!?!",
+      hidden: true, once: true, cond: () => pet === "helper" && aug.helper >= 2,   // 뿌잉 2명 이상
       go: () => { aug.helperRush = true; } },
-    { id: "hungry",     ic: "😋", nm: "마운자로를 이겨낸 정연핑", ds: "정연핑이 아이템을 대신 먹어준다",
-      hidden: true, once: true, cond: () => pet === "helper" && aug.magnet > 0,   // 정연핑 펫 + 자석
+    { id: "hungry",     ic: "😋", nm: "먹보 뿌잉", ds: "뿌잉이 아이템을 대신 먹어준다",
+      hidden: true, once: true, cond: () => pet === "helper" && aug.magnet > 0,   // 뿌잉 펫 + 자석
       go: () => { aug.hungry = true; } },
     { id: "roid",       ic: "💉", nm: "스테로이드 과다 복용", ds: "6초 동안 몸이 2배로 부풀고, 모든 똥을 튕겨낸다",
       max: 99, noCount: true, cond: () => job === "fit" && level >= 7,   // 헬스걸 전용 — 우산 다발 자리
@@ -3338,13 +3345,13 @@
       hidden: true, once: true,
       cond: () => augCount["umbrella3"] > 0 && job !== "fit",   // 헬스걸은 하트 자동재생이 돼버려 제외
       go: () => { aug.steelUmb = true; shieldTimer = UMB_SEC; } },
-    { id: "starburst",  ic: "🌠", nm: "별핑별",     ds: "별이 하늘의 똥을 쓸어버린다",
+    { id: "starburst",  ic: "🌠", nm: "별똥별",     ds: "별이 하늘의 똥을 쓸어버린다",
       hidden: true, once: true, cond: () => augCount["star50"] > 0,
       go: () => { aug.starburst = true; } },
-    { id: "blackhole",  ic: "🕳️", nm: "블랙홀",     ds: "끌어당기는 힘이 더 세지며, 뚜니핑도 약간의 영향을 받는다",
+    { id: "blackhole",  ic: "🕳️", nm: "블랙홀",     ds: "끌어당기는 힘이 더 세지며, 간식도 약간의 영향을 받는다",
       hidden: true, once: true, cond: () => aug.magnet > 0,
       go: () => { aug.blackhole = true; aug.magnet = 390; } },   // 자석 220 → 390 으로 확장
-    { id: "legion",     ic: "🌝", nm: "대왕 뚜니핑 군단", ds: "대왕이 떼로 몰려온다",
+    { id: "legion",     ic: "🌝", nm: "왕뼈다귀 군단", ds: "왕뼈다귀가 떼로 몰려온다",
       hidden: true, once: true, cond: () => aug.giant > 0,
       go: () => { aug.legion = true; } },
     { id: "magnet",     ic: "🧲", nm: "자석",       ds: "근처의 아이템이 끌려온다",
@@ -3357,9 +3364,9 @@
     { id: "lucky",      ic: "🍀", nm: "행운",       ds: "아이템이 더 자주 등장",
       // 첫 개는 +15%, 겹칠수록 0.85배씩 덜 먹는다 (5개 누적 +69%, 실측 +65%)
       go: () => { aug.itemRateMul /= 1 + 0.15 * dim("lucky"); } },
-    { id: "giant",      ic: "🌝", nm: "대왕 뚜니핑", ds: "대왕 뚜니핑 두둥등장",
+    { id: "giant",      ic: "🌝", nm: "왕뼈다귀", ds: "왕뼈다귀 두둥등장",
       once: true, go: () => { aug.giant = 1; } },
-    { id: "downpour",   ic: "🌧️", nm: "뚜니핑 폭우", ds: "뚜니핑이 더 많이 쏟아진다",
+    { id: "downpour",   ic: "🌧️", nm: "간식 폭우", ds: "간식이 더 많이 쏟아진다",
       go: () => { aug.feverRateMul = 1 / (1 / aug.feverRateMul + 0.20); } },   // 먹을 때마다 양 +20%, 감쇠 없음
     { id: "angryUmb",   ic: "💢", nm: "성난 우산",   ds: "방패가 깨질 때 우산이 터져 주변을 크게 쓸어버린다",
       hidden: true, once: true,
@@ -3402,7 +3409,7 @@
     { id: "wak",        ic: "👊", nm: "고무고무노 피스톨", ds: "총알이 주먹이 된다. 맞은 똥은 튕겨 날아가 처음 부딪힌 똥과 함께 터진다",
       hidden: true, once: true, cond: () => pet === "galaga" && aug.galaga >= 2,   // 갤러그 2대 이상
       go: () => { aug.wak = true; } },
-    { id: "clone",      ic: "👯", nm: "벼랑 끝 분신술", ds: "작은 이재가 날아가 똥과 함께 자폭한다",
+    { id: "clone",      ic: "👯", nm: "벼랑 끝 분신술", ds: "작은 분신이 날아가 똥과 함께 자폭한다",
       hidden: true, once: true,
       cond: () => level >= 7 && (dirtJob() ? dirt >= DIRT_HIT * 2 : lives <= 2),
       go: () => { aug.clone = true; cloneTimer = 1.5; } },
@@ -3487,7 +3494,7 @@
     augScreen.classList.add("hidden");
     state = STATE.PLAY;
     inputHoldUntil = performance.now() + 350;   // 방금 누른 자리로 캐릭터가 순간이동하지 않게
-    /* 증강을 고르는 동안 게임은 멈춰 있었지만 뚜니핑 타임·무적 시간은
+    /* 증강을 고르는 동안 게임은 멈춰 있었지만 간식 타임·무적 시간은
        실제 시계로 재고 있어서 그대로 두면 고민한 만큼 깎여 나간다.
        멈춰 있던 시간만큼 마감 시각을 뒤로 밀어 원래 남은 시간을 돌려준다. */
     const paused = performance.now() - augPauseAt;
@@ -3497,7 +3504,7 @@
     // 멈춰 있던 똥이 코앞에 있을 수 있으니 0.5초 무적으로 빠져나갈 틈을 준다
     invUntil = Math.max(invUntil, performance.now() + 500);
     /* '준비' 한 박자 — 카드를 누르던 손가락을 옮길 틈. 일시정지를 풀 때의 3-2-1 과 같은 장치를 짧게(0.6초) 쓴다.
-       멈춘 동안의 시간은 finishResume 이 무적·뚜니핑 마감에서 빼 준다 */
+       멈춘 동안의 시간은 finishResume 이 무적·간식 마감에서 빼 준다 */
     state = STATE.PAUSE;
     pauseAt = performance.now();
     resumeCountEnd = pauseAt + READY_MS;
@@ -3645,7 +3652,7 @@
      2026-09-22 사용자 지시로 모든 직업에서 뺐다 (v0.7.94). 1단계 배경 맨 아래의 잔디 언덕이
      출발점 역할을 한다. */
   function groundless() { return state !== STATE.READY; }
-  let levelTime = 0;               // 레벨이 오르는 시계 — 뚜니핑 타임에는 멈춰 있다
+  let levelTime = 0;               // 레벨이 오르는 시계 — 간식 타임에는 멈춰 있다
   const LEVEL_SEC = 13;            // 레벨 한 칸의 길이(초). 지대 하나의 길이이기도 하다
   const LEVEL_SEC_NOITEM = 8;      // 노템전은 레벨이 8초 — 패턴 하나가 8초
   // 시작 화면의 배경 여행(인트로)은 늘 13초 기준 — 판이 돌 때만 노템전 8초
@@ -3662,7 +3669,7 @@
   let shields = 0;                 // 남은 방패 수 — 우산 아이템은 최대 1, 증강으로만 여러 개
   const UMB_SEC = 6.5;             // 우산 로켓배송: 방패가 없을 때 몇 초마다 하나씩 오는지
   let shieldTimer = UMB_SEC;       // 다음 하나까지 남은 시간
-  let spawnHold = 0;               // 별핑별·성난 우산: 똥 생성이 멈춰 있는 남은 시간
+  let spawnHold = 0;               // 별똥별·성난 우산: 똥 생성이 멈춰 있는 남은 시간
   let umbBlast = null;             // 성난 우산 폭발 파동 {x, y, r, t}
   let bulletT = 0, interTimer = 8;// 인터스텔라: 불릿타임 남은 시간 / 다음 발동까지
   /* ── 아슬! (스침) · 방귀 대시 ── */
@@ -3703,14 +3710,14 @@
   /* ── 점술가 ── 수정 구슬(옛 포춘쿠키)은 평균 14초마다, 예언은 PROPH_SEC 동안 */
   const FORTUNE_FIRST = 2, PROPH_SEC = 10;   // 판 시작 2초 뒤 첫 예언, 그다음부터 10초마다 바뀐다
   /* 예언 — 10초마다 하나씩 저절로 바뀐다. good 좋은 것 · bad 나쁜 것 · both 양면.
-     noTower: 똥탑등반(점수 대신 m, 레벨 시계가 뚜니핑 동안 멈춤)에서는 안 나오는 예언 */
+     noTower: 똥탑등반(점수 대신 m, 레벨 시계가 간식 동안 멈춤)에서는 안 나오는 예언 */
   const PROPHECIES = [
     { id: "small",   nm: "똥이 작아진다",      c: "#9fe8ff" },
     { id: "slow",    nm: "똥이 느려진다",      c: "#b6f5a8" },
     { id: "coin",    nm: "코인비가 내린다",     c: "#ffd23f" },
     { id: "double",  nm: "점수가 두 배",       c: "#ff9ede", noTower: true },
     { id: "shield",  nm: "수호의 별",          c: "#7ec8ff" },
-    { id: "fever",   nm: "뚜니핑이 온다",      c: "#ffb86b", noTower: true },
+    { id: "fever",   nm: "간식이 온다",      c: "#ffb86b", noTower: true },
     { id: "magnet",  nm: "복이 굴러온다",      c: "#ffe28a" },
     { id: "sight",   nm: "천리안",            c: "#ff9a9a" },
     { id: "spot",    nm: "명당",              c: "#ffe066", noTower: true },
@@ -3986,7 +3993,7 @@
     { nm: "엄마의 밥상", sub: 0.25, lead: 1.58, lv: 13,
       wv: 0.12, wvK: 2, tilt: 0.20,
       boss: { nm: "엄마의 밥상", ic: "🍚",
-              말: ["이재야.. 더 먹어.", "한 술만 더!", "다 먹기 전엔 못 간다"] }, chart: [
+              말: ["우리 강아지.. 더 먹어.", "한 술만 더!", "다 먹기 전엔 못 간다"] }, chart: [
       "G.....A...A...B.",
       "..A...E...U.....",
       "D..M.G.A..B.F..A",
@@ -6414,14 +6421,14 @@
   let bubPops = [];                  // 터진 비누방울 — 테두리가 퍼지고 물방울이 튄다
   const BUB_TONES = ["#ffffff", "#cfefff", "#ffd2f2", "#d6fff2", "#e6dcff"];
   let fever = false, feverT = 0, feverDur = 10000;
-  /* 배경음용 뚜니핑 여부 — fever 는 증강 화면·일시정지에서 꺼지므로,
+  /* 배경음용 간식 여부 — fever 는 증강 화면·일시정지에서 꺼지므로,
      그대로 쓰면 달을 먹을 때마다 곡이 갈아탔다가 돌아와 처음부터 다시 시작한다. */
   let feverBgm = false;
-  let feverBanner = 0;               // 뚜니핑 타임 시작 알림 (1 → 0, 1.1초)
-  /* 쉬었음 청년으로 시작할 때 뜨는 엄마의 한마디 — 남은 시간(초). 뚜니핑 알림과 달리
+  let feverBanner = 0;               // 간식 타임 시작 알림 (1 → 0, 1.1초)
+  /* 쉬었음 청년으로 시작할 때 뜨는 엄마의 한마디 — 남은 시간(초). 간식 알림과 달리
      글자가 길어 두 줄로 띄우고, 아케이드투가 아니라 따뜻한 색으로 쓴다. */
   const MOM_SEC = 5;
-  const MOM_LINES = ["이재야.. 엄마는 우리 딸 믿어.", "파이팅"];
+  const MOM_LINES = ["우리 강아지.. 엄마는 믿어.", "파이팅"];
   let momMsg = 0;
   let last = 0;
 
@@ -6630,7 +6637,7 @@
   showNameView();
 
   /* ---------- 일시정지 ----------
-     멈춘 동안의 시간은 뚜니핑·무적 마감에서 빼 주고,
+     멈춘 동안의 시간은 간식·무적 마감에서 빼 주고,
      풀 때는 3초를 세고 나서 다시 움직인다. */
   const btnPause = document.getElementById("btnPause");
   const pauseScreen = document.getElementById("pauseScreen");
@@ -7171,7 +7178,7 @@
   }
 
   /* ---------- 스폰 ---------- */
-  /* 뚜니핑 타임 낙하물 크기 등급 — 클수록 드물고 점수가 크다 */
+  /* 간식 타임 낙하물 크기 등급 — 클수록 드물고 점수가 크다 */
   const FEVER_SIZES = [
     { min: 18, max: 22, score: 3,  w: 22 },
     { min: 22, max: 26, score: 5,  w: 18 },
@@ -7181,7 +7188,7 @@
     { min: 44, max: 52, score: 25, w: 5  },
     { min: 52, max: 62, score: 40, w: 3  }   // 초대형 — 가장 드물다
   ];
-  // 대왕 뚜니핑 — 기존 최대(52~62)의 2배 크기, 점수는 최대 등급(75)의 3배
+  // 왕뼈다귀 — 기존 최대(52~62)의 2배 크기, 점수는 최대 등급(75)의 3배
   const GIANT = { min: 104, max: 124, score: 138, w: 3, giant: true };
   /* 코인 — 평범한 게임 중에만, 똥이 나올 때 덤으로 함께 떨어진다.
      크기도 모양도 한 가지, 색만 셋이다. w 는 뽑기 비중(합 100 = 그대로 %). */
@@ -7281,8 +7288,8 @@
   const POOP_SLOW    = 0.90;   // 평범한 똥의 기본 속도를 전체적으로 10% 낮춘다
   const SPREAD_BONUS = 0.28;   // 아이템은 조금 얌전하게 (약 16도)
 
-  const FEVER_VY = 245;      // 뚜니핑 낙하물 기준 속도 — 레벨이 올라도 그대로 유지한다
-  /* 뚜니핑 낙하물이 터질 때 쓰는 색 — 점수와 무관하게 무작위로 골라 폭죽처럼 보이게 한다 */
+  const FEVER_VY = 245;      // 간식 낙하물 기준 속도 — 레벨이 올라도 그대로 유지한다
+  /* 간식 낙하물이 터질 때 쓰는 색 — 점수와 무관하게 무작위로 골라 폭죽처럼 보이게 한다 */
   const FEVER_TONES = [
     "#ff4d6d", "#ff7a45", "#ffd23f", "#8bde5a", "#35f0ff", "#4d8bff",
     "#c86bff", "#ff5ec7", "#ffffff", "#7dffcf", "#ffe3a8", "#a0ff4d"
@@ -7292,7 +7299,7 @@
      split  = 내려오다 둘로 쪼개진다 (쪼개진 조각은 평범한 똥)
      zigzag = 좌우로 크게 흔들리며 내려온다
      laser  = 1초간 떨어질 자리를 깜빡여 알려준 뒤 번개처럼 내리꽂힌다
-     huge   = 초대형 뚜니핑의 1.4배쯤 되는 거대한 똥, 느리게 굴러떨어진다 */
+     huge   = 초대형 간식의 1.4배쯤 되는 거대한 똥, 느리게 굴러떨어진다 */
   const SPECIAL_KINDS = ["split", "zigzag", "laser", "huge"];
   const HUGE_R = 50.35;        // 반지름 — 66 → 53 (20%) → 다시 5% 축소
   /* 까다로운 똥이 나올 확률 — 레벨 7에서 SPEC_BASE 로 시작해 레벨마다 SPEC_STEP 씩 오른다.
@@ -7373,10 +7380,10 @@
   function spawnPoop(mul, special, forceX, forceAng, forceDark) {
     if (spawnHold > 0) return;              // 성난 우산 직후에는 똥이 나오지 않는다
     const m = (mul || 1) * (H / BASE_H);   // 화면이 길면 그만큼 빨리 떨어져야 체감이 같다
-    // 뚜니핑 타임에 나온 것은 외형·점수를 스스로 기억한다 → 뚜니핑 타임이 끝나도 모습이 바뀌지 않는다
+    // 간식 타임에 나온 것은 외형·점수를 스스로 기억한다 → 간식 타임이 끝나도 모습이 바뀌지 않는다
     const inFever = fever;
     const cls = inFever ? pickFeverSize() : null;
-    /* 다크똥 — 뚜니핑 낙하물과 무지개똥을 뺀 나머지가 대상이다.
+    /* 다크똥 — 간식 낙하물과 무지개똥을 뺀 나머지가 대상이다.
        특수똥이면 그대로 '다크특수똥'이 된다 (성질은 유지하고 무적만 얹는다). */
     const dark = forceDark !== undefined ? !!forceDark
                : (!inFever && Math.random() < darkChance());
@@ -7385,7 +7392,7 @@
     if (!inFever && !dark && !special && aug.goldChance > 0 && Math.random() < aug.goldChance) {
       gold = true;
     }
-    // 뚜니핑 낙하물은 크기가 곧 점수라서 '작아진 똥'의 영향을 받지 않는다
+    // 간식 낙하물은 크기가 곧 점수라서 '작아진 똥'의 영향을 받지 않는다
     let r = cls ? cls.min + Math.random() * (cls.max - cls.min)
                 // 5% 줄이되 제일 작은 똥(12.6)보다 작아지지는 않는다
                 // 대전모드는 크기 범위 아래 30%(제일 작은 똥)를 뺀다 — 30% 줄인 판에서 너무 안 보여서
@@ -7393,12 +7400,12 @@
     const sk = specK();
     if (special === "huge") r = (lerp(29, HUGE_R, sk) + Math.random() * lerp(4, 10, sk)) * aug.poopMul;   // 초거대 똥 — 처음엔 약간만 크다
     r = Math.min(r, (W - 24) / 2);        // 화면보다 커지지 않게
-    // 일반 똥은 레벨이 오를수록 빨라지지만, 뚜니핑 낙하물은 처음이나 나중이나 같은 속도로 떨어진다
-    /* 뚜니핑 낙하물은 주우라고 떨어지는 것이라 늘 같은 속도를 지킨다.
+    // 일반 똥은 레벨이 오를수록 빨라지지만, 간식 낙하물은 처음이나 나중이나 같은 속도로 떨어진다
+    /* 간식 낙하물은 주우라고 떨어지는 것이라 늘 같은 속도를 지킨다.
        평범한 똥만 POOP_SLOW 만큼 전체적으로 느려진다 (레벨 상승분까지 함께). */
     const baseVy = inFever ? FEVER_VY + Math.random() * 110
                            : (207.0 + level * 11.452 + Math.random() * 99) * POOP_SLOW;
-    /* 뚜니핑 낙하물은 언제나 같은 속도로 떨어진다 — 레벨·지대·증강(느린 하늘·도파민)
+    /* 간식 낙하물은 언제나 같은 속도로 떨어진다 — 레벨·지대·증강(느린 하늘·도파민)
        어느 것에도 영향받지 않는다. 화면 높이 보정(m)만 그대로 둔다. */
     let vy = inFever ? baseVy * m
                      : baseVy * m * DIFF_F * spaceF() * bhDiff() * aug.fallMul * lateMul() * (prophIs("fast") ? 1.3 : prophIs("slow") ? 0.7 : 1);
@@ -7406,7 +7413,7 @@
     let px = r + Math.random() * (W - r * 2);
     let pvx = (Math.random() - Math.random()) * vy * SPREAD_POOP;
     if (ruleOn("wind")) pvx += vsRuleWind * (H / BASE_H);   // 대전 규칙 — 바람
-    // 틈 지키기 — 뚜니핑 낙하물·무지개똥은 막는 똥이 아니고, 지그재그·분열은 자리가 바뀌어 빼고 본다
+    // 틈 지키기 — 간식 낙하물·무지개똥은 막는 똥이 아니고, 지그재그·분열은 자리가 바뀌어 빼고 본다
     if (!inFever && !gold && special !== "laser" && special !== "zigzag" && special !== "split") {
       const fx = fairPlace(px, r * (special === "huge" ? 0.70 : 0.82), pvx, vy, -r - 10);
       if (fx === null) return;
@@ -7438,7 +7445,7 @@
       gold: gold,
       dark: dark,                            // 폭발·밀림이 통하지 않는다
       special: special || null,
-      bumpCd: 0,                             // 정연핑과 부딪힌 직후의 무반응 시간
+      bumpCd: 0,                             // 뿌잉과 부딪힌 직후의 무반응 시간
       phase: Math.random() * 6.28,
       splitAt: H * (lerp(0.10, 0.14, sk) + Math.random() * lerp(0.12, 0.20, sk)),   // 분열똥이 쪼개지는 높이 — 처음엔 더 위에서(피할 틈이 넉넉)
       sk: sk,                                // 특수똥의 독한 정도 (태어날 때 레벨로)
@@ -7447,9 +7454,9 @@
       gain: cls ? cls.score : 0,
       giant: !!(cls && cls.giant)
     });
-    // 코인은 평범한 똥에만 덤으로 붙는다 — 뚜니핑 낙하물에는 안 붙는다
+    // 코인은 평범한 똥에만 덤으로 붙는다 — 간식 낙하물에는 안 붙는다
     if (!inFever) coinDebt += coinRatio();
-    /* 리듬 실험 — 뚜니핑 타임은 초당 수십 개가 쏟아져 박자에 몰아넣으면
+    /* 리듬 실험 — 간식 타임은 초당 수십 개가 쏟아져 박자에 몰아넣으면
        한 자리에 뭉쳐 버리므로 건드리지 않는다. */
     if (!inFever) snapArrival(items[items.length - 1]);
   }
@@ -7588,7 +7595,7 @@
       vx: (Math.random() - Math.random()) * vy * SPREAD_BONUS,
       vy: vy,
       rot: 0, vr: 0, size: r * 2, bob: Math.random() * 6.28,
-      born: elapsed          // 배고픈 정연핑이 몇 초 뒤에 출발할지 재는 기준
+      born: elapsed          // 배고픈 뿌잉이 몇 초 뒤에 출발할지 재는 기준
     });
   }
 
@@ -7645,7 +7652,7 @@
   /* ---------- 업데이트 ---------- */
   function update(dt, now) {
     /* 인터스텔라 불릿타임 — 캐릭터를 뺀 세상 전부가 이 배율로 느려진다.
-       똥·아이템·정연핑·비둘기·분신·미사일·구름과 그것들이 나오는 시계까지 모두 포함.
+       똥·아이템·뿌잉·비둘기·분신·미사일·구름과 그것들이 나오는 시계까지 모두 포함.
        점수·레벨 시계와 캐릭터 조작은 dt 그대로라 나만 제 속도로 움직인다. */
     if (grazeFxCd > 0) grazeFxCd -= dt;
     const tsc = (bulletT > 0 && !fever) ? 0.4 : 1;   // 불릿타임 — 세상이 60% 느려진다
@@ -7687,7 +7694,7 @@
     /* 점수판 — 한 번에 '똥 몇 개어치'를 벌었는지로 잰다.
        레벨·직업·증강 배율이 똥 한 개 값에도 똑같이 들어가 있으므로,
        판 초반이든 후반이든 같은 크기의 사건에 같은 세기로 튄다.
-         똥 하나 = 1 · 무지개똥 ≈ 10 · 별 ≈ 136 · 별핑별 = 부순 개수 x4
+         똥 하나 = 1 · 무지개똥 ≈ 10 · 별 ≈ 136 · 별똥별 = 부순 개수 x4
        생존 점수는 한 프레임에 0.07 개어치라 문턱을 넘지 못한다. */
     const dScore = score - prevScore;
     const worth = dScore / Math.max(1, poopGain());
@@ -7717,13 +7724,13 @@
     }
 
     const wasFever = fever;
-    /* 증강 고르기·'준비!'·일시정지 동안에는 뚜니핑 타임을 그대로 얼려 둔다 (v0.8.22) — 예전엔 멈추기만 하면
+    /* 증강 고르기·'준비!'·일시정지 동안에는 간식 타임을 그대로 얼려 둔다 (v0.8.22) — 예전엔 멈추기만 하면
        꺼져서, 증강 뒤 '준비!' 0.6초 동안 보통 하늘이 보였다가 다시 켜지며 배너까지 새로 떠 순간이동처럼 보였다. */
     if (state === STATE.PLAY) fever = now < powerUntil;
     else if (state === STATE.OVER || state === STATE.READY) fever = false;
     if (state === STATE.PLAY) feverBgm = fever;   // 놀고 있을 때만 새로 쓴다
     if (!wasFever && fever) feverBanner = 1;      // 막 시작했다
-    /* 뚜니핑 타임에는 똥이 아예 안 보인다 — 뚜니핑만 쏟아진다.
+    /* 간식 타임에는 똥이 아예 안 보인다 — 간식만 쏟아진다.
        켜지는 순간 하늘에 있던 똥을 펑 하고 거두고, 켜져 있는 동안 어디서 생긴 똥이든
        (쪼개진 조각, 예고 중이던 레이저 등) 곧바로 거둔다. 무지개똥은 주우라고 남긴다. */
     if (fever) {
@@ -7740,10 +7747,10 @@
     /* 멈춰 있는 동안(증강 고르기·'준비!'·일시정지)은 게이지도 얼린다 (v0.8.60) — 마감 시각은 풀릴 때 멈춘 만큼 뒤로 밀리는데,
        그 사이 실제 시계로 다시 재면 게이지가 줄었다가 풀리는 순간 도로 늘어났다 */
     if (state === STATE.PLAY || !fever) feverT = fever ? Math.min(1, (powerUntil - now) / feverDur) : 0;
-    // 뚜니핑 타임 끝나는 순간엔 화면이 똥으로 가득 차 있으니 1초 무적으로 숨 돌릴 틈을 준다
+    // 간식 타임 끝나는 순간엔 화면이 똥으로 가득 차 있으니 1초 무적으로 숨 돌릴 틈을 준다
     if (wasFever && !fever && state === STATE.PLAY) {
       invUntil = Math.max(invUntil, now + 1500);
-      /* 대왕 뚜니핑도 다른 낙하물처럼 그대로 남겨 둔다. 뚜니핑 낙하물은
+      /* 왕뼈다귀도 다른 낙하물처럼 그대로 남겨 둔다. 간식 낙하물은
          타임이 끝나도 피해를 주지 않으니(dmg 판정에서 fever 껍질은 빠진다)
          떠 있는 동안 마저 먹을 수 있다. */
       beep(520, .12, "triangle", .04);          // 무적 — 소리와 함께 캐릭터 둘레에 옅은 빛(drawInvGlow)
@@ -7766,7 +7773,7 @@
 
     elapsed += dt;
     noHitSec += dt;                          // 안 맞고 버틴 시간 (피격 시 절반 감소)
-    /* 레벨 시계는 뚜니핑 타임 동안 멈춘다. 무적으로 낙하물을 줍는 시간까지
+    /* 레벨 시계는 간식 타임 동안 멈춘다. 무적으로 낙하물을 줍는 시간까지
        레벨에 포함되면, 정작 실력으로 버틴 시간이 아닌데도 난이도가 올라간다. */
     if (!fever) levelTime += dt;
     /* 스테이지는 자리가 고정이다 — 한 판 내내 같은 하늘에서 이어진다.
@@ -8002,13 +8009,13 @@
         const q = items[j];
         if (q.type !== "poop" || q.blast || q.bounced || q.dark) continue;
         /* 레이저똥은 무엇으로도 건드릴 수 없다 — 총알이 여기서 없어지면 헛방이 되므로
-           정연핑이 지나가듯 그냥 스쳐 지나가게 둔다. */
+           뿌잉이 지나가듯 그냥 스쳐 지나가게 둔다. */
         if (q.special === "laser" && !aug.wak) continue;
         if (Math.hypot(q.x - bu.x, q.y - bu.y) > q.r + 6) continue;
         if (aug.wak && !q.gold && q.skin !== "fever") {
           /* 고무고무노 피스톨 — 부수지 않고 위로 튕겨 올린다. 날아가는 똥은 사람을 해치지 않고,
              처음 부딪히는 똥과 함께 반경 50px 로 터진다 (아래 wak 처리).
-             무지개똥·뚜니핑은 튕기면 먹을 기회가 날아가니 예전처럼 그 자리에서 부순다. */
+             무지개똥·간식은 튕기면 먹을 기회가 날아가니 예전처럼 그 자리에서 부순다. */
           q.vx = (q.x - bu.x) * 5 + (Math.random() - .5) * 140;
           q.vy = -(520 + Math.random() * 140);      // 0.7~0.9초 뒤 꼭대기, 200px 남짓 오른다
           q.vr = (Math.random() - .5) * 12;
@@ -8017,7 +8024,7 @@
           burst(bu.x, bu.y, "#ff8a6a", 8);
           if (!sfx("boing")) beep(520, .06, "square", .04);
         } else {
-          /* 맞은 똥 하나만. force 를 주지 않아야 정연핑과 똑같이 다룬다 —
+          /* 맞은 똥 하나만. force 를 주지 않아야 뿌잉과 똑같이 다룬다 —
              대왕똥은 셋으로 쪼개지고, 분열똥은 그 자리에서 쪼개지고,
              지그재그똥은 방향이 뒤집힌다 (예전에는 전부 통째로 사라졌다). */
           smashPoopsAround(bu.x, bu.y, 8);
@@ -8219,7 +8226,7 @@
       }
     }
 
-    // ---- 도와줘 정연핑 ----
+    // ---- 도와줘 뿌잉 ----
     if (aug.helper > 0) {
       // 1명이면 4.5초, 2명이면 5.5초, 3명이면 6.5초… 인원이 늘수록 주기가 1초씩 길어진다
       const cycle = 4.5 + 1.0 * aug.helper;   // v0.9.31 4.0 → 4.5   // 3.5 → 4.0, 출격이 조금 뜸해진다
@@ -8261,8 +8268,8 @@
       if (hp.y < -HELPER_H - 40 || hp.x < -160 || hp.x > W + 160) helpers.splice(k, 1);
     }
 
-    // ---- 배고픈 정연핑: 아이템이 뜨고 3초 뒤에 화면 아래 중앙에서 출발 ----
-    /* 배고픈 정연핑 — 한 번에 한 명만 나간다. 아이템이 여럿이라고 우르르 몰려가면
+    // ---- 배고픈 뿌잉: 아이템이 뜨고 3초 뒤에 화면 아래 중앙에서 출발 ----
+    /* 배고픈 뿌잉 — 한 번에 한 명만 나간다. 아이템이 여럿이라고 우르르 몰려가면
        아이템을 통째로 쓸어가 버려서, 다녀온 뒤 FETCH_REST 만큼 쉬었다 다시 나간다. */
     if (fetchRest > 0) fetchRest -= dt * tsc;
     if (aug.hungry && !fetchers.length && fetchRest <= 0) {
@@ -8305,7 +8312,7 @@
     }
 
     magNear = 0;                          // 이번 프레임에 가장 세게 끌린 정도
-    const powered = now < powerUntil;      // 🔥 뚜니핑 타임
+    const powered = now < powerUntil;      // 🔥 간식 타임
 
     // 화면이 좁으면 그만큼 똥도 덜 떨어지게(체감 난이도 유지)
     const widthFactor = 480 / W;
@@ -8315,7 +8322,7 @@
     else spawnTimer -= dt * tsc;
     if (!noItem() && spawnTimer <= 0) {
       if (powered) {
-        // 뚜니핑 타임: 똥이 폭포처럼 쏟아지고 속도도 2배 이상
+        // 간식 타임: 똥이 폭포처럼 쏟아지고 속도도 2배 이상
         const n = 3 + Math.floor(Math.random() * 4);   // 스폰당 3~6개 (평균 4.5개)
         // 증강으로 낙하량이 늘면 화면 상한도 같이 올려야 늘린 만큼이 깎이지 않는다
         const cap = Math.min(280, Math.round(165 / aug.feverRateMul));
@@ -8365,7 +8372,7 @@
       }
     }
     /* 쌓인 몫만큼 코인을 떨어뜨린다. 몫은 똥 하나가 나올 때마다 spawnPoop 에서
-       붙는다 (뚜니핑 낙하물은 빼고). 1 이 못 되는 나머지는 다음으로 넘긴다. */
+       붙는다 (간식 낙하물은 빼고). 1 이 못 되는 나머지는 다음으로 넘긴다. */
     while (coinDebt >= 1) { spawnCoin(); coinDebt -= 1; }
     if (!powered) {
       /* v0.8.96 똥대잔치 — 운이 아무리 나빠도 판 시작 9초엔 첫 달이 떨어지기 시작한다
@@ -8393,12 +8400,12 @@
 
     for (let i = items.length - 1; i >= 0; i--) {
       const it = items[i];
-      /* 별핑별·성난 우산처럼 순회 도중 목록을 무더기로 지우는 일이 있으면
+      /* 별똥별·성난 우산처럼 순회 도중 목록을 무더기로 지우는 일이 있으면
          인덱스가 새 길이를 넘어설 수 있다 — 그 칸은 건너뛴다 (없으면 게임이 멈춘다) */
       if (!it) continue;
       if (it.bumpCd > 0) it.bumpCd -= dt * tsc;
       if (it.special === "split") {
-        // 정해진 높이까지 내려오면 둘로 쪼개진다. 조각은 평범한 똥이라 정연핑이 부술 수 있다.
+        // 정해진 높이까지 내려오면 둘로 쪼개진다. 조각은 평범한 똥이라 뿌잉이 부술 수 있다.
         if (it.y > it.splitAt) {
           const r2 = it.sz * 0.80;          // 조각을 더 크게 (잘 보이게)
           for (const dir of [-1, 1]) {
@@ -8469,7 +8476,7 @@
       const cy = player.y + player.hy;
       const dx = it.x - player.x, dy = it.y - cy;
       if ((aug.blackhole || job === "levitator") && it.type === "poop" && it.skin === "fever") {
-        // 뚜니핑 낙하물은 가까이 왔을 때만 끌어당긴다 (전부 빨아들이면 너무 세다)
+        // 간식 낙하물은 가까이 왔을 때만 끌어당긴다 (전부 빨아들이면 너무 세다)
         // 부양사 기본치는 블랙홀의 절반 반경·45% 힘
         const d = Math.hypot(dx, dy), R = aug.blackhole ? 195 : 98;
         if (d < R && d > 1) {
@@ -8531,11 +8538,11 @@
             items.splice(i, 1);
             continue;
           }
-          // 뚜니핑 타임 낙하물은 타임이 끝난 뒤에도 먹을 수 있다.
+          // 간식 타임 낙하물은 타임이 끝난 뒤에도 먹을 수 있다.
           // (끝나는 순간 화면에 떠 있던 것들이 그냥 스쳐 지나가면 아까우니까)
           if (powered || it.skin === "fever") {
-            // 크기가 곧 점수. 뚜니핑 타임 중 생성된 건 자기 점수를 갖고 있고,
-            // 뚜니핑 타임 전에 떨어지던 일반 똥은 크기로 환산한다.
+            // 크기가 곧 점수. 간식 타임 중 생성된 건 자기 점수를 갖고 있고,
+            // 간식 타임 전에 떨어지던 일반 똥은 크기로 환산한다.
             const gain = feverGain(it);
             /* 터지는 색은 점수와 무관하게 매번 무작위 — 무지갯빛 폭죽처럼 보이게 한다.
                입자 수·소리는 크기를 따른다. 점수로 나누면 레벨당 1.3배씩 부풀어
@@ -8552,12 +8559,12 @@
             else if (sz >= 22) { burstN = 18; note = 1350; }
             else if (sz >= 18) { burstN = 12; note = 1150; }
             else               { burstN = 8;  note = 900;  }
-            score += sc("뚜니핑", gain);
+            score += sc("간식", gain);
             burst(it.x, it.y, tone, burstN);
             // 낙하물은 개당 점수를 띄우지 않는다 (한꺼번에 쏟아져서 화면이 지저분해진다)
             /* 흔들림은 점수가 아니라 크기로 정한다.
-               점수는 레벨당 1.3배씩 부풀어서, 후반엔 제일 작은 뚜니핑 하나에도
-               화면이 최대로 흔들렸다. 대왕 뚜니핑(반지름 104~124)이 기준이고,
+               점수는 레벨당 1.3배씩 부풀어서, 후반엔 제일 작은 간식 하나에도
+               화면이 최대로 흔들렸다. 왕뼈다귀(반지름 104~124)이 기준이고,
                작은 것들은 거의 흔들리지 않는다 — 터지는 입자와 소리로 충분하다. */
             const sh = it.giant
               ? 26 + Math.min(1, (it.sz - GIANT.min) / (GIANT.max - GIANT.min)) * 6
@@ -8710,11 +8717,11 @@
         continue;
       }
       if (it.y - it.r > H + 20) {
-        // 뚜니핑 타임 낙하물은 워낙 많이 쏟아져서, 안 먹고 흘려보낸 것에 점수를 주면
-        // 가만히 있어도 점수가 폭등한다. 뚜니핑 타임 것은 0점 — 직접 받아야만 점수가 오른다.
+        // 간식 타임 낙하물은 워낙 많이 쏟아져서, 안 먹고 흘려보낸 것에 점수를 주면
+        // 가만히 있어도 점수가 폭등한다. 간식 타임 것은 0점 — 직접 받아야만 점수가 오른다.
         /* 흘려보낸 똥은 얼마나 가까이 지나갔느냐로 값이 갈린다 — 먼 것 0.5배, 가까운 것 1.5배,
            스친 것 3배. 가만히 구석에 서 있으면 점수가 절반으로 줄어든다. */
-        /* it.gap 이 없는 똥 = 떨어지는 내내 무적이었던 똥(뚜니핑 타임 등). 잰 적이 없으니
+        /* it.gap 이 없는 똥 = 떨어지는 내내 무적이었던 똥(간식 타임 등). 잰 적이 없으니
            멀다고 깎지 않고 그냥 한 배로 둔다 — 못 잰 것과 멀리 보낸 것은 다르다. */
         if (it.type === "poop" && it.skin !== "fever")
           score += sc("똥", poopGain() * (it.gap === undefined ? 1 : nearMul(it.gap)));
@@ -8757,17 +8764,17 @@
     }
   }
 
-  /* 아이템 효과 적용. 플레이어가 직접 먹을 때와 '배고픈 정연핑'이 대신 먹을 때 모두 쓴다.
+  /* 아이템 효과 적용. 플레이어가 직접 먹을 때와 '배고픈 뿌잉'이 대신 먹을 때 모두 쓴다.
      달을 먹으면 게임이 멈추므로 true 를 돌려주고, 부른 쪽은 그 프레임 처리를 중단한다. */
   function collectItem(it, now) {
     if (vsOn() && it.type === "moon") { vsTakeMoon(1); return false; }   // 대전모드 — 멈추지 않고 룰렛
     if (partyOn() && it.type === "moon") { paTakeMoon(player); return false; }   // 여럿이 — 바로 무작위 증강
     if (it.type === "paper") {
       feverDur = 7000 + aug.feverBonus;
-      // 이미 뚜니핑 중이면 남은 시간에 이어붙인다 (초기화하면 남은 시간이 버려진다)
+      // 이미 간식 중이면 남은 시간에 이어붙인다 (초기화하면 남은 시간이 버려진다)
       powerUntil = Math.max(powerUntil, now) + feverDur;
       feverFlash = 1;
-      popText(player.x, player.y - 70, "🔥 뚜니핑 타임!", "#ffd23f", 26);
+      popText(player.x, player.y - 70, "🔥 간식 타임!", "#ffd23f", 26);
       if (!sfx("fever")) {
         beep(700, .1, "square", .05);
         beep(1100, .12, "square", .05);
@@ -8784,7 +8791,7 @@
       const gain = eatStar(it.x, it.y);
       if (aug.starburst) {
         /* 화면의 똥을 전부 없애고 개당 똥 점수의 6배를 받는다 (까다로운 똥도 함께).
-           뚜니핑 낙하물은 주우라고 떨어지는 것이라 건드리지 않는다. */
+           간식 낙하물은 주우라고 떨어지는 것이라 건드리지 않는다. */
         let cnt = 0, bonus = 0;
         for (let k = items.length - 1; k >= 0; k--) {
           const q = items[k];
@@ -8797,7 +8804,7 @@
         }
         if (cnt) {
           bonus = Math.round(bonus);
-          score += sc("별핑별", bonus);
+          score += sc("별똥별", bonus);
           spawnHold = Math.max(spawnHold, 0.5);   // 쓸어낸 뒤 잠깐 새 똥이 없다 (v0.9.31 1 → 0.5초)
           shake = Math.max(shake, 18);
           feverFlash = Math.max(feverFlash, 0.7);
@@ -8885,7 +8892,7 @@
     return false;
   }
 
-  /* 뚜니핑 낙하물 점수 — 크기 등급 점수 × 0.7 × 레벨.
+  /* 간식 낙하물 점수 — 크기 등급 점수 × 0.7 × 레벨.
      초당 수십 개가 쏟아지므로 한 개의 몫은 다른 것보다 작게 잡았다. */
   function feverGain(it) {
     const base = it.gain || (it.sz < 20.7 ? 3 : (it.sz < 26 ? 5 : 10));
@@ -8894,9 +8901,9 @@
 
   /* 점수를 항목별로도 모은다. 테스트 모드에서는 화면에 띄우고,
      실제 플레이에서는 판이 끝날 때 비중만 익명으로 남겨 통계에 쓴다. */
-  const SRC_KEYS = ["별", "별핑별", "뚜니핑", "무지개똥", "똥", "생존", "명당"];
+  const SRC_KEYS = ["별", "별똥별", "간식", "무지개똥", "똥", "생존", "명당"];
   // 서버에는 한글 대신 짧은 영문 키로 보낸다 (칸 이름이 지저분해지지 않게)
-  const SRC_CODE = { "별": "star", "별핑별": "burst", "뚜니핑": "fever",
+  const SRC_CODE = { "별": "star", "별똥별": "burst", "간식": "fever",
                      "무지개똥": "gold", "똥": "poop", "생존": "time", "명당": "spot" };
   let scoreSrc = {};
   function sc(key, v) {
@@ -11395,9 +11402,9 @@
     goHome();
   });
 
-  /* 정연핑이 지나간 자리의 똥을 부순다 (뚜니핑 낙하물은 제 점수를 그대로 준다)
+  /* 뿌잉이 지나간 자리의 똥을 부순다 (간식 낙하물은 제 점수를 그대로 준다)
      gainMul — 부순 것의 점수 배율. 비둘기는 5배를 준다
-     (일반 똥·까다로운 똥·무지개똥·뚜니핑 낙하물에 모두 걸린다). */
+     (일반 똥·까다로운 똥·무지개똥·간식 낙하물에 모두 걸린다). */
   /* 번개 — (x0,y0) 에서 가장 가까운 똥으로, 거기서 다시 가장 가까운 똥으로 n 번 옮겨붙는다.
      first=true 면 첫 표적은 거리 제한 없이 화면에서 가장 가까운 것(뱀장어), 아니면 hop 안에서만.
      부순 개수를 돌려준다. */
@@ -11486,7 +11493,7 @@
     return player.x > W / 2 ? 60 : W - 60;
   }
   function startProphecy(now) {
-    // 방금 것과 같은 예언이 연달아 나오지 않게 — 바뀌는 게 보여야 한다. 똥탑등반에선 점수·뚜니핑 예언 빼고
+    // 방금 것과 같은 예언이 연달아 나오지 않게 — 바뀌는 게 보여야 한다. 똥탑등반에선 점수·간식 예언 빼고
     const pool = PROPHECIES.filter(q => q !== prophecy && !(noItem() && q.noTower));
     const pr = pool[Math.floor(Math.random() * pool.length)];
     prophecy = pr; prophT = PROPH_SEC; prophRain = 0;
@@ -11502,7 +11509,7 @@
       if (job === "fit") lives = Math.min(aug.maxLives, lives + 1);
       else shields = Math.min(shields + 1, 5);
     }
-    if (pr.id === "fever") {                 // 뚜니핑이 온다 — 3초 바로 (뚜니핑 연장 증강은 안 붙는다)
+    if (pr.id === "fever") {                 // 간식이 온다 — 3초 바로 (간식 연장 증강은 안 붙는다)
       const t0 = now || performance.now();
       powerUntil = Math.max(powerUntil, t0) + 3000;
       feverDur = Math.max(3000, powerUntil - t0);
@@ -11512,7 +11519,7 @@
     if (pr.id === "wind") prophWind = (Math.random() < 0.5 ? -1 : 1) * 120;   // 옆바람 — 방향은 그때그때
     if (pr.id === "spot") { spotX = spotPick(); spotMoved = false; spotOn = 0; }
 
-    // 가운데에 큰 글자는 띄우지 않는다 — 예언 막대(화면 가운데, 뚜니핑 막대 아래)가 바뀌는 것으로 알린다
+    // 가운데에 큰 글자는 띄우지 않는다 — 예언 막대(화면 가운데, 간식 막대 아래)가 바뀌는 것으로 알린다
     feverFlash = Math.max(feverFlash, pr.bad ? 0.3 : 0.5);
     if (!sfx(pr.bad ? "hurt" : "aug", 0.8)) { beep(pr.bad ? 300 : 1100, .15, "triangle", .05); }
   }
@@ -11538,7 +11545,7 @@
       }
       if (it.special) {
         /* 까다로운 똥은 부수지 못한다. 대신 종류마다 다르게 반응하고,
-           정연핑은 부딪힌 자리를 그대로 지나간다. */
+           뿌잉은 부딪힌 자리를 그대로 지나간다. */
         if (it.bumpCd > 0) continue;
         it.bumpCd = 0.4;
         if (it.special === "split") {
@@ -11571,9 +11578,9 @@
         continue;                            // 레이저는 아무 반응 없이 지나간다
       }
       if (it.skin === "fever") {
-        // 뚜니핑 낙하물은 직접 먹을 때와 똑같이 — 점수 표시 없이, 색은 무작위로 터진다
+        // 간식 낙하물은 직접 먹을 때와 똑같이 — 점수 표시 없이, 색은 무작위로 터진다
         const g = Math.round(feverGain(it) * gm);
-        score += sc("뚜니핑", g);
+        score += sc("간식", g);
         burst(it.x, it.y, FEVER_TONES[Math.floor(Math.random() * FEVER_TONES.length)], g >= 25 ? 30 : 16);
       } else {
         score += sc("똥", poopGain() * gm);
@@ -12156,10 +12163,10 @@
   AUG_NAMES["mode:noitem"] = "🗼 똥탑등반";
   AUG_NAMES["mode:pure"] = "🥊 맨몸대결";
   AUG_NAMES.gamble = "도박꾼(삭제됨)";   // 옛 기록 표시용
-  AUG_NAMES.fly = "초전도 이재(삭제됨)";
-  AUG_NAMES.refill = "뚜니핑 무한리필(삭제됨)";
+  AUG_NAMES.fly = "초전도(삭제됨)";
+  AUG_NAMES.refill = "간식 무한리필(삭제됨)";
   AUG_NAMES.ghost = "유령화(삭제됨)";
-  AUG_NAMES.subs = "뚜니핑 정기구독(삭제됨)";
+  AUG_NAMES.subs = "간식 정기구독(삭제됨)";
   const JOB_NAMES = { none: "쉬었음 청년", fortune: "루나 · 점술가", gambler: "도박사", levitator: "소라 · 부양사", fit: "버피 · 헬스견", powerj: "제이 · 계획러", powerp: "무무 · 무소유", powerp2: "파워P", bangul: "방울이 · 백수", "(none)": "(기록 없음)" };
   const devScreen = document.getElementById("devScreen");
   const devPw     = document.getElementById("devPw");
@@ -12222,7 +12229,7 @@
        점수가 큰 한두 판에 끌려가지 않는다. */
     const srcRows = data.src || [];
     if (srcRows.length) {
-      const SRC_LABEL = { star: "별", burst: "별핑별", fever: "뚜니핑",
+      const SRC_LABEL = { star: "별", burst: "별똥별", fever: "간식",
                           gold: "무지개똥", poop: "똥", time: "생존", spot: "명당" };
       P.sum.appendChild(devSection("오브젝트별 점수 비중 (판마다의 평균)",
         ["오브젝트", "평균 비중", "판수"],
@@ -13122,10 +13129,10 @@
 
     /* 지대 배경 그림. 다음 지대로 넘어가는 동안 두 장을 겹쳐 녹여서
        색만 이어지던 때처럼 끊김 없이 바뀐다.
-       (뚜니핑 타임에는 불꽃 하늘이 주인공이라 그림을 걷는다) */
+       (간식 타임에는 불꽃 하늘이 주인공이라 그림을 걷는다) */
     let bgShown = false;
     if (fever) {
-      /* 뚜니핑 하늘은 흐르지 않고 가만히 있는다.
+      /* 간식 하늘은 흐르지 않고 가만히 있는다.
          겹쳐 먹으면 시간이 늘어나 남은 시간을 진행도로 쓸 수 없어 시계로 흘렸는데,
          그러면 한 바퀴 돌 때마다 그림이 260px 씩 되감겨 튀면서 경계처럼 보였다. */
       const fsky = feverSkyFor(zoneIdx());
@@ -13135,7 +13142,7 @@
       const i0 = zoneIdx(), i1 = Math.min(LAST_Z, i0 + 1);
       /* 그 지대 안에서의 진행도가 곧 배경이 내려온 정도다.
          마지막 지대는 진행도가 늘 0 이라 다 내려온 자리에서 멈춘다 —
-         되감으면 뚜니핑 하늘과 같은 이유로 튄다.
+         되감으면 간식 하늘과 같은 이유로 튄다.
          시작화면에서는 아예 흐르지 않는다. 아무것도 안 하고 보고 있는데
          배경만 계속 내려오면 어지럽다. 지대가 겹쳐 녹는 것은 그대로 둔다. */
       const idle = state === STATE.READY;
@@ -13157,7 +13164,7 @@
       bgShown = !!ZONE_IMG[i0];
     }
 
-    // 뚜니핑 타임 속도선 — 우주에서는 길게 늘어진 별빛으로
+    // 간식 타임 속도선 — 우주에서는 길게 늘어진 별빛으로
     if (fever) {
       const n = spaceFever ? 26 : 14, len = spaceFever ? 170 : 70;
       ctx.lineWidth = spaceFever ? 2 : 3;
@@ -13843,7 +13850,7 @@
       ctx.translate(f.x, f.y + Math.sin(f.ph) * 3);
       if (f.fl === false) ctx.scale(-1, 1);
       ctx.shadowColor = "#ffc2ec"; ctx.shadowBlur = 14;
-      ctx.drawImage(PET_IMG.gift, -sz / 2, -sz / 2, sz, sz);
+      ctx.drawImage((inSpace() && fairyImgS) ? fairyImgS : PET_IMG.gift, -sz / 2, -sz / 2, sz, sz);
       ctx.restore();
       if (f.st === 0 && Math.random() < 0.5) particles.push({ x: f.x, y: f.y, vx: (Math.random() - .5) * 40, vy: 20,
         life: .4, t: 0, c: Math.random() < .5 ? "#ffd6f5" : "#fff3a8", r: 1.5 + Math.random() * 2 });
@@ -13891,7 +13898,7 @@
       }
       ctx.restore();
     }
-    /* 화면 가운데쯤 — 뚜니핑 타임 막대(가운데, 높이 20)와 안 겹치게 그 바로 아래에 둔다 */
+    /* 화면 가운데쯤 — 간식 타임 막대(가운데, 높이 20)와 안 겹치게 그 바로 아래에 둔다 */
     const w = Math.min(W - 40, prophecy.both ? 250 : 190), h = 30, x = W / 2 - w / 2, y = Math.round(H / 2 + 20);
     ctx.save();
     ctx.globalAlpha = Math.min(1, prophT / 0.4);
@@ -13957,7 +13964,7 @@
   const ZONE_LUM = [0.67, 0.83, 0.83, 0.51, 0.69, 0.74, 0.61, 0.31, 0.40,
                     0.33, 0.31, 0.18, 0.46, 0.32, 0.18, 0.39, 0.41, 0.20];
   function rimPower() {                    // 0 = 테두리 없음, 1 = 가장 세게
-    if (fever) return 0;                   // 뚜니핑 하늘은 눈부시게 밝다
+    if (fever) return 0;                   // 간식 하늘은 눈부시게 밝다
     const a = ZONE_LUM[zoneIdx()], b = ZONE_LUM[Math.min(LAST_Z, zoneIdx() + 1)];
     const l = a + (b - a) * zoneFrac();
     return Math.max(0, Math.min(1, (0.52 - l) / 0.28));
@@ -14143,7 +14150,7 @@
         ctx.fill();
       }
       const rp = rimPower();
-      const fp = (it.space && feverPoopSpace) ? feverPoopSpace : feverPoop;
+      const fp = it.skin === "fever" ? snackPic(it) : null;
       if (it.skin === "fever" && fp) {
         if (rp > 0.03) drawRim(fp, it.size, rp);
         ctx.drawImage(fp, -it.size / 2, -it.size / 2, it.size, it.size);
@@ -14400,7 +14407,7 @@
       ctx.fill();
     }
 
-    /* 뚜니핑 타임 — 예전엔 한가운데에 글자와 막대를 놓아서 정작 똥이
+    /* 간식 타임 — 예전엔 한가운데에 글자와 막대를 놓아서 정작 똥이
        쏟아지는 자리를 가렸다. 남은 시간은 위쪽 알약 하나로 줄이고,
        크게 알리는 일은 시작하는 순간 한 번만 한다. */
     const tn = performance.now();
@@ -14450,9 +14457,9 @@
       ctx.textAlign = "center"; ctx.textBaseline = "middle";
       ctx.font = "800 12px NationalPension, NanumBarunGothic, system-ui, sans-serif";
       ctx.lineWidth = 3.5; ctx.strokeStyle = "rgba(46,12,0,.66)";
-      ctx.strokeText("뚜니핑 타임", W / 2, by + bh / 2 + 0.5);
+      ctx.strokeText("간식 타임", W / 2, by + bh / 2 + 0.5);
       ctx.fillStyle = "#fff";
-      ctx.fillText("뚜니핑 타임", W / 2, by + bh / 2 + 0.5);
+      ctx.fillText("간식 타임", W / 2, by + bh / 2 + 0.5);
       ctx.textBaseline = "top";
     }
 
@@ -14477,12 +14484,12 @@
       ctx.font = "900 34px NationalPension, NanumBarunGothic, system-ui, sans-serif";
       ctx.lineWidth = 8; ctx.lineJoin = "round";
       ctx.strokeStyle = "rgba(52,14,0,.7)";
-      ctx.strokeText("뚜니핑 타임!", 0, 0);
+      ctx.strokeText("간식 타임!", 0, 0);
       const tg = ctx.createLinearGradient(0, -20, 0, 20);
       tg.addColorStop(0, "#fffdf0");
       tg.addColorStop(1, inSpace() ? "#ffb0f4" : "#ffd23f");
       ctx.fillStyle = tg;
-      ctx.fillText("뚜니핑 타임!", 0, 0);
+      ctx.fillText("간식 타임!", 0, 0);
       ctx.restore();
       ctx.textBaseline = "top";
     }
@@ -14515,7 +14522,7 @@
       ctx.textAlign = "left"; ctx.textBaseline = "top";
     }
     /* 엄마의 한마디 — 스르르 떠올랐다가 끝에서 스르르 사라진다.
-       뚜니핑 알림처럼 튀어오르지 않고, 조용히 떠 있다 지나간다. */
+       간식 알림처럼 튀어오르지 않고, 조용히 떠 있다 지나간다. */
     if (momMsg > 0) {
       const k = MOM_SEC - momMsg;                          // 0 → 3 (흐른 시간)
       const al = Math.min(1, k / 0.45) * Math.min(1, momMsg / 0.6);
@@ -14551,7 +14558,7 @@
   }
 
   /* 무적인 동안 캐릭터 둘레에 옅은 빛 테두리 — 소리를 끄고 해도 무적인 줄 알 수 있게.
-     뚜니핑 뒤 1.5초, 증강 고른 뒤 0.5초, 맞은 뒤 1초 모두 같은 표시 */
+     간식 뒤 1.5초, 증강 고른 뒤 0.5초, 맞은 뒤 1초 모두 같은 표시 */
   function drawInvGlow(now) {
     if (now >= invUntil || dying > 0 || fever) return;
     const g = bubbleGeom(now);
