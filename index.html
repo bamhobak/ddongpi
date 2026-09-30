@@ -1601,7 +1601,7 @@
   const elTitle = document.getElementById("overTitle");
   const coinNote = document.getElementById("coinNote");
 
-  const GAME_VERSION = "v0.9.46";
+  const GAME_VERSION = "v0.9.47";
   /* 제작사 스플래시(bamhobak friends 로고) — 2026-09-20 끔. 다시 켜려면 true */
   const SPLASH_USE = false;   // 코드를 고칠 때마다 뒤 두 자리를 올린다
   document.getElementById("ver").textContent = GAME_VERSION;
@@ -1631,7 +1631,7 @@
     /* 점술가 — 도박사 자리를 이어받았다. 가끔 떨어지는 수정 구슬(옛 포춘쿠키)을 먹으면 10초 동안 예언 하나가 이뤄진다.
        (옛 도박사 기록은 순위표에 도박사로 그대로 남는다 — JOB_NAMES·JOB_IMG 에만 남겨 두었다) */
     fortune: { nm: "루나 · 점술가", ic: "🔮", ds: "10초마다 예언이 저절로 바뀐다 · 좋은 예언 넷, 나쁜 예언 하나" },
-    levitator: { nm: "소라 · 부양사", ic: "🎈", ds: "하늘 어디든 날 수 있다 · 높이 있을수록 점수 UP" },
+    levitator: { nm: "소라 · 부양사", ic: "☁️", ds: "하늘 어디든 날 수 있다 · 높이 있을수록 점수 UP" },
     fit: { nm: "버피 · 헬스견", ic: "💪", ds: "목숨 5개로 시작 · 우산이 안 나온다 · 하트가 어마무시하게 잘 나온다 · 벌크업 좀 된 상태" },
     powerj: { nm: "제이 · 계획러", ic: "📋", ds: "달이 잘 나온다 · 대신 증강은 계획대로 1개만" },
     /* 파워P — 파워J 의 거울. 달은 남들만큼 오는데, 올 때마다 네 장을 펼쳐 놓고 고른다.
@@ -2128,9 +2128,9 @@
     right: { img: null, aspect: 1.195, head: 0.345, cx: 0.701, cy: 0.416, adj: 0.4270, lift: 0.098, float: true },
     hurt:  { img: null, aspect: 1.3711, head: 0.3855, cx: 0.625, cy: 0.405, adj: 0.4987, lift: 0.098 }
   };
-  const SPR_LEV_SPACE = {    // 소라 — 파피용(장난감 날개·실크햇·풍선)
-    right: { img: null, aspect: 1.225, head: 0.324, cx: 0.765, cy: 0.432, adj: 0.4214, lift: 0.118, float: true },
-    hurt:  { img: null, aspect: 1.4142, head: 0.3039, cx: 0.716, cy: 0.480, adj: 0.3925, lift: 0.118 }
+  const SPR_LEV_SPACE = {    // 소라 — 삽살개 도사 (v0.9.47, 예전 파피용)
+    right: { img: null, aspect: 1.1250, head: 0.420, cx: 0.735, cy: 0.420, adj: 0.5016, lift: 0.160, float: true },
+    hurt:  { img: null, aspect: 1.1675, head: 0.420, cx: 0.722, cy: 0.430, adj: 0.4996, lift: 0.153 }
   };
   const SPR_FIT_SPACE = {    // 버피 — 복서
     right: { img: null, aspect: 1.170, head: 0.374, cx: 0.656, cy: 0.386, adj: 0.5229, lift: -0.045, float: true },
@@ -2143,8 +2143,8 @@
   // v0.8.75 소라는 날개 때문에 커 보여서 그림만 16% 줄였다 (adj 0.571 → 0.48) — 피격 범위(판정원)는 그대로
   /* v0.9.09 소라 크기·높이는 풍선과 날개를 빼고 잰 몸만으로 다른 캐릭터와 같게 (날개·풍선 테두리는 첫 헤엄 칸에 손으로 그려 잼 — 땅 38%·우주 22%) */
   const SPR_LEV = {
-    right: { img: null, aspect: 1.180, head: 0.332, cx: 0.724, cy: 0.488, adj: 0.4884, lift: 0.181, float: true },
-    hurt:  { img: null, aspect: 1.3077, head: 0.3275, cx: 0.694, cy: 0.566, adj: 0.4583, lift: 0.181 }
+    right: { img: null, aspect: 1.2000, head: 0.420, cx: 0.730, cy: 0.340, adj: 0.4844, lift: 0.168, float: true },
+    hurt:  { img: null, aspect: 1.1700, head: 0.420, cx: 0.732, cy: 0.440, adj: 0.5035, lift: 0.215 }
   };
   const SPR_FIT = {
     right: { img: null, aspect: 1.415, head: 0.387, cx: 0.634, cy: 0.353, adj: 0.5913, lift: -0.243, float: true },
