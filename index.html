@@ -1559,7 +1559,7 @@
   const elTitle = document.getElementById("overTitle");
   const coinNote = document.getElementById("coinNote");
 
-  const GAME_VERSION = "v0.9.35";
+  const GAME_VERSION = "v0.9.36";
   /* 제작사 스플래시(bamhobak friends 로고) — 2026-09-20 끔. 다시 켜려면 true */
   const SPLASH_USE = false;   // 코드를 고칠 때마다 뒤 두 자리를 올린다
   document.getElementById("ver").textContent = GAME_VERSION;
@@ -2428,7 +2428,7 @@
   let helperTimer = 0;
   let fetchers = [];        // 배고픈 뿌잉 — 아이템을 대신 먹으러 가는 뿌잉
   const FETCH_DELAY = 1.2;  // 아이템이 보이고 몇 초 뒤에 출발하는지
-  const FETCH_SPEED = 714;   // 840 에서 15% 감속
+  const FETCH_SPEED = 500;   // v0.9.36 714 → 500 (뿌잉 30% 느리게)
   let helperQueue = 0;      // 이번 차례에 아직 안 나온 인원
   let helperGap = 0;        // 다음 한 명까지 남은 시간
   const FETCH_REST = 2;     // 배고픈 뿌잉이 다녀온 뒤 쉬는 시간(초)
@@ -8244,7 +8244,7 @@
           helperQueue--;
           const fromLeft = Math.random() < 0.5;   // 아래 좌/우에서 비스듬히 솟아오른다
           // 수직에서 8~34도 사이. 너무 눕히면 옆으로 금방 빠져나가서 범위를 좁혔다
-          const speed = 744 + Math.random() * 216;   // 기존 620~800 에서 20% 빠르게
+          const speed = (744 + Math.random() * 216) * 0.7;   // v0.9.36 뿌잉 30% 느리게 (예전 744~960)
           const ang = (8 + Math.random() * 26) * Math.PI / 180;
           helpers.push({
             x: fromLeft ? -30 + Math.random() * (W * 0.45)
