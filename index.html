@@ -1027,6 +1027,8 @@
   }
 
   .big { font-size: clamp(38px, 11vw, 48px); font-weight: 800; color: #ffd23f; }
+  .big.digits { line-height: 0; margin: 4px 0; }
+  .big.digits .dg { display: inline-flex; align-items: flex-end; filter: drop-shadow(0 3px 6px rgba(0,0,0,.45)); }
   /* 게임오버 — 이번 판 이야기 */
   #overStory { font-size: 13px; color: #cfd6e4; margin-top: 4px; white-space: pre-line; line-height: 1.6; }
   #overBest { font-size: 14px; font-weight: 700; color: #ffe08a; margin-top: 3px; min-height: 1em; }
@@ -1035,7 +1037,7 @@
               max-width: 330px; margin: 4px auto 0; font-size: 17px; line-height: 1.3; }
   #overAugs b { font-size: 10px; color: #ffd23f; margin-left: 1px; }
   #overAugs[hidden] { display: none; }
-  #retryRow { display: flex; gap: 8px; justify-content: center; align-items: center; flex-wrap: wrap; }
+  #retryRow { display: flex; flex-direction: column; gap: 10px; justify-content: center; align-items: center; }
   #btnRetryJob, #btnHome { font-size: 13px; padding: 9px 12px; opacity: .85; }
   /* 메인으로는 판을 뜨는 버튼이라 한 김에 또 하기(노랑)와 색을 달리 둔다 — 잘못 누르지 않게 */
   #btnHome { background: #33405e; color: #dfe6f5; }
@@ -1166,6 +1168,21 @@
     border-width: 0 calc(var(--bh) / 2);
     border-image: url(assets/ui/btn_blue.webp) 0 60 fill / 0 calc(var(--bh) / 2) / 0 stretch;
     color: #fff; text-shadow: 0 1px 2px rgba(0,50,110,.65);
+  }
+  /* ---- v0.9.42 버튼 양식 통일 — 주요(노랑) 50px · 보조(파랑)·나가기(회색) 44px, 폭 240, 글자 16/15px ---- */
+  #btnStart, #btnRetry, #btnPickOk, #btnJobGo, #btnResume, #vsScreen #vsQuick {
+    --bh: 50px !important; min-width: 240px; font-size: 17px !important; letter-spacing: 1px !important; margin: 0;
+  }
+  #retryRow #btnRetryJob, #btnPauseRetry, #btnJobList, #btnReroll, #btnPetBuy, #vsScreen #vsBot,
+  #btnHome, #btnJobBack, #btnPauseHome, #vsScreen #vsBack, #btnSettingsClose {
+    --bh: 44px !important; min-width: 240px; font-size: 15px !important; letter-spacing: 0 !important; font-weight: 800; margin: 0; opacity: 1;
+  }
+  #btnPetBuy:disabled { min-width: 240px; }
+  #btnSave {
+    --bh: 44px; height: var(--bh); box-sizing: border-box; padding: 0 6px calc(var(--bh) * .08); flex-shrink: 0;
+    border-style: solid; border-color: transparent; border-width: 0 calc(var(--bh) / 2); border-radius: 0; box-shadow: none; background: none;
+    border-image: url(assets/ui/btn_yellow.webp) 0 60 fill / 0 calc(var(--bh) / 2) / 0 stretch;
+    color: #6b3300; text-shadow: 0 1px 0 rgba(255,255,255,.55); font-size: 15px; font-weight: 800;
   }
   @keyframes glowY {
     0%, 100% { filter: drop-shadow(0 0 7px rgba(255,196,46,.45)); }
@@ -1375,7 +1392,7 @@
       <h2>⚔️ 멀티플레이</h2>
       <div id="vsJobs"></div>
       <div id="vsJobDs"></div>
-      <button id="vsQuick">⚡ 빠른 대전</button>
+      <button id="vsQuick">빠른 대전</button>
       <button id="vsHost">방 만들기</button>
       <div id="vsJoinRow">
         <input id="vsCode" type="text" inputmode="numeric" maxlength="4" placeholder="방 번호 4자리" autocomplete="off">
@@ -1384,7 +1401,7 @@
       <div id="vsMsg"></div>
       <div id="vsRec"></div>
       <button id="vsLocal">한 폰으로 둘이서</button>
-      <button id="vsBot">🤖 봇과 연습</button>
+      <button id="vsBot">봇과 연습</button>
       <button id="vsBack">메인으로</button>
     </div>
 
@@ -1582,7 +1599,7 @@
   const elTitle = document.getElementById("overTitle");
   const coinNote = document.getElementById("coinNote");
 
-  const GAME_VERSION = "v0.9.41";
+  const GAME_VERSION = "v0.9.42";
   /* 제작사 스플래시(bamhobak friends 로고) — 2026-09-20 끔. 다시 켜려면 true */
   const SPLASH_USE = false;   // 코드를 고칠 때마다 뒤 두 자리를 올린다
   document.getElementById("ver").textContent = GAME_VERSION;
@@ -3523,7 +3540,7 @@
   function syncReroll() {
     const can = rerolls > 0 && job !== "powerj";
     btnReroll.style.display = can ? "" : "none";
-    btnReroll.textContent = "🔄 다시 뽑기 (" + rerolls + ")";
+    btnReroll.textContent = "다시 뽑기 (" + rerolls + ")";
   }
   btnReroll.addEventListener("click", () => {
     if (rerolls <= 0 || state !== STATE.AUG || job === "powerj") return;
@@ -9568,6 +9585,7 @@
     let recLine = "";
     if (NET.role) {
       elTitle.textContent = meWin ? "승리!" : "패배…";
+      elFinal.classList.remove("digits");
       elFinal.textContent = meWin ? "🏆" : "💩";
       if (!reason) {                                  // 끊겨서 끝난 판은 빼고
         vsRankUpload(meWin).then(refreshVsBoards);   // 대전 랭킹 (서버)
@@ -9577,10 +9595,12 @@
       }
     } else if (vsGhostOn) {                           // 기록 대전 — 전적에는 넣지 않는다
       elTitle.textContent = meWin ? "승리!" : "패배…";
+      elFinal.classList.remove("digits");
       elFinal.textContent = meWin ? "🏆" : "💩";
       recLine = vsGhost.live ? "봇과 연습" : "기록 대전 · " + (vsGhost.bot ? "연습 봇" : vsGhost.name + "의 기록");
     } else {
       elTitle.textContent = "P" + win + " 승리!";
+      elFinal.classList.remove("digits");
       elFinal.textContent = "🏆 P" + win;
     }
     if (!reason) vsRecUpload(); else vsRecTrace = null;   // 내 움직임 기록 올리기 (끊겨서 끝난 판은 빼고)
@@ -11333,6 +11353,7 @@
     augScreen.classList.add("hidden");
     const all = partyRank(), me = all.find(q => q.me);
     elTitle.textContent = me.rank === 1 ? "우승!" : me.rank + "위";
+      elFinal.classList.remove("digits");
     elFinal.textContent = me.rank === 1 ? "🏆" : me.rank === 2 ? "🥈" : me.rank === 3 ? "🥉" : "💩";
     document.getElementById("overStory").textContent = all.map(q =>
       (q.me ? "▶ " : "") + q.rank + "위 " + q.name + " · 💩 " + q.hits + "번").join("\n");
@@ -11679,6 +11700,81 @@
   /* 게임오버 화면의 이번 판 이야기 — 버틴 시간·도달 지대, 내 최고 기록과의 차이, 고른 증강 */
   const LS_BEST = "epjpddongpi_best_";
   function fmtSec(t) { t = Math.floor(t); const m = Math.floor(t / 60), ss = t % 60; return m ? m + "분 " + ss + "초" : ss + "초"; }
+  /* v0.9.42 기록 달성 빵파레 — 화면 위에 따로 얹는 캔버스(누름은 통과)에서 양쪽 아래 폭죽 + 색종이 비. 한 판에 한 번 */
+  let fanfareAt = 0;
+  function fanfare() {
+    const now = performance.now();
+    if (now - fanfareAt < 4000) return;
+    fanfareAt = now;
+    let cv2 = document.getElementById("fanfare");
+    if (!cv2) {
+      cv2 = document.createElement("canvas"); cv2.id = "fanfare";
+      cv2.style.cssText = "position:fixed;inset:0;width:100%;height:100%;pointer-events:none;z-index:50";
+      document.body.appendChild(cv2);
+    }
+    const dpr = Math.min(2, window.devicePixelRatio || 1), Wc = innerWidth, Hc = innerHeight;
+    cv2.width = Wc * dpr; cv2.height = Hc * dpr;
+    const g = cv2.getContext("2d"); g.setTransform(dpr, 0, 0, dpr, 0, 0);
+    const COLS = ["#ffd23f", "#ff5c8a", "#4dd2ff", "#7dff8a", "#b98bff", "#ff9a3c", "#ffffff"];
+    const bits = [];
+    const shoot = (x, y, dirX, n) => {
+      for (let k = 0; k < n; k++) {
+        const a = -Math.PI / 2 + dirX * (0.15 + Math.random() * 0.55), v = 520 + Math.random() * 520;
+        bits.push({ x, y, vx: Math.cos(a) * v, vy: Math.sin(a) * v, r: 4 + Math.random() * 5, rot: Math.random() * 6, vr: (Math.random() - .5) * 14,
+                    c: COLS[k % COLS.length], sh: Math.random() < .35 ? 1 : 0, life: 2.6 + Math.random() * 1.2 });
+      }
+    };
+    shoot(Wc * 0.08, Hc * 0.98, 1, 90); shoot(Wc * 0.92, Hc * 0.98, -1, 90);
+    for (let k = 0; k < 70; k++) bits.push({ x: Math.random() * Wc, y: -20 - Math.random() * Hc * 0.5, vx: (Math.random() - .5) * 60, vy: 80 + Math.random() * 120,
+                                             r: 4 + Math.random() * 4, rot: Math.random() * 6, vr: (Math.random() - .5) * 10, c: COLS[k % COLS.length], sh: 0, life: 3.8 });
+    if (!sfx("gold")) beep(1250, .1, "square", .05);
+    setTimeout(() => { if (!sfx("star")) beep(1600, .12, "square", .05); }, 180);
+    setTimeout(() => { sfx("aug"); }, 380);
+    if (navigator.vibrate) navigator.vibrate([40, 60, 40, 60, 90]);
+    let t0 = performance.now(), last = t0;
+    const step = tt => {
+      const dt = Math.min(0.05, (tt - last) / 1000); last = tt;
+      const age = (tt - t0) / 1000;
+      g.clearRect(0, 0, Wc, Hc);
+      let alive = 0;
+      for (const b of bits) {
+        if (age > b.life) continue;
+        alive++;
+        b.vy += 620 * dt; b.vx *= Math.exp(-1.6 * dt); b.vy = Math.min(b.vy, 260 + Math.random() * 40);
+        b.x += b.vx * dt; b.y += b.vy * dt; b.rot += b.vr * dt;
+        g.save(); g.globalAlpha = Math.min(1, (b.life - age) / 0.6);
+        g.translate(b.x, b.y); g.rotate(b.rot); g.fillStyle = b.c;
+        if (b.sh) { g.beginPath(); g.arc(0, 0, b.r * 0.7, 0, 6.283); g.fill(); }
+        else g.fillRect(-b.r, -b.r * 0.45, b.r * 2, b.r * 0.9);
+        g.restore();
+      }
+      if (alive) requestAnimationFrame(step); else g.clearRect(0, 0, Wc, Hc);
+    };
+    requestAnimationFrame(step);
+  }
+  /* 게임 오버 점수 — 게임 속 사탕 숫자 그림(digits2.webp)을 글자 대신 한 칸씩 붙인다. 폭이 넘치면 높이를 줄인다 */
+  function setFinalDigits(txt) {
+    elFinal.textContent = "";
+    elFinal.classList.add("digits");
+    const box = document.createElement("span"); box.className = "dg";
+    const maxW = Math.min(340, innerWidth - 40);
+    let h = 62, gapK = -0.06;
+    const widthAt = hh => { let w = 0; for (const ch of txt) { const d = ch === "," ? 10 : ch.charCodeAt(0) - 48; w += (d >= 0 && d <= 10 ? DIGIT_W[d] * hh / DIGIT_CH : hh * 0.5) + gapK * hh; } return w; };
+    if (widthAt(h) > maxW) h = Math.max(30, h * maxW / widthAt(h));
+    const k = h / DIGIT_CH, sheetW = DIGIT_CW * 11 * k;
+    for (const ch of txt) {
+      const d = ch === "," ? 10 : ch.charCodeAt(0) - 48;
+      const sp = document.createElement("span");
+      if (d >= 0 && d <= 10) {
+        const w = DIGIT_W[d] * k;
+        sp.style.cssText = "display:inline-block;height:" + h + "px;width:" + w + "px;margin-right:" + (gapK * h) + "px;" +
+          "background:url(assets/ui/digits2.webp) no-repeat;background-size:" + sheetW + "px " + h + "px;" +
+          "background-position:" + (-(d * DIGIT_CW + (DIGIT_CW - DIGIT_W[d]) / 2) * k) + "px 0";
+      } else { sp.textContent = ch; sp.style.cssText = "font-size:" + Math.round(h * 0.7) + "px;margin:0 2px"; }
+      box.appendChild(sp);
+    }
+    elFinal.appendChild(box);
+  }
   function overStory(s) {
     const z = ZONES[zoneIdx()];
     document.getElementById("overStory").textContent =
@@ -11692,8 +11788,9 @@
       let best = 0;
       try { best = +localStorage.getItem(LS_BEST + runMode) || 0; } catch (e) {}
       if (s > best) {
-        bestEl.textContent = best > 0 ? "🎉 신기록! (전 기록 " + best.toLocaleString() + unit + ")" : "🎉 첫 기록!";
+        bestEl.textContent = best > 0 ? "🎉 신기록! (전 기록 " + best.toLocaleString() + unit + ")" : "";   // v0.9.42 첫 기록 줄은 뺐다
         bestEl.classList.add("new");
+        if (best > 0) fanfare();                     // 신기록 — 빵파레
         try { localStorage.setItem(LS_BEST + runMode, String(s)); } catch (e) {}
       } else {
         bestEl.textContent = s === best ? "내 최고 기록과 같아요!"
@@ -11726,7 +11823,7 @@
     box.hidden = !owned.length;
     // 다시 하기 — 똥대잔치는 같은 직업으로 바로(큰 버튼) + 직업 바꾸기(작은 버튼)
     const locked = jobLocked();
-    btnRetry.textContent = locked ? "다시 하기" : "🔁 같은 직업으로 바로";
+    btnRetry.textContent = locked ? "다시 하기" : "같은 직업으로 바로";
     btnRetryJob.hidden = locked;
   }
   function gameOver() {
@@ -11749,7 +11846,7 @@
     const s = noItem() ? meters() : Math.floor(score);
     burst(player.x, player.y, "#8a5a2b", 40);
     shake = 30;
-    elFinal.textContent = s.toLocaleString() + (noItem() ? " m" : "");
+    setFinalDigits(s.toLocaleString() + (noItem() ? " m" : ""));   // v0.9.42 게임 속 점수와 같은 숫자 그림
     elTitle.textContent = "게임 오버!";
     overStory(s);
     overScreen.classList.remove("hidden");
@@ -11792,6 +11889,7 @@
           const at = topList.findIndex(v => v.name + "|" + Number(v.score) === myRowKey);
           if (at >= 0) {
             nameTag.textContent = "🎉 이번 주 " + (at + 1) + "위 달성! (" + nm + ")";
+            fanfare();
             setBoardJob("all");                 // 전체 순위에 들었으니 전체 탭으로
           } else {
             // 전체엔 못 들어도 직업별 TOP 10엔 들어갔을 수 있다
@@ -11801,7 +11899,7 @@
               jobLists[job] = jl;
               jat = jl.findIndex(v => v.name + "|" + Number(v.score) === myRowKey);
             } catch (e) {}
-            if (jat >= 0) nameTag.textContent = "🎉 이번 주 " + jobShort(job) + " " + (jat + 1) + "위 달성! (" + nm + ")";
+            if (jat >= 0) { nameTag.textContent = "🎉 이번 주 " + jobShort(job) + " " + (jat + 1) + "위 달성! (" + nm + ")"; fanfare(); }
             else nameRow.classList.remove("on");
           }
         } catch (e) {
