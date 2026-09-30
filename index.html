@@ -843,7 +843,7 @@
   #homeJobs #jobList.car { position: relative; display: block; max-width: none; overflow: visible; padding: 0; margin: 8px 0 10px; touch-action: pan-y; user-select: none; -webkit-user-select: none; }
   #homeJobs #jobList.car .augCard { position: absolute; left: 25%; bottom: 0; width: 50%; box-sizing: border-box; transform-origin: 50% 100%; transition: none; padding: 6px 0 4px; gap: 8px; will-change: transform; }
   #homeJobs #jobList.car img { -webkit-user-drag: none; pointer-events: none; }
-  #homeJobs #jobList.car .augCard.sil img.ic { filter: brightness(0) blur(2px); }   /* v0.9.61 아직 안 열린 캐릭터 — 실루엣만 */
+  #homeJobs #jobList.car .augCard.sil img.ic { filter: brightness(0); }   /* v0.9.61 아직 안 열린 캐릭터 — 실루엣만 */
   #pgHome #jobList.car img.ic { height: clamp(104px, 23vh, 180px); }
   #homeJobs #jobList.car .augCard .nm2, #homeJobs #jobList.car .augCard.sel .nm2 { font-size: 18px; color: #fff; text-shadow: 0 2px 0 #4a2a10, 0 0 6px rgba(40,20,0,.75), 1px 0 0 #4a2a10, -1px 0 0 #4a2a10, 0 -1px 0 #4a2a10; }
   #homeJobs #jobList.car .augCard, #homeJobs #jobList.car .augCard.sel { border-image: none; border-color: transparent; outline: none; background: none; box-shadow: none; filter: none; }   /* v0.9.56 카드 바탕 없이 캐릭터만 */
@@ -1770,7 +1770,7 @@
   const elTitle = document.getElementById("overTitle");
   const coinNote = document.getElementById("coinNote");
 
-  const GAME_VERSION = "v0.9.63";
+  const GAME_VERSION = "v0.9.64";
   /* 제작사 스플래시(bamhobak friends 로고) — 2026-09-20 끔. 다시 켜려면 true */
   const SPLASH_USE = false;   // 코드를 고칠 때마다 뒤 두 자리를 올린다
   document.getElementById("ver").textContent = GAME_VERSION;
