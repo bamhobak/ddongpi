@@ -1827,7 +1827,7 @@
   const elTitle = document.getElementById("overTitle");
   const coinNote = document.getElementById("coinNote");
 
-  const GAME_VERSION = "v0.9.76";
+  const GAME_VERSION = "v0.9.77";
   /* 제작사 스플래시(bamhobak friends 로고) — 2026-09-20 끔. 다시 켜려면 true */
   const SPLASH_USE = false;   // 코드를 고칠 때마다 뒤 두 자리를 올린다
   document.getElementById("ver").textContent = GAME_VERSION;
@@ -2917,7 +2917,7 @@
     c.save();
     c.translate(S / 2, S / 2);
     c.rotate(1.05);                       // 왼쪽 아래 → 오른쪽 위로 기운 띠
-    const off = (now * R.cyc / 6000 + seed * 37) % R.cyc;   // 6초에 한 바퀴 — 천천히 흐른다
+    const off = (now * R.cyc / 3000 + seed * 37) % R.cyc;   // v0.9.77 3초에 한 바퀴 (6초에서 두 배 빠르게)
     c.drawImage(R.str, -2 * R.cyc + off, -R.str.height / 2);
     c.restore();
     c.globalCompositeOperation = "multiply";        // 입체 그림자를 입히고
@@ -2940,7 +2940,7 @@
   /* 무지개똥은 일반 똥과 헷갈리지 않게 무지갯빛으로 돌면서 번쩍인다.
      seed 를 섞어 서로 다른 색으로 떨어진다. */
   function goldFx(now, seed) {
-    const hue = (now * 0.12 + seed * 53) % 360;
+    const hue = (now * 0.24 + seed * 53) % 360;   // v0.9.77 색 도는 속도도 두 배 (0.12 → 0.24)
     const puls = 0.5 + 0.5 * Math.sin(now / 420 + seed);         // 0~1 로 천천히 오가는 반짝임
     return {
       hue: hue,
