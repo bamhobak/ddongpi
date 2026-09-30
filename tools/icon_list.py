@@ -7,6 +7,7 @@ REUSE : 이미 있는 게임 그림을 그대로 쓰는 이모지 (assets/<파�
 이모지 키에는 변형 선택자(U+FE0F)를 붙이지 않는다 — 게임이 찾을 때 떼고 찾는다.
 """
 NEW = [
+    ("🍗", "legion", "three golden crowned bones piled together (made from snack_king, not generated)"),   # v0.9.78 왕뼈다귀 군단
     # 화면·버튼
     ("⏸", "pause", "a round pause button symbol: two thick rounded vertical bars on a soft sky-blue circular badge"),
     ("🏆", "trophy", "a shiny gold trophy cup with two handles on a small dark base"),
@@ -110,7 +111,8 @@ NEW = [
 REUSE = {"🪙": "item_coin", "⭐": "item_star", "🌙": "item_crescent_moon", "🌕": "item_full_moon",
          "☂": "item_umbrella", "❤": "item_red_heart", "💧": "item_droplet", "🧻": "item_roll_of_paper",
          "🔮": "item_crystal_ball", "💩": "item_poop", "🚀": "pet_galaga", "🕊": "dove",
-         "👼": "pet_angel", "🧚": "pet_fairy", "🐈": "pet_cat"}
+         "👼": "pet_angel", "🧚": "pet_fairy", "🐈": "pet_cat",
+         "🦴": "snack_king"}   # v0.9.78 왕뼈다귀 증강 = 왕관 쓴 뼈다귀 그림
 
 STYLE = ("This is a small GAME UI ICON drawn at about 24-30 pixels, so it must read clearly: bold simple chunky silhouette, "
          "thick clean soft dark-brown outline, few details, glossy highlight, fills the frame, perfectly centered, front view. "

@@ -1708,15 +1708,16 @@
        밀어 숨길 뿐 남겨 두어 textContent 가 그대로다(글자를 읽는 코드가 안 깨진다). 나중에 붙는 글자는 MutationObserver 가 잡는다.
      · 캔버스 글자: fillText/strokeText 를 감싸 이모지 자리에 그림을 그린다 — 자리 폭은 원래 이모지 폭 그대로라 배치가 안 바뀐다.
      그림이 아직 안 왔거나 목록에 없는 이모지는 원래 이모지로 나온다. */
-  /*ICONS-BEGIN*/ const ICON_KEYS = ["🪙", "⭐", "🌙", "🌕", "☂", "❤", "💧", "🧻", "🔮", "💩", "🚀", "🕊", "👼", "🧚", "🐈", "⏸", "🏆", "👑", "✏", "🎵", "🔔", "🎉", "🥊", "🗼", "🔄", "🏠", "🔒", "🔓", "🔁", "🥇", "🥈", "🥉", "✨", "⚠", "⏱", "🏃", "🎈", "💪", "📋", "🎯", "🙏", "🫧", "🧘", "🚫", "🦸", "⚡", "🔥", "🐢", "🐦", "📯", "💥", "😋", "💉", "☔", "🌠", "🕳", "🌝", "🧲", "💨", "🍀", "🌧", "💢", "🌈", "📱", "🥕", "🦄", "🕰", "🎲", "👻", "👊", "👯", "🍷", "☝", "🍚", "🌀", "🐕", "🎰", "🪜", "🎼", "✂", "🌱", "⛰", "☁", "🌤", "🧊", "❄", "🛰", "🌍", "☄", "🌌", "🌑", "🌒", "⚫", "🍌", "😵", "🤢", "😜", "😭", "👍", "⚔", "🪐", "🌬", "🌫", "🏋", "🧑‍🚀"]; const ICON_COLS = 10, ICON_ROWS = 11, ICON_CELL = 96; /*ICONS-END*/
+  /*ICONS-BEGIN*/ const ICON_KEYS = ["🪙", "⭐", "🌙", "🌕", "☂", "❤", "💧", "🧻", "🔮", "💩", "🚀", "🕊", "👼", "🧚", "🐈", "🦴", "🍗", "⏸", "🏆", "👑", "✏", "🎵", "🔔", "🎉", "🥊", "🗼", "🔄", "🏠", "🔒", "🔓", "🔁", "🥇", "🥈", "🥉", "✨", "⚠", "⏱", "🏃", "🎈", "💪", "📋", "🎯", "🙏", "🫧", "🧘", "🚫", "🦸", "⚡", "🔥", "🐢", "🐦", "📯", "💥", "😋", "💉", "☔", "🌠", "🕳", "🌝", "🧲", "💨", "🍀", "🌧", "💢", "🌈", "📱", "🥕", "🦄", "🕰", "🎲", "👻", "👊", "👯", "🍷", "☝", "🍚", "🌀", "🐕", "🎰", "🪜", "🎼", "✂", "🌱", "⛰", "☁", "🌤", "🧊", "❄", "🛰", "🌍", "☄", "🌌", "🌑", "🌒", "⚫", "🍌", "😵", "🤢", "😜", "😭", "👍", "⚔", "🪐", "🌬", "🌫", "🏋", "🧑‍🚀"]; const ICON_COLS = 10, ICON_ROWS = 11, ICON_CELL = 96; /*ICONS-END*/
   const ICON_IDX = new Map(ICON_KEYS.map((k, i) => [k, i]));
   const ICON_RE = ICON_KEYS.length ? new RegExp("(" + ICON_KEYS.slice().sort((a, b) => b.length - a.length)
     .map(k => k.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")).join("|") + ")\\uFE0F?", "gu") : null;
   let iconSheet = null;
+  const ICON_URL = "assets/icons.webp?k=" + ICON_KEYS.length + "-" + ICON_KEYS.join("").length;   // v0.9.78 칸 순서가 바뀌면 옛 그림을 쓰지 않게
   if (ICON_RE) {
     const im = new Image();
     im.onload = () => { iconSheet = im; document.documentElement.classList.add("iconsOn"); };
-    im.src = "assets/icons.webp";
+    im.src = ICON_URL;
   }
   function iconPos(i) {                      // 배경 위치(%) — background-size 가 시트 전체를 칸 수만큼 키운다
     const c = i % ICON_COLS, r = Math.floor(i / ICON_COLS);
@@ -1795,7 +1796,7 @@
     };
     const st = document.createElement("style");
     st.textContent = ".iconsOn .emj{display:inline-block;width:1.15em;height:1.15em;vertical-align:-0.22em;" +
-      "background:url(assets/icons.webp) no-repeat;background-size:" + ICON_COLS * 100 + "% " + ICON_ROWS * 100 + "%;" +
+      "background:url(" + ICON_URL + ") no-repeat;background-size:" + ICON_COLS * 100 + "% " + ICON_ROWS * 100 + "%;" +
       "overflow:hidden;white-space:nowrap;text-indent:3em;line-height:1}";
     document.head.appendChild(st);
     emojify(document.body);
@@ -1827,7 +1828,7 @@
   const elTitle = document.getElementById("overTitle");
   const coinNote = document.getElementById("coinNote");
 
-  const GAME_VERSION = "v0.9.77";
+  const GAME_VERSION = "v0.9.78";
   /* 제작사 스플래시(bamhobak friends 로고) — 2026-09-20 끔. 다시 켜려면 true */
   const SPLASH_USE = false;   // 코드를 고칠 때마다 뒤 두 자리를 올린다
   document.getElementById("ver").textContent = GAME_VERSION;
@@ -3770,7 +3771,7 @@
     { id: "blackhole",  ic: "🕳️", nm: "블랙홀",     ds: "끌어당기는 힘이 더 세지며, 간식도 약간의 영향을 받는다",
       hidden: true, once: true, cond: () => aug.magnet > 0,
       go: () => { aug.blackhole = true; aug.magnet = 390; } },   // 자석 220 → 390 으로 확장
-    { id: "legion",     ic: "🌝", nm: "왕뼈다귀 군단", ds: "왕뼈다귀가 떼로 몰려온다",
+    { id: "legion",     ic: "🍗", nm: "왕뼈다귀 군단", ds: "왕뼈다귀가 떼로 몰려온다",
       hidden: true, once: true, cond: () => aug.giant > 0,
       go: () => { aug.legion = true; } },
     { id: "magnet",     ic: "🧲", nm: "자석",       ds: "근처의 아이템이 끌려온다",
@@ -3783,7 +3784,7 @@
     { id: "lucky",      ic: "🍀", nm: "행운",       ds: "아이템이 더 자주 등장",
       // 첫 개는 +15%, 겹칠수록 0.85배씩 덜 먹는다 (5개 누적 +69%, 실측 +65%)
       go: () => { aug.itemRateMul /= 1 + 0.15 * dim("lucky"); } },
-    { id: "giant",      ic: "🌝", nm: "왕뼈다귀", ds: "왕뼈다귀 두둥등장",
+    { id: "giant",      ic: "🦴", nm: "왕뼈다귀", ds: "왕뼈다귀 두둥등장",
       once: true, go: () => { aug.giant = 1; } },
     { id: "downpour",   ic: "🌧️", nm: "간식 폭우", ds: "간식이 더 많이 쏟아진다",
       go: () => { aug.feverRateMul = 1 / (1 / aug.feverRateMul + 0.20); } },   // 먹을 때마다 양 +20%, 감쇠 없음
