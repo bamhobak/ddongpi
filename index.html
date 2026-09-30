@@ -839,19 +839,16 @@
   /* v0.9.55 홈 캐릭터 고르기 = 좌우로 넘기는 한 줄(아이작처럼) — 가운데 온 캐릭터가 크게, 곧 고른 캐릭터. 아래에 특징 */
   #homeJobs { flex-direction: column; align-items: center; gap: 6px; max-width: 400px; }
   #homeJobs .carWrap { position: relative; width: 100%; }
-  #homeJobs #jobList.car {
-    position: relative; display: flex; gap: 0; max-width: none; overflow-x: auto; overflow-y: hidden;
-    scroll-snap-type: x mandatory; padding: 12px 0 16px; scrollbar-width: none; -webkit-overflow-scrolling: touch; overscroll-behavior-x: contain;
-  }
-  #homeJobs #jobList.car::-webkit-scrollbar { display: none; }
-  #homeJobs #jobList.car::before, #homeJobs #jobList.car::after { content: ""; flex: 0 0 25%; }   /* 첫·끝 카드도 가운데 올 수 있게 */
-  #homeJobs #jobList.car .augCard { flex: 0 0 50%; scroll-snap-align: center; transition: none; padding: 6px 0 12px; gap: 8px; will-change: transform; }
+  /* v0.9.57 아이작처럼 둥글게 — 고른 캐릭터가 앞 가운데 크게, 나머지는 뒤로 돌아가며 작고 어둡게 */
+  #homeJobs #jobList.car { position: relative; display: block; max-width: none; overflow: visible; padding: 0; margin: 8px 0 10px; touch-action: pan-y; user-select: none; -webkit-user-select: none; }
+  #homeJobs #jobList.car .augCard { position: absolute; left: 25%; bottom: 0; width: 50%; box-sizing: border-box; transform-origin: 50% 100%; transition: none; padding: 6px 0 4px; gap: 8px; will-change: transform; }
+  #homeJobs #jobList.car img { -webkit-user-drag: none; pointer-events: none; }
   #pgHome #jobList.car img.ic { height: clamp(104px, 23vh, 180px); }
   #homeJobs #jobList.car .augCard .nm2, #homeJobs #jobList.car .augCard.sel .nm2 { font-size: 18px; color: #fff; text-shadow: 0 2px 0 #4a2a10, 0 0 6px rgba(40,20,0,.75), 1px 0 0 #4a2a10, -1px 0 0 #4a2a10, 0 -1px 0 #4a2a10; }
   #homeJobs #jobList.car .augCard, #homeJobs #jobList.car .augCard.sel { border-image: none; border-color: transparent; outline: none; background: none; box-shadow: none; filter: none; }   /* v0.9.56 카드 바탕 없이 캐릭터만 */
   #homeJobs #jobList.car img.ic { filter: drop-shadow(0 5px 5px rgba(30,20,10,.35)); }
   #homeJobs .carArrow {
-    position: absolute; top: 50%; transform: translateY(-50%); z-index: 2; width: 36px; height: 56px; padding: 0;
+    position: absolute; top: 50%; transform: translateY(-50%); z-index: 200; width: 36px; height: 56px; padding: 0;
     border-radius: 12px; background: rgba(255,248,230,.94); border: 2px solid #8a5a2b; box-shadow: 0 3px 0 #6b4520;
     color: #6b3300; font-size: 24px; font-weight: 800; line-height: 1;
   }
@@ -1760,7 +1757,7 @@
   const elTitle = document.getElementById("overTitle");
   const coinNote = document.getElementById("coinNote");
 
-  const GAME_VERSION = "v0.9.56";
+  const GAME_VERSION = "v0.9.57";
   /* 제작사 스플래시(bamhobak friends 로고) — 2026-09-20 끔. 다시 켜려면 true */
   const SPLASH_USE = false;   // 코드를 고칠 때마다 뒤 두 자리를 올린다
   document.getElementById("ver").textContent = GAME_VERSION;
@@ -7108,8 +7105,8 @@
   const carL = document.createElement("button"), carR = document.createElement("button");
   carL.className = "carArrow l"; carL.textContent = "‹"; carL.setAttribute("aria-label", "앞 캐릭터");
   carR.className = "carArrow r"; carR.textContent = "›"; carR.setAttribute("aria-label", "다음 캐릭터");
-  let carAim = null, carAimT = 0, carRaf = 0;
-  function carChrome(on) { carWrap.classList.toggle("off", !on); carDots.classList.toggle("off", !on); homeTraits.classList.toggle("off", !on); }
+  let carPos = 0, carTo = 0, carRaf = 0, carDrag = null, carNoClick = 0;
+  function carChrome(on) { carWrap.classList.toggle("off", !on); carDots.classList.toggle("off", !on); homeTraits.classList.toggle("off", !on); if (!on) jobList.style.height = ""; }
   function carInfo() {                       // 점 · 화살표 · 특징
     const cards = [...jobList.children], i = cards.findIndex(c => c.dataset.job === job);
     [...carDots.children].forEach((d, k) => d.classList.toggle("on", k === i));
@@ -7124,39 +7121,46 @@
     for (const c of jobList.children) c.classList.toggle("sel", c.dataset.job === job);
     carInfo();
   }
-  const carLeft = c => c.offsetLeft + c.offsetWidth / 2 - jobList.clientWidth / 2;
-  function carShape(pick) {                  // 가운데에서 먼 만큼 작고 흐리게. pick 이면 가운데 카드를 고른다
-    if (!jobList.classList.contains("car") || !jobList.clientWidth) return;
-    const mid = jobList.scrollLeft + jobList.clientWidth / 2;
-    let best = null, bd = 1e9;
-    for (const c of jobList.children) {
-      const d = Math.abs(c.offsetLeft + c.offsetWidth / 2 - mid), k = Math.min(1, d / c.offsetWidth);
-      c.style.transform = "scale(" + (1 - .22 * k).toFixed(3) + ")";
-      c.style.opacity = (1 - .45 * k).toFixed(2);
-      if (d < bd) { bd = d; best = c; }
-    }
-    if (!pick || !best) return;
-    if (carAim) {                             // 눌러서 미끄러지는 중 — 도착할 때까지 지나가는 카드는 안 고른다
-      if (best.dataset.job === carAim || performance.now() - carAimT > 900) carAim = null; else return;
-    }
-    if (best.dataset.job !== job) { carSet(best.dataset.job); beep(760, .03, "triangle", .03); }
+  const carCards = () => [...jobList.children];
+  function carDraw() {                       // 둥근 고리 위에 늘어놓는다 — carPos 번째가 앞 가운데
+    const cs = carCards(), n = cs.length, W = jobList.clientWidth;
+    if (!jobList.classList.contains("car") || !n || !W) return;
+    const H = cs[0].offsetHeight, lift = H * .8, rx = W * .36;
+    const hh = Math.round(H * 1.2) + "px"; if (jobList.style.height !== hh) jobList.style.height = hh;
+    cs.forEach((c, k) => {
+      const a = (k - carPos) / n * Math.PI * 2, t = (1 + Math.cos(a)) / 2, sc = .4 + .6 * Math.pow(t, 1.6);
+      c.style.transform = "translate(" + (Math.sin(a) * rx).toFixed(1) + "px," + (-(1 - t) * lift).toFixed(1) + "px) scale(" + sc.toFixed(3) + ")";
+      c.style.zIndex = Math.round(t * 100);
+      c.style.filter = t > .98 ? "" : "brightness(" + (.55 + .45 * t).toFixed(2) + ")";
+      const nm = c.querySelector(".tx"); if (nm) nm.style.opacity = Math.max(0, (t - .8) / .2).toFixed(2);
+    });
   }
-  function carCenter() {                     // 고른 카드를 곧바로 가운데에
-    const c = [...jobList.children].find(x => x.dataset.job === job);
-    if (!c || !jobList.clientWidth) return;
-    jobList.scrollTo({ left: carLeft(c), behavior: "instant" });
-    carShape(false);
+  function carTick() {
+    carRaf = 0;
+    const d = carTo - carPos;
+    if (Math.abs(d) < .004) carPos = carTo; else { carPos += d * .22; carRaf = requestAnimationFrame(carTick); }
+    carDraw();
   }
-  function carGo(id) {                       // 그 카드로 미끄러져 간다
-    const c = [...jobList.children].find(x => x.dataset.job === id);
-    if (!c) return;
-    carAim = id; carAimT = performance.now();
-    carSet(id);
-    jobList.scrollTo({ left: carLeft(c), behavior: "smooth" });
+  function carRun() { if (!carRaf) carRaf = requestAnimationFrame(carTick); }
+  function carCenter() {                     // 고른 캐릭터를 곧바로 앞에
+    const i = carCards().findIndex(x => x.dataset.job === job);
+    if (i < 0) return;
+    cancelAnimationFrame(carRaf); carRaf = 0;
+    carPos = carTo = i; carDraw();
+  }
+  function carGo(id) {                       // 그 캐릭터가 앞에 오게 돌린다 (가까운 쪽으로)
+    const cs = carCards(), n = cs.length, i = cs.findIndex(x => x.dataset.job === id);
+    if (i < 0) return;
+    let d = ((i - Math.round(carTo)) % n + n) % n; if (d > n / 2) d -= n;
+    carTo = Math.round(carTo) + d;
+    carSet(id); carRun();
   }
   function carStep(d) {
-    const cards = [...jobList.children], i = cards.findIndex(c => c.dataset.job === job), n = cards[(i + d + cards.length) % cards.length];
-    if (n) { beep(900, .06, "square", .04); carGo(n.dataset.job); }
+    const cs = carCards(), n = cs.length;
+    if (n < 2) return;
+    carTo = Math.round(carTo) + d;
+    beep(900, .06, "square", .04);
+    carSet(cs[(carTo % n + n) % n].dataset.job); carRun();
   }
   function carFit() {                        // v0.9.56 설명 칸 높이를 가장 긴 캐릭터에 맞춰 둔다 (넘길 때 들썩이지 않게)
     if (!homeTraits.offsetWidth) return;
@@ -7166,23 +7170,28 @@
     job = keep; carInfo();
     if (mx) homeTraits.style.minHeight = mx + "px";
   }
-  let carTx = null;                          // 끝 카드에서 더 밀면 반대쪽 끝으로
-  jobList.addEventListener("touchstart", e => {
-    if (!jobList.classList.contains("car")) { carTx = null; return; }
-    const cards = [...jobList.children], i = cards.findIndex(c => c.dataset.job === job);
-    carTx = { x: e.touches[0].clientX, y: e.touches[0].clientY, i, n: cards.length };
-  }, { passive: true });
-  jobList.addEventListener("touchend", e => {
-    if (!carTx) return;
-    const t = e.changedTouches[0], dx = t.clientX - carTx.x, dy = t.clientY - carTx.y, c = carTx; carTx = null;
-    if (Math.abs(dx) < 40 || Math.abs(dx) < Math.abs(dy) || c.n < 2) return;
-    if (c.i === c.n - 1 && dx < 0) carStep(1);
-    else if (c.i === 0 && dx > 0) carStep(-1);
-  }, { passive: true });
+  jobList.addEventListener("pointerdown", e => {       // 손가락으로 밀어 돌리기
+    if (jobList.classList.contains("car")) carDrag = { x: e.clientX, p: carTo, moved: false };
+  });
+  window.addEventListener("pointermove", e => {
+    if (!carDrag) return;
+    const dx = e.clientX - carDrag.x;
+    if (Math.abs(dx) > 8) carDrag.moved = true;
+    if (!carDrag.moved) return;
+    cancelAnimationFrame(carRaf); carRaf = 0;
+    carPos = carTo = carDrag.p - dx / (jobList.clientWidth * .3);
+    carDraw();
+    const cs = carCards(), n = cs.length, id = cs[(Math.round(carPos) % n + n) % n].dataset.job;
+    if (id !== job) { carSet(id); beep(760, .03, "triangle", .03); }
+  });
+  const carUp = () => {
+    if (carDrag && carDrag.moved) { carTo = Math.round(carTo); carNoClick = performance.now(); carRun(); }
+    carDrag = null;
+  };
+  window.addEventListener("pointerup", carUp); window.addEventListener("pointercancel", carUp);
   carL.addEventListener("click", () => carStep(-1));
   carR.addEventListener("click", () => carStep(1));
-  jobList.addEventListener("scroll", () => { cancelAnimationFrame(carRaf); carRaf = requestAnimationFrame(() => carShape(true)); }, { passive: true });
-  if (window.ResizeObserver) new ResizeObserver(() => { if (jobList.classList.contains("car")) { carCenter(); carFit(); } }).observe(jobList);   // 가려져 있다 보일 때·화면 돌릴 때
+  if (window.ResizeObserver) new ResizeObserver(() => { if (jobList.classList.contains("car")) { carCenter(); carFit(); } }).observe(document.getElementById("homeJobs"));   // 가려져 있다 보일 때·화면 돌릴 때
   function renderPick() {
     if (jobLocked()) job = "bangul";          // 맨몸대결·똥탑등반 — 탭 글자부터 방울이로
     if (petLocked()) { pet = "none"; petView = "none"; }
@@ -7206,7 +7215,7 @@
         ic.src = jobPic(id); ic.alt = JOBS[id].ic;
         const card = pickCard(id === job, ic, JOBS[id].nm, JOBS[id].ds, () => {
           if (lockJ) return;                  // 맨몸대결·똥탑등반은 방울이만
-          if (car) { carGo(id); return; }     // 넘기기 — 그 카드를 가운데로 (고르기는 carSet)
+          if (car) { if (performance.now() - carNoClick > 300) carGo(id); return; }     // 넘기기 — 그 카드를 가운데로 (고르기는 carSet)
           job = id;
           try { localStorage.setItem(LS_JOB, job); } catch (e) {}
         }, car);
