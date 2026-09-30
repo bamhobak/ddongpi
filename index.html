@@ -602,7 +602,16 @@
   #optRow #sndBox .ctrlBtn { font-size: 14px; padding: 0; width: 28px; height: 28px;
                              display: inline-flex; align-items: center; justify-content: center; line-height: 1; }
   #sndBox { padding: 4px 6px; }
-  #pauseSnd { display: flex; gap: 8px; justify-content: center; margin: 2px 0 6px; }
+  #pauseSnd { display: flex; flex-direction: column; gap: 10px; align-items: center; margin: 2px 0 6px; }
+  /* v0.9.38 소리 크기 슬라이더 — 버튼 오른쪽. 채운 쪽 노랑, 끈 상태면 회색 */
+  .sndRow { display: flex; align-items: center; gap: 12px; }
+  .sndVol { -webkit-appearance: none; appearance: none; width: 150px; height: 10px; border-radius: 5px; margin: 0;
+            background: linear-gradient(90deg, #ffd23f 0 var(--p, 100%), rgba(255,255,255,.22) var(--p, 100%) 100%);
+            border: 1px solid rgba(60,30,10,.6); outline: none; touch-action: none; }
+  .sndVol.off { filter: grayscale(1) brightness(.75); }
+  .sndVol::-webkit-slider-thumb { -webkit-appearance: none; appearance: none; width: 24px; height: 24px; border-radius: 50%;
+            background: #fff6d6; border: 2px solid #6b3300; box-shadow: 0 2px 3px rgba(0,0,0,.35); cursor: pointer; }
+  .sndVol::-moz-range-thumb { width: 22px; height: 22px; border-radius: 50%; background: #fff6d6; border: 2px solid #6b3300; cursor: pointer; }
   #sndBox .ctrlBtn, #pauseSnd .ctrlBtn { font-size: 17px; padding: 5px 14px; line-height: 1.25; }
   #pauseSnd .ctrlBtn {
     border-radius: 3px; box-shadow: none;
@@ -917,7 +926,7 @@
   #settingsScreen #optRow #nameBox .who b { font-size: 17px; }
   #settingsScreen #optRow #startName { width: 120px; font-size: 16px; padding: 8px 10px; }
   #settingsScreen #optRow #nameEdit button { padding: 8px 14px; font-size: 15px; }
-  #settingsScreen #optRow #sndBox { gap: 16px; }
+  #settingsScreen #optRow #sndBox { gap: 12px; flex-direction: column; }
   #settingsScreen #optRow #sndBox .ctrlBtn.sndBtn { width: 58px; height: 58px; }
 
   /* 스테이지 고르기 — 시작 버튼 바로 위 */
@@ -1278,8 +1287,10 @@
       <h2>일시정지</h2>
       <button id="btnResume">계속하기</button>
       <div id="pauseSnd">
-        <button class="ctrlBtn sndBtn" data-snd="bgm" title="배경음" aria-label="배경음">🎵</button>
-        <button class="ctrlBtn sndBtn" data-snd="sfx" title="효과음" aria-label="효과음">🔔</button>
+        <div class="sndRow"><button class="ctrlBtn sndBtn" data-snd="bgm" title="배경음" aria-label="배경음">🎵</button>
+          <input class="sndVol" data-snd="bgm" type="range" min="0" max="100" step="5" aria-label="배경음 크기"></div>
+        <div class="sndRow"><button class="ctrlBtn sndBtn" data-snd="sfx" title="효과음" aria-label="효과음">🔔</button>
+          <input class="sndVol" data-snd="sfx" type="range" min="0" max="100" step="5" aria-label="효과음 크기"></div>
       </div>
       <button id="btnPauseRetry">다시하기</button>
       <button id="btnPauseHome">처음으로</button>
@@ -1300,8 +1311,10 @@
           </div>
           <div class="setLbl">소리</div>
           <div id="sndBox">
-            <button class="ctrlBtn sndBtn" data-snd="bgm" title="배경음" aria-label="배경음">🎵</button>
-            <button class="ctrlBtn sndBtn" data-snd="sfx" title="효과음" aria-label="효과음">🔔</button>
+            <div class="sndRow"><button class="ctrlBtn sndBtn" data-snd="bgm" title="배경음" aria-label="배경음">🎵</button>
+              <input class="sndVol" data-snd="bgm" type="range" min="0" max="100" step="5" aria-label="배경음 크기"></div>
+            <div class="sndRow"><button class="ctrlBtn sndBtn" data-snd="sfx" title="효과음" aria-label="효과음">🔔</button>
+              <input class="sndVol" data-snd="sfx" type="range" min="0" max="100" step="5" aria-label="효과음 크기"></div>
           </div>
         </div>
       <button id="btnSettingsClose">닫기</button>
@@ -1559,7 +1572,7 @@
   const elTitle = document.getElementById("overTitle");
   const coinNote = document.getElementById("coinNote");
 
-  const GAME_VERSION = "v0.9.37";
+  const GAME_VERSION = "v0.9.38";
   /* 제작사 스플래시(bamhobak friends 로고) — 2026-09-20 끔. 다시 켜려면 true */
   const SPLASH_USE = false;   // 코드를 고칠 때마다 뒤 두 자리를 올린다
   document.getElementById("ver").textContent = GAME_VERSION;
@@ -2880,6 +2893,14 @@
   const LS_BGM = "epjpddongpi_bgmoff";
   const LS_SFX = "epjpddongpi_sfxoff";
   let bgmOff = false, sfxOff = false;
+  /* v0.9.38 소리 크기 (0~1) — 켜기/끄기와 따로 저장. 기본 100% */
+  const LS_BGMV = "epjpddongpi_bgmvol", LS_SFXV = "epjpddongpi_sfxvol";
+  let bgmLevel = 1, sfxLevel = 1;
+  try {
+    const bv = parseFloat(localStorage.getItem(LS_BGMV)), sv = parseFloat(localStorage.getItem(LS_SFXV));
+    if (isFinite(bv)) bgmLevel = Math.max(0, Math.min(1, bv));
+    if (isFinite(sv)) sfxLevel = Math.max(0, Math.min(1, sv));
+  } catch (e) {}
   try {
     const old = localStorage.getItem(LS_MUTE) === "1";
     bgmOff = localStorage.getItem(LS_BGM) === "1" || old;
@@ -2894,7 +2915,7 @@
       const o = ac.createOscillator(), g = ac.createGain();
       o.type = type || "square";
       o.frequency.setValueAtTime(freq, ac.currentTime);
-      g.gain.setValueAtTime(vol || 0.05, ac.currentTime);
+      g.gain.setValueAtTime(Math.max(0.0002, (vol || 0.05) * sfxLevel), ac.currentTime);
       g.gain.exponentialRampToValueAtTime(0.0001, ac.currentTime + dur);
       o.connect(g); g.connect(ac.destination);
       o.start(); o.stop(ac.currentTime + dur);
@@ -2948,7 +2969,7 @@
       if (!buf) return false;
       const src = ac.createBufferSource(), g = ac.createGain();
       src.buffer = buf;
-      const lv = SFX_VOL * (SFX_GAIN[name] || 1) * (vol === undefined ? 1 : vol);
+      const lv = SFX_VOL * sfxLevel * (SFX_GAIN[name] || 1) * (vol === undefined ? 1 : vol);
       g.gain.value = lv;
       src.connect(g); g.connect(ac.destination);
       const cut = SFX_CUT[name];
@@ -3127,7 +3148,7 @@
     } catch (e) {}
   }
   function bgmWaStart(name) {
-    const buf = bgmBuf[name], LP = BGM_LOOPPT[name], V = BGM_VOL[name] || 0.4;
+    const buf = bgmBuf[name], LP = BGM_LOOPPT[name], V = (BGM_VOL[name] || 0.4) * bgmLevel;
     try {
       const ctx = bgmCtx();
       const src = ctx.createBufferSource(), g = ctx.createGain();
@@ -3179,7 +3200,7 @@
       if (!bgmWa) { const el = bgmGet(bgmName)[0]; bgmStart(el); bgmCur = el; }   // 못 풀었다 — 예전 방식으로
     }
     if (bgmOff || !bgmCur || !bgmName) return;
-    const V = BGM_VOL[bgmName] || 0.4;
+    const V = (BGM_VOL[bgmName] || 0.4) * bgmLevel;
     const d = bgmCur.duration;
     if (!d || !isFinite(d)) { bgmCur.volume = V; return; }   // 아직 길이를 모른다
     const LP = BGM_LOOPPT[bgmName];
@@ -3249,7 +3270,30 @@
     try { localStorage.removeItem(LS_MUTE); } catch (e) {}   // 옛 키는 더 쓰지 않는다
     syncSoundUI();
   }
+  function setVol(kind, v) {
+    v = Math.max(0, Math.min(1, v));
+    if (kind === "sfx") {
+      sfxLevel = v;
+      try { localStorage.setItem(LS_SFXV, String(v)); } catch (e) {}
+      if (sfxOff && v > 0) { setSnd("sfx", false); return; }      // 꺼 둔 채로 올리면 켠다
+    } else {
+      bgmLevel = v;
+      try { localStorage.setItem(LS_BGMV, String(v)); } catch (e) {}
+      if (bgmOff && v > 0) { setSnd("bgm", false); return; }
+      if (bgmWa) {                                                  // 지금 울리는 곡에 바로 반영
+        try { const g = bgmWa.gain.gain, t = bgmCtx().currentTime; g.cancelScheduledValues(t); g.setValueAtTime((BGM_VOL[bgmWa.name] || 0.4) * bgmLevel, t); } catch (e) {}
+      }
+      if (bgmCur && bgmName) bgmCur.volume = Math.min(bgmCur.volume, (BGM_VOL[bgmName] || 0.4) * bgmLevel);
+    }
+    syncSoundUI();
+  }
   function syncSoundUI() {
+    for (const r of document.querySelectorAll(".sndVol")) {
+      const v = r.dataset.snd === "bgm" ? bgmLevel : sfxLevel;
+      if (document.activeElement !== r) r.value = Math.round(v * 100);
+      r.style.setProperty("--p", Math.round(v * 100) + "%");
+      r.classList.toggle("off", r.dataset.snd === "bgm" ? bgmOff : sfxOff);
+    }
     for (const b of document.querySelectorAll(".sndBtn"))
       b.classList.toggle("on", b.dataset.snd === "bgm" ? !bgmOff : !sfxOff);
   }
@@ -6667,6 +6711,11 @@
   if (SPLASH_USE) startScreen.style.visibility = "hidden";      // 스플래시가 끝나면 드러난다
   for (const ev of ["pointerdown", "keydown"])
     window.addEventListener(ev, () => endSplash(), { passive: true });
+  for (const r of document.querySelectorAll(".sndVol")) {
+    r.addEventListener("input", () => setVol(r.dataset.snd, r.value / 100));
+    r.addEventListener("change", () => { if (r.dataset.snd === "sfx" && !sfxOff) sfx("coin", 0.8); });   // 놓으면 효과음 크기를 한 번 들려준다
+    for (const ev of ["pointerdown", "touchstart"]) r.addEventListener(ev, e => e.stopPropagation(), { passive: true });
+  }
   for (const b of document.querySelectorAll(".sndBtn")) {
     b.addEventListener("click", () => setSnd(b.dataset.snd,
       b.dataset.snd === "bgm" ? !bgmOff : !sfxOff));
