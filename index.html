@@ -843,18 +843,21 @@
   #homeJobs #jobList.car { position: relative; display: block; max-width: none; overflow: visible; padding: 0; margin: 8px 0 10px; touch-action: pan-y; user-select: none; -webkit-user-select: none; }
   #homeJobs #jobList.car .augCard { position: absolute; left: 25%; bottom: 0; width: 50%; box-sizing: border-box; transform-origin: 50% 100%; transition: none; padding: 6px 0 4px; gap: 8px; will-change: transform; }
   #homeJobs #jobList.car img { -webkit-user-drag: none; pointer-events: none; }
+  #homeJobs #jobList.car .augCard .idle { position: absolute; background-size: 700% 700%; background-repeat: no-repeat; pointer-events: none; filter: drop-shadow(0 5px 5px rgba(30,20,10,.35)); }
   #homeJobs #jobList.car .augCard.sil img.ic { filter: brightness(0); }   /* v0.9.61 아직 안 열린 캐릭터 — 실루엣만 */
   #pgHome #jobList.car img.ic { height: clamp(104px, 23vh, 180px); }
   #homeJobs #jobList.car .augCard .nm2, #homeJobs #jobList.car .augCard.sel .nm2 { font-size: 18px; color: #fff; text-shadow: 0 2px 0 #4a2a10, 0 0 6px rgba(40,20,0,.75), 1px 0 0 #4a2a10, -1px 0 0 #4a2a10, 0 -1px 0 #4a2a10; }
   #homeJobs #jobList.car .augCard, #homeJobs #jobList.car .augCard.sel { border-image: none; border-color: transparent; outline: none; background: none; box-shadow: none; filter: none; }   /* v0.9.56 카드 바탕 없이 캐릭터만 */
   #homeJobs #jobList.car img.ic { filter: drop-shadow(0 5px 5px rgba(30,20,10,.35)); }
+  /* v0.9.66 넘기기 버튼·설명 칸 새 그림 (Codex: car_arrow · trait_panel) */
   #homeJobs .carArrow {
-    position: absolute; top: 50%; transform: translateY(-50%); z-index: 200; width: 36px; height: 56px; padding: 0;
-    border-radius: 12px; background: rgba(255,248,230,.94); border: 2px solid #8a5a2b; box-shadow: 0 3px 0 #6b4520;
-    color: #6b3300; font-size: 24px; font-weight: 800; line-height: 1;
+    position: absolute; top: 50%; transform: translateY(-50%); z-index: 200; width: 46px; height: 46px; padding: 0; border: 0; border-radius: 50%;
+    background: url(assets/ui/car_arrow.webp) center / contain no-repeat; box-shadow: none; color: transparent; font-size: 0;
+    filter: drop-shadow(0 3px 3px rgba(40,20,0,.35));
   }
-  #homeJobs .carArrow:active { transform: translateY(-50%) scale(.92); }
-  #homeJobs .carArrow.l { left: 2px; } #homeJobs .carArrow.r { right: 2px; }
+  #homeJobs .carArrow.r:active { transform: translateY(-50%) scale(.9); }
+  #homeJobs .carArrow.l { left: 2px; transform: translateY(-50%) scaleX(-1); } #homeJobs .carArrow.r { right: 2px; }
+  #homeJobs .carArrow.l:active { transform: translateY(-50%) scaleX(-1) scale(.9); }
   #homeJobs .carArrow[disabled] { opacity: .3; }
   #overUnlock { width: 100%; max-width: 330px; box-sizing: border-box; margin: 6px auto 2px; padding: 8px 12px; border-radius: 12px; text-align: center;
     background: rgba(44,26,8,.9); border: 2px solid #ffd23f; box-shadow: 0 0 14px rgba(255,210,63,.4); color: #ffe9a8; font-size: 13px; line-height: 1.4; }
@@ -871,12 +874,13 @@
   #homeJobs .carDots i { width: 8px; height: 8px; border-radius: 50%; background: rgba(255,255,255,.35); }
   #homeJobs .carDots i.on { background: #ffd23f; box-shadow: 0 0 6px rgba(255,210,63,.8); }
   #homeTraits {
-    width: 100%; max-width: 330px; min-height: 76px; box-sizing: border-box; padding: 8px 12px; border-radius: 12px;
-    background: rgba(255,248,230,.93); border: 2px solid #8a5a2b; color: #4a3322; font-size: 13px; line-height: 1.45; text-align: center;
+    width: 100%; max-width: 340px; min-height: 92px; box-sizing: border-box; padding: 19px 30px 17px; margin-top: 14px; position: relative;
+    background: url(assets/ui/trait_panel.webp) center / 100% 100% no-repeat; color: #4a3322; font-size: 13px; font-weight: 700; line-height: 1.45; text-align: center;
     display: flex; flex-direction: column; justify-content: center; gap: 1px;
   }
+  #homeTraits::before { content: ""; position: absolute; left: 50%; top: -17px; width: 46px; height: 31px; transform: translateX(-50%); background: url(assets/ui/trait_paw.webp) center / contain no-repeat; }
   #homeJobs .carWrap.off .carArrow, #homeJobs .carDots.off, #homeTraits.off { display: none; }
-  @media (max-height: 700px) { #homeTraits { font-size: 12px; min-height: 66px; padding: 6px 10px; } }
+  @media (max-height: 700px) { #homeTraits { font-size: 12px; min-height: 76px; padding: 14px 28px 10px; margin-top: 8px; } }
   @media (max-height: 760px) { #pgHome h1 img.ttl { width: min(36vw, 150px) !important; } #pgHome #jobList img.ic { height: 70px; } }
   /* 쪽 제목 — 리본 */
   .pgTitle {
@@ -1770,7 +1774,7 @@
   const elTitle = document.getElementById("overTitle");
   const coinNote = document.getElementById("coinNote");
 
-  const GAME_VERSION = "v0.9.65";
+  const GAME_VERSION = "v0.9.66";
   /* 제작사 스플래시(bamhobak friends 로고) — 2026-09-20 끔. 다시 켜려면 true */
   const SPLASH_USE = false;   // 코드를 고칠 때마다 뒤 두 자리를 올린다
   document.getElementById("ver").textContent = GAME_VERSION;
@@ -7262,12 +7266,55 @@
   }
   function carSet(id) {                      // 고른 캐릭터를 바꾼다(다시 그리지 않는다)
     if (id === job || !JOBS[id]) return;
+    idleStop();
     job = id;
     if (jobOwned(job)) try { localStorage.setItem(LS_JOB, job); } catch (e) {}   // 잠긴 캐릭터는 구경만 — 저장하지 않는다
     for (const c of jobList.children) c.classList.toggle("sel", c.dataset.job === job);
     carInfo();
   }
   const carCards = () => [...jobList.children];
+  /* v0.9.66 앞에 온 캐릭터가 한 번 움직인다 — Ludo 49장(7x7 시트, 첫 장 = 끝 장 = 카드 그림). 카드 그림 위에 같은 자리·크기로 겹쳐 돌리고 끝나면 치운다.
+     sw·sh 카드 그림 크기, l·t 시트 칸이 카드 그림보다 왼쪽·위로 더 나간 만큼, cw·ch 시트 한 칸 (tools 없이 scratch 의 idle_build.py 가 재 준 값) */
+  const JOB_IDLE = {
+    bangul: { n: 49, sw: 340, sh: 400, l: 0, t: 0, cw: 340, ch: 400 },
+    powerj: { n: 49, sw: 340, sh: 400, l: 13, t: 0, cw: 353, ch: 400 }
+  };
+  let idleRun = null;
+  function idleStop() {
+    if (!idleRun) return;
+    clearInterval(idleRun.timer);
+    if (idleRun.el) idleRun.el.remove();
+    idleRun.pic.style.visibility = "";
+    idleRun = null;
+  }
+  function idlePlay() {
+    idleStop();
+    const d = JOB_IDLE[job];
+    if (!d || dogMode || !jobOwned(job) || !jobList.classList.contains("car")) return;
+    const card = carCards().find(c => c.dataset.job === job), pic = card && card.querySelector("img.ic");
+    if (!pic) return;
+    const run = idleRun = { pic: pic, el: null, timer: 0 };
+    const sheet = new Image();
+    sheet.onload = () => {
+      if (idleRun !== run || !pic.offsetHeight) return;
+      const k = pic.offsetHeight / d.sh;
+      const el = document.createElement("span"); el.className = "idle";
+      el.style.left = (pic.offsetLeft + (pic.offsetWidth - d.sw * k) / 2 - d.l * k) + "px";
+      el.style.top = (pic.offsetTop - d.t * k) + "px";
+      el.style.width = (d.cw * k) + "px"; el.style.height = (d.ch * k) + "px";
+      el.style.backgroundImage = "url(" + sheet.src + ")";
+      card.appendChild(el); run.el = el;
+      pic.style.visibility = "hidden";
+      let f = 0;
+      const step = () => {
+        if (f >= d.n) { idleStop(); return; }
+        el.style.backgroundPosition = ((f % 7) / 6 * 100) + "% " + (Math.floor(f / 7) / 6 * 100) + "%";
+        f++;
+      };
+      step(); run.timer = setInterval(step, 62);
+    };
+    sheet.src = "assets/" + JOB_IMG[job] + "_idle_sheet.webp";
+  }
   function carDraw() {                       // 둥근 고리 위에 늘어놓는다 — carPos 번째가 앞 가운데
     const cs = carCards(), n = cs.length, W = jobList.clientWidth;
     if (!jobList.classList.contains("car") || !n || !W) return;
@@ -7284,15 +7331,17 @@
   function carTick() {
     carRaf = 0;
     const d = carTo - carPos;
-    if (Math.abs(d) < .004) carPos = carTo; else { carPos += d * .22; carRaf = requestAnimationFrame(carTick); }
+    const done = Math.abs(d) < .004;
+    if (done) carPos = carTo; else { carPos += d * .22; carRaf = requestAnimationFrame(carTick); }
     carDraw();
+    if (done) idlePlay();             // 앞에 와서 멈추면 한 번 움직인다
   }
   function carRun() { if (!carRaf) carRaf = requestAnimationFrame(carTick); }
   function carCenter() {                     // 고른 캐릭터를 곧바로 앞에
     const i = carCards().findIndex(x => x.dataset.job === job);
     if (i < 0) return;
     cancelAnimationFrame(carRaf); carRaf = 0;
-    carPos = carTo = i; carDraw();
+    carPos = carTo = i; carDraw(); idlePlay();
   }
   function carGo(id) {                       // 그 캐릭터가 앞에 오게 돌린다 (가까운 쪽으로)
     const cs = carCards(), n = cs.length, i = cs.findIndex(x => x.dataset.job === id);
@@ -7324,7 +7373,7 @@
     const dx = e.clientX - carDrag.x;
     if (Math.abs(dx) > 8) carDrag.moved = true;
     if (!carDrag.moved) return;
-    cancelAnimationFrame(carRaf); carRaf = 0;
+    cancelAnimationFrame(carRaf); carRaf = 0; idleStop();
     carPos = carTo = carDrag.p - dx / (jobList.clientWidth * .3);
     carDraw();
     const cs = carCards(), n = cs.length, id = cs[(Math.round(carPos) % n + n) % n].dataset.job;
@@ -7351,7 +7400,7 @@
     // 탭에 지금 고른 것을 같이 적어 둔다 — 다른 탭에 있어도 무엇을 골랐는지 보이게
     tabJob.innerHTML = "캐릭터<small></small>"; tabJob.lastChild.textContent = JOBS[job].nm;
     tabPet.innerHTML = "펫<small></small>";   tabPet.lastChild.textContent = PETS[pet].nm;
-    jobList.innerHTML = "";
+    idleStop(); jobList.innerHTML = "";
     const car = pickTab === "job" && !jobLocked() && jobList.parentElement && jobList.parentElement.classList.contains("carWrap");   // v0.9.55 홈 — 좌우 넘기기
     jobList.classList.toggle("car", car);
     carChrome(car);
