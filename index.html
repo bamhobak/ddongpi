@@ -1827,7 +1827,7 @@
   const elTitle = document.getElementById("overTitle");
   const coinNote = document.getElementById("coinNote");
 
-  const GAME_VERSION = "v0.9.74";
+  const GAME_VERSION = "v0.9.75";
   /* 제작사 스플래시(bamhobak friends 로고) — 2026-09-20 끔. 다시 켜려면 true */
   const SPLASH_USE = false;   // 코드를 고칠 때마다 뒤 두 자리를 올린다
   document.getElementById("ver").textContent = GAME_VERSION;
@@ -8014,8 +8014,8 @@
       aug.maxLives = 30;              // 하트를 쌓아 올리는 직업
       aug.hitboxMul *= 1.3;           // 몸이 커서 잘 맞는다
     }
-    if (grOn() && !testMode) {        // v0.9.72 성장 — 시작 하트는 기본 1개 적게(튼튼함으로 +1씩), 준비성 우산
-      lives = Math.max(1, lives - 1 + gl("hp"));
+    if (grOn() && !testMode) {        // v0.9.72 성장 — 튼튼함 한 단계마다 시작 하트 +1 (v0.9.75 기본 하트는 깎지 않는다 — 3개), 준비성 우산
+      lives = lives + gl("hp");
       if (job !== "fit") shields = Math.min(10, shields + gl("umb"));
     }
     augScreen.classList.add("hidden");
