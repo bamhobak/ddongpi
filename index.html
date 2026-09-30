@@ -843,7 +843,7 @@
   #homeJobs #jobList.car { position: relative; display: block; max-width: none; overflow: visible; padding: 0; margin: 8px 0 10px; touch-action: pan-y; user-select: none; -webkit-user-select: none; }
   #homeJobs #jobList.car .augCard { position: absolute; left: 25%; bottom: 0; width: 50%; box-sizing: border-box; transform-origin: 50% 100%; transition: none; padding: 6px 0 4px; gap: 8px; will-change: transform; }
   #homeJobs #jobList.car img { -webkit-user-drag: none; pointer-events: none; }
-  #homeJobs #jobList.car .augCard.sil img.ic { filter: brightness(0) opacity(.55); }   /* v0.9.61 아직 안 열린 캐릭터 — 실루엣만 */
+  #homeJobs #jobList.car .augCard.sil img.ic { filter: brightness(0) blur(2px); }   /* v0.9.61 아직 안 열린 캐릭터 — 실루엣만 */
   #pgHome #jobList.car img.ic { height: clamp(104px, 23vh, 180px); }
   #homeJobs #jobList.car .augCard .nm2, #homeJobs #jobList.car .augCard.sel .nm2 { font-size: 18px; color: #fff; text-shadow: 0 2px 0 #4a2a10, 0 0 6px rgba(40,20,0,.75), 1px 0 0 #4a2a10, -1px 0 0 #4a2a10, 0 -1px 0 #4a2a10; }
   #homeJobs #jobList.car .augCard, #homeJobs #jobList.car .augCard.sel { border-image: none; border-color: transparent; outline: none; background: none; box-shadow: none; filter: none; }   /* v0.9.56 카드 바탕 없이 캐릭터만 */
@@ -856,6 +856,13 @@
   #homeJobs .carArrow:active { transform: translateY(-50%) scale(.92); }
   #homeJobs .carArrow.l { left: 2px; } #homeJobs .carArrow.r { right: 2px; }
   #homeJobs .carArrow[disabled] { opacity: .3; }
+  #overUnlock { width: 100%; max-width: 330px; box-sizing: border-box; margin: 6px auto 2px; padding: 8px 12px; border-radius: 12px; text-align: center;
+    background: rgba(44,26,8,.9); border: 2px solid #ffd23f; box-shadow: 0 0 14px rgba(255,210,63,.4); color: #ffe9a8; font-size: 13px; line-height: 1.4; }
+  #overUnlock[hidden] { display: none; }
+  #overUnlock b { display: block; font-size: 15px; margin-bottom: 3px; color: #ffd23f; }
+  #overUnlock .ur { display: flex; flex-direction: column; padding: 3px 0; }
+  #overUnlock .un { font-weight: 800; color: #fff; font-size: 14px; }
+  #overUnlock .uw { font-size: 11.5px; opacity: .8; }
   #achToast { position: fixed; left: 50%; top: 13%; transform: translateX(-50%); z-index: 9999; padding: 10px 18px; border-radius: 12px;
     background: rgba(44,26,8,.94); border: 2px solid #ffd23f; box-shadow: 0 0 18px rgba(255,210,63,.45); color: #ffe9a8; font-weight: 800; font-size: 15px;
     text-align: center; white-space: nowrap; pointer-events: none; opacity: 0; transition: opacity .3s; }
@@ -1576,6 +1583,7 @@
       <div id="overBest"></div>
       <div id="overAugs" hidden></div>
       <div id="overAugDesc"></div>
+      <div id="overUnlock" hidden></div>
 
       <div id="nameRow">
         <div class="tag" id="nameTag">🎉 TOP 10 진입! 이름을 남기세요</div>
@@ -1762,7 +1770,7 @@
   const elTitle = document.getElementById("overTitle");
   const coinNote = document.getElementById("coinNote");
 
-  const GAME_VERSION = "v0.9.62";
+  const GAME_VERSION = "v0.9.63";
   /* 제작사 스플래시(bamhobak friends 로고) — 2026-09-20 끔. 다시 켜려면 true */
   const SPLASH_USE = false;   // 코드를 고칠 때마다 뒤 두 자리를 올린다
   document.getElementById("ver").textContent = GAME_VERSION;
@@ -3587,6 +3595,7 @@
   function achOpen(id) { return !ACH[id] || achU.has(id) || testMode; }
   function achSave() { achDirty = false; achData.u = [...achU]; try { localStorage.setItem(LS_ACH, JSON.stringify(achData)); } catch (e) {} }
   function achProg(id) { const a = ACH[id]; return a && a.key ? " (" + Math.min(a.n, achData.c[a.key] || 0) + "/" + a.n + ")" : ""; }
+  const achNew = [];                         // 아직 안 보여 준 해금 — 게임 오버 화면에서 보여 주고 비운다
   const achToastQ = []; let achToastOn = false, achToastEl = null;
   function achToast(txt) {
     achToastQ.push(txt);
@@ -3605,8 +3614,7 @@
     if (achU.has(id) || !ACH[id] || !achLive()) return;
     achU.add(id); achSave();
     const a = AUGMENTS.find(x => x.id === id);
-    achToast("🏆 증강 해금!  " + (a ? a.ic + " " + a.nm : id));
-    if (!sfx("aug")) { beep(1046, .1, "triangle", .05); beep(1568, .16, "triangle", .05); }
+    achNew.push({ k: "증강", t: a ? a.ic + " " + a.nm : id, how: ACH[id].t });   // v0.9.63 바로 알리지 않고 게임 오버 화면에서 보여 준다
   }
   function achBump(key, n) {
     if (!achLive()) return;
@@ -7242,8 +7250,7 @@
   function jobUnlock(id) {
     if (jobOwned(id) || !achLive()) return;
     jobUnlocked.add(id); achData.j = [...jobUnlocked]; achSave();
-    achToast("🏆 캐릭터 해금!  " + JOBS[id].nm);
-    if (!sfx("aug")) { beep(1046, .1, "triangle", .05); beep(1568, .16, "triangle", .05); }
+    achNew.push({ k: "캐릭터", t: JOBS[id].nm, how: JOBS[id].needUnlock });
   }
   function carChrome(on) { carWrap.classList.toggle("off", !on); carDots.classList.toggle("off", !on); homeTraits.classList.toggle("off", !on); if (!on) jobList.style.height = ""; }
   function carInfo() {                       // 점 · 화살표 · 특징
@@ -12459,6 +12466,19 @@
     setFinalDigits(s.toLocaleString() + (noItem() ? " m" : ""));   // v0.9.42 게임 속 점수와 같은 숫자 그림
     elTitle.textContent = "게임 오버!";
     overStory(s);
+    {                                        // v0.9.63 이번에 열린 증강·캐릭터
+      const box = document.getElementById("overUnlock"); box.innerHTML = ""; box.hidden = !achNew.length;
+      if (achNew.length) {
+        const h = document.createElement("b"); h.textContent = "🏆 새로 열렸어요!"; box.appendChild(h);
+        for (const u of achNew) {
+          const r = document.createElement("div"); r.className = "ur";
+          const n = document.createElement("span"); n.className = "un"; n.textContent = u.k + " · " + u.t;
+          const w = document.createElement("span"); w.className = "uw"; w.textContent = u.how;
+          r.append(n, w); box.appendChild(r);
+        }
+        achNew.length = 0;
+      }
+    }
     overScreen.classList.remove("hidden");
     if (!sfx("over")) beep(220, .4, "sawtooth", .06);
     if (navigator.vibrate) navigator.vibrate(120);
