@@ -504,6 +504,7 @@
     color: #dfe6ef; background: rgba(255,255,255,.08); border: 1px solid rgba(255,255,255,.28);
   }
   #btnReroll:hover { background: rgba(255,255,255,.16); border-color: #fff; }
+  #btnReroll:disabled { opacity: .45; filter: grayscale(.6); }
   /* 히든 증강 — 조건을 만족했을 때만 후보에 오른다 */
   .augCard.hid {
     border-color: #c86bff;
@@ -773,7 +774,19 @@
   #startScreen {
     gap: clamp(8px, 1.8vh, 14px);
     /* v0.8.91 새 배경(D, Codex) — 캔버스 그림은 게임판 비율이라 긴 폰에서 위아래 띠가 보였다. 시작 화면이 직접 화면 전체를 덮는다 */
-    background: linear-gradient(rgba(10,11,16,.38), rgba(10,11,16,.38)), url(assets/bg/title.webp) center top / cover no-repeat;
+    /* v0.9.70 그림 아래 끝(개집)이 아래 탭에 가리지 않게 — 그림 높이를 탭 위 공간에 맞추고 아래를 탭 윗선에 붙인다. 넓은 화면의 옆 빈자리는 같은 그림을 덮어 채운다 */
+    background:
+      linear-gradient(rgba(10,11,16,.38), rgba(10,11,16,.38)),
+      url(assets/bg/title.webp) center bottom var(--tabH) / auto calc(100% - var(--tabH)) no-repeat,
+      url(assets/bg/title.webp) center top / cover no-repeat;
+  }
+  @supports (width: max(1px, 1dvh)) {
+    #startScreen {   /* 폭이 모자라면(짧은 화면) 폭에 맞춰 키운다 — 옆에 이음매가 안 보이게. 0.575 = 그림 가로/세로 */
+      background:
+        linear-gradient(rgba(10,11,16,.38), rgba(10,11,16,.38)),
+        url(assets/bg/title.webp) center bottom var(--tabH) / max(100%, calc((100dvh - var(--tabH)) * 0.575)) auto no-repeat,
+        url(assets/bg/title.webp) center top / cover no-repeat;
+    }
   }
   /* 화면 위쪽에 은은한 빛을 깔아 패널이 떠 보이게 한다 */
   #startScreen::before {
@@ -834,6 +847,8 @@
   /* 홈 — 로고 · 캐릭터 · 시작하기 */
   #pgHome h1 img.ttl { width: min(46vw, 190px) !important; }
   #pgHome h1 { margin-bottom: 0 !important; }
+  #pgHome.on { justify-content: flex-end; padding-bottom: 16px; }   /* v0.9.70 시작하기 아래 빈자리 줄임 — 아래로 모은다 */
+  #pgHome #btnStart { margin-top: -6px; }
   #homeJobs { width: 100%; max-width: 340px; display: flex; justify-content: center; }
   #homeJobs #jobList { width: 100%; }
   /* v0.9.55 홈 캐릭터 고르기 = 좌우로 넘기는 한 줄(아이작처럼) — 가운데 온 캐릭터가 크게, 곧 고른 캐릭터. 아래에 특징 */
@@ -866,6 +881,14 @@
   #overUnlock .ur { display: flex; flex-direction: column; padding: 3px 0; }
   #overUnlock .un { font-weight: 800; color: #fff; font-size: 14px; }
   #overUnlock .uw { font-size: 11.5px; opacity: .8; }
+  #askBox { position: fixed; inset: 0; z-index: 10000; display: none; align-items: center; justify-content: center; background: rgba(8,8,16,.62); }
+  #askBox.on { display: flex; }
+  #askBox .askIn { width: min(84vw, 320px); padding: 22px 18px 18px; border-radius: 16px; background: #fff8e6; border: 3px solid #8a5a2b; box-shadow: 0 6px 0 #6b4520, 0 10px 30px rgba(0,0,0,.45); text-align: center; }
+  #askBox .askMsg { color: #4a3322; font-size: 16px; font-weight: 800; line-height: 1.5; white-space: pre-line; margin-bottom: 16px; }
+  #askBox .askRow { display: flex; gap: 10px; justify-content: center; }
+  #askBox button { --bh: 44px; flex: 1; height: var(--bh); font-size: 16px; font-weight: 800; border-style: solid; border-color: transparent; border-width: 0 calc(var(--bh) / 2); background: none; padding: 0 4px calc(var(--bh) * .08); }
+  #askBox .askYes { border-image: url(assets/ui/btn_yellow.webp) 0 60 fill / 0 calc(var(--bh) / 2) / 0 stretch; color: #6b3300; text-shadow: 0 1px 0 rgba(255,255,255,.55); }
+  #askBox .askNo { border-image: url(assets/ui/btn_gray.webp) 0 60 fill / 0 calc(var(--bh) / 2) / 0 stretch; color: #3f3560; text-shadow: 0 1px 0 rgba(255,255,255,.6); }
   #achToast { position: fixed; left: 50%; top: 13%; transform: translateX(-50%); z-index: 9999; padding: 10px 18px; border-radius: 12px;
     background: rgba(44,26,8,.94); border: 2px solid #ffd23f; box-shadow: 0 0 18px rgba(255,210,63,.45); color: #ffe9a8; font-weight: 800; font-size: 15px;
     text-align: center; white-space: nowrap; pointer-events: none; opacity: 0; transition: opacity .3s; }
@@ -1774,7 +1797,7 @@
   const elTitle = document.getElementById("overTitle");
   const coinNote = document.getElementById("coinNote");
 
-  const GAME_VERSION = "v0.9.69";
+  const GAME_VERSION = "v0.9.70";
   /* 제작사 스플래시(bamhobak friends 로고) — 2026-09-20 끔. 다시 켜려면 true */
   const SPLASH_USE = false;   // 코드를 고칠 때마다 뒤 두 자리를 올린다
   document.getElementById("ver").textContent = GAME_VERSION;
@@ -3757,9 +3780,6 @@
     { id: "inter",      ic: "🕰️", nm: "인터스텔라", ds: "이따금 세상만 느려진다. 점수 시계는 그대로",
       hidden: true, once: true, cond: () => augCount["slow"] >= 2,
       go: () => { aug.inter = true; interTimer = 8; bulletT = 2; } },
-    { id: "dice",       ic: "🎲", nm: "주사위", ds: "다시 뽑기 3회 추가",
-      cond: () => job !== "powerj",   // 파워J 는 다시 뽑기를 쓸 수 없다
-      go: () => { rerolls += 3; syncReroll(); } },
     /* 회피 확률은 일부러 안 적는다 — 숫자를 세는 것보다 '가끔 스르륵 피해진다'는
        느낌으로 두는 게 낫다. 안쪽 값은 10% 로 시작해 한 장마다 5%p 씩 (최대 30%). */
     { id: "afterimage", ic: "👻", nm: "그건 제 잔상입니다만?", ds: "맞을 때 가끔 잔상만 남기고 피한다",
@@ -3834,19 +3854,27 @@
 
   let augPauseAt = 0;      // 증강 고르는 동안 흘러간 시간을 나중에 되돌려주기 위한 기준
 
-  /* 다시 뽑기 — 마음에 드는 카드가 없으면 그 자리를 통째로 바꾼다. 한 판에 기본 REROLLS 번,
-     주사위 증강으로 늘릴 수 있다. 파워J는 애초에 한 장뿐이라(계획은 하나) 쓸 수 없다. */
-  const REROLLS = 0;       // v0.9.30 기본 1회를 뺐다 — 주사위 증강으로만 생긴다 (0 이면 버튼이 숨는다)
-  let rerolls = REROLLS;
+  /* v0.9.70 코인으로 다시 뽑기 — 카드 셋을 통째로 바꾼다. 값은 2 → 4 → 8 … 코인으로 한 판 안에서 두 배씩 오르고,
+     이번 판에 주운 코인(coinRun)으로만 낸다 (모아 둔 코인은 못 쓴다). 주사위 증강은 없앴다.
+     제이(파워J)는 애초에 한 장뿐이라(계획은 하나) 쓸 수 없다. */
+  const REROLLS = 0;       // (옛 주사위 횟수 — 이제 안 쓴다)
+  let rerolls = REROLLS, rerollN = 0;
   const btnReroll = document.getElementById("btnReroll");
+  function rerollCost() { return 2 * Math.pow(2, rerollN); }
   function syncReroll() {
-    const can = rerolls > 0 && job !== "powerj";
-    btnReroll.style.display = can ? "" : "none";
-    btnReroll.textContent = "다시 뽑기 (" + rerolls + ")";
+    const show = job !== "powerj" && !vsLike();
+    btnReroll.style.display = show ? "" : "none";
+    const c = rerollCost();
+    btnReroll.disabled = coinRun < c;
+    btnReroll.textContent = "🔄 다시 뽑기 🪙" + c + "  (이번 판 코인 " + coinRun + ")";
   }
   btnReroll.addEventListener("click", () => {
-    if (rerolls <= 0 || state !== STATE.AUG || job === "powerj") return;
-    rerolls--;
+    const c = rerollCost();
+    if (state !== STATE.AUG || job === "powerj" || coinRun < c) return;
+    coinRun -= c; coins = Math.max(0, coins - c);          // 판에서 주운 코인에서 낸다 (지갑에도 이미 들어가 있으니 같이 뺀다)
+    try { localStorage.setItem(LS_COINS, String(coins)); } catch (e) {}
+    showCoins();
+    rerollN++;
     if (!sfx("reroll")) beep(700, .05, "square", .04);
     showAugmentPick();               // 방금 본 카드는 반으로 눌려 다른 것이 나온다
   });
@@ -7626,7 +7654,7 @@
                      "pet:dove": "dove", doveFlock: "dove", doveHome: "dove", doveWhat: "dove",
                      "pet:angel": "angel", "pet:gift": "gift", "pet:coincat": "coincat", "pet:eel": "eel" };
   const BOOK_COND = {
-    small: "버피는 못 먹어요", umbrella3: "버피는 못 먹어요", dash: "도도는 못 먹어요", dice: "제이는 못 먹어요",
+    small: "버피는 못 먹어요", umbrella3: "버피는 못 먹어요", dash: "도도는 못 먹어요",
     "pet:angel": "레벨 4부터 나와요",
     helper: "게임 중 '펫 뿌잉'을 먼저 먹어야 나와요", galaga: "게임 중 '펫 갤러그'를 먼저 먹어야 나와요",
     doveFlock: "게임 중 '펫 비둘기'를 먼저 먹어야 나와요", doveHome: "게임 중 '펫 비둘기'를 먼저 먹어야 나와요",
@@ -7680,6 +7708,21 @@
     }
     document.getElementById("bookCount").textContent = "쓸 수 있는 증강 " + open + " / " + all.length;
   }
+  /* v0.9.70 예/아니오 묻는 창 — 예(노랑)·아니오(회색) */
+  function askYesNo(msg, onYes) {
+    let box = document.getElementById("askBox");
+    if (!box) {
+      box = document.createElement("div"); box.id = "askBox";
+      box.innerHTML = '<div class="askIn"><div class="askMsg"></div><div class="askRow"><button class="askNo">아니오</button><button class="askYes">예</button></div></div>';
+      document.body.appendChild(box);
+    }
+    box.querySelector(".askMsg").textContent = msg;
+    const close = () => { box.classList.remove("on"); };
+    box.querySelector(".askYes").onclick = () => { close(); onYes(); };
+    box.querySelector(".askNo").onclick = close;
+    box.onclick = e => { if (e.target === box) close(); };
+    box.classList.add("on");
+  }
   function renderShop() {
     document.getElementById("shopCoins").textContent = "🪙 " + coins.toLocaleString() + " coin";
     const box = document.getElementById("shopPets"); box.innerHTML = "";
@@ -7700,6 +7743,8 @@
         btn.disabled = coins < PET_PRICE;
         btn.addEventListener("click", () => {
           if (hasPet(id) || coins < PET_PRICE) return;
+          askYesNo("🪙 " + PET_PRICE + "코인으로\n'" + P.nm + "'" + ((c => c >= 0xAC00 && c <= 0xD7A3 && (c - 0xAC00) % 28 ? "을" : "를")(P.nm.charCodeAt(P.nm.length - 1))) + " 구매하시겠습니까?", () => {   // v0.9.70 바로 사지 않고 한 번 묻는다
+          if (hasPet(id) || coins < PET_PRICE) return;
           coins -= PET_PRICE;
           try { localStorage.setItem(LS_COINS, String(coins)); } catch (e) {}
           showCoins();
@@ -7707,6 +7752,7 @@
           try { localStorage.setItem(LS_PET_OWN, JSON.stringify([...petOwned])); } catch (e) {}
           if (!sfx("giant")) { beep(880, .1, "triangle", .06); beep(1320, .16, "triangle", .05); }
           renderShop();
+          });
         });
       }
       row.append(im, st, btn);
@@ -7774,7 +7820,7 @@
     aug.feverScoreMul = 1; aug.fallMul = 1; aug.hitboxMul = 1; aug.poopMul = 1;
     aug.steelUmb = false; aug.starburst = false; aug.scoreMul = 1;
     aug.dodge = 0; aug.wak = false; aug.chainZap = false; aug.dungy = false; aug.momMeal = false;
-    rerolls = REROLLS; ghosts = []; wakBooms = []; sweats = [];
+    rerolls = REROLLS; rerollN = 0; ghosts = []; wakBooms = []; sweats = [];
     aug.blackhole = false; aug.legion = false; roidT = 0;
     aug.doveWhat = false; aug.doveFlock = 0; aug.doveFreq = 1;
     flyOn = false;
