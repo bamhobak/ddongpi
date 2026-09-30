@@ -1600,7 +1600,7 @@
   const elTitle = document.getElementById("overTitle");
   const coinNote = document.getElementById("coinNote");
 
-  const GAME_VERSION = "v0.9.43";
+  const GAME_VERSION = "v0.9.44";
   /* 제작사 스플래시(bamhobak friends 로고) — 2026-09-20 끔. 다시 켜려면 true */
   const SPLASH_USE = false;   // 코드를 고칠 때마다 뒤 두 자리를 올린다
   document.getElementById("ver").textContent = GAME_VERSION;
@@ -14834,8 +14834,11 @@
       if (aug.wak) {                              // 고무고무노 피스톨 — 조그만 주먹
         for (const bu of bullets) drawFist(bu.x, bu.y);
       } else {
-        ctx.fillStyle = "#9fe8ff";
-        for (const bu of bullets) ctx.fillRect(bu.x - 2, bu.y - 9, 4, 18);
+        /* v0.9.44 쨍한 노랑 — 하늘·구름 위에서도 잘 보이게 조금 굵히고 짙은 테두리를 두른다 */
+        ctx.fillStyle = "#3a2600";
+        for (const bu of bullets) ctx.fillRect(bu.x - 3.5, bu.y - 11, 7, 22);
+        ctx.fillStyle = "#ffe600";
+        for (const bu of bullets) ctx.fillRect(bu.x - 2.5, bu.y - 10, 5, 20);
       }
     }
     for (const b of wakBooms) {                   // 주먹 폭발 — 50px 까지 퍼지는 고리
