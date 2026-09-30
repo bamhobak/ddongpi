@@ -838,7 +838,7 @@
   #homeJobs #jobList { width: 100%; }
   /* v0.9.55 홈 캐릭터 고르기 = 좌우로 넘기는 한 줄(아이작처럼) — 가운데 온 캐릭터가 크게, 곧 고른 캐릭터. 아래에 특징 */
   #homeJobs { flex-direction: column; align-items: center; gap: 6px; max-width: 400px; }
-  #homeJobs .carWrap { position: relative; width: 100%; }
+  #homeJobs .carWrap { position: relative; width: 100%; z-index: 0; isolation: isolate; }   /* v0.9.69 고리 카드·화살표의 z-index 가 개발자 페이지·테스트 창 위로 새지 않게 */
   /* v0.9.57 아이작처럼 둥글게 — 고른 캐릭터가 앞 가운데 크게, 나머지는 뒤로 돌아가며 작고 어둡게 */
   #homeJobs #jobList.car { position: relative; display: block; max-width: none; overflow: visible; padding: 0; margin: 8px 0 10px; touch-action: pan-y; user-select: none; -webkit-user-select: none; }
   #homeJobs #jobList.car .augCard { position: absolute; left: 25%; bottom: 0; width: 50%; box-sizing: border-box; transform-origin: 50% 100%; transition: none; padding: 6px 0 4px; gap: 8px; will-change: transform; }
@@ -1774,7 +1774,7 @@
   const elTitle = document.getElementById("overTitle");
   const coinNote = document.getElementById("coinNote");
 
-  const GAME_VERSION = "v0.9.68";
+  const GAME_VERSION = "v0.9.69";
   /* 제작사 스플래시(bamhobak friends 로고) — 2026-09-20 끔. 다시 켜려면 true */
   const SPLASH_USE = false;   // 코드를 고칠 때마다 뒤 두 자리를 올린다
   document.getElementById("ver").textContent = GAME_VERSION;
@@ -7277,7 +7277,11 @@
      sw·sh 카드 그림 크기, l·t 시트 칸이 카드 그림보다 왼쪽·위로 더 나간 만큼, cw·ch 시트 한 칸 (tools 없이 scratch 의 idle_build.py 가 재 준 값) */
   const JOB_IDLE = {
     bangul: { n: 49, sw: 340, sh: 400, l: 0, t: 0, cw: 340, ch: 400 },
-    powerj: { n: 49, sw: 340, sh: 400, l: 13, t: 0, cw: 353, ch: 400 }
+    powerj: { n: 49, sw: 340, sh: 400, l: 13, t: 0, cw: 353, ch: 400 },
+    fortune: { n: 49, sw: 340, sh: 400, l: 0, t: 0, cw: 340, ch: 400 },       // v0.9.69 루나·도도·버피·무무
+    levitator: { n: 49, sw: 340, sh: 400, l: 0, t: 12, cw: 340, ch: 412 },
+    fit: { n: 49, sw: 340, sh: 400, l: 15, t: 0, cw: 355, ch: 400 },
+    powerp: { n: 49, sw: 340, sh: 400, l: 0, t: 0, cw: 340, ch: 400 }         // 그림 이름은 monk (JOB_IMG)
   };
   let idleRun = null;
   function idleStop() {
@@ -7287,31 +7291,39 @@
     idleRun.pic.style.visibility = "";
     idleRun = null;
   }
+  function idleRestart(run, d) {             // 처음 장부터 다시 돌린다 — 끝나면 마지막 장(= 첫 장)에 그대로 멈춰 있고, 카드 그림으로 돌아가지 않는다
+    clearInterval(run.timer);
+    let f = 0;
+    const step = () => {
+      if (f >= d.n) { clearInterval(run.timer); run.timer = 0; return; }
+      run.el.style.backgroundPosition = ((f % 7) / 6 * 100) + "% " + (Math.floor(f / 7) / 6 * 100) + "%";
+      f++;
+    };
+    step(); run.timer = setInterval(step, 62);
+  }
   function idlePlay() {
-    idleStop();
     const d = JOB_IDLE[job];
-    if (!d || dogMode || !jobOwned(job) || !jobList.classList.contains("car")) return;
+    if (!d || dogMode || !jobOwned(job) || !jobList.classList.contains("car")) { idleStop(); return; }
     const card = carCards().find(c => c.dataset.job === job), pic = card && card.querySelector("img.ic");
-    if (!pic) return;
+    if (!pic) { idleStop(); return; }
+    if (idleRun && idleRun.pic === pic && idleRun.el) { idleRestart(idleRun, d); return; }   // 이미 겹쳐 둔 그림이 있으면 바꿔 끼우지 않고 다시 돌리기만
+    idleStop();
     const run = idleRun = { pic: pic, el: null, timer: 0 };
     const sheet = new Image();
     sheet.onload = () => {
       if (idleRun !== run || !pic.offsetHeight) return;
-      const k = pic.offsetHeight / d.sh;
+      /* v0.9.69 자리는 소수점까지 — offsetLeft 같은 정수 값으로 재면 끝나고 카드 그림으로 돌아올 때 1px 튀었다 */
+      const cr = card.getBoundingClientRect(), pr = pic.getBoundingClientRect(), z = (cr.width / card.offsetWidth) || 1;
+      const px = (pr.left - cr.left) / z - card.clientLeft, py = (pr.top - cr.top) / z - card.clientTop;
+      const pw = pr.width / z, k = (pr.height / z) / d.sh;
       const el = document.createElement("span"); el.className = "idle";
-      el.style.left = (pic.offsetLeft + (pic.offsetWidth - d.sw * k) / 2 - d.l * k) + "px";
-      el.style.top = (pic.offsetTop - d.t * k) + "px";
+      el.style.left = (px + (pw - d.sw * k) / 2 - d.l * k) + "px";
+      el.style.top = (py - d.t * k) + "px";
       el.style.width = (d.cw * k) + "px"; el.style.height = (d.ch * k) + "px";
       el.style.backgroundImage = "url(" + sheet.src + ")";
       card.appendChild(el); run.el = el;
       pic.style.visibility = "hidden";
-      let f = 0;
-      const step = () => {
-        if (f >= d.n) { idleStop(); return; }
-        el.style.backgroundPosition = ((f % 7) / 6 * 100) + "% " + (Math.floor(f / 7) / 6 * 100) + "%";
-        f++;
-      };
-      step(); run.timer = setInterval(step, 62);
+      idleRestart(run, d);
     };
     sheet.src = "assets/" + JOB_IMG[job] + "_idle_sheet.webp";
   }
