@@ -1757,7 +1757,7 @@
   const elTitle = document.getElementById("overTitle");
   const coinNote = document.getElementById("coinNote");
 
-  const GAME_VERSION = "v0.9.59";
+  const GAME_VERSION = "v0.9.60";
   /* 제작사 스플래시(bamhobak friends 로고) — 2026-09-20 끔. 다시 켜려면 true */
   const SPLASH_USE = false;   // 코드를 고칠 때마다 뒤 두 자리를 올린다
   document.getElementById("ver").textContent = GAME_VERSION;
@@ -2632,7 +2632,7 @@
   function helperAspect() { return (inSpace() && helperSpaceImg) ? HELPER_ASPECT_SPACE : HELPER_ASPECT; }
   const HELPER_H = 99;           // 화면에 그릴 높이 (110에서 10% 축소)
   const HELPER_R = 35;   // v0.9.45 39 → 35 (펫 여러 마리 동시)           // v0.9.31 43 → 39 (피지컬 쪽으로 — 똥 없애는 증강 살짝 너프)           // 똥을 부수는 반경 (48 → 43, 면적 20% 감소)
-  function helperScale() { return 1 + 0.12 * Math.max(0, aug.helper - 1); }   // v0.9.59 '도와줘 뿌잉' 하나마다 12% 커진다 (5단계 1.48배) — 대폭주는 없앰
+  function helperScale() { return 0.88 + 0.12 * Math.max(0, aug.helper - 1); }   // v0.9.60 펫만 0.88배, '도와줘 뿌잉' 1개가 1배, 하나마다 +0.12 (4개 1.36배) — 대폭주는 없앰
   let helpers = [];
   let helperTimer = 0;
   let fetchers = [];        // 배고픈 뿌잉 — 아이템을 대신 먹으러 가는 뿌잉
