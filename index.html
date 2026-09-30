@@ -1757,7 +1757,7 @@
   const elTitle = document.getElementById("overTitle");
   const coinNote = document.getElementById("coinNote");
 
-  const GAME_VERSION = "v0.9.57";
+  const GAME_VERSION = "v0.9.58";
   /* 제작사 스플래시(bamhobak friends 로고) — 2026-09-20 끔. 다시 켜려면 true */
   const SPLASH_USE = false;   // 코드를 고칠 때마다 뒤 두 자리를 올린다
   document.getElementById("ver").textContent = GAME_VERSION;
@@ -7105,7 +7105,7 @@
   const carL = document.createElement("button"), carR = document.createElement("button");
   carL.className = "carArrow l"; carL.textContent = "‹"; carL.setAttribute("aria-label", "앞 캐릭터");
   carR.className = "carArrow r"; carR.textContent = "›"; carR.setAttribute("aria-label", "다음 캐릭터");
-  let carPos = 0, carTo = 0, carRaf = 0, carDrag = null, carNoClick = 0;
+  let carW = 0, carPos = 0, carTo = 0, carRaf = 0, carDrag = null, carNoClick = 0;
   function carChrome(on) { carWrap.classList.toggle("off", !on); carDots.classList.toggle("off", !on); homeTraits.classList.toggle("off", !on); if (!on) jobList.style.height = ""; }
   function carInfo() {                       // 점 · 화살표 · 특징
     const cards = [...jobList.children], i = cards.findIndex(c => c.dataset.job === job);
@@ -7166,7 +7166,7 @@
     if (!homeTraits.offsetWidth) return;
     const keep = job; let mx = 0;
     homeTraits.style.minHeight = "";
-    for (const c of jobList.children) { job = c.dataset.job; carInfo(); mx = Math.max(mx, homeTraits.offsetHeight); }
+    for (const c of jobList.children) { job = c.dataset.job; carInfo(); mx = Math.max(mx, Math.ceil(homeTraits.getBoundingClientRect().height)); }
     job = keep; carInfo();
     if (mx) homeTraits.style.minHeight = mx + "px";
   }
@@ -7191,7 +7191,10 @@
   window.addEventListener("pointerup", carUp); window.addEventListener("pointercancel", carUp);
   carL.addEventListener("click", () => carStep(-1));
   carR.addEventListener("click", () => carStep(1));
-  if (window.ResizeObserver) new ResizeObserver(() => { if (jobList.classList.contains("car")) { carCenter(); carFit(); } }).observe(document.getElementById("homeJobs"));   // 가려져 있다 보일 때·화면 돌릴 때
+  if (window.ResizeObserver) new ResizeObserver(() => {             // v0.9.58 넓이가 바뀔 때만 다시 맞춘다 (설명 칸 높이가 소수점만큼 달라져도 도는 중에 끊기지 않게)
+    if (!jobList.classList.contains("car") || jobList.clientWidth === carW) return;
+    carW = jobList.clientWidth; carCenter(); carFit();
+  }).observe(document.getElementById("homeJobs"));   // 가려져 있다 보일 때·화면 돌릴 때
   function renderPick() {
     if (jobLocked()) job = "bangul";          // 맨몸대결·똥탑등반 — 탭 글자부터 방울이로
     if (petLocked()) { pet = "none"; petView = "none"; }
