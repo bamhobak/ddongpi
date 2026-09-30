@@ -1601,7 +1601,7 @@
   const elTitle = document.getElementById("overTitle");
   const coinNote = document.getElementById("coinNote");
 
-  const GAME_VERSION = "v0.9.47";
+  const GAME_VERSION = "v0.9.48";
   /* 제작사 스플래시(bamhobak friends 로고) — 2026-09-20 끔. 다시 켜려면 true */
   const SPLASH_USE = false;   // 코드를 고칠 때마다 뒤 두 자리를 올린다
   document.getElementById("ver").textContent = GAME_VERSION;
@@ -1631,7 +1631,7 @@
     /* 점술가 — 도박사 자리를 이어받았다. 가끔 떨어지는 수정 구슬(옛 포춘쿠키)을 먹으면 10초 동안 예언 하나가 이뤄진다.
        (옛 도박사 기록은 순위표에 도박사로 그대로 남는다 — JOB_NAMES·JOB_IMG 에만 남겨 두었다) */
     fortune: { nm: "루나 · 점술가", ic: "🔮", ds: "10초마다 예언이 저절로 바뀐다 · 좋은 예언 넷, 나쁜 예언 하나" },
-    levitator: { nm: "소라 · 부양사", ic: "☁️", ds: "하늘 어디든 날 수 있다 · 높이 있을수록 점수 UP" },
+    levitator: { nm: "도도 · 부양사", ic: "☁️", ds: "하늘 어디든 날 수 있다 · 높이 있을수록 점수 UP" },
     fit: { nm: "버피 · 헬스견", ic: "💪", ds: "목숨 5개로 시작 · 우산이 안 나온다 · 하트가 어마무시하게 잘 나온다 · 벌크업 좀 된 상태" },
     powerj: { nm: "제이 · 계획러", ic: "📋", ds: "달이 잘 나온다 · 대신 증강은 계획대로 1개만" },
     /* 파워P — 파워J 의 거울. 달은 남들만큼 오는데, 올 때마다 네 장을 펼쳐 놓고 고른다.
@@ -2128,7 +2128,7 @@
     right: { img: null, aspect: 1.195, head: 0.345, cx: 0.701, cy: 0.416, adj: 0.4270, lift: 0.098, float: true },
     hurt:  { img: null, aspect: 1.3711, head: 0.3855, cx: 0.625, cy: 0.405, adj: 0.4987, lift: 0.098 }
   };
-  const SPR_LEV_SPACE = {    // 소라 — 삽살개 도사 (v0.9.47, 예전 파피용)
+  const SPR_LEV_SPACE = {    // 도도(옛 소라) — 삽살개 도사 (v0.9.47, 예전 파피용)
     right: { img: null, aspect: 1.1250, head: 0.420, cx: 0.735, cy: 0.420, adj: 0.5016, lift: 0.160, float: true },
     hurt:  { img: null, aspect: 1.1675, head: 0.420, cx: 0.722, cy: 0.430, adj: 0.4996, lift: 0.153 }
   };
@@ -12366,7 +12366,7 @@
   AUG_NAMES.refill = "간식 무한리필(삭제됨)";
   AUG_NAMES.ghost = "유령화(삭제됨)";
   AUG_NAMES.subs = "간식 정기구독(삭제됨)";
-  const JOB_NAMES = { none: "쉬었음 청년", fortune: "루나 · 점술가", gambler: "도박사", levitator: "소라 · 부양사", fit: "버피 · 헬스견", powerj: "제이 · 계획러", powerp: "무무 · 무소유", powerp2: "파워P", bangul: "방울이 · 백수", "(none)": "(기록 없음)" };
+  const JOB_NAMES = { none: "쉬었음 청년", fortune: "루나 · 점술가", gambler: "도박사", levitator: "도도 · 부양사", fit: "버피 · 헬스견", powerj: "제이 · 계획러", powerp: "무무 · 무소유", powerp2: "파워P", bangul: "방울이 · 백수", "(none)": "(기록 없음)" };
   const devScreen = document.getElementById("devScreen");
   const devPw     = document.getElementById("devPw");
   const devBody   = document.getElementById("devBody");
