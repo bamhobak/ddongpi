@@ -440,8 +440,17 @@
   #nameRow { display: none; flex-direction: column; align-items: center; gap: 10px; width: 100%; }
   #nameRow.on { display: flex; }
   #nameRow .tag {
-    font-size: 14px; font-weight: 700; color: #ffd23f;
+    font-size: 21px; font-weight: 800; color: #ffd23f;   /* v0.9.41 14 → 21px — 순위 달성이 한눈에 */
+    text-shadow: 0 0 12px rgba(255,210,63,.55), 0 2px 0 rgba(0,0,0,.4);
   }
+  /* v0.9.41 게임 오버 화면엔 순위판을 두지 않는다 (시작 화면에서 본다) */
+  #overScreen .board.withTabs { display: none !important; }
+  /* 가진 증강 아이콘을 누르면 아래에 이름·설명 */
+  #overAugs span { cursor: pointer; border-radius: 6px; padding: 1px 2px; }
+  #overAugs span.sel { background: rgba(255,210,63,.25); outline: 1px solid rgba(255,210,63,.7); }
+  #overAugDesc { min-height: 0; max-width: 340px; font-size: 13.5px; line-height: 1.45; color: #e8ecf7; text-align: center; }
+  #overAugDesc b { color: #ffd23f; font-size: 14.5px; }
+  #overAugDesc:empty { display: none; }
   #nameForm { display: flex; gap: 8px; width: 100%; max-width: 380px; }
   #nameInput {
     flex: 1; min-width: 0;
@@ -1386,6 +1395,7 @@
       <div id="overStory"></div>
       <div id="overBest"></div>
       <div id="overAugs" hidden></div>
+      <div id="overAugDesc"></div>
 
       <div id="nameRow">
         <div class="tag" id="nameTag">🎉 TOP 10 진입! 이름을 남기세요</div>
@@ -1572,7 +1582,7 @@
   const elTitle = document.getElementById("overTitle");
   const coinNote = document.getElementById("coinNote");
 
-  const GAME_VERSION = "v0.9.40";
+  const GAME_VERSION = "v0.9.41";
   /* 제작사 스플래시(bamhobak friends 로고) — 2026-09-20 끔. 다시 켜려면 true */
   const SPLASH_USE = false;   // 코드를 고칠 때마다 뒤 두 자리를 올린다
   document.getElementById("ver").textContent = GAME_VERSION;
@@ -11673,7 +11683,7 @@
     const z = ZONES[zoneIdx()];
     document.getElementById("overStory").textContent =
       "⏱️ " + fmtSec(elapsed) + " 버팀 · " + z.ic + " " + z.nm + (noItem() ? "" : " (Lv " + level + ")")
-      + (grazeCount ? " · ✨ 아슬 " + grazeCount + "번" : "");
+      ;   // v0.9.41 아슬 횟수는 안 보여 준다
     const unit = noItem() ? " m" : "점";
     const bestEl = document.getElementById("overBest");
     bestEl.classList.remove("new");
@@ -11692,10 +11702,21 @@
     }
     const box = document.getElementById("overAugs");
     box.innerHTML = "";
+    const desc = document.getElementById("overAugDesc");
+    desc.textContent = "";
     const owned = AUGMENTS.filter(a => augCount[a.id] && !a.noCount);
     for (const a of owned) {
       const sp = document.createElement("span");
       sp.title = a.nm;
+      sp.addEventListener("click", () => {                  // v0.9.41 누르면 어떤 증강인지
+        const was = sp.classList.contains("sel");
+        for (const q of box.children) q.classList.remove("sel");
+        if (was) { desc.textContent = ""; return; }
+        sp.classList.add("sel");
+        desc.innerHTML = "";
+        const b = document.createElement("b"); b.textContent = a.ic + " " + a.nm + (augCount[a.id] > 1 ? " ×" + augCount[a.id] : "");
+        desc.append(b, document.createElement("br"), document.createTextNode(a.ds || ""));
+      });
       sp.textContent = a.ic;
       if (augCount[a.id] > 1) {
         const n = document.createElement("b"); n.textContent = "x" + augCount[a.id]; sp.appendChild(n);
