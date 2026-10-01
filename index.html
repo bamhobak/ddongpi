@@ -106,6 +106,7 @@
       rgba(5,6,13,.93);
   }
   .screen.hidden { display: none; }
+  #overScreen.cleared { background: linear-gradient(rgba(5,6,13,.82), rgba(5,6,13,.7) 50%, rgba(5,6,13,0) 72%); justify-content: flex-start; gap: 8px; padding-bottom: 50vw; }   /* v1.0.02 클리어 — 아래에 붙은 캐릭터가 보이게, 글·버튼은 위로 */
   .screen { overflow-y: auto; }
 
   /* ---- 랭킹판 ---- */
@@ -1875,7 +1876,7 @@
   const elTitle = document.getElementById("overTitle");
   const coinNote = document.getElementById("coinNote");
 
-  const GAME_VERSION = "v1.0.01";
+  const GAME_VERSION = "v1.0.02";
   /* 제작사 스플래시(bamhobak friends 로고) — 2026-09-20 끔. 다시 켜려면 true */
   const SPLASH_USE = false;   // 코드를 고칠 때마다 뒤 두 자리를 올린다
   document.getElementById("ver").textContent = GAME_VERSION;
@@ -6924,7 +6925,7 @@
     }
     if (fbIn < 1) return;
     const g = fbGeom(now), bx = g.hx, by = g.hy + g.h * 0.05;
-    const V = H * (0.62 + 0.11 * ph) * 0.87;   // v0.9.92 정말정말 어렵게 · v0.9.94 15% 완화
+    const V = H * (0.62 + 0.11 * ph) * 0.87 * 0.9;   // v0.9.92 정말정말 어렵게 · v0.9.94 15% 완화 · v1.0.02 똥 속도 -10%
     for (let k = fbQueue.length - 1; k >= 0; k--) {   // 조금 뒤에 이어지는 공격(겹벽 등)
       fbQueue[k].t -= dt;
       if (fbQueue[k].t <= 0) { const f = fbQueue[k].f; fbQueue.splice(k, 1); f(); }
@@ -6933,7 +6934,7 @@
       fbSweep -= dt;
       fbSweepA += dt * (2.6 + ph * 1.0);
       fbSweepAcc += dt;
-      const sg = (0.085 - 0.012 * ph) / 0.87;
+      const sg = (0.085 - 0.012 * ph) / 0.87 * 1.15;   // v1.0.02 회오리 더 성기게
       while (fbSweepAcc >= sg) {
         fbSweepAcc -= sg;
         const a = Math.sin(fbSweepA) * 0.85;
@@ -6943,7 +6944,7 @@
     }
     fbShotT -= dt;
     if (fbShotT > 0) return;
-    const r = 15, gapW = player.r * (3.3 - 0.35 * ph) * 1.15;
+    const r = 15, gapW = player.r * (3.3 - 0.35 * ph) * 1.15 * 1.12;   // v1.0.02 틈 조금 더 넓게
     const fan = (n, spread, sp) => { for (let k = 0; k < n; k++) { const a = -spread + 2 * spread * k / (n - 1); fbShot(bx, by, sp * Math.sin(a), sp * Math.cos(a), r); } };
     const aimed = (n) => { for (let k = 0; k < n; k++) { const tx = player.x + (k - (n - 1) / 2) * 40, ty = groundY; const d = Math.hypot(tx - bx, ty - by); fbShot(bx, by, (tx - bx) / d * V * 1.2, (ty - by) / d * V * 1.2, r); } };
     const wall = (gx) => { for (let x = r; x < W; x += r * 2.15) if (Math.abs(x - gx) > gapW / 2) fbShot(x, g.y + g.h * 0.75, 0, V * 0.85, r); };
@@ -6958,13 +6959,13 @@
     /* 벽은 다른 탄과 겹치지 않는다(틈이 막히지 않게). 벽 차례면 회오리도 멈춘다 */
     const W1 = () => { fbSweep = 0; wall(gapX()); }, W2 = () => { fbSweep = 0; wall2(); };
     const P = [
-      [() => fan(9, 0.75, V), () => { W1(); aimed(1); }, () => aimed(3), () => { fbSweep = 1.4; rain(4); }, () => rain(7), () => fan(11, 0.95, V * 1.05), () => W2()],
-      [() => W1(), () => { aimed(5); fbSweep = 1.6; }, () => W2(), () => rain(9), () => { fan(13, 1.0, V); aimed(1); }, () => { rain(6); aimed(3); }],
-      [() => { W2(); aimed(1); }, () => { fan(15, 1.05, V); fbSweep = 2.0; }, () => { rain(11); aimed(3); }, () => W1(), () => { aimed(7); rain(5); }, () => W2()]
+      [() => fan(9, 0.75, V), () => { W1(); aimed(1); }, () => aimed(3), () => { fbSweep = 1.4; rain(4); }, () => rain(6), () => fan(10, 0.95, V * 1.05), () => W2()],
+      [() => W1(), () => { aimed(5); fbSweep = 1.6; }, () => W2(), () => rain(8), () => { fan(11, 1.0, V); aimed(1); }, () => { rain(6); aimed(3); }],
+      [() => { W2(); aimed(1); }, () => { fan(13, 1.05, V); fbSweep = 1.7; }, () => { rain(9); aimed(3); }, () => W1(), () => { aimed(5); rain(4); }, () => W2()]
     ][ph];
     P[fbStep % P.length]();
     fbStep++;
-    fbShotT = [0.75, 0.6, 0.48][ph] / 0.87 + (fbQueue.length ? 0.35 : 0);   // 겹벽 뒤엔 숨 돌릴 틈
+    fbShotT = [0.75, 0.6, 0.48][ph] / 0.87 * 1.15 + (fbQueue.length ? 0.35 : 0);   // 겹벽 뒤엔 숨 돌릴 틈 · v1.0.02 공격 간격 +15%
     burst(bx, by + 10, "#7a3cff", 8);
     if (!sfx("boing", 0.4)) beep(220, .05, "square", .03);
   }
@@ -6997,7 +6998,7 @@
       flash = 1;
       popText(W / 2, H * 0.16, "🏡 무사히 지상으로!", "#ffffff", 28, 2.2);   // v0.9.99 얼굴을 가리지 않게 위로
     }
-    if (clearT > D0 + DL + 2.6 && state === STATE.PLAY) { gameCleared = true; gameOver(); }   // v0.9.97 크게 자리 잡은 걸 잠깐 보여 준 뒤
+    if (landDone && state === STATE.PLAY) { gameCleared = true; gameOver(); }   // v1.0.02 미끄러져 멈춘 뒤 클리어 통계
   }
   function drawFinalBoss(now) {
     if (!fbOn() || !fbStarted || clearHome || clearT > 1.3) return;
@@ -8502,7 +8503,7 @@
     heartEat = 0; lastHitAt = 0; monkHeartN = 0; lotusDone = false; lotusUntil = 0; mindSlowUntil = 0;
     topT = 0; topGiven = false; riseCd = 0; prevPY = 0; pjMoonN = 0; pjPicks = 0; todoDone = false;
     prophecy2 = null; proph2T = 0; daegilUsed = false; nextProph = null; nextShown = false;
-    fbStarted = false; fbIn = 0; fbSweep = 0; fbPhase = -1; clearT = -1; clearHome = false; gameCleared = false; fbQueue = []; fbSweepAcc = 0; clearLT = 0; landT0 = 0; landBump = false;
+    fbStarted = false; fbIn = 0; fbSweep = 0; fbPhase = -1; clearT = -1; clearHome = false; gameCleared = false; fbQueue = []; fbSweepAcc = 0; clearLT = 0; landT0 = 0; landBump = false; landDone = false;
     startAugPending = accOn(4) && !testMode; startAugNow = false; cloudT = 40 + Math.random() * 30; skillCd = 0; skillUntil = 0; bangIdle = 0;
     aug.blackhole = false; aug.legion = false; roidT = 0;
     aug.doveWhat = false; aug.doveFlock = 0; aug.doveFreq = 1;
@@ -13375,6 +13376,7 @@
     shake = 30;
     setFinalDigits(s.toLocaleString() + (noItem() ? " m" : ""));   // v0.9.42 게임 속 점수와 같은 숫자 그림
     elTitle.textContent = gameCleared ? "🏆 게임 클리어!" : "게임 오버!";
+    overScreen.classList.toggle("cleared", gameCleared);
     overStory(s);
     lvGain(elapsed);                         // v0.9.84 경험치 = 버틴 초
     {                                        // v0.9.63 이번에 열린 증강·캐릭터
@@ -15391,7 +15393,7 @@
   }
   /* v0.9.95 끝판왕 클리어 — 방구에 날려 지상으로 떨어지는 동안은 우주복 낙하 그림 (Codex) */
   const FALL_IMG = {};
-  for (const n of ["bangul", "powerj", "fortune", "levitator", "fit", "monk", "full"]) { const im = new Image(); im.src = "assets/fall_" + n + ".webp?v5"; FALL_IMG[n] = im; }
+  for (const n of ["bangul", "powerj", "fortune", "levitator", "fit", "monk", "full"]) { const im = new Image(); im.src = "assets/fall_" + n + ".webp?v6"; FALL_IMG[n] = im; }
   function drawFalling(now) {
     const key = job === "powerp" ? (fullOwn ? "full" : "monk") : job;
     const im = FALL_IMG[key];
@@ -15408,9 +15410,9 @@
   }
   /* v0.9.99 지상에 내려온 뒤 — 우주복 낙하 그림 그대로 화면 쪽으로 날아와 얼굴이 화면에 '철퍼덕' 달라붙는다.
      FALL_FACE = 그림 안 헬멧(얼굴) 가운데 자리(가로·세로 비율) */
-  const FALL_FACE = { bangul: [0.50, 0.72, 0.85], powerj: [0.72, 0.67, 0.48], fortune: [0.50, 0.70, 0.62], levitator: [0.68, 0.66, 0.46],
-                      fit: [0.50, 0.70, 0.60], monk: [0.60, 0.66, 0.52], full: [0.62, 0.67, 0.50] }   // [얼굴 가로, 세로, 헬멧 폭/그림 폭]   // v1.0.00 방울이·버피·루나는 번지 자세(얼굴이 아래쪽 가운데)
-  let landT0 = 0, landBump = false;
+  const FALL_FACE = { bangul: [0.66, 0.68, 0.52], powerj: [0.72, 0.67, 0.48], fortune: [0.66, 0.62, 0.45], levitator: [0.68, 0.66, 0.46],
+                      fit: [0.72, 0.67, 0.44], monk: [0.60, 0.66, 0.52], full: [0.62, 0.67, 0.50] }   // [얼굴 가로, 세로, 헬멧 폭/그림 폭]   // v1.0.00 방울이·버피·루나는 번지 자세(얼굴이 아래쪽 가운데)
+  let landT0 = 0, landBump = false, landDone = false;
   function drawLanded(now) {
     const key = job === "powerp" ? (fullOwn ? "full" : "monk") : job;
     const im = FALL_IMG[key];
@@ -15420,7 +15422,13 @@
     const f = FALL_FACE[key] || [0.65, 0.62];
     const w0 = player.r * 4.2 * im.naturalWidth / im.naturalHeight, w1 = W * 0.95 / (f[2] || 0.45);   // 헬멧이 화면 폭의 95%
     const w = w0 + (w1 - w0) * e, h = w * im.naturalHeight / im.naturalWidth;
-    const fx = player.x + (W / 2 - player.x) * e, fy = H * 0.45 + (H * 0.58 - H * 0.45) * e;
+    const fx = player.x + (W / 2 - player.x) * e;
+    let fy = H * 0.45 + (H * 0.58 - H * 0.45) * e;
+    if (k >= 1) {                                   // v1.0.02 유리에 붙은 뒤 아래로 주르륵 미끄러져, 눈까지만 보이게 멈춘다
+      const st = Math.max(0, t - 0.55 - 0.45), sk = Math.min(1, st / 1.4), se = sk * sk * (3 - 2 * sk);
+      fy += (H - W * 0.17 - H * 0.58) * se;           // 아래 끝이 눈 바로 밑에 오게
+      if (sk >= 1) landDone = true;
+    }
     let sx = 1, sy = 1;
     if (k >= 1) {                                   // 붙는 순간 납작해졌다가 살짝 출렁
       if (!landBump) { landBump = true; shake = Math.max(shake, 16); if (!sfx("boing")) beep(180, .12, "square", .06); if (navigator.vibrate) navigator.vibrate(60); }
@@ -16892,7 +16900,7 @@
       if (state !== STATE.OVER) drawPetsBack(now);
       if (vsOn() && state !== STATE.OVER && state !== STATE.READY) drawVsWorld(now);   // 얼음·껍질·구름·비둘기
       if (partyNow) { drawPartyBodies(now); drawPartyUpper(now); }
-      if (state !== STATE.OVER) drawPlayer(now);
+      if (state !== STATE.OVER || gameCleared) drawPlayer(now);   // v1.0.02 클리어 화면 뒤에도 붙은 캐릭터
       if (vsOn() && state !== STATE.OVER && state !== STATE.READY) { asRival(() => drawPlayer(now)); drawVsTags(now); drawVsRoulette(now); drawVsRead(now); drawVsUpper(now); }
       if (state !== STATE.OVER) drawInvGlow(now);
     }
