@@ -848,7 +848,13 @@
   #pgHome h1 img.ttl { width: min(46vw, 190px) !important; }
   #pgHome h1 { margin-bottom: 0 !important; }
   #pgHome.on { justify-content: flex-end; padding-bottom: 16px; }   /* v0.9.70 시작하기 아래 빈자리 줄임 — 아래로 모은다 */
-  #pgHome #btnStart { margin-top: -6px; }
+  #pgHome #startRow { position: relative; margin-top: -6px; display: flex; justify-content: center; }
+  #btnHyper { position: absolute; left: calc(50% + 132px); top: 50%; transform: translateY(-50%); width: 44px; height: 44px; padding: 0; border-radius: 50%;
+    font-size: 22px; line-height: 1; background: rgba(20,22,40,.6); border: 2px solid rgba(255,255,255,.35); box-shadow: none; filter: grayscale(1); opacity: .75; }
+  #btnHyper.on { background: radial-gradient(circle, #fff1a8, #ffb52e); border-color: #fff3c4; filter: none; opacity: 1; box-shadow: 0 0 14px rgba(255,200,60,.8); }
+  #hintToast { position: fixed; left: 50%; bottom: 120px; transform: translateX(-50%); z-index: 9999; padding: 8px 14px; border-radius: 10px;
+    background: rgba(20,14,40,.9); color: #ffe9a8; font-weight: 800; font-size: 14px; pointer-events: none; opacity: 0; transition: opacity .25s; white-space: nowrap; }
+  #hintToast.on { opacity: 1; }
   #homeJobs { width: 100%; max-width: 340px; display: flex; justify-content: center; }
   #homeJobs #jobList { width: 100%; }
   /* v0.9.55 홈 캐릭터 고르기 = 좌우로 넘기는 한 줄(아이작처럼) — 가운데 온 캐릭터가 크게, 곧 고른 캐릭터. 아래에 특징 */
@@ -893,6 +899,22 @@
   #growList .shopItem .si { font-size: 26px; width: 34px; text-align: center; }
   #growList .shopItem .st b { font-size: 15px; display: flex; align-items: center; gap: 6px; }
   #growList .shopItem .st span { font-size: 11.5px; }
+  .lvCard { width: 100%; box-sizing: border-box; padding: 10px 12px; border-radius: 14px; background: linear-gradient(180deg, #fff8e6, #f3e3bf);
+    border: 2px solid #8a5a2b; box-shadow: 0 3px 0 #6b4520; color: #4a3322; display: flex; flex-direction: column; gap: 6px; }
+  .lvHead { display: flex; justify-content: space-between; align-items: baseline; }
+  .lvHead b { font-size: 16px; } .lvHead em { font-style: normal; font-weight: 900; font-size: 18px; color: #c46a00; }
+  .lvBar { position: relative; height: 16px; border-radius: 8px; background: #e2d2ad; border: 1px solid #8a5a2b; overflow: hidden; }
+  .lvBar i { position: absolute; left: 0; top: 0; bottom: 0; background: linear-gradient(180deg, #ffe07a, #ffb52e); }
+  .lvBar span { position: relative; display: block; text-align: center; font-size: 11px; font-weight: 800; line-height: 15px; color: #5a3a10; }
+  .lvNote { font-size: 11.5px; opacity: .75; text-align: center; }
+  .lvRow { display: flex; gap: 8px; align-items: center; font-size: 12.5px; opacity: .5; }
+  .lvRow.on { opacity: 1; } .lvRow .lvN { min-width: 34px; font-weight: 900; color: #c46a00; }
+  .lvPick { display: flex; flex-direction: column; gap: 4px; padding-top: 4px; border-top: 1px dashed rgba(138,90,43,.35); }
+  .lvPick .lvPN { font-size: 12.5px; font-weight: 900; color: #c46a00; }
+  .lvPick.lock { opacity: .5; }
+  .lvOpt { text-align: left; font-size: 12.5px; line-height: 1.35; padding: 6px 9px; border-radius: 9px; border: 2px solid #c9b48a; background: #fffdf6; color: #4a3322; box-shadow: none; }
+  .lvOpt.sel { border-color: #ffb52e; background: #fff1c2; font-weight: 800; }
+  .lvOpt.sel::before { content: "✔ "; color: #c46a00; }
   #growList .growSoon { margin-top: 30px; text-align: center; font-size: 18px; font-weight: 800; color: #e8ecf7; text-shadow: 0 1px 3px rgba(0,0,0,.6); }
   #growList .pips { display: inline-flex; gap: 3px; font-style: normal; }
   #growList .pips em { width: 8px; height: 8px; border-radius: 2px; background: #d9c9a3; border: 1px solid #8a5a2b; }
@@ -907,6 +929,19 @@
     border-width: 0 calc(var(--bh) / 2) 0 calc(var(--bh) * .97);
     border-image: url(assets/ui/btn_back.webp) 0 60 0 116 fill / 0 calc(var(--bh) / 2) 0 calc(var(--bh) * .97) / 0 stretch;
     padding: 0 4px calc(var(--bh) * .08); font-size: 15px; font-weight: 800; color: #3f3560; text-shadow: 0 1px 0 rgba(255,255,255,.6); }
+  #cloudShop { z-index: 25; gap: 12px; background: rgba(8,10,26,.82); }
+  #cloudShop h2 { color: #ffd23f; margin: 0; }
+  #cloudShop .csCoin { color: #ffe9a8; font-weight: 800; font-size: 14px; }
+  #cloudShop .csList { display: flex; flex-direction: column; gap: 8px; width: 100%; max-width: 340px; }
+  #cloudShop .shopItem .si { font-size: 30px; width: 40px; text-align: center; }
+  #cloudShop .csLeave { --bh: 44px; height: var(--bh); box-sizing: border-box; min-width: 170px; border-style: solid; border-color: transparent; border-radius: 0; box-shadow: none; background: none;
+    border-width: 0 calc(var(--bh) / 2) 0 calc(var(--bh) * .97);
+    border-image: url(assets/ui/btn_back.webp) 0 60 0 116 fill / 0 calc(var(--bh) / 2) 0 calc(var(--bh) * .97) / 0 stretch;
+    padding: 0 4px calc(var(--bh) * .08); font-size: 15px; font-weight: 800; color: #3f3560; text-shadow: 0 1px 0 rgba(255,255,255,.6); }
+  #btnSkill { position: absolute; z-index: 4; display: none; right: 12px; bottom: max(12px, env(safe-area-inset-bottom)); width: 64px; height: 64px; padding: 0; border-radius: 50%;
+    font-size: 30px; background: conic-gradient(rgba(150,220,255,.85) var(--p, 100%), rgba(255,255,255,.18) 0); border: 2px solid rgba(255,255,255,.7); box-shadow: 0 0 12px rgba(150,220,255,.6); }
+  #btnSkill.on { display: block; }
+  #btnSkill.wait { filter: grayscale(.7); opacity: .7; }
   #askBox { position: fixed; inset: 0; z-index: 10000; display: none; align-items: center; justify-content: center; background: rgba(8,8,16,.62); }
   #askBox.on { display: flex; }
   #askBox .askIn { width: min(84vw, 320px); padding: 22px 18px 18px; border-radius: 16px; background: #fff8e6; border: 3px solid #8a5a2b; box-shadow: 0 6px 0 #6b4520, 0 10px 30px rgba(0,0,0,.45); text-align: center; }
@@ -1435,6 +1470,7 @@
   <div id="stage">
     <canvas id="cv"></canvas>
     <button id="btnPause">⏸</button>
+    <button id="btnSkill" aria-label="대왕 비누방울">🫧</button>
     <div id="partyPad">
       <button class="pslot" data-k="0" title="빈 칸"></button>
       <button class="pslot" data-k="1" title="빈 칸"></button>
@@ -1461,7 +1497,7 @@
         <span id="devDot" aria-label="통계"></span>
       </span></h1>
       <div id="homeJobs"></div>
-      <button id="btnStart">시작하기</button>
+      <div id="startRow"><button id="btnStart">시작하기</button><button id="btnHyper" aria-label="하이퍼 모드">⚡</button></div>
       </section>
       <section class="page" id="pgRank">
       <div id="boardSlot">
@@ -1829,7 +1865,7 @@
   const elTitle = document.getElementById("overTitle");
   const coinNote = document.getElementById("coinNote");
 
-  const GAME_VERSION = "v0.9.83";
+  const GAME_VERSION = "v0.9.84";
   /* 제작사 스플래시(bamhobak friends 로고) — 2026-09-20 끔. 다시 켜려면 true */
   const SPLASH_USE = false;   // 코드를 고칠 때마다 뒤 두 자리를 올린다
   document.getElementById("ver").textContent = GAME_VERSION;
@@ -3165,6 +3201,38 @@
   /* 코인 — 판이 끝나도 사라지지 않고 계속 쌓인다. 쓰는 곳은 나중에 붙인다. */
   const LS_COINS = "epjpddongpi_coins";
   let coins = 0;      // 지금까지 모은 전체
+  /* ── v0.9.84 공통(계정) 레벨과 캐릭터 레벨 — 경험치 = 싱글플레이에서 버틴 초(테스트 모드 제외).
+     공통: 1,000 · 5,000 · 11,000 · 22,000 에서 Lv2~5 (평균 220초씩 100판쯤에 Lv5).
+     캐릭터: 공통 Lv2 부터 그 캐릭터로 버틴 초가 쌓인다 — 600 · 2,000 · 4,500 · 9,000 에서 Lv2~5.
+     캐릭터 레벨마다 둘 중 하나를 고른다(언제든 바꿀 수 있다, 처음엔 A). Lv3 은 고르면 모든 캐릭터에 적용된다. */
+  const LS_LV = "epjpddongpi_lv";
+  const ACC_XP = [0, 1000, 5000, 11000, 22000];
+  const CHR_XP = [0, 600, 2000, 4500, 9000];
+  let lvData = { xp: 0, cx: {}, pick: {}, hyper: false };
+  try { const d = JSON.parse(localStorage.getItem(LS_LV) || "null"); if (d && typeof d.xp === "number") lvData = Object.assign(lvData, d); } catch (e) {}
+  function lvSave() { try { localStorage.setItem(LS_LV, JSON.stringify(lvData)); } catch (e) {} }
+  function lvOf(xp, T) { let l = 1; for (let i = 1; i < T.length; i++) if (xp >= T[i]) l = i + 1; return l; }
+  function accLv() { return lvOf(lvData.xp, ACC_XP); }
+  function chrLv(j) { return accLv() >= 2 ? lvOf(lvData.cx[j] || 0, CHR_XP) : 1; }
+  function lvSingle() { return typeof runMode === "undefined" || runMode === "item"; }    // 레벨 보상은 싱글플레이에서만
+  function accOn(l) { return lvSingle() && accLv() >= l; }
+  function pickOf(j, l) { return chrLv(j) >= l ? ((lvData.pick[j] || {})[l] || "A") : null; }
+  function myPerk(l, ab) { return lvSingle() && pickOf(job, l) === ab; }                  // 지금 캐릭터의 Lv2·4·5
+  function allPerk(j, ab) { return lvSingle() && pickOf(j, 3) === ab; }                  // 캐릭터 j 의 Lv3 — 모든 캐릭터에
+  const ACC_REW = {
+    2: "🎲 증강 다시 뽑기(판마다 1회) · 🐶 캐릭터 레벨 시작",
+    3: "☁️ 구름 상점 — 게임 중 가끔 내려온다. 증강 2개·하트를 코인으로",
+    4: "🎁 시작 증강 고르기(3장 중 1장) · ⚡ 하이퍼 모드",
+    5: "👑 (준비 중)"
+  };
+  const CHR_PERKS = {
+    bangul: {
+      2: { A: "비누방울 다시 맺히는 시간 -25%", B: "비누방울이 터질 때 주변 똥을 밀어낸다" },
+      3: { A: "미끌미끌 — 맞은 뒤 무적 +0.2초", B: "거품 정리 — 스테이지가 바뀔 때마다 내 주변 똥이 거품으로 사라진다" },
+      4: { A: "비누방울 두 겹", B: "비누방울이 터지면 1.5초 무적" },
+      5: { A: "집콕 — 1초 가만히 있으면 비누방울이 두 배 빨리 맺힌다", B: "대왕 비누방울 — 스킬 버튼(쿨타임 20초), 2초 동안 큰 방울 속에서 무적" }
+    }
+  };
   let coinRun = 0;    // 이번 판에 주운 것
   try { coins = Math.max(0, parseInt(localStorage.getItem(LS_COINS), 10) || 0); } catch (e) {}
   const coinBox = document.getElementById("coinBox");
@@ -3895,19 +3963,14 @@
   let rerolls = REROLLS, rerollN = 0;
   const btnReroll = document.getElementById("btnReroll");
   function rerollCost() { return 2 * Math.pow(2, rerollN); }
-  function syncReroll() {
-    const show = job !== "powerj" && !vsLike();
+  function syncReroll() {                    // v0.9.84 코인 다시 뽑기 대신 — 공통 Lv2 부터 판마다 1회
+    const show = job !== "powerj" && accOn(2) && rerollN < 1;
     btnReroll.style.display = show ? "" : "none";
-    const c = rerollCost();
-    btnReroll.disabled = coinRun < c;
-    btnReroll.textContent = "🔄 다시 뽑기 🪙" + c + "  (이번 판 코인 " + coinRun + ")";
+    btnReroll.disabled = false;
+    btnReroll.textContent = "🔄 다시 뽑기 (이번 판 1회)";
   }
   btnReroll.addEventListener("click", () => {
-    const c = rerollCost();
-    if (state !== STATE.AUG || job === "powerj" || coinRun < c) return;
-    coinRun -= c; coins = Math.max(0, coins - c);          // 판에서 주운 코인에서 낸다 (지갑에도 이미 들어가 있으니 같이 뺀다)
-    try { localStorage.setItem(LS_COINS, String(coins)); } catch (e) {}
-    showCoins();
+    if (state !== STATE.AUG || job === "powerj" || !accOn(2) || rerollN >= 1) return;
     rerollN++;
     if (!sfx("reroll")) beep(700, .05, "square", .04);
     showAugmentPick();               // 방금 본 카드는 반으로 눌려 다른 것이 나온다
@@ -3937,6 +4000,7 @@
   }
 
   function closeAugScreen() {
+    startAugNow = false;
     augScreen.classList.add("hidden");
     state = STATE.PLAY;
     inputHoldUntil = performance.now() + 350;   // 방금 누른 자리로 캐릭터가 순간이동하지 않게
@@ -3962,7 +4026,7 @@
     augRound++;                        // 이번이 몇 번째 선택 차례인지
     augTitle.textContent = augTotal > 1
       ? (augTotal >= 3 ? "🌕 보름달! " : "🚽 ") + "증강 " + augTotal + "연속 (" + (augTotal - augRemain + 1) + "/" + augTotal + ")"
-      : "⭐ 증강 선택 🌙";
+      : startAugNow ? "🎁 시작 증강 고르기" : "⭐ 증강 선택 🌙";
     /* 보유 상한에 닿은 증강은 후보에서 빠진다.
        중첩할수록 효과가 0.7배씩 줄어서 4개쯤이면 더 먹을 이유가 없다.
        once 증강은 상한 1과 같다. */
@@ -4081,7 +4145,7 @@
   let hitStop = 0, dying = 0, deathScore = 0, deathLvT = 0, readyBeat = false;   // 맞은 순간 정지 · 쓰러지는 느린 화면 · 증강 뒤 준비
   /* 판 시작 READY → GO! — READY 동안은 증강 뒤 '준비!'처럼 멈춰 있고(startBeat),
      GO! 는 움직이기 시작하는 순간 판 위에 잠깐 떴다 사라진다(goBanner, 남은 초). */
-  let startBeat = false, goBanner = 0;
+  let startBeat = false, goBanner = 0, startAugPending = false, startAugNow = false;   // v0.9.84 시작 증강
   const START_READY_MS = 1100, GO_SEC = 0.65;
   /* v0.8.22 READY 는 이 판에 쓸 그림(캐릭터·첫 배경)이 다 올 때까지 붙잡아 둔다 — 폰으로 처음 들어오면 그림이
      늦게 와서, 그 사이 다른 직업(백수) 그림과 그림 없는 옛 배경(색 하늘·그린 구름)이 잠깐 보였다.
@@ -6862,6 +6926,8 @@
   let inputHoldUntil = 0;          // 이 시각까지는 화면 터치를 조작으로 받지 않는다
   let roidT = 0;                   // 스테로이드 과다 복용: 남은 약발 시간(초)
   /* v0.9.61 새 증강 상태 */
+  let cloudT = 60;                 // v0.9.84 구름 상점 — 다음 구름까지(초)
+  const CLOUD_AUG = 8, CLOUD_HEART = 5;   // 값(코인)
   let flies = [];                  // 똥파리 { x, y, a(방향), life, ph, t(노리는 똥), re }
   const FLY_LIFE = 5, FLY_SPEED = 400, FLY_R = 18;
   let stoneT = 0, stoneOn = false, stoneDur = 0; // 돌부처 — 가만히 있은 시간 · 지금 돌인가 · 돌이 된 지 몇 초
@@ -6875,6 +6941,29 @@
      연달아 맞는 자리에서는 지켜 주지 못한다. */
   const BUBBLE_SEC = 15;             // 터진 뒤 다시 맺히기까지
   let bubbleOn = false, bubbleT = 0;
+  /* v0.9.84 방울이 레벨 — 두 겹·집콕·대왕 비누방울(스킬) */
+  let bubLayers = 1, bangIdle = 0, bangPX = 0, skillCd = 0, skillUntil = 0;
+  const SKILL_CD = 20, SKILL_SEC = 2;
+  const btnSkill = document.getElementById("btnSkill");
+  function skillReady() { return job === "bangul" && myPerk(5, "B") && !vsLike(); }
+  function syncSkill(now) {
+    const on = skillReady() && (state === STATE.PLAY || state === STATE.PAUSE || state === STATE.AUG);
+    btnSkill.classList.toggle("on", on);
+    if (!on) return;
+    btnSkill.classList.toggle("wait", skillCd > 0);
+    btnSkill.style.setProperty("--p", ((1 - skillCd / SKILL_CD) * 100).toFixed(1) + "%");
+  }
+  btnSkill.addEventListener("pointerdown", e => {
+    e.stopPropagation(); e.preventDefault();
+    if (!skillReady() || state !== STATE.PLAY || skillCd > 0) return;
+    const now = performance.now();
+    skillCd = SKILL_CD; skillUntil = now + SKILL_SEC * 1000;
+    invUntil = Math.max(invUntil, now + SKILL_SEC * 1000);
+    burst(player.x, player.y + player.hy, "#bfe9ff", 26);
+    popText(player.x, player.y - 90, "🫧 대왕 비누방울!", "#bfe9ff", 22);
+    if (!sfx("bubble")) beep(600, .15, "sine", .05);
+  });
+  function bubbleSec() { return BUBBLE_SEC * (myPerk(2, "A") ? 0.75 : 1); }
   /* 점수판은 실제 점수를 곧바로 따라가지 않고 뒤에서 굴러 오른다.
      크게 먹은 순간에만 튀어야 해서, 생존 점수처럼 조금씩 새는 건 흘려보낸다. */
   let scoreShown = 0, scorePunch = 0, prevScore = 0;
@@ -7211,6 +7300,11 @@
     state = STATE.PLAY;
     btnPause.classList.add("on");
     beep(950, .1, "square", .05);
+    if (startAugPending) {               // v0.9.84 공통 Lv4 — GO! 와 함께 시작 증강 하나
+      startAugPending = false;
+      if (job === "powerp") { noHitSec = 30; popText(player.x, player.y - 80, "🙏 무피격 30초로 시작", "#ffe9a8", 22, 2); }
+      else { startAugNow = true; openAugment(1); }
+    }
   }
 
   /* ---------- 직업 선택 화면 ----------
@@ -7673,12 +7767,30 @@
     if (pg === "book") renderBook();
     if (pg === "shop") renderShop();
     if (pg === "grow") renderGrow();
+    if (pg === "home") syncHyper();
     if (pg === "opt" && !document.getElementById("btnOptBack")) {       // 옵션 — 탭이 아니라 톱니로 여니 돌아가는 버튼을 둔다
       const b = document.createElement("button"); b.id = "btnOptBack"; b.textContent = "돌아가기";
       b.addEventListener("click", () => { beep(700, .04, "triangle", .04); setPage("home"); });
       document.getElementById("pgOpt").appendChild(b);
     }
   }
+  const btnHyper = document.getElementById("btnHyper");
+  function syncHyper() {
+    btnHyper.style.display = accLv() >= 4 ? "" : "none";
+    btnHyper.classList.toggle("on", !!lvData.hyper);
+    btnHyper.title = lvData.hyper ? "하이퍼 모드 켜짐 — 똥 1.5배, 점수 2배" : "하이퍼 모드 꺼짐";
+  }
+  btnHyper.addEventListener("click", () => {
+    lvData.hyper = !lvData.hyper; lvSave(); syncHyper();
+    beep(lvData.hyper ? 1100 : 600, .07, "square", .045);
+    popHint(lvData.hyper ? "⚡ 하이퍼 모드 ON — 똥 1.5배 · 점수 2배" : "하이퍼 모드 OFF");
+  });
+  function popHint(t) {
+    let e = document.getElementById("hintToast");
+    if (!e) { e = document.createElement("div"); e.id = "hintToast"; document.body.appendChild(e); }
+    e.textContent = t; e.classList.add("on"); clearTimeout(e._t); e._t = setTimeout(() => e.classList.remove("on"), 1600);
+  }
+  syncHyper();
   document.getElementById("btnOpt").addEventListener("click", () => {
     if (curPage === "opt") { setPage("home"); return; }
     beep(700, .04, "triangle", .04); setPage("opt");
@@ -7809,10 +7921,69 @@
       growLv = {}; showCoins();
     }
   }
+  function lvBar(xp, T) {
+    const l = lvOf(xp, T), lo = T[l - 1], hi = T[l];
+    const w = document.createElement("div"); w.className = "lvBar";
+    const f = document.createElement("i"); f.style.width = (hi ? Math.min(100, (xp - lo) / (hi - lo) * 100) : 100) + "%";
+    const t = document.createElement("span"); t.textContent = hi ? (Math.round(xp - lo).toLocaleString() + " / " + (hi - lo).toLocaleString()) : "최대 레벨";
+    w.append(f, t); return w;
+  }
+  function renderLevels(box) {
+    document.getElementById("growCoins").textContent = "";
+    const al = accLv();
+    const a = document.createElement("div"); a.className = "lvCard";
+    a.innerHTML = '<div class="lvHead"><b>공통 레벨</b><em>Lv ' + al + '</em></div>';
+    a.appendChild(lvBar(lvData.xp, ACC_XP));
+    const note = document.createElement("div"); note.className = "lvNote"; note.textContent = "싱글플레이에서 버틴 1초 = 경험치 1"; a.appendChild(note);
+    for (let l = 2; l <= 5; l++) {
+      const r = document.createElement("div"); r.className = "lvRow" + (al >= l ? " on" : "");
+      r.innerHTML = '<span class="lvN">' + (al >= l ? "Lv" + l : "🔒" + l) + '</span><span class="lvT"></span>';
+      r.querySelector(".lvT").textContent = ACC_REW[l]; a.appendChild(r);
+    }
+    box.appendChild(a);
+    const c = document.createElement("div"); c.className = "lvCard";
+    const jn = (JOBS[job] && JOBS[job].nm) || job;
+    if (al < 2) { c.innerHTML = '<div class="lvHead"><b>캐릭터 레벨</b></div><div class="lvNote">공통 Lv 2부터 열려요</div>'; box.appendChild(c); return; }
+    const cl = chrLv(job), P = CHR_PERKS[job];
+    c.innerHTML = '<div class="lvHead"><b></b><em>Lv ' + cl + '</em></div>';
+    c.querySelector("b").textContent = jn;
+    c.appendChild(lvBar(lvData.cx[job] || 0, CHR_XP));
+    if (!P) { const n = document.createElement("div"); n.className = "lvNote"; n.textContent = "이 캐릭터의 레벨 보상은 준비 중이에요"; c.appendChild(n); box.appendChild(c); return; }
+    for (let l = 2; l <= 5; l++) {
+      const row = document.createElement("div"); row.className = "lvPick" + (cl >= l ? "" : " lock");
+      const h = document.createElement("div"); h.className = "lvPN"; h.textContent = (cl >= l ? "Lv" + l : "🔒 Lv" + l) + (l === 3 ? " · 모든 캐릭터에 적용" : l === 5 ? " ⭐" : "");
+      row.appendChild(h);
+      const cur = pickOf(job, l);
+      for (const ab of ["A", "B"]) {
+        const b = document.createElement("button"); b.className = "lvOpt" + (cur === ab ? " sel" : "");
+        b.textContent = P[l][ab]; b.disabled = cl < l;
+        b.addEventListener("click", () => {
+          (lvData.pick[job] = lvData.pick[job] || {})[l] = ab; lvSave();
+          beep(900, .05, "triangle", .04); renderGrow();
+        });
+        row.appendChild(b);
+      }
+      c.appendChild(row);
+    }
+    box.appendChild(c);
+  }
+  /* 판이 끝나면 경험치를 더하고, 오른 레벨은 게임 오버 화면에 알린다 */
+  function lvGain(sec) {
+    if (testMode || !lvSingle() || dogMode) return;
+    const g = Math.max(0, Math.round(sec));
+    const a0 = accLv(), c0 = chrLv(job);
+    lvData.xp += g;
+    if (accLv() >= 2 || a0 >= 2) lvData.cx[job] = (lvData.cx[job] || 0) + (a0 >= 2 ? g : 0);
+    lvSave();
+    const a1 = accLv(), c1 = chrLv(job);
+    for (let l = a0 + 1; l <= a1; l++) achNew.push({ k: "공통 레벨", t: "Lv " + l, how: ACC_REW[l] });
+    if (a0 >= 2 && CHR_PERKS[job]) for (let l = c0 + 1; l <= c1; l++)
+      achNew.push({ k: "캐릭터 레벨", t: ((JOBS[job] && JOBS[job].nm) || job) + " Lv " + l, how: "성장 탭에서 둘 중 하나를 고르세요 (지금은 A)" });
+  }
   function renderGrow() {
     document.getElementById("growCoins").textContent = "🪙 " + coins.toLocaleString() + " coin";
     const box = document.getElementById("growList"); box.innerHTML = "";
-    if (!GROW_ON) { const p = document.createElement("div"); p.className = "growSoon"; p.textContent = "🌱 준비 중이에요"; box.appendChild(p); return; }
+    if (!GROW_ON) { renderLevels(box); return; }
     for (const g of GROW) {
       const lv = gl(g.id), full = lv >= g.max, c = full ? 0 : g.cost(lv);
       const row = document.createElement("div"); row.className = "shopItem growItem" + (full ? " owned" : "");
@@ -7864,6 +8035,58 @@
       });
     });
     box.appendChild(rb);
+  }
+  /* v0.9.84 구름 상점 — 증강 2개·하트를 코인으로. 이번 판 코인(coinRun)을 먼저 쓰고 모자라면 모아 둔 코인
+     (판에서 주운 코인은 이미 지갑에도 들어가 있으므로 지갑에서 빼고, 이번 판 몫을 먼저 깎는다) */
+  function payCoins(c) {
+    if (coins < c) return false;
+    coins -= c; coinRun = Math.max(0, coinRun - c);
+    try { localStorage.setItem(LS_COINS, String(coins)); } catch (e) {}
+    showCoins(); return true;
+  }
+  function openCloudShop() {
+    let box = document.getElementById("cloudShop");
+    if (!box) {
+      box = document.createElement("div"); box.id = "cloudShop"; box.className = "screen hidden";
+      box.innerHTML = '<h2>☁️ 구름 상점</h2><div class="csCoin"></div><div class="csList"></div><button class="csLeave">떠나기</button>';
+      document.querySelector("#augScreen").parentElement.appendChild(box);
+      box.querySelector(".csLeave").addEventListener("click", () => { box.classList.add("hidden"); closeAugScreen(); });
+    }
+    augTotal = 1; augRemain = 0; augPauseAt = performance.now();
+    state = STATE.AUG;
+    if (!sfx("moon")) beep(1100, .1, "triangle", .05);
+    const pool = AUGMENTS.filter(a => !a.hidden && (augCount[a.id] || 0) < maxOf(a) && (!a.cond || a.cond()) && achOpen(a.id) && a.id !== "twoRand");
+    const wares = [];
+    if (job !== "powerp") for (let k = 0; k < 2 && pool.length; k++) wares.push({ a: pool.splice(Math.floor(Math.random() * pool.length), 1)[0], price: CLOUD_AUG });
+    wares.push({ heart: true, price: CLOUD_HEART });
+    const list = box.querySelector(".csList"), coinEl = box.querySelector(".csCoin");
+    const draw = () => {
+      coinEl.textContent = "🪙 이번 판 " + coinRun + " · 모은 코인 " + coins.toLocaleString();
+      list.innerHTML = "";
+      for (const w of wares) {
+        const row = document.createElement("div"); row.className = "shopItem" + (w.sold ? " owned" : "");
+        const ic = document.createElement("div"); ic.className = "si"; ic.textContent = w.heart ? "❤️" : w.a.ic;
+        const st = document.createElement("div"); st.className = "st";
+        const b = document.createElement("b"); b.textContent = w.heart ? "하트 +1" : nameOf(w.a);
+        const sp = document.createElement("span"); sp.textContent = w.heart ? "목숨을 하나 더" : (w.a.dsFn ? w.a.dsFn() : w.a.ds);
+        st.append(b, sp);
+        const btn = document.createElement("button");
+        const full = w.heart && lives >= aug.maxLives;
+        if (w.sold) { btn.className = "own"; btn.textContent = "구매 완료"; btn.disabled = true; }
+        else { btn.className = coins >= w.price && !full ? "buy" : ""; btn.textContent = full ? "가득" : "🪙 " + w.price; btn.disabled = coins < w.price || full; }
+        btn.addEventListener("click", () => {
+          if (w.sold || !payCoins(w.price)) return;
+          w.sold = true;
+          if (w.heart) lives = Math.min(aug.maxLives, lives + 1);
+          else augApply(w.a);
+          if (!sfx("aug")) { beep(900, .09, "square", .05); beep(1350, .13, "square", .05); }
+          draw();
+        });
+        row.append(ic, st, btn); list.appendChild(row);
+      }
+    };
+    draw();
+    box.classList.remove("hidden");
   }
   /* v0.9.70 예/아니오 묻는 창 — 예(노랑)·아니오(회색) */
   function askYesNo(msg, onYes) {
@@ -7969,7 +8192,8 @@
     momMsg = (job === "none" && gameMode !== "vs") ? MOM_SEC : 0;   // 쉬었음 청년에게만 (대전모드는 빼고)
     scoreShown = 0; scorePunch = 0; prevScore = 0; rings = []; bubPops = [];
     scoreSrc = {};
-    bubbleOn = (job === "bangul" && !jobLocked()); bubbleT = 0;   // 방울이는 방울을 두르고 시작한다 (맨몸대결·똥탑등반은 방울 없이)
+    bubbleOn = (job === "bangul" && !jobLocked()); bubbleT = 0;
+    bubLayers = bubbleOn && myPerk(4, "A") ? 2 : 1;   // 방울이는 방울을 두르고 시작한다 (맨몸대결·똥탑등반은 방울 없이)
     zoneShown = -1;
     lvSeen = 0; lvGlow = 0; specSeen = {}; fairLog = []; dying = 0; hitStop = 0; readyBeat = false;
     augCount = {};
@@ -7978,6 +8202,7 @@
     aug.steelUmb = false; aug.starburst = false; aug.scoreMul = 1;
     aug.dodge = 0; aug.wak = false; aug.chainZap = false; aug.dungy = false; aug.momMeal = false;
     rerolls = REROLLS; rerollN = 0; ghosts = []; wakBooms = []; sweats = [];
+    startAugPending = accOn(4) && !testMode; startAugNow = false; cloudT = 40 + Math.random() * 30; skillCd = 0; skillUntil = 0; bangIdle = 0;
     aug.blackhole = false; aug.legion = false; roidT = 0;
     aug.doveWhat = false; aug.doveFlock = 0; aug.doveFreq = 1;
     flyOn = false;
@@ -8316,7 +8541,7 @@
     /* 간식 낙하물은 언제나 같은 속도로 떨어진다 — 레벨·지대·증강(느린 하늘·도파민)
        어느 것에도 영향받지 않는다. 화면 높이 보정(m)만 그대로 둔다. */
     let vy = inFever ? baseVy * m
-                     : baseVy * m * DIFF_F * spaceF() * bhDiff() * aug.fallMul * lateMul() * (prophIs("fast") ? 1.3 : prophIs("slow") ? 0.7 : 1);
+                     : baseVy * m * DIFF_F * spaceF() * bhDiff() * aug.fallMul * lateMul() * (hyperOn() ? 1.5 : 1) * (prophIs("fast") ? 1.3 : prophIs("slow") ? 0.7 : 1);
     if (special === "huge") vy *= 0.55;   // 덩치값 — 느릿느릿 굴러떨어진다
     let px = r + Math.random() * (W - r * 2);
     let pvx = (Math.random() - Math.random()) * vy * SPREAD_POOP;
@@ -8624,11 +8849,17 @@
     if (momMsg > 0 && state === STATE.PLAY) momMsg = Math.max(0, momMsg - dt);
     if (fullBanner > 0 && state === STATE.PLAY) fullBanner = Math.max(0, fullBanner - dt);
     if (fullFx > 0 && state === STATE.PLAY) fullFx = Math.max(0, fullFx - dt);
+    if (job === "bangul" && state === STATE.PLAY) {          // 집콕 — 가만히 있은 시간
+      if (Math.abs(player.x - bangPX) < 0.6) bangIdle += dt; else bangIdle = 0;
+      bangPX = player.x;
+    }
+    if (skillCd > 0 && state === STATE.PLAY) skillCd = Math.max(0, skillCd - dt);
+    syncSkill(now);
     // 방울이 — 터진 방울이 다시 맺힌다
     if (job === "bangul" && state === STATE.PLAY && !bubbleOn && !itemsOff()) {   // 맨몸대결·똥탑등반은 방울이 다시 맺히지 않는다
-      bubbleT += dt;
-      if (bubbleT >= BUBBLE_SEC) {
-        bubbleT = 0; bubbleOn = true;
+      bubbleT += dt * (myPerk(5, "A") && bangIdle >= 1 ? 2 : 1);   // 집콕 — 1초 가만히 있으면 두 배 빨리
+      if (bubbleT >= bubbleSec()) {
+        bubbleT = 0; bubbleOn = true; bubLayers = myPerk(4, "A") ? 2 : 1;
         burst(player.x, player.y + player.hy, "#bfe9ff", 10);
         beep(1180, .09, "sine", .04);
       }
@@ -8700,6 +8931,18 @@
     const lvUp = lvSeen > 0 && level > lvSeen;
     if (level !== lvSeen) lvSeen = level;
     if (lvUp) lvGlow = 1;                    // 레벨이 오를 때마다 테두리가 한 번 반짝인다
+    if (lvUp && allPerk("bangul", "B")) {    // v0.9.84 거품 정리(방울이 Lv3 B) — 모든 캐릭터, 스테이지가 바뀌면 내 주변 똥이 거품으로
+      const bx = player.x, by = player.y + player.hy;
+      for (let k = items.length - 1; k >= 0; k--) {
+        const q = items[k];
+        if (q.type !== "poop" || q.dark || q.gold || q.skin === "fever") continue;
+        if (Math.hypot(q.x - bx, q.y - by) > 170) continue;
+        burst(q.x, q.y, BUB_TONES[k % BUB_TONES.length], 8);
+        items.splice(k, 1);
+      }
+      rings.push({ x: bx, y: by, t: 0, life: 0.5, r1: 170, color: "#bfe9ff" });
+      if (!sfx("bubble")) beep(760, .12, "sine", .05);
+    }
     if (lvUp && zi === zoneShown) {          // 지대 글자가 안 뜨는 레벨(마지막 지대 뒤)에는 작은 소리로
       beep(880, .07, "triangle", .035); beep(1320, .09, "triangle", .03);
     }
@@ -9336,7 +9579,7 @@
             spawnPoop(1, kind);
           }
         }
-        spawnTimer = spawnGap() / DIFF_F / spaceF() / bhDiff() * widthFactor * (0.7 + Math.random() * 0.6)
+        spawnTimer = spawnGap() / DIFF_F / spaceF() / bhDiff() / (hyperOn() ? 1.5 : 1) * widthFactor * (0.7 + Math.random() * 0.6)
                    / (prophIs("dice") ? 1.5 : 1)         // 운명의 주사위 — 똥 1.5배
                    / (ruleOn("poop2x") ? 2 : 1);         // 대전 규칙 — 똥 두 배
       }
@@ -9350,6 +9593,15 @@
       if (runMode === "item" && lastMoonAt < 0 && elapsed >= FIRST_MOON_BY && job !== "powerp") {
         const mb = BONUS.find(b => b.type === "moon");
         spawnBonus(mb); mb.t = bonusInterval(mb);
+      }
+      if (accOn(3) && !testMode) {       // v0.9.84 구름 상점 — 가끔 천천히 내려온다. 닿으면 상점이 열린다
+        cloudT -= dt * tsc;
+        if (cloudT <= 0) {
+          cloudT = 80 + Math.random() * 40;
+          const r = 30;
+          items.push({ type: "cloud", emoji: "☁️", x: r + Math.random() * (W - r * 2), y: -r - 10, r: r,
+                       vx: 0, vy: 70 * (H / BASE_H), rot: 0, vr: 0, size: r * 2.2, bob: Math.random() * 6.28, born: elapsed });
+        }
       }
       for (const b of BONUS) {           // 종류별로 따로 세다가 각자 때가 되면 떨어진다
         b.t -= dt * tsc;
@@ -9572,8 +9824,18 @@
             /* 방울이 우산보다 먼저 터진다 — 방울은 저절로 다시 차지만
                우산은 주워야 생기니, 공짜인 쪽을 먼저 쓰는 게 이롭다. */
             if (bubbleOn) {
-              bubbleOn = false; bubbleT = 0;
-              invUntil = now + 900;          // 터진 직후 잠깐은 안 맞는다
+              if (bubLayers > 1) bubLayers--; else { bubbleOn = false; bubbleT = 0; }   // v0.9.84 두 겹이면 한 겹만 터진다
+              invUntil = now + (myPerk(4, "B") ? 1500 : 900);          // 터진 직후 잠깐은 안 맞는다 (Lv4 B — 1.5초)
+              if (myPerk(2, "B")) {          // v0.9.84 Lv2 B — 터질 때 주변 똥을 밀어낸다
+                for (const q of items) {
+                  if (q.type !== "poop" || q === it || q.blast || q.dark || q.bounced) continue;
+                  const dx = q.x - player.x, dy = q.y - (player.y + player.hy), d = Math.hypot(dx, dy);
+                  if (d > 150) continue;
+                  const sp = 520 + (1 - d / 150) * 300;
+                  q.vx = (d > 1 ? dx / d : 0) * sp; q.vy = (d > 1 ? dy / d : -1) * sp - 220;
+                  q.vr = (Math.random() - .5) * 10; q.swayA = 0; q.special = null; q.bounced = true; q.blast = true;
+                }
+              }
               shake = Math.max(shake, 10);
               /* 방울이 터지는 자리에서 테두리가 확 퍼지고 물방울이 사방으로 튄다.
                  (똥이 닿은 자리가 아니라 방울 자리에서 터져야 방울이 터진 것처럼 보인다) */
@@ -9662,7 +9924,7 @@
               runHits++; achBump("hit");
               if (aug.fly) spawnFly(player.x, cy);
               noHitSec *= 1 / 2;           // 무소유 무피격 배율 — 맞으면 절반 잃는다 (v0.9.33, 예전 1/4)
-              invUntil = now + 1000;
+              invUntil = now + 1000 + (allPerk("bangul", "A") ? 200 : 0);   // v0.9.84 미끌미끌(방울이 Lv3 A) — 모든 캐릭터 +0.2초
               hurtUntil = now + 1000;   // 무적 시간 동안 아픈 그림으로
               shake = 22; flash = 1;
               hitStop = Math.max(hitStop, HITSTOP_SEC);   // 아주 잠깐 멈췄다가 흔들린다 (타격감)
@@ -9745,6 +10007,7 @@
   /* 아이템 효과 적용. 플레이어가 직접 먹을 때와 '배고픈 뿌잉'이 대신 먹을 때 모두 쓴다.
      달을 먹으면 게임이 멈추므로 true 를 돌려주고, 부른 쪽은 그 프레임 처리를 중단한다. */
   function collectItem(it, now) {
+    if (it.type === "cloud") { openCloudShop(); return true; }   // v0.9.84 구름 상점
     if (vsOn() && it.type === "moon") { vsTakeMoon(1); return false; }   // 대전모드 — 멈추지 않고 룰렛
     if (partyOn() && it.type === "moon") { paTakeMoon(player); return false; }   // 여럿이 — 바로 무작위 증강
     if (it.type === "paper") {
@@ -12744,6 +13007,7 @@
     setFinalDigits(s.toLocaleString() + (noItem() ? " m" : ""));   // v0.9.42 게임 속 점수와 같은 숫자 그림
     elTitle.textContent = "게임 오버!";
     overStory(s);
+    lvGain(elapsed);                         // v0.9.84 경험치 = 버틴 초
     {                                        // v0.9.63 이번에 열린 증강·캐릭터
       const box = document.getElementById("overUnlock"); box.innerHTML = ""; box.hidden = !achNew.length;
       if (achNew.length) {
@@ -13863,7 +14127,8 @@
      한 번만 먹는 증강이고, 빗방울로 씻으면 배율도 같이 내려간다.
      (100% 는 곧 끝이라, 실제로 누리는 최대는 75% = 1.75배다) */
   function dungyMul() { return aug.dungy ? 1 + 1 / Math.max(1, lives) : 1; }   // 하트 1개 2배 · 2개 1.5배 · 3개 1.33배 …
-  function scoreMul() { return SCORE_SCALE * gScore() * aug.scoreMul * bhMul() * levMul() * monkMul() * dungyMul() * (prophIs("double") ? 2 : prophIs("dice") ? 3 : 1); }
+  function hyperOn() { return accOn(4) && lvData.hyper && !testMode; }   // v0.9.84 하이퍼 모드 — 똥 1.5배 빠르고 많게, 점수 2배
+  function scoreMul() { return SCORE_SCALE * gScore() * (hyperOn() ? 2 : 1) * aug.scoreMul * bhMul() * levMul() * monkMul() * dungyMul() * (prophIs("double") ? 2 : prophIs("dice") ? 3 : 1); }
 
   function zoneIdx() { return Math.min(LAST_Z, level - 1); }
   // 지금 단계와 다음 단계 사이의 진행도 — 색이 뚝 끊기지 않고 이어지도록
@@ -14743,6 +15008,19 @@
         ctx.beginPath();
         ctx.ellipse(-br * .42, -br * .46, br * .13, br * .08, -0.6, 0, 6.283);
         ctx.fill();
+        if (bubLayers > 1) {                          // v0.9.84 두 겹 — 바깥에 한 겹 더
+          ctx.lineWidth = 2; ctx.strokeStyle = "rgba(190,235,255,.85)";
+          ctx.beginPath(); ctx.arc(0, 0, br + 7, 0, 6.283); ctx.stroke();
+        }
+        ctx.restore();
+      }
+      if (now < skillUntil) {                         // v0.9.84 대왕 비누방울 — 몸을 크게 감싸는 방울
+        const R2 = player.r * hitMul() * 2.2 + 26, wob2 = Math.sin(now / 180) * 0.05;
+        ctx.save(); ctx.translate(0, player.hy); ctx.scale(1 + wob2, 1 - wob2);
+        const g2 = ctx.createRadialGradient(-R2 * .3, -R2 * .35, R2 * .1, 0, 0, R2);
+        g2.addColorStop(0, "rgba(255,255,255,.35)"); g2.addColorStop(.6, "rgba(170,225,255,.14)"); g2.addColorStop(1, "rgba(255,180,240,.3)");
+        ctx.fillStyle = g2; ctx.beginPath(); ctx.arc(0, 0, R2, 0, 6.283); ctx.fill();
+        ctx.lineWidth = 3; ctx.strokeStyle = "rgba(255,255,255,.95)"; ctx.beginPath(); ctx.arc(0, 0, R2, 0, 6.283); ctx.stroke();
         ctx.restore();
       }
       if (now < powerUntil) {
