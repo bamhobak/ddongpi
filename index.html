@@ -1829,7 +1829,7 @@
   const elTitle = document.getElementById("overTitle");
   const coinNote = document.getElementById("coinNote");
 
-  const GAME_VERSION = "v0.9.81";
+  const GAME_VERSION = "v0.9.82";
   /* 제작사 스플래시(bamhobak friends 로고) — 2026-09-20 끔. 다시 켜려면 true */
   const SPLASH_USE = false;   // 코드를 고칠 때마다 뒤 두 자리를 올린다
   document.getElementById("ver").textContent = GAME_VERSION;
@@ -3214,8 +3214,9 @@
   /* 루도 소리는 파일마다 녹음 크기가 달라서, 최대치를 재어 비슷한 체감이 되게 맞춘 값 */
   const SFX_GAIN = { star: 3.4, aug: 0.9, fever: 0.8, hurt: 0.8,
                      // v0.8.73 캐릭터마다 아픈 소리 (Ludo) — 옛 hurt 와 같은 크기로 들리게 맞췄다
-                     hurt_bangul: 0.94, hurt_powerj: 0.83, hurt_fortune: 0.88, hurt_levitator: 1.38,
-                     hurt_fit: 0.95, hurt_powerp: 0.87, hurt_full: 0.99,
+                     // v0.9.82 강아지 소리로 다시(Ludo) — 캐릭터마다 둘, 맞을 때마다 무작위. 옛 캐릭터 소리와 같은 크기로 맞췄다
+                     hurt_bangul_1: 2.04, hurt_bangul_2: 1.33, hurt_powerj_1: 1.42, hurt_powerj_2: 1.49, hurt_fortune_1: 1.4, hurt_fortune_2: 1.96, hurt_levitator_1: 1.83, hurt_levitator_2: 1.41,
+                     hurt_fit_1: 1.28, hurt_fit_2: 1.24, hurt_powerp_1: 1.27, hurt_powerp_2: 1.45, hurt_full_1: 3.0, hurt_full_2: 1.27,
                      over: 0.8, gold: 2.0, heart: 1.0, shield: 0.9,
                      moon: 2.8, bubble: 0.8, break: 0.6, helper: 0.45, fetch: 0.5,
                      galaga: 0.35, dove: 0.3, clone: 1.6, burst: 0.8,
@@ -3241,7 +3242,7 @@
   }
   // 맞았을 때 — 그 캐릭터의 아픈 소리 (풀소유는 따로, 없으면 옛 hurt)
   function hurtSfx(jb) {
-    const k = jb === "powerp" && fullOwn ? "hurt_full" : "hurt_" + jb;
+    const k = (jb === "powerp" && fullOwn ? "hurt_full" : "hurt_" + jb) + (Math.random() < 0.5 ? "_1" : "_2");   // v0.9.82 둘 중 하나
     return SFX_GAIN[k] ? sfx(k) : sfx("hurt");
   }
   function sfx(name, vol) {
