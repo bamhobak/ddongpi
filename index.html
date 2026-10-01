@@ -1886,7 +1886,7 @@
   const elTitle = document.getElementById("overTitle");
   const coinNote = document.getElementById("coinNote");
 
-  const GAME_VERSION = "v0.9.117";
+  const GAME_VERSION = "v0.9.118";
   /* 제작사 스플래시(bamhobak friends 로고) — 2026-09-20 끔. 다시 켜려면 true */
   const SPLASH_USE = false;   // 코드를 고칠 때마다 뒤 두 자리를 올린다
   document.getElementById("ver").textContent = GAME_VERSION;
@@ -15514,6 +15514,15 @@
     ctx.restore();
     return true;
   }
+  const STONE_BB = {"bangul_ground":[0.009,0.03,0.991,0.97],"bangul_space":[0.023,0.015,0.977,0.985],"powerj_ground":[0.012,0.03,0.988,0.975],"powerj_space":[0.022,0.03,0.982,0.97],"fortune_ground":[0.037,0.015,0.963,0.985],"fortune_space":[0.021,0.03,0.983,0.97],"levitator_ground":[0.03,0.02,0.97,0.98],"levitator_space":[0.018,0.04,0.986,0.965],"fit_ground":[0.124,0.07,0.88,0.93],"fit_space":[0.077,0.05,0.923,0.95],"monk_ground":[0.051,0.045,0.94,0.915],"monk_space":[0.018,0.035,0.982,0.97],"full_ground":[0.028,0.08,0.972,0.92],"full_space":[0.057,0.045,0.97,0.94]};   // 헤엄 첫 장 안에서 몸이 차지하는 자리(가로·세로 비율)
+  const STONE_IMG = {};
+  function stoneImg() {
+    const n = job === "powerp" ? (fullOwn ? "full" : "monk") : job, k = n + "_" + (inSpace() ? "space" : "ground");
+    if (!STONE_BB[k]) return null;
+    let im = STONE_IMG[k];
+    if (!im) { im = STONE_IMG[k] = new Image(); im.src = "assets/stone_" + k + ".webp"; }
+    return im.complete && im.naturalWidth ? { im: im, k: k } : null;
+  }
   function drawPlayer(now) {
     if (clearT > 1.3 && !clearHome && drawFalling(now)) return;   // v0.9.95 지상으로 떨어지는 중
     if (clearHome && drawLanded(now)) return;                     // v0.9.97 땅에 내려와 크게
@@ -15597,11 +15606,17 @@
       }
       // 발이 항상 FOOT 선에 닿도록 아래를 기준으로 그린다 (작아져도 뜨지 않는다)
       if (flip) { ctx.save(); ctx.scale(-1, 1); }
+      const stIm = stoneOn ? stoneImg() : null;      // v0.9.118 돌부처 — Codex 돌 조각상 그림 (헤엄 첫 장과 같은 자리·크기)
+      if (stIm) {
+        const b = STONE_BB[stIm.k];
+        ctx.drawImage(stIm.im, -sw * spr.cx + b[0] * sw, FOOT - sh + b[1] * sh, (b[2] - b[0]) * sw, (b[3] - b[1]) * sh);
+      } else {
       if (stoneOn && canvasFilterOk) ctx.filter = "grayscale(1) contrast(1.2) brightness(.82)";   // 돌부처 — 돌빛
       drawSpr(spr.img, -sw * spr.cx, FOOT - sh, sw, sh);
       if (stoneOn) {
         if (canvasFilterOk) ctx.filter = "none";
         else { const sc2 = whiteSil(spr.img); if (sc2) { ctx.globalAlpha *= .55; ctx.drawImage(sc2, -sw * spr.cx, FOOT - sh, sw, sh); ctx.globalAlpha /= .55; } }
+      }
       }
       if (flip) ctx.restore();
       if (stoneOn) { ctx.font = "22px sans-serif"; ctx.textAlign = "center"; ctx.textBaseline = "alphabetic"; ctx.fillText("🗿", 0, FOOT - sh - 8); }
