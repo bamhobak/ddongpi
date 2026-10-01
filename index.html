@@ -1866,7 +1866,7 @@
   const elTitle = document.getElementById("overTitle");
   const coinNote = document.getElementById("coinNote");
 
-  const GAME_VERSION = "v0.9.86";
+  const GAME_VERSION = "v0.9.87";
   /* 제작사 스플래시(bamhobak friends 로고) — 2026-09-20 끔. 다시 켜려면 true */
   const SPLASH_USE = false;   // 코드를 고칠 때마다 뒤 두 자리를 올린다
   document.getElementById("ver").textContent = GAME_VERSION;
@@ -6871,6 +6871,129 @@
   /* 보스가 던지는 똥 — 보스 자리에서 캐릭터가 지금 선 자리를 겨눠 곧장 날아온다.
      닿기까지 0.95초라 움직이면 피할 수 있다. 보스를 거듭 만날수록 더 자주 던진다. */
   let bossThrowT = 0;
+  /* ── v0.9.87 끝판왕 — 싱글플레이 22레벨부터 3레벨 동안. 깰 수는 없고, 버티면 대왕 방구로 지상에 돌려보낸다 ── */
+  const FB_LV = 22, FB_LEN = 3;
+  let fbStarted = false, fbIn = 0, fbShotT = 0, fbStep = 0, fbSweep = 0, fbSweepA = 0, fbPhase = -1, clearT = -1, clearHome = false, gameCleared = false;
+  const fbButt = new Image(), fbTail = new Image();
+  fbButt.src = "assets/boss_butt.webp"; fbTail.src = "assets/boss_tail.webp";
+  function fbOn() { return runMode === "item" && !dogMode && (level >= FB_LV || clearT >= 0); }
+  function fbGeom(now) {                       // 엉덩이 자리 — 화면 폭을 꽉 채우고 위에서 내려와 좌우로 살짝 씰룩
+    const w = W * 1.06, h = w * (fbButt.naturalWidth ? fbButt.naturalHeight / fbButt.naturalWidth : 0.34);
+    const wig = Math.sin(now / 260) * W * 0.025;
+    const y = -h * 0.06 - (1 - Math.min(1, fbIn)) * h * 1.2;
+    return { x: W / 2 + wig - w / 2, y: y, w: w, h: h, hx: W / 2 + wig, hy: y + h * 0.5 };
+  }
+  function fbShot(x, y, vx, vy, r) {
+    r = r || 15;
+    items.push({ type: "poop", emoji: "💩", x: x, y: y, r: r * 0.82, vx: vx, vy: vy, rot: 0, vr: (Math.random() - 0.5) * 6,
+                 swayA: 0, swayW: 1, swayP: 0, size: r * 2, sz: r, fast: true, thrown: true, skin: "poop", space: inSpace(),
+                 gold: false, dark: true, special: null, bumpCd: 0, phase: 0, splitAt: 1e9, sz0: 0, pv: 1, gain: 0, giant: false });
+  }
+  function fbTick(dt, now) {
+    if (!fbStarted) {                          // 등장
+      fbStarted = true; fbIn = 0; fbShotT = 1.6; fbStep = 0; fbPhase = -1;
+      powerUntil = 0;                          // 간식 타임도 끝
+      shake = Math.max(shake, 26); feverFlash = Math.max(feverFlash, 0.6);
+      popText(W / 2, H * 0.40, "👑 끝판왕 등장!", "#ff9ad8", 30, 2.4);
+      popText(W / 2, H * 0.47, "다크똥만 뿌린다 — 3스테이지만 버텨라!", "#ffe9a8", 17, 2.6);
+      if (!sfx("angry")) beep(120, .5, "sawtooth", .07);
+      if (navigator.vibrate) navigator.vibrate([60, 60, 120]);
+    }
+    fbIn = Math.min(1, fbIn + dt / 1.4);
+    if (clearT >= 0) { clearTick(dt, now); return; }
+    const ph = Math.min(FB_LEN - 1, level - FB_LV);
+    if (level >= FB_LV + FB_LEN) { startClear(now); return; }
+    if (ph !== fbPhase) {
+      if (fbPhase >= 0) {
+        popText(W / 2, H * 0.40, ["", "끝판왕이 화났다!", "끝판왕 최후의 발악!"][ph], "#ff7b9c", 24, 2);
+        shake = Math.max(shake, 18); if (!sfx("angry")) beep(160, .3, "sawtooth", .06);
+      }
+      fbPhase = ph; fbStep = 0;
+    }
+    if (fbIn < 1) return;
+    const g = fbGeom(now), bx = g.hx, by = g.hy + g.h * 0.05;
+    const V = H * (0.50 + 0.07 * ph);          // 기본 낙하 속도 (단계마다 빨라진다)
+    if (fbSweep > 0) {                         // 회오리 — 각도를 돌리며 줄줄이
+      fbSweep -= dt;
+      fbSweepA += dt * (2.2 + ph * 0.8);
+      if (Math.floor((fbSweep + dt) / 0.11) !== Math.floor(fbSweep / 0.11)) {
+        const a = Math.sin(fbSweepA) * 0.75;
+        fbShot(bx, by, V * Math.sin(a), V * Math.cos(a), 14);
+      }
+      return;
+    }
+    fbShotT -= dt;
+    if (fbShotT > 0) return;
+    const r = 15, gapW = player.r * (4.4 - 0.5 * ph);
+    const fan = (n, spread, sp) => { for (let k = 0; k < n; k++) { const a = -spread + 2 * spread * k / (n - 1); fbShot(bx, by, sp * Math.sin(a), sp * Math.cos(a), r); } };
+    const aimed = (n) => { for (let k = 0; k < n; k++) { const tx = player.x + (k - (n - 1) / 2) * 46, ty = groundY; const d = Math.hypot(tx - bx, ty - by); fbShot(bx, by, (tx - bx) / d * V * 1.1, (ty - by) / d * V * 1.1, r); } };
+    const wall = (gx) => { for (let x = r; x < W; x += r * 2.3) if (Math.abs(x - gx) > gapW / 2) fbShot(x, g.y + g.h * 0.75, 0, V * 0.8, r); };
+    const gapX = () => Math.max(gapW, Math.min(W - gapW, player.x + (Math.random() - 0.5) * W * 0.7));
+    const P = [
+      [() => fan(5, 0.5, V), () => aimed(1), () => fan(6, 0.7, V), () => wall(gapX())],
+      [() => wall(gapX()), () => fan(7, 0.8, V), () => aimed(3), () => { fbSweep = 1.3; fbSweepA = 0; }, () => fan(8, 0.9, V * 1.05)],
+      [() => wall(gapX()), () => { fan(9, 0.9, V); aimed(1); }, () => { fbSweep = 1.6; fbSweepA = Math.random() * 3; }, () => { wall(gapX()); }, () => aimed(5), () => fan(11, 1.0, V * 1.1)]
+    ][ph];
+    P[fbStep % P.length]();
+    fbStep++;
+    fbShotT = [1.25, 1.0, 0.8][ph];
+    burst(bx, by + 10, "#7a3cff", 8);
+    if (!sfx("boing", 0.4)) beep(220, .05, "square", .03);
+  }
+  function startClear(now) {                   // 3레벨을 버텼다 — 대왕 방구
+    clearT = 0;
+    const g = fbGeom(now);
+    for (let k = items.length - 1; k >= 0; k--) { burst(items[k].x, items[k].y, "#b9e08a", 6); }
+    items.length = 0;
+    invUntil = now + 10000;
+    rings.push({ x: g.hx, y: g.hy, t: 0, life: 0.9, r1: Math.max(W, H) * 1.2, color: "#c7e39a" });
+    shake = Math.max(shake, 34); feverFlash = 1; flash = 0.6;
+    popText(W / 2, H * 0.38, "끝판왕: ……포기다!", "#ffd6f0", 22, 1.6);
+    popText(W / 2, H * 0.46, "💨 뿌우우우웅~!!", "#b9e08a", 32, 2);
+    if (!sfx("dash")) { beep(90, .6, "sawtooth", .08); beep(60, .8, "square", .06); }
+    if (navigator.vibrate) navigator.vibrate([80, 40, 200]);
+  }
+  function clearTick(dt, now) {
+    clearT += dt;
+    if (clearT > 1.3 && !clearHome) {          // 방구에 날려 지상으로
+      clearHome = true; zoneShown = 0;        // 지대 이름 알림은 띄우지 않는다
+      flash = 1;
+      popText(W / 2, H * 0.40, "🏡 무사히 지상으로!", "#ffffff", 28, 2.2);
+    }
+    if (clearT > 3.4 && state === STATE.PLAY) { gameCleared = true; gameOver(); }
+  }
+  function drawFinalBoss(now) {
+    if (!fbOn() || !fbStarted || clearHome) return;
+    const g = fbGeom(now);
+    const fade = clearT >= 0 ? Math.max(0, 1 - clearT / 1.3) : 1;
+    ctx.save();
+    ctx.globalAlpha = fade;
+    if (fbTail.naturalWidth) {                 // 짧은 꼬리 — 엄청 흔든다 (엉덩이 뒤에서)
+      const th = g.h * 0.62, tw = th * fbTail.naturalWidth / fbTail.naturalHeight;
+      ctx.save();
+      ctx.translate(g.hx, g.y + g.h * 0.16);
+      ctx.rotate(Math.sin(now / 55) * 0.75);
+      ctx.drawImage(fbTail, -tw / 2, -th, tw, th);
+      ctx.restore();
+    }
+    if (fbButt.naturalWidth) {
+      const pulse = 1 + Math.sin(now / 160) * 0.012;
+      ctx.translate(g.hx, g.y + g.h / 2); ctx.scale(pulse, 1 / pulse);
+      ctx.drawImage(fbButt, -g.w / 2, -g.h / 2, g.w, g.h);
+    } else {
+      ctx.fillStyle = "#e8b878";
+      ctx.beginPath(); ctx.ellipse(g.hx - g.w * 0.22, g.y + g.h * 0.5, g.w * 0.26, g.h * 0.45, 0, 0, 6.283); ctx.fill();
+      ctx.beginPath(); ctx.ellipse(g.hx + g.w * 0.22, g.y + g.h * 0.5, g.w * 0.26, g.h * 0.45, 0, 0, 6.283); ctx.fill();
+    }
+    ctx.restore();
+    if (clearT >= 0 && clearT < 1.4) {          // 방구 구름
+      const k = clearT / 1.4;
+      ctx.save(); ctx.globalAlpha = 0.55 * (1 - k);
+      ctx.fillStyle = "#b9e08a";
+      ctx.beginPath(); ctx.arc(g.hx, g.hy, 60 + k * Math.max(W, H) * 1.1, 0, 6.283); ctx.fill();
+      ctx.restore();
+    }
+  }
   function bossThrow(k) {
     const x0 = W / 2, y0 = H * 0.17 + 40;
     const tx = player.x + (Math.random() - 0.5) * 20, ty = player.y + player.hy;
@@ -8321,6 +8444,7 @@
     heartEat = 0; lastHitAt = 0; monkHeartN = 0; lotusDone = false; lotusUntil = 0; mindSlowUntil = 0;
     topT = 0; topGiven = false; riseCd = 0; prevPY = 0; pjMoonN = 0; pjPicks = 0; todoDone = false;
     prophecy2 = null; proph2T = 0; daegilUsed = false; nextProph = null; nextShown = false;
+    fbStarted = false; fbIn = 0; fbSweep = 0; fbPhase = -1; clearT = -1; clearHome = false; gameCleared = false;
     startAugPending = accOn(4) && !testMode; startAugNow = false; cloudT = 40 + Math.random() * 30; skillCd = 0; skillUntil = 0; bangIdle = 0;
     aug.blackhole = false; aug.legion = false; roidT = 0;
     aug.doveWhat = false; aug.doveFlock = 0; aug.doveFreq = 1;
@@ -8479,6 +8603,7 @@
   const FULL_FX = 0.7;            // 변신 번쩍임이 이어지는 시간(초)
   let monkStreak = 0, fullOwn = false, fullBanner = 0, fullFx = 0;
   function spawnCoin() {
+    if (fbOn()) return;                        // v0.9.87 끝판왕 동안은 코인도 멈춘다
     if (vsLike()) return;          // 대전모드는 코인도 없다 (한쪽만 주워 가면 불공평)
     let tot = 0;
     for (const c of COIN_KINDS) tot += c.w;
@@ -9048,7 +9173,7 @@
     level = 1 + Math.floor(levelTime / lvSec());
     if (noItem()) patLevel(level);          // 노템전 — 패턴 이름 · 보스 등장/격파
     if (testMode && lvNow.textContent !== "Lv " + level) lvNow.textContent = "Lv " + level;
-    score += sc("생존", dt * 50 * level * aug.timeMul * scoreMul());   // 생존 점수: 초당 50 × 레벨
+    if (clearT < 0) score += sc("생존", dt * 50 * level * aug.timeMul * scoreMul());   // 생존 점수: 초당 50 × 레벨
 
     achTick(dt);
     // 한 단계 올라설 때마다 어디에 도착했는지 알려준다
@@ -9662,8 +9787,9 @@
     if (rhythmActive()) rhythmTick();
     if (beatPulse > 0) beatPulse = Math.max(0, beatPulse - dt * 4);
     if (noItem()) { patTick(); bossTick(dt); }   // 노템전 — 똥은 공통 패턴대로, 8레벨마다 보스
+    if (fbOn() && state === STATE.PLAY) fbTick(dt, now);   // v0.9.87 끝판왕
     else spawnTimer -= dt * tsc;
-    if (!noItem() && spawnTimer <= 0) {
+    if (!noItem() && !fbOn() && spawnTimer <= 0) {   // 끝판왕 동안은 보통 똥이 안 나온다
       if (powered) {
         // 간식 타임: 똥이 폭포처럼 쏟아지고 속도도 2배 이상
         const n = 3 + Math.floor(Math.random() * 4);   // 스폰당 3~6개 (평균 4.5개)
@@ -9720,6 +9846,7 @@
     if (!powered) {
       /* v0.8.96 똥대잔치 — 운이 아무리 나빠도 판 시작 9초엔 첫 달이 떨어지기 시작한다
          (첫 타이머는 평균의 25~85%라 보통 4~13초, 바꿔치기에 걸리면 20초 넘게도 안 왔다). 무소유는 원래 달이 없다 */
+      if (fbOn()) { /* 끝판왕 — 아이템·달·구름 모두 멈춘다 */ } else {
       if (runMode === "item" && lastMoonAt < 0 && elapsed >= FIRST_MOON_BY && job !== "powerp") {
         const mb = BONUS.find(b => b.type === "moon");
         spawnBonus(mb); mb.t = bonusInterval(mb);
@@ -9747,6 +9874,7 @@
           else if (b.type === "meal") spawnBonus(b);     // 노템전 — 쉬었음 청년의 밥상은 직업 능력이라 남긴다
           b.t = bonusInterval(b);
         }
+      }
       }
     }
 
@@ -12890,6 +13018,7 @@
   }
   // 점술가의 수정 구슬(type 은 옛 이름 fortune 그대로) — 다른 아이템처럼 위에서 떨어진다
   function spawnFortune() {
+    if (fbOn()) return;
     const r = 22 * ITEM_SCALE;
     const vy = (110 + level * 6) * (H / BASE_H) * (0.6 + Math.random() * 0.4);
     items.push({ type: "fortune", emoji: "🔮", x: r + Math.random() * (W - r * 2), y: -r - 10, r,
@@ -13186,7 +13315,7 @@
     burst(player.x, player.y, "#8a5a2b", 40);
     shake = 30;
     setFinalDigits(s.toLocaleString() + (noItem() ? " m" : ""));   // v0.9.42 게임 속 점수와 같은 숫자 그림
-    elTitle.textContent = "게임 오버!";
+    elTitle.textContent = gameCleared ? "🏆 게임 클리어!" : "게임 오버!";
     overStory(s);
     lvGain(elapsed);                         // v0.9.84 경험치 = 버틴 초
     {                                        // v0.9.63 이번에 열린 증강·캐릭터
@@ -14317,7 +14446,7 @@
   function hyperOn() { return accOn(4) && lvData.hyper && !testMode; }   // v0.9.84 하이퍼 모드 — 똥 1.5배 빠르고 많게, 점수 2배
   function scoreMul() { return SCORE_SCALE * gScore() * (hyperOn() ? 2 : 1) * aug.scoreMul * bhMul() * levMul() * monkMul() * dungyMul() * lvScoreMul() * (prophIs("double") ? 2 : prophIs("dice") ? 3 : 1); }
 
-  function zoneIdx() { return Math.min(LAST_Z, level - 1); }
+  function zoneIdx() { return clearHome ? 0 : Math.min(LAST_Z, level - 1); }   // v0.9.87 클리어 — 지상(잔디밭)으로
   // 지금 단계와 다음 단계 사이의 진행도 — 색이 뚝 끊기지 않고 이어지도록
   function zoneFrac() {
     const i = level - 1;
@@ -16498,7 +16627,7 @@
       }
       drawWarnings(now);
       if (state !== STATE.OVER) drawProphGround(now);   // 천리안 예고선 · 명당 자리 (똥 뒤)
-      if (state !== STATE.OVER) drawBoss(now);   // 보스는 똥 뒤에
+      if (state !== STATE.OVER) { drawBoss(now); drawFinalBoss(now); }   // 보스는 똥 뒤에
       drawItems(now);
       drawHelpers();
       if (state !== STATE.OVER) drawPetsBack(now);
