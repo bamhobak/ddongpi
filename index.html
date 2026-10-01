@@ -1875,7 +1875,7 @@
   const elTitle = document.getElementById("overTitle");
   const coinNote = document.getElementById("coinNote");
 
-  const GAME_VERSION = "v0.9.99";
+  const GAME_VERSION = "v1.0.00";
   /* 제작사 스플래시(bamhobak friends 로고) — 2026-09-20 끔. 다시 켜려면 true */
   const SPLASH_USE = false;   // 코드를 고칠 때마다 뒤 두 자리를 올린다
   document.getElementById("ver").textContent = GAME_VERSION;
@@ -15391,7 +15391,7 @@
   }
   /* v0.9.95 끝판왕 클리어 — 방구에 날려 지상으로 떨어지는 동안은 우주복 낙하 그림 (Codex) */
   const FALL_IMG = {};
-  for (const n of ["bangul", "powerj", "fortune", "levitator", "fit", "monk", "full"]) { const im = new Image(); im.src = "assets/fall_" + n + ".webp?v3"; FALL_IMG[n] = im; }
+  for (const n of ["bangul", "powerj", "fortune", "levitator", "fit", "monk", "full"]) { const im = new Image(); im.src = "assets/fall_" + n + ".webp?v4"; FALL_IMG[n] = im; }
   function drawFalling(now) {
     const key = job === "powerp" ? (fullOwn ? "full" : "monk") : job;
     const im = FALL_IMG[key];
@@ -15408,8 +15408,8 @@
   }
   /* v0.9.99 지상에 내려온 뒤 — 우주복 낙하 그림 그대로 화면 쪽으로 날아와 얼굴이 화면에 '철퍼덕' 달라붙는다.
      FALL_FACE = 그림 안 헬멧(얼굴) 가운데 자리(가로·세로 비율) */
-  const FALL_FACE = { bangul: [0.70, 0.60], powerj: [0.72, 0.58], fortune: [0.66, 0.62], levitator: [0.65, 0.68],
-                      fit: [0.62, 0.72], monk: [0.62, 0.65], full: [0.65, 0.62] };
+  const FALL_FACE = { bangul: [0.50, 0.72, 0.85], powerj: [0.72, 0.58, 0.45], fortune: [0.50, 0.70, 0.62], levitator: [0.65, 0.68, 0.45],
+                      fit: [0.50, 0.70, 0.60], monk: [0.62, 0.65, 0.45], full: [0.65, 0.62, 0.45] };   // [얼굴 가로, 세로, 헬멧 폭/그림 폭]   // v1.0.00 방울이·버피·루나는 번지 자세(얼굴이 아래쪽 가운데)
   let landT0 = 0, landBump = false;
   function drawLanded(now) {
     const key = job === "powerp" ? (fullOwn ? "full" : "monk") : job;
@@ -15418,7 +15418,7 @@
     if (!landT0) landT0 = now;
     const t = (now - landT0) / 1000, k = Math.min(1, t / 0.55), e = k * k;   // 빨라지며 다가온다
     const f = FALL_FACE[key] || [0.65, 0.62];
-    const w0 = player.r * 4.2 * im.naturalWidth / im.naturalHeight, w1 = W * 2.1;
+    const w0 = player.r * 4.2 * im.naturalWidth / im.naturalHeight, w1 = W * 0.95 / (f[2] || 0.45);   // 헬멧이 화면 폭의 95%
     const w = w0 + (w1 - w0) * e, h = w * im.naturalHeight / im.naturalWidth;
     const fx = player.x + (W / 2 - player.x) * e, fy = H * 0.45 + (H * 0.58 - H * 0.45) * e;
     let sx = 1, sy = 1;
