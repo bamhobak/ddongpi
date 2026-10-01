@@ -1886,7 +1886,7 @@
   const elTitle = document.getElementById("overTitle");
   const coinNote = document.getElementById("coinNote");
 
-  const GAME_VERSION = "v0.9.106";
+  const GAME_VERSION = "v0.9.107";
   /* 제작사 스플래시(bamhobak friends 로고) — 2026-09-20 끔. 다시 켜려면 true */
   const SPLASH_USE = false;   // 코드를 고칠 때마다 뒤 두 자리를 올린다
   document.getElementById("ver").textContent = GAME_VERSION;
@@ -3340,7 +3340,10 @@
      오디오 문맥이 열린 뒤에 한 번만 받아 두고, 아직 안 받았거나 실패했으면
      false 를 돌려주어 부르는 쪽이 예전 삐 소리로 대신하게 한다. */
   /* 루도 소리는 파일마다 녹음 크기가 달라서, 최대치를 재어 비슷한 체감이 되게 맞춘 값 */
-  const SFX_GAIN = { star: 3.4, aug: 0.9, fever: 0.8, hurt: 0.8,
+  const SFX_GAIN = { star: 3.4,
+                     // v0.9.107 펫 효과음(Ludo) — 펫마다 둘, 무작위. 예전 소리와 같은 크기로
+                     pet_helper_1: 0.34, pet_helper_2: 0.45, pet_galaga_1: 0.28, pet_galaga_2: 0.13, pet_dove_1: 0.17, pet_dove_2: 0.3,
+                     pet_gift_1: 0.27, pet_gift_2: 0.47, pet_cat_1: 0.35, pet_cat_2: 0.4, pet_eel_1: 0.38, pet_eel_2: 0.3, pet_angel_1: 0.89, pet_angel_2: 0.62, aug: 0.9, fever: 0.8, hurt: 0.8,
                      // v0.8.73 캐릭터마다 아픈 소리 (Ludo) — 옛 hurt 와 같은 크기로 들리게 맞췄다
                      // v0.9.82 강아지 소리로 다시(Ludo) — 캐릭터마다 둘, 맞을 때마다 무작위. 옛 캐릭터 소리와 같은 크기로 맞췄다
                      hurt_bangul_1: 2.04, hurt_bangul_2: 1.33, hurt_powerj_1: 1.42, hurt_powerj_2: 1.49, hurt_fortune_1: 1.4, hurt_fortune_2: 1.96, hurt_levitator_1: 1.83, hurt_levitator_2: 1.41,
@@ -3369,6 +3372,7 @@
     }
   }
   // 맞았을 때 — 그 캐릭터의 아픈 소리 (풀소유는 따로, 없으면 옛 hurt)
+  function petSfx(p, vol) { return sfx("pet_" + p + (Math.random() < 0.5 ? "_1" : "_2"), vol); }   // v0.9.107
   function hurtSfx(jb) {
     const k = (jb === "powerp" && fullOwn ? "hurt_full" : "hurt_" + jb) + (Math.random() < 0.5 ? "_1" : "_2");   // v0.9.82 둘 중 하나
     return SFX_GAIN[k] ? sfx(k) : sfx("hurt");
@@ -9421,7 +9425,7 @@
           doves.push({ x: player.x + ox, y: py - player.r * hitMul() - 26 - Math.abs(ox) * 0.4,
                        t: best, ph: Math.random() * 6.28 });
         }
-        if (!sfx("dove")) { beep(1500, .06, "sine", .035); beep(1900, .07, "sine", .03); }
+        if (!petSfx("dove")) { beep(1500, .06, "sine", .035); beep(1900, .07, "sine", .03); }
       }
     }
     if (player.x - prev < -0.25) facing = "left";
@@ -9554,7 +9558,7 @@
         if (Math.floor((shipClock - ph) / gap) === Math.floor((was - ph) / gap)) continue;
         bullets.push({ x: shipX(k, n), y: H - GROUND_H * 0.55 - 14, vy: -760, pierce: aug.pierce ? 1 : 0, skip: null });
         // 소리는 한 바퀴에 한 번만 — 대수만큼 울리면 귀가 아프다
-        if (k === 0 && !sfx("galaga")) beep(1250, .05, "square", .03);
+        if (k === 0 && !petSfx("galaga")) beep(1250, .05, "square", .03);
       }
     }
     for (let k = bullets.length - 1; k >= 0; k--) {
@@ -9672,7 +9676,7 @@
         if (best) {
           fairies.push({ x: player.x, y: player.y - 70, t: best, st: 0, k: 0, ph: 0 });
           giftT = GIFT_EVERY;
-          if (!sfx("helper", 0.6)) beep(1320, .08, "sine", .04);
+          if (!petSfx("gift")) beep(1320, .08, "sine", .04);
         } else giftT = 0.5;                  // 마땅한 똥이 없으면 잠깐 뒤 다시 본다
       }
     }
@@ -9721,6 +9725,7 @@
         catN++;
         const x = 40 + Math.random() * (W - 80);
         cats.push({ x, t: 0, v: catN % 3 === 0 ? 5 : 1, dropped: false });
+        petSfx("cat");
       }
     }
     for (let k = cats.length - 1; k >= 0; k--) {
@@ -9813,7 +9818,7 @@
             vx: (fromLeft ? 1 : -1) * speed * Math.sin(ang),
             vy: -speed * Math.cos(ang)
           });
-          if (!sfx("helper")) {
+          if (!petSfx("helper")) {
             beep(760, .12, "triangle", .05);
             beep(1140, .14, "triangle", .04);
           }
@@ -13092,7 +13097,7 @@
       burst(pts[k][0], pts[k][1], "#bfe9ff", 10);
     }
     shake = Math.max(shake, 4);
-    if (!sfx("laser", 0.5)) { beep(220, .08, "sawtooth", .035); beep(1600, .05, "square", .025); }
+    if (!(first === true ? petSfx("eel") : sfx("laser", 0.5))) { beep(220, .08, "sawtooth", .035); beep(1600, .05, "square", .025); }   // v0.9.107 뱀장어는 제 소리
     return pts.length - 1;
   }
   // 선물 요정이 똥을 바꾼 아이템 — 하트·우산·별·코인 중 하나 (직업 규칙은 그대로 따른다)
@@ -13131,7 +13136,7 @@
     burst(player.x, player.y, "#fff3c4", 40); burst(player.x, player.y, "#ffffff", 30);
     rings.push({ x: player.x, y: player.y + player.hy, t: 0, life: 0.6, r1: 180, color: "#ffe9a8" });
     popText(player.x, player.y - 90, "👼 수호천사가 지켜 줬다!", "#fff3c4", 22);
-    if (!sfx("gold")) { beep(880, .12, "triangle", .06); beep(1320, .2, "triangle", .05); }
+    if (!petSfx("angel")) { beep(880, .12, "triangle", .06); beep(1320, .2, "triangle", .05); }
     if (navigator.vibrate) navigator.vibrate([30, 40, 80]);
     return true;
   }
