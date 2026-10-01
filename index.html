@@ -1875,7 +1875,7 @@
   const elTitle = document.getElementById("overTitle");
   const coinNote = document.getElementById("coinNote");
 
-  const GAME_VERSION = "v0.9.95";
+  const GAME_VERSION = "v0.9.96";
   /* 제작사 스플래시(bamhobak friends 로고) — 2026-09-20 끔. 다시 켜려면 true */
   const SPLASH_USE = false;   // 코드를 고칠 때마다 뒤 두 자리를 올린다
   document.getElementById("ver").textContent = GAME_VERSION;
@@ -15391,7 +15391,7 @@
   }
   /* v0.9.95 끝판왕 클리어 — 방구에 날려 지상으로 떨어지는 동안은 우주복 낙하 그림 (Codex) */
   const FALL_IMG = {};
-  for (const n of ["bangul", "powerj", "fortune", "levitator", "fit", "monk", "full"]) { const im = new Image(); im.src = "assets/fall_" + n + ".webp"; FALL_IMG[n] = im; }
+  for (const n of ["bangul", "powerj", "fortune", "levitator", "fit", "monk", "full"]) { const im = new Image(); im.src = "assets/fall_" + n + ".webp?v2"; FALL_IMG[n] = im; }
   function drawFalling(now) {
     const key = job === "powerp" ? (fullOwn ? "full" : "monk") : job;
     const im = FALL_IMG[key];
