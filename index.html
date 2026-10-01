@@ -1866,7 +1866,7 @@
   const elTitle = document.getElementById("overTitle");
   const coinNote = document.getElementById("coinNote");
 
-  const GAME_VERSION = "v0.9.85";
+  const GAME_VERSION = "v0.9.86";
   /* 제작사 스플래시(bamhobak friends 로고) — 2026-09-20 끔. 다시 켜려면 true */
   const SPLASH_USE = false;   // 코드를 고칠 때마다 뒤 두 자리를 올린다
   document.getElementById("ver").textContent = GAME_VERSION;
@@ -4227,7 +4227,7 @@
      출발점 역할을 한다. */
   function groundless() { return state !== STATE.READY; }
   let levelTime = 0;               // 레벨이 오르는 시계 — 간식 타임에는 멈춰 있다
-  const LEVEL_SEC = 14;            // 레벨 한 칸의 길이(초). 지대 하나의 길이이기도 하다 (v0.9.46 13 → 14)
+  const LEVEL_SEC = 12.5;          // 레벨 한 칸의 길이(초). 지대 하나의 길이이기도 하다 (v0.9.46 13 → 14, v0.9.86 14 → 12.5)
   const LEVEL_SEC_NOITEM = 8;      // 노템전은 레벨이 8초 — 패턴 하나가 8초
   // 시작 화면의 배경 여행(인트로)은 늘 13초 기준 — 판이 돌 때만 노템전 8초
   const LEVEL_SEC_PURE = 6.5;       // 맨몸대결은 레벨이 두 배 빨리 오른다
