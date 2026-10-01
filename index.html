@@ -1276,6 +1276,14 @@
               max-width: 330px; margin: 4px auto 0; font-size: 17px; line-height: 1.3; }
   #overAugs b { font-size: 10px; color: #ffd23f; margin-left: 1px; }
   #overAugs[hidden] { display: none; }
+  #pauseAugs { display: flex; flex-wrap: wrap; justify-content: center; gap: 4px 8px; max-width: 330px; font-size: 22px; line-height: 1.3; }
+  #pauseAugs[hidden] { display: none; }
+  #pauseAugs span { cursor: pointer; border-radius: 6px; padding: 2px 3px; }
+  #pauseAugs span.sel { background: rgba(255,210,63,.25); outline: 1px solid rgba(255,210,63,.7); }
+  #pauseAugs b { font-size: 11px; color: #ffd23f; margin-left: 1px; }
+  #pauseAugDesc { max-width: 330px; font-size: 13.5px; line-height: 1.45; color: #e8ecf7; text-align: center; }
+  #pauseAugDesc b { color: #ffd23f; font-size: 14.5px; }
+  #pauseAugDesc:empty { display: none; }
   #retryRow { display: flex; flex-direction: column; gap: 10px; justify-content: center; align-items: center; }
   #btnRetryJob, #btnHome { font-size: 13px; padding: 9px 12px; opacity: .85; }
   /* 메인으로는 판을 뜨는 버튼이라 한 김에 또 하기(노랑)와 색을 달리 둔다 — 잘못 누르지 않게 */
@@ -1587,6 +1595,8 @@
     <div id="pauseScreen" class="screen hidden">
       <h2>일시정지</h2>
       <button id="btnResume">계속하기</button>
+      <div id="pauseAugs" hidden></div>
+      <div id="pauseAugDesc"></div>
       <div id="pauseSnd">
         <div class="sndRow"><button class="ctrlBtn sndBtn" data-snd="bgm" title="배경음" aria-label="배경음">🎵</button>
           <input class="sndVol" data-snd="bgm" type="range" min="0" max="100" step="5" aria-label="배경음 크기"></div>
@@ -1876,7 +1886,7 @@
   const elTitle = document.getElementById("overTitle");
   const coinNote = document.getElementById("coinNote");
 
-  const GAME_VERSION = "v0.9.105";
+  const GAME_VERSION = "v0.9.106";
   /* 제작사 스플래시(bamhobak friends 로고) — 2026-09-20 끔. 다시 켜려면 true */
   const SPLASH_USE = false;   // 코드를 고칠 때마다 뒤 두 자리를 올린다
   document.getElementById("ver").textContent = GAME_VERSION;
@@ -7517,6 +7527,7 @@
     pauseAt = performance.now();
     resumeCountEnd = 0;
     btnPause.classList.remove("on");
+    fillAugList(document.getElementById("pauseAugs"), document.getElementById("pauseAugDesc"));   // v0.9.106 먹은 증강
     pauseScreen.classList.remove("hidden");
     beep(500, .08, "sine", .04);
   }
@@ -13373,9 +13384,15 @@
           : "내 최고 기록까지 " + (best - s).toLocaleString() + unit;
       }
     }
-    const box = document.getElementById("overAugs");
+    fillAugList(document.getElementById("overAugs"), document.getElementById("overAugDesc"));
+    // 다시 하기 — 똥대잔치는 같은 직업으로 바로(큰 버튼) + 직업 바꾸기(작은 버튼)
+    const locked = jobLocked();
+    btnRetry.textContent = locked ? "다시 하기" : "같은 캐릭터로 바로";
+    btnRetryJob.hidden = locked;
+  }
+  /* v0.9.106 먹은 증강 아이콘 줄 — 게임 오버·일시정지에서 같이 쓴다. 누르면 아래에 설명 */
+  function fillAugList(box, desc) {
     box.innerHTML = "";
-    const desc = document.getElementById("overAugDesc");
     desc.textContent = "";
     const owned = AUGMENTS.filter(a => augCount[a.id] && !a.noCount);
     for (const a of owned) {
@@ -13388,7 +13405,7 @@
         sp.classList.add("sel");
         desc.innerHTML = "";
         const b = document.createElement("b"); b.textContent = a.ic + " " + a.nm + (augCount[a.id] > 1 ? " ×" + augCount[a.id] : "");
-        desc.append(b, document.createElement("br"), document.createTextNode(a.ds || ""));
+        desc.append(b, document.createElement("br"), document.createTextNode((a.dsFn ? a.dsFn() : a.ds) || ""));
       });
       sp.textContent = a.ic;
       if (augCount[a.id] > 1) {
@@ -13397,10 +13414,6 @@
       box.appendChild(sp);
     }
     box.hidden = !owned.length;
-    // 다시 하기 — 똥대잔치는 같은 직업으로 바로(큰 버튼) + 직업 바꾸기(작은 버튼)
-    const locked = jobLocked();
-    btnRetry.textContent = locked ? "다시 하기" : "같은 캐릭터로 바로";
-    btnRetryJob.hidden = locked;
   }
   function gameOver() {
     if (vsOn()) return vsOver();
