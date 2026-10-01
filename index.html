@@ -1866,7 +1866,7 @@
   const elTitle = document.getElementById("overTitle");
   const coinNote = document.getElementById("coinNote");
 
-  const GAME_VERSION = "v0.9.91";
+  const GAME_VERSION = "v0.9.92";
   /* 제작사 스플래시(bamhobak friends 로고) — 2026-09-20 끔. 다시 켜려면 true */
   const SPLASH_USE = false;   // 코드를 고칠 때마다 뒤 두 자리를 올린다
   document.getElementById("ver").textContent = GAME_VERSION;
@@ -6873,10 +6873,12 @@
   let bossThrowT = 0;
   /* ── v0.9.87 끝판왕 — 싱글플레이 22레벨부터 3레벨 동안. 깰 수는 없고, 버티면 대왕 방구로 지상에 돌려보낸다 ── */
   const FB_LV = 22, FB_LEN = 3;
+  let fbQueue = [], fbSweepAcc = 0, clearLT = 0;
   let fbStarted = false, fbIn = 0, fbShotT = 0, fbStep = 0, fbSweep = 0, fbSweepA = 0, fbPhase = -1, clearT = -1, clearHome = false, gameCleared = false;
   const fbButt = new Image(), fbTail = new Image();
   fbButt.src = "assets/boss_butt.webp"; fbTail.src = "assets/boss_tail.webp";
   const fbTailSheet = new Image(); fbTailSheet.src = "assets/boss_tail_sheet.webp";   // v0.9.88 Ludo 꼬리 흔들기 49장 (7x7)
+  function fbHard(it) { return it.thrown && it.dark && fbOn(); }   // v0.9.92 끝판왕이 뿌린 다크똥
   function fbOn() { return runMode === "item" && !dogMode && (level >= FB_LV || clearT >= 0); }
   function fbGeom(now) {                       // 엉덩이 자리 — 화면 폭을 꽉 채우고 위에서 내려와 좌우로 살짝 씰룩
     const w = W * 1.06, h = w * (fbButt.naturalWidth ? fbButt.naturalHeight / fbButt.naturalWidth : 0.34);
@@ -6913,31 +6915,40 @@
     }
     if (fbIn < 1) return;
     const g = fbGeom(now), bx = g.hx, by = g.hy + g.h * 0.05;
-    const V = H * (0.50 + 0.07 * ph);          // 기본 낙하 속도 (단계마다 빨라진다)
-    if (fbSweep > 0) {                         // 회오리 — 각도를 돌리며 줄줄이
+    const V = H * (0.62 + 0.11 * ph);          // v0.9.92 정말정말 어렵게 — 기본 낙하 속도부터 빠르다
+    for (let k = fbQueue.length - 1; k >= 0; k--) {   // 조금 뒤에 이어지는 공격(겹벽 등)
+      fbQueue[k].t -= dt;
+      if (fbQueue[k].t <= 0) { const f = fbQueue[k].f; fbQueue.splice(k, 1); f(); }
+    }
+    if (fbSweep > 0) {                         // 회오리 — 다른 공격과 겹쳐서 돈다 (2단계부터 거울 줄기 둘)
       fbSweep -= dt;
-      fbSweepA += dt * (2.2 + ph * 0.8);
-      if (Math.floor((fbSweep + dt) / 0.11) !== Math.floor(fbSweep / 0.11)) {
-        const a = Math.sin(fbSweepA) * 0.75;
+      fbSweepA += dt * (2.6 + ph * 1.0);
+      fbSweepAcc += dt;
+      const sg = 0.085 - 0.012 * ph;
+      while (fbSweepAcc >= sg) {
+        fbSweepAcc -= sg;
+        const a = Math.sin(fbSweepA) * 0.85;
         fbShot(bx, by, V * Math.sin(a), V * Math.cos(a), 14);
+        if (ph >= 1) fbShot(bx, by, -V * Math.sin(a), V * Math.cos(a), 14);
       }
-      return;
     }
     fbShotT -= dt;
     if (fbShotT > 0) return;
-    const r = 15, gapW = player.r * (4.4 - 0.5 * ph);
+    const r = 15, gapW = player.r * (3.3 - 0.35 * ph);
     const fan = (n, spread, sp) => { for (let k = 0; k < n; k++) { const a = -spread + 2 * spread * k / (n - 1); fbShot(bx, by, sp * Math.sin(a), sp * Math.cos(a), r); } };
-    const aimed = (n) => { for (let k = 0; k < n; k++) { const tx = player.x + (k - (n - 1) / 2) * 46, ty = groundY; const d = Math.hypot(tx - bx, ty - by); fbShot(bx, by, (tx - bx) / d * V * 1.1, (ty - by) / d * V * 1.1, r); } };
-    const wall = (gx) => { for (let x = r; x < W; x += r * 2.3) if (Math.abs(x - gx) > gapW / 2) fbShot(x, g.y + g.h * 0.75, 0, V * 0.8, r); };
-    const gapX = () => Math.max(gapW, Math.min(W - gapW, player.x + (Math.random() - 0.5) * W * 0.7));
+    const aimed = (n) => { for (let k = 0; k < n; k++) { const tx = player.x + (k - (n - 1) / 2) * 40, ty = groundY; const d = Math.hypot(tx - bx, ty - by); fbShot(bx, by, (tx - bx) / d * V * 1.2, (ty - by) / d * V * 1.2, r); } };
+    const wall = (gx) => { for (let x = r; x < W; x += r * 2.15) if (Math.abs(x - gx) > gapW / 2) fbShot(x, g.y + g.h * 0.75, 0, V * 0.85, r); };
+    const gapX = () => Math.max(gapW, Math.min(W - gapW, player.x + (Math.random() < 0.5 ? -1 : 1) * W * (0.25 + Math.random() * 0.3)));   // 틈은 늘 내 자리에서 멀리
+    const rain = (n) => { for (let k = 0; k < n; k++) fbShot(r + Math.random() * (W - 2 * r), g.y + g.h * 0.7, (Math.random() - 0.5) * 60, V * (0.8 + Math.random() * 0.35), r); };
+    const wall2 = () => { wall(gapX()); fbQueue.push({ t: 0.38 - 0.06 * ph, f: () => wall(gapX()) }); };
     const P = [
-      [() => fan(5, 0.5, V), () => aimed(1), () => fan(6, 0.7, V), () => wall(gapX())],
-      [() => wall(gapX()), () => fan(7, 0.8, V), () => aimed(3), () => { fbSweep = 1.3; fbSweepA = 0; }, () => fan(8, 0.9, V * 1.05)],
-      [() => wall(gapX()), () => { fan(9, 0.9, V); aimed(1); }, () => { fbSweep = 1.6; fbSweepA = Math.random() * 3; }, () => { wall(gapX()); }, () => aimed(5), () => fan(11, 1.0, V * 1.1)]
+      [() => fan(9, 0.75, V), () => { wall(gapX()); aimed(1); }, () => aimed(3), () => { fbSweep = 1.4; rain(4); }, () => rain(8), () => fan(11, 0.95, V * 1.05), () => wall2()],
+      [() => { wall(gapX()); fan(7, 0.6, V); }, () => { aimed(5); fbSweep = 1.6; }, () => wall2(), () => rain(11), () => { fan(13, 1.0, V); aimed(1); }, () => { rain(6); aimed(3); }],
+      [() => { wall2(); aimed(3); }, () => { fan(15, 1.05, V); fbSweep = 2.0; }, () => { rain(13); aimed(3); }, () => { wall(gapX()); fan(9, 0.7, V * 1.15); }, () => { aimed(7); rain(6); }, () => { wall2(); fbSweep = 1.6; }]
     ][ph];
     P[fbStep % P.length]();
     fbStep++;
-    fbShotT = [1.25, 1.0, 0.8][ph];
+    fbShotT = [0.75, 0.6, 0.48][ph];
     burst(bx, by + 10, "#7a3cff", 8);
     if (!sfx("boing", 0.4)) beep(220, .05, "square", .03);
   }
@@ -6956,15 +6967,24 @@
   }
   function clearTick(dt, now) {
     clearT += dt;
-    if (clearT > 1.3 && !clearHome) {          // 방구에 날려 지상으로
-      clearHome = true; zoneShown = 0;        // 지대 이름 알림은 띄우지 않는다
+    /* v0.9.92 방구에 날려 지상으로 — 지나온 스테이지를 거꾸로 빠르게 (레벨 시계를 되감는다) */
+    const D0 = 1.3, DL = 3.2;
+    if (clearT > D0 && clearT < D0 + DL) {
+      if (!clearLT) { clearLT = levelTime; popText(W / 2, H * 0.40, "💨 슈우우웅~", "#b9e08a", 26, 1.4); }
+      levelTime = clearLT * Math.max(0, 1 - Math.pow((clearT - D0) / DL, 0.8));
+      level = 1 + Math.floor(levelTime / lvSec());
+      zoneShown = zoneIdx();                   // 지대 이름 알림은 띄우지 않는다
+      shake = Math.max(shake, 4);
+    }
+    if (clearT >= D0 + DL && !clearHome) {
+      clearHome = true; levelTime = 0; level = 1; zoneShown = 0;
       flash = 1;
       popText(W / 2, H * 0.40, "🏡 무사히 지상으로!", "#ffffff", 28, 2.2);
     }
-    if (clearT > 3.4 && state === STATE.PLAY) { gameCleared = true; gameOver(); }
+    if (clearT > D0 + DL + 2 && state === STATE.PLAY) { gameCleared = true; gameOver(); }
   }
   function drawFinalBoss(now) {
-    if (!fbOn() || !fbStarted || clearHome) return;
+    if (!fbOn() || !fbStarted || clearHome || clearT > 1.3) return;
     const g = fbGeom(now);
     const fade = clearT >= 0 ? Math.max(0, 1 - clearT / 1.3) : 1;
     ctx.save();
@@ -8466,7 +8486,7 @@
     heartEat = 0; lastHitAt = 0; monkHeartN = 0; lotusDone = false; lotusUntil = 0; mindSlowUntil = 0;
     topT = 0; topGiven = false; riseCd = 0; prevPY = 0; pjMoonN = 0; pjPicks = 0; todoDone = false;
     prophecy2 = null; proph2T = 0; daegilUsed = false; nextProph = null; nextShown = false;
-    fbStarted = false; fbIn = 0; fbSweep = 0; fbPhase = -1; clearT = -1; clearHome = false; gameCleared = false;
+    fbStarted = false; fbIn = 0; fbSweep = 0; fbPhase = -1; clearT = -1; clearHome = false; gameCleared = false; fbQueue = []; fbSweepAcc = 0; clearLT = 0;
     startAugPending = accOn(4) && !testMode; startAugNow = false; cloudT = 40 + Math.random() * 30; skillCd = 0; skillUntil = 0; bangIdle = 0;
     aug.blackhole = false; aug.legion = false; roidT = 0;
     aug.doveWhat = false; aug.doveFlock = 0; aug.doveFreq = 1;
@@ -9218,6 +9238,7 @@
     if (lvUp && zi === zoneShown) {          // 지대 글자가 안 뜨는 레벨(마지막 지대 뒤)에는 작은 소리로
       beep(880, .07, "triangle", .035); beep(1320, .09, "triangle", .03);
     }
+    if (clearT >= 0) zoneShown = zi;          // v0.9.92 클리어 연출 중엔 지대 이름 알림 없음
     if (zi !== zoneShown) {
       if (zoneShown >= 0) {
         popText(W / 2, H * 0.40, ZONES[zi].ic + " " + ZONES[zi].nm, "#cfe4ff", 30, 2.4);   // v0.9.39 1 → 2.4초
@@ -10146,7 +10167,7 @@
                우산보다 먼저 굴리므로, 피하면 우산이 그대로 남는다. 방울(방울이 전용)은
                저절로 다시 차니 위에서 먼저 터뜨리고, 주워야 생기는 우산부터 아낀다.
                이 똥은 다시 판정하지 않는다 (다음 프레임에 또 걸리지 않게). */
-            if (aug.dodge > 0 && Math.random() < aug.dodge) {
+            if (aug.dodge > 0 && !fbHard(it) && Math.random() < aug.dodge) {   // v0.9.92 끝판왕 똥은 잔상·부적·우산을 뚫는다
               it.ghost = true;
               const spr = currentSprite(now), fl = sprFlipped(now), dir = fl ? 1 : -1;
               for (let k = 0; k < 3; k++)
@@ -10157,7 +10178,7 @@
               if (!sfx("dodge")) beep(880, .06, "sine", .04);
               continue;
             }
-            if (charms > 0) {                // v0.9.85 도도 부적 — 똥 하나를 대신 막는다
+            if (charms > 0 && !fbHard(it)) {                // v0.9.85 도도 부적 — 똥 하나를 대신 막는다
               charms--;
               invUntil = now + 1000;
               burst(it.x, it.y, "#ffe08a", 18);
@@ -10167,7 +10188,7 @@
               items.splice(i, 1);
               continue;
             }
-            if (shields > 0) {
+            if (shields > 0 && !fbHard(it)) {
               achBump("block");
               shields--;                     // 우산이 막아준 건 '맞은 것'으로 치지 않는다
               invUntil = now + 1000;        // 목숨을 잃었을 때와 같은 무적 시간
@@ -14468,7 +14489,7 @@
   function hyperOn() { return accOn(4) && lvData.hyper && !testMode; }   // v0.9.84 하이퍼 모드 — 똥 1.5배 빠르고 많게, 점수 2배
   function scoreMul() { return SCORE_SCALE * gScore() * (hyperOn() ? 2 : 1) * aug.scoreMul * bhMul() * levMul() * monkMul() * dungyMul() * lvScoreMul() * (prophIs("double") ? 2 : prophIs("dice") ? 3 : 1); }
 
-  function zoneIdx() { return clearHome ? 0 : Math.min(LAST_Z, level - 1); }   // v0.9.87 클리어 — 지상(잔디밭)으로
+  function zoneIdx() { return clearHome ? 0 : Math.min(LAST_Z, level - 1); }   // v0.9.87 클리어 — 지상(잔디밭)으로 (v0.9.92 그 전엔 레벨 시계를 되감아 거꾸로 내려온다)
   // 지금 단계와 다음 단계 사이의 진행도 — 색이 뚝 끊기지 않고 이어지도록
   function zoneFrac() {
     const i = level - 1;
