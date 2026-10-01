@@ -1866,7 +1866,7 @@
   const elTitle = document.getElementById("overTitle");
   const coinNote = document.getElementById("coinNote");
 
-  const GAME_VERSION = "v0.9.87";
+  const GAME_VERSION = "v0.9.89";
   /* 제작사 스플래시(bamhobak friends 로고) — 2026-09-20 끔. 다시 켜려면 true */
   const SPLASH_USE = false;   // 코드를 고칠 때마다 뒤 두 자리를 올린다
   document.getElementById("ver").textContent = GAME_VERSION;
@@ -6876,12 +6876,13 @@
   let fbStarted = false, fbIn = 0, fbShotT = 0, fbStep = 0, fbSweep = 0, fbSweepA = 0, fbPhase = -1, clearT = -1, clearHome = false, gameCleared = false;
   const fbButt = new Image(), fbTail = new Image();
   fbButt.src = "assets/boss_butt.webp"; fbTail.src = "assets/boss_tail.webp";
+  const fbTailSheet = new Image(); fbTailSheet.src = "assets/boss_tail_sheet.webp";   // v0.9.88 Ludo 꼬리 흔들기 49장 (7x7)
   function fbOn() { return runMode === "item" && !dogMode && (level >= FB_LV || clearT >= 0); }
   function fbGeom(now) {                       // 엉덩이 자리 — 화면 폭을 꽉 채우고 위에서 내려와 좌우로 살짝 씰룩
     const w = W * 1.06, h = w * (fbButt.naturalWidth ? fbButt.naturalHeight / fbButt.naturalWidth : 0.34);
     const wig = Math.sin(now / 260) * W * 0.025;
-    const y = -h * 0.06 - (1 - Math.min(1, fbIn)) * h * 1.2;
-    return { x: W / 2 + wig - w / 2, y: y, w: w, h: h, hx: W / 2 + wig, hy: y + h * 0.5 };
+    const y = -h * 0.04 - (1 - Math.min(1, fbIn)) * h * 1.2;   // v0.9.88 위 가장자리에 걸친 엉덩이(아래에서 올려다본 구도)
+    return { x: W / 2 + wig - w / 2, y: y, w: w, h: h, hx: W / 2 + wig, hy: y + h * 0.78 };
   }
   function fbShot(x, y, vx, vy, r) {
     r = r || 15;
@@ -6968,22 +6969,31 @@
     const fade = clearT >= 0 ? Math.max(0, 1 - clearT / 1.3) : 1;
     ctx.save();
     ctx.globalAlpha = fade;
-    if (fbTail.naturalWidth) {                 // 짧은 꼬리 — 엄청 흔든다 (엉덩이 뒤에서)
-      const th = g.h * 0.62, tw = th * fbTail.naturalWidth / fbTail.naturalHeight;
-      ctx.save();
-      ctx.translate(g.hx, g.y + g.h * 0.16);
-      ctx.rotate(Math.sin(now / 55) * 0.75);
-      ctx.drawImage(fbTail, -tw / 2, -th, tw, th);
-      ctx.restore();
-    }
     if (fbButt.naturalWidth) {
       const pulse = 1 + Math.sin(now / 160) * 0.012;
+      ctx.save();
       ctx.translate(g.hx, g.y + g.h / 2); ctx.scale(pulse, 1 / pulse);
       ctx.drawImage(fbButt, -g.w / 2, -g.h / 2, g.w, g.h);
+      ctx.restore();
     } else {
-      ctx.fillStyle = "#e8b878";
-      ctx.beginPath(); ctx.ellipse(g.hx - g.w * 0.22, g.y + g.h * 0.5, g.w * 0.26, g.h * 0.45, 0, 0, 6.283); ctx.fill();
-      ctx.beginPath(); ctx.ellipse(g.hx + g.w * 0.22, g.y + g.h * 0.5, g.w * 0.26, g.h * 0.45, 0, 0, 6.283); ctx.fill();
+      ctx.fillStyle = "#3a3048";
+      ctx.beginPath(); ctx.ellipse(g.hx - g.w * 0.24, g.y + g.h * 0.4, g.w * 0.26, g.h * 0.6, 0, 0, 6.283); ctx.fill();
+      ctx.beginPath(); ctx.ellipse(g.hx + g.w * 0.24, g.y + g.h * 0.4, g.w * 0.26, g.h * 0.6, 0, 0, 6.283); ctx.fill();
+    }
+    if (fbTail.naturalWidth) {                 // v0.9.88 짧은 꼬리 — 엉덩이 사이에서 아래로 늘어져 엄청 흔든다
+      const th = g.h * 0.8;
+      ctx.save();
+      ctx.translate(g.hx, g.y + g.h * 0.55);
+      ctx.rotate(Math.sin(now / 60) * 0.55);              // 좌우로 마구 — 그림의 휘어짐(Ludo)에 회전을 얹는다
+      if (fbTailSheet.naturalWidth) {
+        const cw = fbTailSheet.naturalWidth / 7, ch = fbTailSheet.naturalHeight / 7, f = Math.floor(now / 25) % 49;
+        const tw = th * cw / ch;
+        ctx.drawImage(fbTailSheet, (f % 7) * cw, Math.floor(f / 7) * ch, cw, ch, -tw / 2, -th * 0.02, tw, th);
+      } else {
+        const tw = th * fbTail.naturalWidth / fbTail.naturalHeight;
+        ctx.drawImage(fbTail, -tw / 2, -th * 0.08, tw, th);
+      }
+      ctx.restore();
     }
     ctx.restore();
     if (clearT >= 0 && clearT < 1.4) {          // 방구 구름
@@ -7413,7 +7423,7 @@
      풀 때는 3초를 세고 나서 다시 움직인다. */
   const btnPause = document.getElementById("btnPause");
   const pauseScreen = document.getElementById("pauseScreen");
-  let pauseAt = 0, resumeCountEnd = 0;
+  let pauseAt = 0, resumeCountEnd = 0, resumeReady = false;
 
   function doPause() {
     if (state !== STATE.PLAY) return;
@@ -7443,7 +7453,7 @@
   document.getElementById("btnResume").addEventListener("click", () => {
     readyBeat = false;
     pauseScreen.classList.add("hidden");
-    resumeCountEnd = performance.now() + 3000;   // 3초 세고 나서 재개
+    resumeCountEnd = performance.now() + START_READY_MS; resumeReady = true;   // v0.9.89 3-2-1 대신 판 시작처럼 READY → GO!
     beep(700, .08, "sine", .04);
   });
 
@@ -7470,7 +7480,7 @@
     appHidden = true;
     if (state === STATE.PLAY) doPause();
     else if (state === STATE.PAUSE && resumeCountEnd > 0) {
-      resumeCountEnd = 0; readyBeat = false; startBeat = false;
+      resumeCountEnd = 0; readyBeat = false; startBeat = false; resumeReady = false;
       pauseScreen.classList.remove("hidden");
     }
     bgmHeld = [];
@@ -7491,6 +7501,9 @@
 
   /* READY·GO! 처럼 화면 한가운데 크게 띄우는 한 마디 — 진한 테두리를 둘러 어떤 배경에서도 읽힌다.
      dim 은 뒤를 살짝 어둡게 까는 정도 (0 이면 안 깐다) */
+  /* v0.9.89 READY · GO! 글자 그림(Codex) — 아직 안 왔으면 예전처럼 글자로 */
+  const WORD_IMG = { "READY": new Image(), "GO!": new Image() };
+  WORD_IMG["READY"].src = "assets/ui/word_ready.webp"; WORD_IMG["GO!"].src = "assets/ui/word_go.webp";
   function drawBigWord(text, scale, alpha, color, dim) {
     ctx.save();
     ctx.setTransform(baseScale, 0, 0, baseScale, 0, 0);
@@ -7498,6 +7511,13 @@
     ctx.globalAlpha = Math.max(0, Math.min(1, alpha));
     ctx.translate(W / 2, H * 0.42);
     ctx.scale(scale, scale);
+    const wi = WORD_IMG[text];
+    if (wi && wi.complete && wi.naturalWidth) {
+      const w = Math.min(W * (text === "GO!" ? 0.62 : 0.82), 420), h = w * wi.naturalHeight / wi.naturalWidth;
+      ctx.drawImage(wi, -w / 2, -h / 2, w, h);
+      ctx.restore();
+      return;
+    }
     ctx.font = "900 64px NationalPension, NanumBarunGothic, system-ui, sans-serif";
     ctx.textAlign = "center"; ctx.textBaseline = "middle";
     ctx.lineJoin = "round";
@@ -7508,6 +7528,8 @@
     ctx.restore();
   }
   function finishResume(now) {
+    if (resumeReady && !startBeat) { resumeReady = false; goBanner = GO_SEC; beep(1240, .16, "square", .05); }   // v0.9.89 일시정지 풀기도 GO!
+    resumeReady = false;
     if (startBeat) {                     // 판 시작 — GO! 와 함께 출발
       startBeat = false;
       goBanner = GO_SEC;
@@ -16655,7 +16677,7 @@
       const leftMs = resumeCountEnd - now;
       if (leftMs <= 0) {
         finishResume(now);
-      } else if (startBeat) {                             // 판 시작 — READY (튀어 들어와 숨 쉬듯 살짝 커졌다 작아진다)
+      } else if (startBeat || resumeReady) {              // 판 시작·일시정지 풀기 — READY (튀어 들어와 숨 쉬듯 살짝 커졌다 작아진다)
         const frac = 1 - leftMs / START_READY_MS;         // 0 → 1
         const pop = frac < 0.16 ? 0.55 + 0.55 * (frac / 0.16) : 1.05 + 0.04 * Math.sin(now / 110);
         drawBigWord("READY", pop, Math.min(1, (1 - frac) * 6), "#ffd23f", 0.22);
