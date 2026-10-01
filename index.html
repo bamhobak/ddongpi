@@ -1876,7 +1876,7 @@
   const elTitle = document.getElementById("overTitle");
   const coinNote = document.getElementById("coinNote");
 
-  const GAME_VERSION = "v1.0.04";
+  const GAME_VERSION = "v1.0.05";
   /* 제작사 스플래시(bamhobak friends 로고) — 2026-09-20 끔. 다시 켜려면 true */
   const SPLASH_USE = false;   // 코드를 고칠 때마다 뒤 두 자리를 올린다
   document.getElementById("ver").textContent = GAME_VERSION;
@@ -6882,7 +6882,7 @@
      닿기까지 0.95초라 움직이면 피할 수 있다. 보스를 거듭 만날수록 더 자주 던진다. */
   let bossThrowT = 0;
   /* ── v0.9.87 끝판왕 — 싱글플레이 22레벨부터 3레벨 동안. 깰 수는 없고, 버티면 대왕 방구로 지상에 돌려보낸다 ── */
-  const FB_LV = 22, FB_LEN = 3;
+  const FB_LV = 22, FB_LEN = 4;   // v1.0.05 3 → 4단계
   let fbQueue = [], fbSweepAcc = 0, clearLT = 0;
   let fbStarted = false, fbIn = 0, fbShotT = 0, fbStep = 0, fbSweep = 0, fbSweepA = 0, fbPhase = -1, clearT = -1, clearHome = false, gameCleared = false;
   const fbButt = new Image(), fbTail = new Image();
@@ -6908,33 +6908,39 @@
       powerUntil = 0;                          // 간식 타임도 끝
       shake = Math.max(shake, 26); feverFlash = Math.max(feverFlash, 0.6);
       popText(W / 2, H * 0.40, "👑 끝판왕 등장!", "#ff9ad8", 30, 2.4);
-      popText(W / 2, H * 0.47, "다크똥만 뿌린다 — 3스테이지만 버텨라!", "#ffe9a8", 17, 2.6);
+      popText(W / 2, H * 0.47, "다크똥만 뿌린다 — 4스테이지만 버텨라!", "#ffe9a8", 17, 2.6);
       if (!sfx("angry")) beep(120, .5, "sawtooth", .07);
       if (navigator.vibrate) navigator.vibrate([60, 60, 120]);
     }
     fbIn = Math.min(1, fbIn + dt / 1.4);
+    for (const it of items) {                  // v1.0.05 지그재그·파도 탄 — 속도로 흔들어 매끄럽게
+      if (it.zT === undefined || it.bounced) continue;
+      it.zT += dt;
+      if (it.zA) it.vx = it.zA * it.zW * Math.cos(it.zW * it.zT + it.zP);
+      if (it.wvA) it.vx = it.wvA * it.wvW * Math.cos(it.wvW * it.zT + it.wvP);
+    }
     if (clearT >= 0) { clearTick(dt, now); return; }
     const ph = Math.min(FB_LEN - 1, level - FB_LV);
     if (level >= FB_LV + FB_LEN) { startClear(now); return; }
     if (ph !== fbPhase) {
       if (fbPhase >= 0) {
-        popText(W / 2, H * 0.40, ["", "끝판왕이 화났다!", "끝판왕 최후의 발악!"][ph], "#ff7b9c", 24, 2);
+        popText(W / 2, H * 0.40, ["", "끝판왕이 화났다!", "끝판왕이 폭주한다!", "끝판왕 최후의 발악!"][ph], "#ff7b9c", 24, 2);
         shake = Math.max(shake, 18); if (!sfx("angry")) beep(160, .3, "sawtooth", .06);
       }
       fbPhase = ph; fbStep = 0;
     }
     if (fbIn < 1) return;
     const g = fbGeom(now), bx = g.hx, by = g.hy + g.h * 0.05;
-    const V = H * (0.62 + 0.11 * ph) * 0.87 * 0.9;   // v0.9.92 정말정말 어렵게 · v0.9.94 15% 완화 · v1.0.02 똥 속도 -10%
+    const V = H * [0.62, 0.73, 0.815, 0.88][ph] * 0.87 * 0.9;   // v1.0.05 단계별 (예전 3단계 0.84 → 3단계 0.815 · 4단계 0.88)
     for (let k = fbQueue.length - 1; k >= 0; k--) {   // 조금 뒤에 이어지는 공격(겹벽 등)
       fbQueue[k].t -= dt;
       if (fbQueue[k].t <= 0) { const f = fbQueue[k].f; fbQueue.splice(k, 1); f(); }
     }
     if (fbSweep > 0) {                         // 회오리 — 다른 공격과 겹쳐서 돈다 (2단계부터 거울 줄기 둘)
       fbSweep -= dt;
-      fbSweepA += dt * (2.6 + ph * 1.0);
+      fbSweepA += dt * [2.6, 3.6, 4.3, 4.9][ph];
       fbSweepAcc += dt;
-      const sg = (0.085 - 0.012 * ph) / 0.87 * 1.15;   // v1.0.02 회오리 더 성기게
+      const sg = [0.085, 0.073, 0.064, 0.056][ph] / 0.87 * 1.15;   // v1.0.02 회오리 더 성기게
       while (fbSweepAcc >= sg) {
         fbSweepAcc -= sg;
         const a = Math.sin(fbSweepA) * 0.85;
@@ -6944,7 +6950,7 @@
     }
     fbShotT -= dt;
     if (fbShotT > 0) return;
-    const r = 15, gapW = player.r * (3.3 - 0.35 * ph) * 1.15 * 1.12;   // v1.0.02 틈 조금 더 넓게
+    const r = 15, gapW = player.r * [3.3, 2.95, 2.7, 2.5][ph] * 1.15 * 1.12;   // v1.0.02 틈 조금 더 넓게
     const fan = (n, spread, sp) => { for (let k = 0; k < n; k++) { const a = -spread + 2 * spread * k / (n - 1); fbShot(bx, by, sp * Math.sin(a), sp * Math.cos(a), r); } };
     const aimed = (n) => { for (let k = 0; k < n; k++) { const tx = player.x + (k - (n - 1) / 2) * 40, ty = groundY; const d = Math.hypot(tx - bx, ty - by); fbShot(bx, by, (tx - bx) / d * V * 1.2, (ty - by) / d * V * 1.2, r); } };
     const wall = (gx) => { for (let x = r; x < W; x += r * 2.15) if (Math.abs(x - gx) > gapW / 2) fbShot(x, g.y + g.h * 0.75, 0, V * 0.85, r); };
@@ -6954,18 +6960,60 @@
       let x = fromX + d; if (x < gapW || x > W - gapW) x = fromX - d; return Math.max(gapW, Math.min(W - gapW, x)); };
     const gapX = () => gapNear(player.x, reach(player.x, g.y + g.h * 0.75, V * 0.85));
     const rain = (n) => { for (let k = 0; k < n; k++) fbShot(r + Math.random() * (W - 2 * r), g.y + g.h * 0.7, (Math.random() - 0.5) * 60, V * (0.8 + Math.random() * 0.35), r); };
-    const wall2 = () => { const g1 = gapX(); wall(g1); const dt2 = 0.5 - 0.05 * ph;   // 두 번째 틈은 첫 틈에서 그 사이 갈 수 있는 거리 안
+    const wall2 = () => { const g1 = gapX(); wall(g1); const dt2 = [0.5, 0.45, 0.42, 0.38][ph];   // 두 번째 틈은 첫 틈에서 그 사이 갈 수 있는 거리 안
       const g2 = gapNear(g1, PLAYER_MAX_SPEED * spdMul() * dt2 * 0.7); fbQueue.push({ t: dt2, f: () => wall(g2) }); };
+    /* ── v1.0.05 화려한 패턴 — 흔들리는 탄(zz: 좌우 폭 · 빠르기)과 시간차 줄 ── */
+    const zz = (it, amp, w) => { it.zA = amp; it.zW = w; it.zP = Math.random() * 6.28; it.zT = 0; return it; };
+    const shot = (x, y, vx, vy, rr) => { fbShot(x, y, vx, vy, rr || r); return items[items.length - 1]; };
+    const zigCols = (n, amp) => {                       // 지그재그 기둥 — 내려오며 좌우로 갈지자
+      const sp = W / n;
+      for (let k = 0; k < n; k++) zz(shot(sp * (k + 0.5), g.y + g.h * 0.72, 0, V * 0.8), amp, 5 + Math.random());
+    };
+    const waveRow = (gx) => {                           // 파도 — 가로 한 줄이 물결 모양으로 출렁이며 내려온다 (틈 하나)
+      const n = Math.floor(W / (r * 2.4)), ph0 = Math.random() * 6.28;
+      for (let k = 0; k < n; k++) {
+        const x = r + k * (W - 2 * r) / (n - 1);
+        if (Math.abs(x - gx) < gapW / 2) continue;
+        const it = shot(x, g.y + g.h * 0.72 - Math.sin(ph0 + k * 0.55) * 40, 0, V * 0.78);
+        it.zA = 0; it.wvA = 26; it.wvW = 4.2; it.wvP = ph0 + k * 0.55; it.zT = 0;
+      }
+    };
+    const ring = (n, rot) => {                          // 회오리 링 — 엉덩이에서 아래쪽 반원으로 퍼지는 고리 (틈이 있다)
+      for (let k = 0; k < n; k++) {
+        const a = rot - 1.25 + 2.5 * k / (n - 1);
+        if (Math.abs(Math.sin(a * 2.3 + rot * 3)) < 0.18) continue;   // 고리 사이사이 빈칸
+        shot(bx, by, V * 0.9 * Math.sin(a), V * 0.9 * Math.cos(a));
+      }
+    };
+    const spiral = (bursts, n) => {                     // 소용돌이 — 고리를 돌려 가며 여러 번
+      const rot0 = Math.random() * 0.6 - 0.3;
+      for (let b = 0; b < bursts; b++) fbQueue.push({ t: b * 0.22, f: () => ring(n, rot0 + b * 0.32 * (b % 2 ? -1 : 1)) });
+    };
+    const snake = (len) => {                            // 뱀 — 한 줄기가 S자로 꿈틀대며 내려온다
+      const x0 = W * (0.25 + Math.random() * 0.5);
+      for (let k = 0; k < len; k++) fbQueue.push({ t: k * 0.09, f: () => zz(shot(x0, g.y + g.h * 0.72, 0, V * 0.85, 14), W * 0.22, 3.2) });
+    };
+    const helix = (len) => {                            // 이중나선 — 두 줄기가 서로 엇갈리며 꼬인다
+      const x0 = W * (0.3 + Math.random() * 0.4);
+      for (let k = 0; k < len; k++) fbQueue.push({ t: k * 0.1, f: () => {
+        const a = shot(x0, g.y + g.h * 0.72, 0, V * 0.85, 13); a.zA = W * 0.16; a.zW = 3.6; a.zP = 0; a.zT = 0;
+        const b = shot(x0, g.y + g.h * 0.72, 0, V * 0.85, 13); b.zA = W * 0.16; b.zW = 3.6; b.zP = Math.PI; b.zT = 0;
+      } });
+    };
     /* 벽은 다른 탄과 겹치지 않는다(틈이 막히지 않게). 벽 차례면 회오리도 멈춘다 */
-    const W1 = () => { fbSweep = 0; wall(gapX()); }, W2 = () => { fbSweep = 0; wall2(); };
+    const later = f => { if (!fbQueue.length) return false; const tm = Math.max(...fbQueue.map(q => q.t)); fbQueue.push({ t: tm + 0.6, f: f }); return true; };   // 줄줄이 탄이 다 나온 뒤에 벽
+    const W1 = () => { fbSweep = 0; if (!later(() => wall(gapX()))) wall(gapX()); },
+          W2 = () => { fbSweep = 0; if (!later(wall2)) wall2(); },
+          WV = () => { fbSweep = 0; if (!later(() => waveRow(gapX()))) waveRow(gapX()); };
     const P = [
-      [() => fan(9, 0.75, V), () => { W1(); aimed(1); }, () => aimed(3), () => { fbSweep = 1.4; rain(4); }, () => rain(6), () => fan(10, 0.95, V * 1.05), () => W2()],
-      [() => W1(), () => { aimed(5); fbSweep = 1.6; }, () => W2(), () => rain(8), () => { fan(11, 1.0, V); aimed(1); }, () => { rain(6); aimed(3); }],
-      [() => { W2(); aimed(1); }, () => { fan(13, 1.05, V); fbSweep = 1.7; }, () => { rain(9); aimed(3); }, () => W1(), () => { aimed(5); rain(4); }, () => W2()]
+      [() => fan(9, 0.75, V), () => { W1(); aimed(1); }, () => zigCols(5, 30), () => { fbSweep = 1.4; rain(4); }, () => snake(10), () => fan(10, 0.95, V * 1.05), () => WV(), () => ring(11, 0)],
+      [() => W1(), () => { aimed(5); fbSweep = 1.6; }, () => spiral(3, 11), () => WV(), () => { fan(11, 1.0, V); aimed(1); }, () => helix(10), () => W2(), () => zigCols(6, 36)],
+      [() => { W2(); aimed(1); }, () => spiral(4, 12), () => { fan(12, 1.05, V); fbSweep = 1.6; }, () => helix(12), () => WV(), () => { zigCols(6, 40); aimed(1); }, () => { rain(8); aimed(3); }, () => snake(14)],
+      [() => { WV(); aimed(1); }, () => spiral(5, 13), () => { helix(12); fbSweep = 1.4; }, () => W2(), () => { fan(14, 1.08, V); aimed(3); }, () => { zigCols(7, 44); snake(10); }, () => { rain(10); aimed(3); }, () => { spiral(3, 12); aimed(1); }]
     ][ph];
     P[fbStep % P.length]();
     fbStep++;
-    fbShotT = [0.75, 0.6, 0.48][ph] / 0.87 * 1.15 + (fbQueue.length ? 0.35 : 0);   // 겹벽 뒤엔 숨 돌릴 틈 · v1.0.02 공격 간격 +15%
+    fbShotT = [0.75, 0.6, 0.52, 0.44][ph] / 0.87 * 1.15 + (fbQueue.length ? 0.35 : 0);   // 겹벽·연속 탄 뒤엔 숨 돌릴 틈 · v1.0.05 단계별
     burst(bx, by + 10, "#7a3cff", 8);
     if (!sfx("boing", 0.4)) beep(220, .05, "square", .03);
   }
