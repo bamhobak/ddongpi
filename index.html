@@ -1876,7 +1876,7 @@
   const elTitle = document.getElementById("overTitle");
   const coinNote = document.getElementById("coinNote");
 
-  const GAME_VERSION = "v1.0.03";
+  const GAME_VERSION = "v1.0.04";
   /* 제작사 스플래시(bamhobak friends 로고) — 2026-09-20 끔. 다시 켜려면 true */
   const SPLASH_USE = false;   // 코드를 고칠 때마다 뒤 두 자리를 올린다
   document.getElementById("ver").textContent = GAME_VERSION;
@@ -15441,12 +15441,6 @@
     ctx.scale(sx, sy);
     ctx.drawImage(im, -w * f[0], -h * f[1], w, h);
     ctx.restore();
-    if (k >= 1) {                                   // 유리에 눌린 자국 — 얼굴 둘레에 옅은 반사
-      ctx.save(); ctx.globalAlpha = 0.18;
-      ctx.strokeStyle = "#ffffff"; ctx.lineWidth = 6;
-      ctx.beginPath(); ctx.ellipse(fx - w * 0.06, fy - w * 0.1, w * 0.12, w * 0.05, -0.5, 0, 6.283); ctx.stroke();
-      ctx.restore();
-    }
     return true;
   }
   function drawPlayer(now) {
