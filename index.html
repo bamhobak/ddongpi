@@ -1886,7 +1886,7 @@
   const elTitle = document.getElementById("overTitle");
   const coinNote = document.getElementById("coinNote");
 
-  const GAME_VERSION = "v0.9.109";
+  const GAME_VERSION = "v0.9.110";
   /* 제작사 스플래시(bamhobak friends 로고) — 2026-09-20 끔. 다시 켜려면 true */
   const SPLASH_USE = false;   // 코드를 고칠 때마다 뒤 두 자리를 올린다
   document.getElementById("ver").textContent = GAME_VERSION;
@@ -3919,7 +3919,7 @@
     { id: "lucky",      ic: "🍀", nm: "행운",       ds: "아이템이 더 자주 등장",
       // 첫 개는 +15%, 겹칠수록 0.85배씩 덜 먹는다 (5개 누적 +69%, 실측 +65%)
       go: () => { aug.itemRateMul /= 1 + 0.15 * dim("lucky"); } },
-    { id: "giant",      ic: "🦴", nm: "왕뼈다귀", ds: "왕뼈다귀 두둥등장",
+    { id: "giant",      ic: "🦴", nm: "왕뼈다귀", ds: "왕뼈다귀 간식 등장",
       once: true, go: () => { aug.giant = 1; } },
     { id: "downpour",   ic: "🌧️", nm: "간식 폭우", ds: "간식이 더 많이 쏟아진다",
       go: () => { aug.feverRateMul = 1 / (1 / aug.feverRateMul + 0.20); } },   // 먹을 때마다 양 +20%, 감쇠 없음
