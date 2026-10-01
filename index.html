@@ -1875,7 +1875,7 @@
   const elTitle = document.getElementById("overTitle");
   const coinNote = document.getElementById("coinNote");
 
-  const GAME_VERSION = "v0.9.96";
+  const GAME_VERSION = "v0.9.97";
   /* 제작사 스플래시(bamhobak friends 로고) — 2026-09-20 끔. 다시 켜려면 true */
   const SPLASH_USE = false;   // 코드를 고칠 때마다 뒤 두 자리를 올린다
   document.getElementById("ver").textContent = GAME_VERSION;
@@ -6997,7 +6997,7 @@
       flash = 1;
       popText(W / 2, H * 0.40, "🏡 무사히 지상으로!", "#ffffff", 28, 2.2);
     }
-    if (clearT > D0 + DL + 2 && state === STATE.PLAY) { gameCleared = true; gameOver(); }
+    if (clearT > D0 + DL + 2.6 && state === STATE.PLAY) { gameCleared = true; gameOver(); }   // v0.9.97 크게 자리 잡은 걸 잠깐 보여 준 뒤
   }
   function drawFinalBoss(now) {
     if (!fbOn() || !fbStarted || clearHome || clearT > 1.3) return;
@@ -8502,7 +8502,7 @@
     heartEat = 0; lastHitAt = 0; monkHeartN = 0; lotusDone = false; lotusUntil = 0; mindSlowUntil = 0;
     topT = 0; topGiven = false; riseCd = 0; prevPY = 0; pjMoonN = 0; pjPicks = 0; todoDone = false;
     prophecy2 = null; proph2T = 0; daegilUsed = false; nextProph = null; nextShown = false;
-    fbStarted = false; fbIn = 0; fbSweep = 0; fbPhase = -1; clearT = -1; clearHome = false; gameCleared = false; fbQueue = []; fbSweepAcc = 0; clearLT = 0;
+    fbStarted = false; fbIn = 0; fbSweep = 0; fbPhase = -1; clearT = -1; clearHome = false; gameCleared = false; fbQueue = []; fbSweepAcc = 0; clearLT = 0; landT0 = 0;
     startAugPending = accOn(4) && !testMode; startAugNow = false; cloudT = 40 + Math.random() * 30; skillCd = 0; skillUntil = 0; bangIdle = 0;
     aug.blackhole = false; aug.legion = false; roidT = 0;
     aug.doveWhat = false; aug.doveFlock = 0; aug.doveFreq = 1;
@@ -15406,8 +15406,28 @@
     ctx.restore();
     return true;
   }
+  /* v0.9.97 지상에 내려온 뒤 — 캐릭터(정면 카드 그림)가 화면 아래로 커지며 크게 자리 잡는다 */
+  const LAND_IMG = {};
+  let landT0 = 0;
+  function drawLanded(now) {
+    const key = job === "powerp" ? (fullOwn ? "full" : "monk") : (JOB_IMG[job] || job);
+    let im = LAND_IMG[key];
+    if (!im) { im = LAND_IMG[key] = new Image(); im.src = "assets/" + key + "_right.png"; }
+    if (!im.complete || !im.naturalWidth) return false;
+    if (!landT0) landT0 = now;
+    const k = Math.min(1, (now - landT0) / 900), e = 1 - Math.pow(1 - k, 3);   // 0.9초 동안 부드럽게
+    const h1 = player.r * 3, h2 = H * 0.5;
+    const h = h1 + (h2 - h1) * e, w = h * im.naturalWidth / im.naturalHeight;
+    const x = player.x + (W / 2 - player.x) * e;
+    const yb = (player.y + player.r) + (H + h * 0.06 - (player.y + player.r)) * e;   // 발끝이 화면 아래에 닿게
+    ctx.save();
+    ctx.drawImage(im, x - w / 2, yb - h, w, h);
+    ctx.restore();
+    return true;
+  }
   function drawPlayer(now) {
     if (clearT > 1.3 && !clearHome && drawFalling(now)) return;   // v0.9.95 지상으로 떨어지는 중
+    if (clearHome && drawLanded(now)) return;                     // v0.9.97 땅에 내려와 크게
     if (startArtWaiting(now)) return;      // 제 그림이 올 때까지는 아무것도 그리지 않는다 (v0.8.22 — 대신 그린 얼굴이 보였다)
     const hurting = now < hurtUntil && sprSet().hurt.img;
     const blink = now < invUntil && Math.floor(now / 90) % 2 === 0;
