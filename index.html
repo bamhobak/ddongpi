@@ -1886,7 +1886,7 @@
   const elTitle = document.getElementById("overTitle");
   const coinNote = document.getElementById("coinNote");
 
-  const GAME_VERSION = "v0.9.118";
+  const GAME_VERSION = "v0.9.119";
   /* 제작사 스플래시(bamhobak friends 로고) — 2026-09-20 끔. 다시 켜려면 true */
   const SPLASH_USE = false;   // 코드를 고칠 때마다 뒤 두 자리를 올린다
   document.getElementById("ver").textContent = GAME_VERSION;
@@ -6943,7 +6943,7 @@
         popText(W / 2, H * 0.40, ["", "끝판왕이 화났다!", "끝판왕이 폭주한다!", "끝판왕 최후의 발악!"][ph], "#ff7b9c", 24, 2);
         shake = Math.max(shake, 18); if (!sfx("angry")) beep(160, .3, "sawtooth", .06);
       }
-      fbPhase = ph; fbStep = 0;
+      fbPhase = ph; fbStep = 0; fbShotT = Math.max(fbShotT, 1.1); fbSweep = 0;   // v0.9.119 단계 바뀔 때 한숨 돌릴 틈
     }
     if (fbIn < 1) return;
     const g = fbGeom(now), bx = g.hx, by = g.hy + g.h * 0.05;
@@ -6969,7 +6969,8 @@
     const r = 14, gapW = player.r * [3.3, 2.95, 2.7, 2.5][ph] * 1.15 * 1.12 * 1.3;   // v1.0.02 틈 조금 더 넓게 · v0.9.101 똥 조금 작게(15→14)·틈 1.3배
     const fan = (n0, spread, sp) => { const n = Math.max(3, Math.round(n0 * 0.8)); for (let k = 0; k < n; k++) { const a = -spread + 2 * spread * k / (n - 1); fbShot(bx, by, sp * Math.sin(a), sp * Math.cos(a), r); } };   // v0.9.101 부채꼴 탄 수 80%
     const aimed = (n) => { for (let k = 0; k < n; k++) { const tx = player.x + (k - (n - 1) / 2) * 40, ty = groundY; const d = Math.hypot(tx - bx, ty - by); fbShot(bx, by, (tx - bx) / d * V * 1.2, (ty - by) / d * V * 1.2, r); } };
-    const wall = (gx) => { for (let x = r; x < W; x += r * 2.6) if (Math.abs(x - gx) > gapW / 2) fbShot(x, g.y + g.h * 0.75, 0, V * 0.85, r); };
+    const clearGap = (gx) => { for (const q of items) if (q.thrown && q.dark && !q.bounced && Math.abs(q.x - gx) < gapW / 2 + q.r + player.r && q.y > g.y) { q.blast = true; q.bounced = true; q.vy = -Math.abs(q.vy) * 0.6; q.vx = (q.x < gx ? -1 : 1) * 260; } };   // v0.9.119 틈 안에 먼저 떨어지던 똥은 옆으로 튕겨 낸다 (틈이 막히지 않게)
+    const wall = (gx) => { clearGap(gx); for (let x = r; x < W; x += r * 2.6) if (Math.abs(x - gx) > gapW / 2) fbShot(x, g.y + g.h * 0.75, 0, V * 0.85, r); };
     /* v0.9.94 못 피하는 패턴 없애기 — 벽 틈은 벽이 내려오는 동안 실제로 갈 수 있는 거리 안(70%)에 낸다 */
     const reach = (fromX, yStart, vy) => Math.max(40, (groundY - yStart) / vy * PLAYER_MAX_SPEED * spdMul() * 0.7);
     const gapNear = (fromX, rch) => { const d = Math.min(rch, W * 0.55) * (0.45 + Math.random() * 0.55) * (Math.random() < 0.5 ? -1 : 1);
@@ -6981,17 +6982,18 @@
     /* ── v1.0.05 화려한 패턴 — 흔들리는 탄(zz: 좌우 폭 · 빠르기)과 시간차 줄 ── */
     const zz = (it, amp, w) => { it.zA = amp; it.zW = w; it.zP = Math.random() * 6.28; it.zT = 0; return it; };
     const shot = (x, y, vx, vy, rr) => { fbShot(x, y, vx, vy, rr || r); return items[items.length - 1]; };
-    const zigCols = (n0, amp) => { const n = Math.max(3, n0 - 1);   // v0.9.101 기둥 하나 적게                       // 지그재그 기둥 — 내려오며 좌우로 갈지자
+    const zigCols = (n0, amp0) => { const n = Math.max(3, n0 - 3), amp = amp0 * 0.5, zp = Math.random() * 6.28;   // v0.9.119 못 피하던 것 고침 — 기둥 수↓·폭 절반·모두 같은 박자로(사이 틈이 늘 열려 있다)   // v0.9.101 기둥 하나 적게                       // 지그재그 기둥 — 내려오며 좌우로 갈지자
       const sp = W / n;
-      for (let k = 0; k < n; k++) zz(shot(sp * (k + 0.5), g.y + g.h * 0.72, 0, V * 0.8), amp, 5 + Math.random());
+      for (let k = 0; k < n; k++) { const it = zz(shot(sp * (k + 0.5), g.y + g.h * 0.72, 0, V * 0.8), amp, 3); it.zP = zp; }   // 느리게 (5~6 → 3)
     };
     const waveRow = (gx) => {                           // 파도 — 가로 한 줄이 물결 모양으로 출렁이며 내려온다 (틈 하나)
       const n = Math.floor(W / (r * 2.9)), ph0 = Math.random() * 6.28;
+      clearGap(gx);
       for (let k = 0; k < n; k++) {
         const x = r + k * (W - 2 * r) / (n - 1);
         if (Math.abs(x - gx) < gapW / 2) continue;
         const it = shot(x, g.y + g.h * 0.72 - Math.sin(ph0 + k * 0.55) * 40, 0, V * 0.78);
-        it.zA = 0; it.wvA = 26; it.wvW = 4.2; it.wvP = ph0 + k * 0.55; it.zT = 0;
+        it.zA = 0; it.wvA = 22; it.wvW = 3; it.wvP = ph0 + k * 0.55; it.zT = 0;
       }
     };
     const ring = (n, rot) => {                          // 회오리 링 — 엉덩이에서 아래쪽 반원으로 퍼지는 고리 (틈이 있다)
@@ -7007,20 +7009,23 @@
     };
     const snake = (len) => {                            // 뱀 — 한 줄기가 S자로 꿈틀대며 내려온다
       const x0 = W * (0.25 + Math.random() * 0.5);
-      for (let k = 0; k < len; k++) fbQueue.push({ t: k * 0.09, f: () => zz(shot(x0, g.y + g.h * 0.72, 0, V * 0.85, 14), W * 0.22, 3.2) });
+      for (let k = 0; k < len; k++) fbQueue.push({ t: k * 0.09, f: () => zz(shot(x0, g.y + g.h * 0.72, 0, V * 0.85, 14), W * 0.2, 2.3) });
     };
     const helix = (len) => {                            // 이중나선 — 두 줄기가 서로 엇갈리며 꼬인다
       const x0 = W * (0.3 + Math.random() * 0.4);
       for (let k = 0; k < len; k++) fbQueue.push({ t: k * 0.1, f: () => {
-        const a = shot(x0, g.y + g.h * 0.72, 0, V * 0.85, 13); a.zA = W * 0.16; a.zW = 3.6; a.zP = 0; a.zT = 0;
-        const b = shot(x0, g.y + g.h * 0.72, 0, V * 0.85, 13); b.zA = W * 0.16; b.zW = 3.6; b.zP = Math.PI; b.zT = 0;
+        const a = shot(x0, g.y + g.h * 0.72, 0, V * 0.85, 13); a.zA = W * 0.15; a.zW = 2.7; a.zP = 0; a.zT = 0;
+        const b = shot(x0, g.y + g.h * 0.72, 0, V * 0.85, 13); b.zA = W * 0.15; b.zW = 2.7; b.zP = Math.PI; b.zT = 0;
       } });
     };
     /* 벽은 다른 탄과 겹치지 않는다(틈이 막히지 않게). 벽 차례면 회오리도 멈춘다 */
-    const later = f => { if (!fbQueue.length) return false; const tm = Math.max(...fbQueue.map(q => q.t)); fbQueue.push({ t: tm + 0.6, f: f }); return true; };   // 줄줄이 탄이 다 나온 뒤에 벽
-    const W1 = () => { fbSweep = 0; if (!later(() => wall(gapX()))) wall(gapX()); },
-          W2 = () => { fbSweep = 0; if (!later(wall2)) wall2(); },
-          WV = () => { fbSweep = 0; if (!later(() => waveRow(gapX()))) waveRow(gapX()); };
+    let laterT = 0;
+    const later = f => { laterT = 0; if (!fbQueue.length) return false; const tm = Math.max(...fbQueue.map(q => q.t)); laterT = tm + 0.6; fbQueue.push({ t: laterT, f: f }); return true; };   // 줄줄이 탄이 다 나온 뒤에 벽
+    let wallHold = 0;                                   // v0.9.119 벽·파도 뒤에는 그 벽이 내 머리를 지나갈 때까지 다음 공격을 미룬다
+    const travel = (groundY - (g.y + g.h * 0.75)) / (V * 0.8);
+    const W1 = () => { fbSweep = 0; if (!later(() => wall(gapX()))) wall(gapX()); wallHold = laterT + travel * 0.85; },
+          W2 = () => { fbSweep = 0; if (!later(wall2)) wall2(); wallHold = laterT + travel * 0.85 + 0.45; },
+          WV = () => { fbSweep = 0; if (!later(() => waveRow(gapX()))) waveRow(gapX()); wallHold = laterT + travel * 0.85; };
     const P = [
       [() => fan(9, 0.75, V), () => { W1(); aimed(1); }, () => zigCols(5, 30), () => { fbSweep = 1.4; rain(4); }, () => snake(10), () => fan(10, 0.95, V * 1.05), () => WV(), () => ring(11, 0)],
       [() => W1(), () => { aimed(5); fbSweep = 1.6; }, () => spiral(3, 11), () => WV(), () => { fan(11, 1.0, V); aimed(1); }, () => helix(10), () => W2(), () => zigCols(6, 36)],
@@ -7029,7 +7034,7 @@
     ][ph];
     P[fbStep % P.length]();
     fbStep++;
-    fbShotT = [0.75, 0.6, 0.52, 0.44][ph] / 0.87 * 1.15 + (fbQueue.length ? 0.35 : 0);   // 겹벽·연속 탄 뒤엔 숨 돌릴 틈 · v1.0.05 단계별
+    fbShotT = Math.max(wallHold, [0.75, 0.6, 0.52, 0.44][ph] / 0.87 * 1.15 + (fbQueue.length ? 0.35 : 0));   // 겹벽·연속 탄 뒤엔 숨 돌릴 틈 · v1.0.05 단계별
     burst(bx, by + 10, "#7a3cff", 8);
     if (!sfx("boing", 0.4)) beep(220, .05, "square", .03);
   }
