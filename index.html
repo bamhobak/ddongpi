@@ -706,6 +706,15 @@
   #devBody .del:hover { background: rgba(255,80,80,.85); }
   #devBody .del:disabled { opacity: .4; cursor: default; }
   #devBody .hid { color: #c98bff; }        /* 히든 증강은 보라색으로 구분 */
+  #devBody .spec { padding: 6px 2px; border-top: 1px solid rgba(255,255,255,.07); text-align: left; }
+  #devBody .spec .sh { display: flex; justify-content: space-between; gap: 6px; }
+  #devBody .spec .sh b { color: #fff; font-size: 12.5px; } #devBody .spec.hid .sh b { color: #c98bff; }
+  #devBody .spec .sh i { color: #6c7286; font-style: normal; font-size: 10.5px; }
+  #devBody .spec .sd { color: #e6e9f2; line-height: 1.45; margin-top: 2px; word-break: keep-all; }
+  #devBody .spec .st { color: #9aa3ba; font-size: 11px; margin-top: 2px; word-break: keep-all; }
+  #devBody .spec details { margin-top: 2px; } #devBody .spec summary { color: #6c7286; font-size: 10.5px; cursor: pointer; }
+  #devBody .spec code { display: block; white-space: pre-wrap; word-break: break-all; font-size: 10px; color: #9fd8ff; background: rgba(0,0,0,.3); padding: 4px; border-radius: 6px; }
+  #devBody .spec table td.lft { font-size: 11px; padding: 3px 4px; vertical-align: top; }
   #devBody .tbRecent th:first-child, #devBody .tbRecent td:first-child {
     max-width: 56px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
   }
@@ -1866,7 +1875,7 @@
   const elTitle = document.getElementById("overTitle");
   const coinNote = document.getElementById("coinNote");
 
-  const GAME_VERSION = "v0.9.92";
+  const GAME_VERSION = "v0.9.93";
   /* 제작사 스플래시(bamhobak friends 로고) — 2026-09-20 끔. 다시 켜려면 true */
   const SPLASH_USE = false;   // 코드를 고칠 때마다 뒤 두 자리를 올린다
   document.getElementById("ver").textContent = GAME_VERSION;
@@ -14183,12 +14192,138 @@
 
   /* ---------- 개발자 화면 탭 ----------
      섹션이 많아져서 성격별로 묶는다. 탭 버튼을 누르면 해당 판만 보인다. */
-  const DEV_TABS = [["요약", "sum"], ["증강", "aug"], ["최근 판", "rec"], ["랭킹", "rank"],
+  const DEV_TABS = [["요약", "sum"], ["증강", "aug"], ["최근 판", "rec"], ["랭킹", "rank"], ["증강 상세", "augd"], ["캐릭터 상세", "jobd"],
                     ["똥탑 최근 판", "nrec"], ["똥탑 랭킹", "nrank"],
                     ["맨몸 최근 판", "prec"], ["맨몸 랭킹", "prank"]];
   /* v0.9.43 똥탑등반·맨몸대결은 뺀 모드라 탭 버튼을 숨긴다 (판은 만들어 둔다 — 불러오는 코드가 거기에 채우므로) */
   const DEV_TABS_HIDDEN = new Set(["nrec", "nrank", "prec", "prank"]);
   let devPanes = {};
+  /* ── v0.9.93 조회용 상세표 — 숫자는 지금 코드 값. 같은 증강을 또 먹으면 dim() 으로 0.85배씩 줄어드는 것은 "겹칠수록 덜" 로 적었다 ── */
+  const DEV_AUG_DETAIL = {
+    fever_time: "간식 타임 +1.5초 (먹을 때마다, 줄지 않음 · 기본 7초)",
+    star50: "별 점수 배율 +0.25 (겹칠수록 0.85배씩 덜) · 별 점수 = 2000 × 먹은 순번 × 배율",
+    time2x: "생존 점수 ×1.5 (겹칠수록 덜: 1.5 → ×1.425 → …)",
+    fever50: "간식 낙하물 점수 +20% (먹을 때마다, 줄지 않음)",
+    slow: "똥 낙하 속도 -12% (겹칠수록 덜)",
+    small: "몸(판정) -12% (겹칠수록 덜) · 버피는 안 나옴",
+    tinypoop: "똥 크기 -12% (겹칠수록 덜)",
+    umbrella3: "우산 +3개 (증강으로는 최대 10개) · 버피·우산 10개면 안 나옴",
+    "pet:helper": "1단계: 뿌잉 출격 6.5초마다, 크기 1배, 부수는 반경 35px · 단계마다 간격 ×0.88, 크기 +0.12 (5단계 3.9초 · 1.48배) · 상점 구매 필요",
+    "pet:galaga": "1단계: 우주선 1대, 0.7초마다 총알 · 단계마다 한 대 추가, 대당 간격 +0.25초 (5대 = 각 1.7초) · 상점 구매 필요",
+    "pet:dove": "1단계: 110m(1,320px) 움직일 때마다 비둘기 1마리 출격, 부딪히면 반경 50px 폭발(특수똥도), 똥 점수 5배 · 단계마다 한 번에 +1마리(최대 5마리) · 상점 구매 필요",
+    "pet:angel": "쓰러지면 한 번 하트 1개로 되살림 + 2초 무적, 되살아난 뒤 6초 동안 반경 92px 똥을 밀어냄 · 레벨 4부터 · 상점 구매 필요",
+    "pet:gift": "12초마다 떨어지는 똥 하나를 코인으로(3코인 70% · 5코인 30%) · 처음은 6초 뒤 · 상점 구매 필요",
+    "pet:coincat": "9초마다 코인을 물어다 떨어뜨림 · 세 번째마다 5코인 · 처음은 4.5초 뒤 · 상점 구매 필요",
+    "pet:eel": "7초마다 가장 가까운 똥에 번개, 옆 똥으로 2개까지 옮겨붙음(건너뛰는 거리 110px) · 상점 구매 필요",
+    doveHome: "비둘기 출격 거리 -20% (겹칠수록 덜, 최대 3번: 110m → 88m → 73m → 62m)",
+    hungry: "뿌잉이 아이템이 뜨고 3초 뒤 대신 먹으러 감(한 번에 한 마리, 다녀오면 2초 쉼, 속도 500px/s)",
+    roid: "6초 동안 몸 2배, 닿는 똥을 튕겨냄(피한 점수 받음, 다크똥 제외) · 끝날 때 0.5초 무적 · 버피 전용, 레벨 7부터, 계속 나옴",
+    doveWhat: "비둘기 크기·속도 1.5배, 출격 거리 ×0.75",
+    steelUmb: "우산이 하나도 없으면 6.5초마다 한 개 배송",
+    starburst: "별을 먹으면 화면의 똥 전부 제거(무지개똥·다크똥·간식 제외), 개당 똥 점수 6배, 0.5초 동안 새 똥 안 나옴",
+    blackhole: "자석 반경 220 → 390px, 간식 낙하물도 반경 195px 안에서 끌림",
+    legion: "왕뼈다귀 등장 2.1배, 점수 1.5배",
+    magnet: "아이템·무지개똥을 반경 220px 안에서 끌어옴(무지개똥은 반경·힘 절반) · 코인은 자석 없어도 110px",
+    dash: "화면 두 번 두드리면 그 자리로 순간이동(가까우면 보는 쪽 210px), 재사용 10초, 지나온 길의 똥은 스친 것으로 침 · 무적 없음 · 도도는 안 나옴",
+    lucky: "아이템 등장 간격 ÷(1+0.15) (겹칠수록 덜, 5개 ≈ +65%)",
+    giant: "간식 타임에 왕뼈다귀(반지름 104~124, 점수 138)가 섞여 나옴",
+    downpour: "간식 타임 낙하량 +20% (먹을 때마다, 줄지 않음)",
+    angryUmb: "우산이 깨질 때 화면 2/3를 덮는 폭발로 똥을 날려 보냄(날아간 똥끼리 부딪히면 터짐) · 우산 5개 이상일 때 나옴",
+    gold: "똥이 무지개똥으로 바뀔 확률 첫 개 8%, 이후 +7%p씩 · 무지개똥 = 120 × 레벨 × 점수배율",
+    dopa: "똥 속도 +10%, 생존 점수 ×1.5 (둘 다 겹칠수록 덜)",
+    carrot: "하트 1개 잃고 모든 점수 ×1.2 (최대 5번) · 하트 2개 이상일 때",
+    dungy: "모든 점수 ×(1 + 1/하트 수) — 하트 1개 2배 · 2개 1.5배 · 3개 1.33배",
+    goldLord: "무지개똥 끌어오는 반경·힘 2배(아이템과 같게), 무지개똥 점수 2배",
+    inter: "8초마다 2초 동안 세상만 느려짐(점수 시계는 그대로) · 간식 타임엔 안 걸림",
+    afterimage: "맞을 때 피할 확률 첫 개 10%, 이후 +5%p씩(최대 5개 30%) · 우산보다 먼저 굴림",
+    chainZap: "갤러그 총알·뿌잉·비둘기·선물 요정이 똥을 부술 때 번개로 옆 똥 2개(100px 안) 더 · 뱀장어는 번개가 2개 더 옮겨붙음",
+    wak: "갤러그 총알이 주먹 — 맞은 똥이 튕겨 올라가 처음 부딪힌 똥과 반경 42px 폭발 · 갤러그 2대 이상",
+    clone: "1.5초마다 작은 분신이 머리 위 똥에게 날아가 반경 110px 폭발(특수똥도) · 레벨 7부터, 하트 2개 이하일 때",
+    glass: "모든 점수 ×1.25, 몸(판정) ×1.15 (최대 3번)",
+    pierce: "갤러그 총알이 똥 하나를 뚫고 계속 날아감",
+    fly: "맞을 때마다 똥파리 1마리, 5초 동안 400px/s 로 가까운 똥을 쫓아 반경 18px 부숨",
+    stone: "1초 가만히 있으면 돌(무적, 최대 5초) · 풀린 뒤 1초는 다시 안 굳음 · 돌인 동안 점수·아이템·레벨 시계 멈춤",
+    gacha: "이후 증강 카드가 물음표로 · 칸마다 50% 확률로 히든 증강에서 뽑음",
+    snackBig: "간식 타임 동안 몸(판정) 1.5배 · 간식 증강(간식 연장·간식 대박·간식 폭우·왕뼈다귀·군단) 4개 이상",
+    toilet: "달마다 증강 선택 2배(보름달 6번) · 하트로 맞으면 50% 확률로 즉사 · 하트 3개 이상 · 레벨 7 이하",
+    twoRand: "일반 증강 중 무작위 2개를 바로 받음"
+  };
+  const DEV_JOB_DETAIL = {
+    bangul: ["비누방울 1겹 두르고 시작 — 맞으면 방울만 터지고 0.9초 무적", "방울은 15초 뒤 다시 맺힘", "하트 3개", "레벨 보상: 아래 표"],
+    fit: ["하트 5개로 시작, 최대 30개", "몸(판정) 1.3배", "하트 등장 5배, 우산 자리에 하트", "우산·다이어트·우산 다발·성난 우산 안 나옴", "레벨 7부터 '벌크업'(6초 몸 2배·똥 튕김) 계속 나옴"],
+    powerj: ["달 등장 1.8배", "증강 카드 1장만(다시 뽑기 없음)", "같은 증강 연속 등장을 더 세게 막음(바로 다음 1/8)"],
+    levitator: ["처음부터 하늘 어디든 날 수 있음(위아래 이동)", "이동 속도 2.5배", "높이 있을수록 모든 점수 +0~100%(꼭대기 2배)", "아이템을 반경 121px 에서 끌어옴(자석 없이)", "방귀 대시 안 나옴"],
+    powerp: ["잠긴 캐릭터 — 코인 안 먹고 100초 버티면 해금", "달이 안 나옴(증강 없음)", "별 등장 1.5배", "안 맞은 초당 점수 +10%(상한 없음), 하트를 잃으면 그 시간 절반을 잃음", "코인 2배 · 코인 자동으로 안 끌려옴", "코인을 연달아 3개 쥐면 '풀소유'(코인 7.5배)", "판 끝에 흘려보낸 코인 값 1당 점수 +1%"],
+    fortune: ["판 시작 2초 뒤부터 10초마다 예언이 바뀜", "좋은 예언 9가지 · 나쁜 예언 7가지 · 양면 1가지(운명의 주사위)", "명당 위에 서면 생존 점수 4배"]
+  };
+  function devCode(fn) { return fn ? fn.toString().replace(/\s+/g, " ").replace(/^\(\) => \{ ?|\}$/g, "").trim() : ""; }
+  function renderDevSpecs() {
+    /* 증강 상세 */
+    const pa = devPanes.augd; pa.innerHTML = "";
+    const groups = [["일반 증강", a => !a.hidden && !a.id.startsWith("pet:")], ["펫 증강", a => a.id.startsWith("pet:")], ["히든 증강", a => a.hidden]];
+    for (const [title, f] of groups) {
+      const sec = document.createElement("div"); sec.className = "sec";
+      sec.innerHTML = "<h4>" + title + "</h4>";
+      for (const a of AUGMENTS.filter(x => !x.gone).filter(f)) {
+        const c = document.createElement("div"); c.className = "spec" + (a.hidden ? " hid" : "");
+        const lim = a.once ? "1번" : "최대 " + maxOf(a) + "번";
+        const wt = a.w !== undefined ? a.w : (a.hidden ? 0.25 : 1);
+        const tags = [lim, "뽑힐 비중 " + wt];
+        if (ACH[a.id]) tags.push("🔒 업적: " + ACH[a.id].t);
+        if (BOOK_PET[a.id]) tags.push("🐾 상점 펫: " + PETS[BOOK_PET[a.id]].nm);
+        if (BOOK_COND[a.id]) tags.push("조건: " + BOOK_COND[a.id]);
+        c.innerHTML = '<div class="sh"><b></b><i></i></div><div class="sd"></div><div class="st"></div><details><summary>코드</summary><code></code></details>';
+        c.querySelector("b").textContent = a.ic + " " + a.nm;
+        c.querySelector("i").textContent = a.id;
+        c.querySelector(".sd").textContent = DEV_AUG_DETAIL[a.id] || a.ds;
+        c.querySelector(".st").textContent = tags.join(" · ");
+        c.querySelector("code").textContent = (a.cond ? "조건: " + devCode(a.cond) + "\n" : "") + "효과: " + devCode(a.go);
+        sec.appendChild(c);
+      }
+      pa.appendChild(sec);
+    }
+    /* 캐릭터 상세 */
+    const pj = devPanes.jobd; pj.innerHTML = "";
+    const lvSec2 = document.createElement("div"); lvSec2.className = "sec";
+    lvSec2.innerHTML = "<h4>레벨 공통</h4>";
+    const lvs = document.createElement("div"); lvs.className = "spec";
+    lvs.innerHTML = '<div class="sd"></div>';
+    lvs.querySelector(".sd").textContent = "공통 레벨 경험치(버틴 초): " + ACC_XP.slice(1).map((x, k) => "Lv" + (k + 2) + " " + x.toLocaleString()).join(" · ") +
+      "\n캐릭터 레벨(공통 Lv2부터 그 캐릭터로 버틴 초): " + CHR_XP.slice(1).map((x, k) => "Lv" + (k + 2) + " " + x.toLocaleString()).join(" · ") +
+      "\n" + Object.entries(ACC_REW).map(([l, t]) => "공통 Lv" + l + ": " + t).join("\n") +
+      "\n스테이지 " + LEVEL_SEC + "초 · 끝판왕 " + FB_LV + "레벨부터 " + FB_LEN + "스테이지";
+    lvs.querySelector(".sd").style.whiteSpace = "pre-line";
+    lvSec2.appendChild(lvs); pj.appendChild(lvSec2);
+    for (const id in JOBS) {
+      if (JOBS[id].gone) continue;
+      const sec = document.createElement("div"); sec.className = "sec";
+      const h = document.createElement("h4"); h.textContent = JOBS[id].ic + " " + JOBS[id].nm + "  (" + id + ")"; sec.appendChild(h);
+      const c = document.createElement("div"); c.className = "spec";
+      const ul = document.createElement("div"); ul.className = "sd"; ul.style.whiteSpace = "pre-line";
+      ul.textContent = "• " + (DEV_JOB_DETAIL[id] || [JOBS[id].ds]).join("\n• ");
+      c.appendChild(ul);
+      const P = CHR_PERKS[id];
+      if (P) {
+        const t = document.createElement("table");
+        t.innerHTML = "<tr><th>Lv</th><th class='lft'>A</th><th class='lft'>B</th></tr>";
+        for (let l = 2; l <= 5; l++) {
+          const tr = document.createElement("tr");
+          const td0 = document.createElement("td"); td0.textContent = l + (l === 3 ? "🌐" : l === 5 ? "⭐" : "");
+          const tdA = document.createElement("td"); tdA.className = "lft"; tdA.textContent = P[l].A;
+          const tdB = document.createElement("td"); tdB.className = "lft"; tdB.textContent = P[l].B;
+          tr.append(td0, tdA, tdB); t.appendChild(tr);
+        }
+        c.appendChild(t);
+      }
+      sec.appendChild(c); pj.appendChild(sec);
+    }
+    /* 루나 예언 목록 */
+    const ps = document.createElement("div"); ps.className = "sec";
+    ps.innerHTML = "<h4>🔮 루나 예언 (10초씩)</h4>";
+    const pl = document.createElement("div"); pl.className = "spec"; const pd = document.createElement("div"); pd.className = "sd"; pd.style.whiteSpace = "pre-line";
+    pd.textContent = PROPHECIES.map(q => (q.bad ? "❌ " : q.both ? "🎲 " : "✅ ") + q.nm + (q.noTower ? "" : "")).join("\n");
+    pl.appendChild(pd); ps.appendChild(pl); pj.appendChild(ps);
+  }
   function devInitTabs() {
     const bar = document.getElementById("devTabs");
     bar.innerHTML = "";
@@ -14231,6 +14366,7 @@
       devPwOK = pw;
       document.getElementById("devPwRow").style.display = "none";   // 들어왔으면 비번창은 치운다
       devInitTabs();
+      renderDevSpecs();                         // v0.9.93 증강·캐릭터 상세 (서버 자료 없이 게임 코드에서)
       renderDevStats(await res.json());
       // 이번 주 랭킹은 별도 테이블이라 따로 불러와 랭킹 탭 맨 위에 붙인다 (아이템전 · 노템전 따로)
       for (const md of ["item", "noitem", "pure"]) {
