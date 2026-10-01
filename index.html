@@ -1875,7 +1875,7 @@
   const elTitle = document.getElementById("overTitle");
   const coinNote = document.getElementById("coinNote");
 
-  const GAME_VERSION = "v0.9.94";
+  const GAME_VERSION = "v0.9.95";
   /* 제작사 스플래시(bamhobak friends 로고) — 2026-09-20 끔. 다시 켜려면 true */
   const SPLASH_USE = false;   // 코드를 고칠 때마다 뒤 두 자리를 올린다
   document.getElementById("ver").textContent = GAME_VERSION;
@@ -14263,6 +14263,25 @@
     powerp: ["잠긴 캐릭터 — 코인 안 먹고 100초 버티면 해금", "달이 안 나옴(증강 없음)", "별 등장 1.5배", "안 맞은 초당 점수 +10%(상한 없음), 하트를 잃으면 그 시간 절반을 잃음", "코인 2배 · 코인 자동으로 안 끌려옴", "코인을 연달아 3개 쥐면 '풀소유'(코인 7.5배)", "판 끝에 흘려보낸 코인 값 1당 점수 +1%"],
     fortune: ["판 시작 2초 뒤부터 10초마다 예언이 바뀜", "좋은 예언 9가지 · 나쁜 예언 7가지 · 양면 1가지(운명의 주사위)", "명당 위에 서면 생존 점수 4배"]
   };
+  const DEV_PROPH = {     // v0.9.95 예언별 설명 (10초 동안)
+    small: "떠 있는 똥과 새 똥 크기 ×0.55",
+    slow: "똥 낙하 속도 ×0.7 (떠 있는 똥도 바로)",
+    coin: "0.5초마다 코인 하나씩 떨어짐 (10초에 약 20개)",
+    double: "모든 점수 2배",
+    shield: "바뀌는 순간 우산 +1 (최대 5) · 버피는 하트 +1",
+    fever: "바로 간식 타임 3초 (간식 연장 증강은 안 붙음)",
+    magnet: "화면 어디서든 아이템·코인이 끌려옴 (반경 2400px, 힘 1.8배)",
+    sight: "천리안 — 떨어지는 똥이 바닥 어디에 닿을지 선으로 보임",
+    spot: "명당 — 땅에 빛나는 자리가 생기고, 그 위에 서면 생존 점수 4배 · 절반쯤에 한 번 옮겨 감",
+    fast: "똥 낙하 속도 ×1.3",
+    big: "똥 크기 ×1.3",
+    dark: "다크똥(부술 수 없는 똥)이 최소 30% 섞여 나옴",
+    heavy: "몸(판정) 1.3배",
+    reverse: "좌우 조작이 반대로",
+    fog: "화면 위쪽이 뿌옇게 가려져 똥이 늦게 보임",
+    wind: "옆바람 — 똥이 한쪽으로 초당 120px 밀림 (방향은 무작위)",
+    dice: "모든 점수 3배, 대신 똥 수 1.5배"
+  };
   function devCode(fn) { return fn ? fn.toString().replace(/\s+/g, " ").replace(/^\(\) => \{ ?|\}$/g, "").trim() : ""; }
   function renderDevSpecs() {
     /* 증강 상세 */
@@ -14328,7 +14347,7 @@
     const ps = document.createElement("div"); ps.className = "sec";
     ps.innerHTML = "<h4>🔮 루나 예언 (10초씩)</h4>";
     const pl = document.createElement("div"); pl.className = "spec"; const pd = document.createElement("div"); pd.className = "sd"; pd.style.whiteSpace = "pre-line";
-    pd.textContent = PROPHECIES.map(q => (q.bad ? "❌ " : q.both ? "🎲 " : "✅ ") + q.nm + (q.noTower ? "" : "")).join("\n");
+    pd.textContent = PROPHECIES.map(q => (q.bad ? "❌ " : q.both ? "🎲 " : "✅ ") + q.nm + (DEV_PROPH[q.id] ? "\n      " + DEV_PROPH[q.id] : "")).join("\n");
     pl.appendChild(pd); ps.appendChild(pl); pj.appendChild(ps);
   }
   function devInitTabs() {
@@ -15370,7 +15389,25 @@
     SIL.set(img, c);
     return c;
   }
+  /* v0.9.95 끝판왕 클리어 — 방구에 날려 지상으로 떨어지는 동안은 우주복 낙하 그림 (Codex) */
+  const FALL_IMG = {};
+  for (const n of ["bangul", "powerj", "fortune", "levitator", "fit", "monk", "full"]) { const im = new Image(); im.src = "assets/fall_" + n + ".webp"; FALL_IMG[n] = im; }
+  function drawFalling(now) {
+    const key = job === "powerp" ? (fullOwn ? "full" : "monk") : job;
+    const im = FALL_IMG[key];
+    if (!im || !im.complete || !im.naturalWidth) return false;
+    const h = player.r * 4.2, w = h * im.naturalWidth / im.naturalHeight;
+    const k = Math.min(1, (clearT - 1.3) / 0.4);
+    ctx.save();
+    ctx.translate(player.x + Math.sin(now / 140) * 10, H * 0.45 + Math.sin(now / 90) * 6);
+    ctx.rotate(Math.sin(now / 160) * 0.25);
+    ctx.globalAlpha = k;
+    ctx.drawImage(im, -w / 2, -h / 2, w, h);
+    ctx.restore();
+    return true;
+  }
   function drawPlayer(now) {
+    if (clearT > 1.3 && !clearHome && drawFalling(now)) return;   // v0.9.95 지상으로 떨어지는 중
     if (startArtWaiting(now)) return;      // 제 그림이 올 때까지는 아무것도 그리지 않는다 (v0.8.22 — 대신 그린 얼굴이 보였다)
     const hurting = now < hurtUntil && sprSet().hurt.img;
     const blink = now < invUntil && Math.floor(now / 90) % 2 === 0;
