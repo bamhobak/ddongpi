@@ -1876,7 +1876,7 @@
   const elTitle = document.getElementById("overTitle");
   const coinNote = document.getElementById("coinNote");
 
-  const GAME_VERSION = "v1.0.02";
+  const GAME_VERSION = "v1.0.03";
   /* 제작사 스플래시(bamhobak friends 로고) — 2026-09-20 끔. 다시 켜려면 true */
   const SPLASH_USE = false;   // 코드를 고칠 때마다 뒤 두 자리를 올린다
   document.getElementById("ver").textContent = GAME_VERSION;
@@ -16221,7 +16221,9 @@
     if (frac > 0) {
       ctx.save();
       ctx.globalAlpha *= 0.7; ctx.fillStyle = color;
-      ctx.beginPath(); ctx.roundRect(gx + 1, gy + 1, Math.max(gh, (gw - 2) * frac), gh - 2, (gh - 2) / 2); ctx.fill();
+      const ww = (gw - 2) * frac, hh = gh - 2;      // v1.0.03 끝까지 줄어든다 — 높이보다 짧아지면 동그라미로 작아지며 사라진다
+      if (ww >= hh) { ctx.beginPath(); ctx.roundRect(gx + 1, gy + 1, ww, hh, hh / 2); ctx.fill(); }
+      else { ctx.beginPath(); ctx.arc(gx + 1 + hh / 2, gy + 1 + hh / 2, ww / 2, 0, 6.283); ctx.fill(); }
       ctx.restore();
     }
     return { gx, gy, gw, gh, ix: x + 30 * k, iy: y + 30 * k, ir: 16 * k };
