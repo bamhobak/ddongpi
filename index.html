@@ -1886,7 +1886,7 @@
   const elTitle = document.getElementById("overTitle");
   const coinNote = document.getElementById("coinNote");
 
-  const GAME_VERSION = "v0.9.107";
+  const GAME_VERSION = "v0.9.108";
   /* 제작사 스플래시(bamhobak friends 로고) — 2026-09-20 끔. 다시 켜려면 true */
   const SPLASH_USE = false;   // 코드를 고칠 때마다 뒤 두 자리를 올린다
   document.getElementById("ver").textContent = GAME_VERSION;
@@ -4251,7 +4251,7 @@
      출발점 역할을 한다. */
   function groundless() { return state !== STATE.READY; }
   let levelTime = 0;               // 레벨이 오르는 시계 — 간식 타임에는 멈춰 있다
-  const LEVEL_SEC = 12.5;          // 레벨 한 칸의 길이(초). 지대 하나의 길이이기도 하다 (v0.9.46 13 → 14, v0.9.86 14 → 12.5)
+  const LEVEL_SEC = 13.5;   // v0.9.108 12.5 → 13.5          // 레벨 한 칸의 길이(초). 지대 하나의 길이이기도 하다 (v0.9.46 13 → 14, v0.9.86 14 → 12.5)
   const LEVEL_SEC_NOITEM = 8;      // 노템전은 레벨이 8초 — 패턴 하나가 8초
   // 시작 화면의 배경 여행(인트로)은 늘 13초 기준 — 판이 돌 때만 노템전 8초
   const LEVEL_SEC_PURE = 6.5;       // 맨몸대결은 레벨이 두 배 빨리 오른다
@@ -9091,7 +9091,7 @@
       pick = BONUS.find(b => b.type === "star");    // 목숨 꽉 차면 별로 대체
     }
     // 0.945 배 — 10% 줄였다가 다시 5% 키운 값 (빗방울은 원래 조금 크다)
-    const r = (asDrop ? 24 : 20) * 0.945 * ITEM_SCALE;
+    const r = (asDrop ? 24 : 20) * 0.945 * ITEM_SCALE * (pick.type === "fullmoon" ? 1.07 : 1);   // v0.9.108 보름달 7% 크게
     // 낙하 속도에 변화를 주되, 너무 빠르면 못 먹고 지나가버려서 위쪽을 눌러 잡았다
     const vy = (110 + level * 6) * (H / BASE_H) * (0.6 + Math.random() * 0.5) * (allPerk("levitator", "A") ? 0.85 : 1);   // v0.9.85 가벼운 기운
     items.push({
