@@ -1828,7 +1828,7 @@
   const elTitle = document.getElementById("overTitle");
   const coinNote = document.getElementById("coinNote");
 
-  const GAME_VERSION = "v0.9.78";
+  const GAME_VERSION = "v0.9.79";
   /* 제작사 스플래시(bamhobak friends 로고) — 2026-09-20 끔. 다시 켜려면 true */
   const SPLASH_USE = false;   // 코드를 고칠 때마다 뒤 두 자리를 올린다
   document.getElementById("ver").textContent = GAME_VERSION;
@@ -3840,7 +3840,7 @@
       go: () => { aug.pierce = true; } },
     { id: "fly",        ic: "🪰", nm: "똥파리", ds: "맞을 때마다 똥파리가 나와 5초 동안 똥을 부순다",
       once: true, go: () => { aug.fly = true; } },
-    { id: "stone",      ic: "🗿", nm: "돌부처", ds: "1초 가만히 있으면 돌이 되어 무적 · 그동안 점수·아이템 없음",
+    { id: "stone",      ic: "🗿", nm: "돌부처", ds: "1초 가만히 있으면 돌이 되어 무적(최대 5초) · 그동안 점수·아이템 없음",
       once: true, go: () => { aug.stone = true; stoneT = 0; } },
     { id: "gacha",      ic: "🎰", nm: "뽑기", ds: "증강이 물음표로 나온다 · 대신 절반은 히든",
       once: true, go: () => { aug.gacha = true; } },
@@ -6862,7 +6862,8 @@
   /* v0.9.61 새 증강 상태 */
   let flies = [];                  // 똥파리 { x, y, a(방향), life, ph, t(노리는 똥), re }
   const FLY_LIFE = 5, FLY_SPEED = 400, FLY_R = 18;
-  let stoneT = 0, stoneOn = false; // 돌부처 — 가만히 있은 시간 · 지금 돌인가
+  let stoneT = 0, stoneOn = false, stoneDur = 0; // 돌부처 — 가만히 있은 시간 · 지금 돌인가 · 돌이 된 지 몇 초
+  const STONE_MAX = 5;
   let mvPX = 0, mvPY = 0;          // 지난 프레임 자리 (움직였는지 재는 기준)
   let runUmb = 0, runHits = 0, dirtHiT = 0, lowT = 0;   // 업적용 — 이번 판 우산 · 맞은 횟수 · 오염 75%↑ 버틴 시간 · 목숨 1개로 버틴 시간
   let hurtUntil = 0;               // 똥에 맞은 직후 (아픈 그림 표시)
@@ -8744,12 +8745,18 @@
       const spd = Math.hypot(player.x - mvPX, player.y - mvPY) / Math.max(dt, 1e-4);
       mvPX = player.x; mvPY = player.y;
       if (aug.stone) {
-        if (spd > 45) {
+        if (stoneOn) stoneDur += dt;
+        if (stoneOn && stoneDur >= STONE_MAX) {          // v0.9.79 돌은 최대 5초 — 그 뒤 풀리고 2초 동안은 다시 굳지 않는다 (가만히 서서 판을 끝없이 끌지 못하게)
+          stoneOn = false; stoneT = -2;
+          burst(player.x, player.y + player.hy, "#b9b9b9", 14); beep(300, .06, "square", .04);
+          popText(player.x, player.y - 70, "돌이 풀렸다!", "#d9d9d9", 18);
+        } else if (spd > 45) {
           if (stoneOn) { stoneOn = false; burst(player.x, player.y + player.hy, "#b9b9b9", 14); beep(300, .06, "square", .04); }
-          stoneT = 0;
+          stoneT = Math.min(stoneT, 0);
         } else {
           stoneT += dt;
           if (!stoneOn && stoneT >= 1) {
+            stoneDur = 0;
             stoneOn = true;
             popText(player.x, player.y - 70, "🗿 돌부처", "#d9d9d9", 22);
             burst(player.x, player.y + player.hy, "#d0d0d0", 12);

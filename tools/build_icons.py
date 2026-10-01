@@ -55,7 +55,7 @@ def main():
     s2, n = re.subn(r"/\*ICONS-BEGIN\*/.*?/\*ICONS-END\*/", lambda m: block, s, flags=re.S)
     if n != 1:
         sys.exit("index.html 에 /*ICONS-BEGIN*/ … /*ICONS-END*/ 자리가 없습니다")
-    html.write_text(s2, encoding="utf-8")
+    html.write_bytes(s2.replace(chr(13) + chr(10), chr(10)).encode("utf-8"))   # 줄끝은 LF 그대로 (write_text 는 윈도에서 CRLF 로 바꿔 쓴다)
 
     # 미리보기 — 큰 그림 + 게임 크기(28px)
     font = ImageFont.truetype("C:/Windows/Fonts/malgunbd.ttf", 13)
