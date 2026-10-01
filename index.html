@@ -1828,7 +1828,7 @@
   const elTitle = document.getElementById("overTitle");
   const coinNote = document.getElementById("coinNote");
 
-  const GAME_VERSION = "v0.9.79";
+  const GAME_VERSION = "v0.9.80";
   /* 제작사 스플래시(bamhobak friends 로고) — 2026-09-20 끔. 다시 켜려면 true */
   const SPLASH_USE = false;   // 코드를 고칠 때마다 뒤 두 자리를 올린다
   document.getElementById("ver").textContent = GAME_VERSION;
@@ -8746,8 +8746,8 @@
       mvPX = player.x; mvPY = player.y;
       if (aug.stone) {
         if (stoneOn) stoneDur += dt;
-        if (stoneOn && stoneDur >= STONE_MAX) {          // v0.9.79 돌은 최대 5초 — 그 뒤 풀리고 2초 동안은 다시 굳지 않는다 (가만히 서서 판을 끝없이 끌지 못하게)
-          stoneOn = false; stoneT = -2;
+        if (stoneOn && stoneDur >= STONE_MAX) {          // v0.9.79 돌은 최대 5초 — 그 뒤 풀리고 1초 동안은 다시 굳지 않는다 (v0.9.80 2초 → 1초) (가만히 서서 판을 끝없이 끌지 못하게)
+          stoneOn = false; stoneT = -1;
           burst(player.x, player.y + player.hy, "#b9b9b9", 14); beep(300, .06, "square", .04);
           popText(player.x, player.y - 70, "돌이 풀렸다!", "#d9d9d9", 18);
         } else if (spd > 45) {
