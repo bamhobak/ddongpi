@@ -1875,7 +1875,7 @@
   const elTitle = document.getElementById("overTitle");
   const coinNote = document.getElementById("coinNote");
 
-  const GAME_VERSION = "v0.9.93";
+  const GAME_VERSION = "v0.9.94";
   /* 제작사 스플래시(bamhobak friends 로고) — 2026-09-20 끔. 다시 켜려면 true */
   const SPLASH_USE = false;   // 코드를 고칠 때마다 뒤 두 자리를 올린다
   document.getElementById("ver").textContent = GAME_VERSION;
@@ -6924,7 +6924,7 @@
     }
     if (fbIn < 1) return;
     const g = fbGeom(now), bx = g.hx, by = g.hy + g.h * 0.05;
-    const V = H * (0.62 + 0.11 * ph);          // v0.9.92 정말정말 어렵게 — 기본 낙하 속도부터 빠르다
+    const V = H * (0.62 + 0.11 * ph) * 0.87;   // v0.9.92 정말정말 어렵게 · v0.9.94 15% 완화
     for (let k = fbQueue.length - 1; k >= 0; k--) {   // 조금 뒤에 이어지는 공격(겹벽 등)
       fbQueue[k].t -= dt;
       if (fbQueue[k].t <= 0) { const f = fbQueue[k].f; fbQueue.splice(k, 1); f(); }
@@ -6933,7 +6933,7 @@
       fbSweep -= dt;
       fbSweepA += dt * (2.6 + ph * 1.0);
       fbSweepAcc += dt;
-      const sg = 0.085 - 0.012 * ph;
+      const sg = (0.085 - 0.012 * ph) / 0.87;
       while (fbSweepAcc >= sg) {
         fbSweepAcc -= sg;
         const a = Math.sin(fbSweepA) * 0.85;
@@ -6943,21 +6943,28 @@
     }
     fbShotT -= dt;
     if (fbShotT > 0) return;
-    const r = 15, gapW = player.r * (3.3 - 0.35 * ph);
+    const r = 15, gapW = player.r * (3.3 - 0.35 * ph) * 1.15;
     const fan = (n, spread, sp) => { for (let k = 0; k < n; k++) { const a = -spread + 2 * spread * k / (n - 1); fbShot(bx, by, sp * Math.sin(a), sp * Math.cos(a), r); } };
     const aimed = (n) => { for (let k = 0; k < n; k++) { const tx = player.x + (k - (n - 1) / 2) * 40, ty = groundY; const d = Math.hypot(tx - bx, ty - by); fbShot(bx, by, (tx - bx) / d * V * 1.2, (ty - by) / d * V * 1.2, r); } };
     const wall = (gx) => { for (let x = r; x < W; x += r * 2.15) if (Math.abs(x - gx) > gapW / 2) fbShot(x, g.y + g.h * 0.75, 0, V * 0.85, r); };
-    const gapX = () => Math.max(gapW, Math.min(W - gapW, player.x + (Math.random() < 0.5 ? -1 : 1) * W * (0.25 + Math.random() * 0.3)));   // 틈은 늘 내 자리에서 멀리
+    /* v0.9.94 못 피하는 패턴 없애기 — 벽 틈은 벽이 내려오는 동안 실제로 갈 수 있는 거리 안(70%)에 낸다 */
+    const reach = (fromX, yStart, vy) => Math.max(40, (groundY - yStart) / vy * PLAYER_MAX_SPEED * spdMul() * 0.7);
+    const gapNear = (fromX, rch) => { const d = Math.min(rch, W * 0.55) * (0.45 + Math.random() * 0.55) * (Math.random() < 0.5 ? -1 : 1);
+      let x = fromX + d; if (x < gapW || x > W - gapW) x = fromX - d; return Math.max(gapW, Math.min(W - gapW, x)); };
+    const gapX = () => gapNear(player.x, reach(player.x, g.y + g.h * 0.75, V * 0.85));
     const rain = (n) => { for (let k = 0; k < n; k++) fbShot(r + Math.random() * (W - 2 * r), g.y + g.h * 0.7, (Math.random() - 0.5) * 60, V * (0.8 + Math.random() * 0.35), r); };
-    const wall2 = () => { wall(gapX()); fbQueue.push({ t: 0.38 - 0.06 * ph, f: () => wall(gapX()) }); };
+    const wall2 = () => { const g1 = gapX(); wall(g1); const dt2 = 0.5 - 0.05 * ph;   // 두 번째 틈은 첫 틈에서 그 사이 갈 수 있는 거리 안
+      const g2 = gapNear(g1, PLAYER_MAX_SPEED * spdMul() * dt2 * 0.7); fbQueue.push({ t: dt2, f: () => wall(g2) }); };
+    /* 벽은 다른 탄과 겹치지 않는다(틈이 막히지 않게). 벽 차례면 회오리도 멈춘다 */
+    const W1 = () => { fbSweep = 0; wall(gapX()); }, W2 = () => { fbSweep = 0; wall2(); };
     const P = [
-      [() => fan(9, 0.75, V), () => { wall(gapX()); aimed(1); }, () => aimed(3), () => { fbSweep = 1.4; rain(4); }, () => rain(8), () => fan(11, 0.95, V * 1.05), () => wall2()],
-      [() => { wall(gapX()); fan(7, 0.6, V); }, () => { aimed(5); fbSweep = 1.6; }, () => wall2(), () => rain(11), () => { fan(13, 1.0, V); aimed(1); }, () => { rain(6); aimed(3); }],
-      [() => { wall2(); aimed(3); }, () => { fan(15, 1.05, V); fbSweep = 2.0; }, () => { rain(13); aimed(3); }, () => { wall(gapX()); fan(9, 0.7, V * 1.15); }, () => { aimed(7); rain(6); }, () => { wall2(); fbSweep = 1.6; }]
+      [() => fan(9, 0.75, V), () => { W1(); aimed(1); }, () => aimed(3), () => { fbSweep = 1.4; rain(4); }, () => rain(7), () => fan(11, 0.95, V * 1.05), () => W2()],
+      [() => W1(), () => { aimed(5); fbSweep = 1.6; }, () => W2(), () => rain(9), () => { fan(13, 1.0, V); aimed(1); }, () => { rain(6); aimed(3); }],
+      [() => { W2(); aimed(1); }, () => { fan(15, 1.05, V); fbSweep = 2.0; }, () => { rain(11); aimed(3); }, () => W1(), () => { aimed(7); rain(5); }, () => W2()]
     ][ph];
     P[fbStep % P.length]();
     fbStep++;
-    fbShotT = [0.75, 0.6, 0.48][ph];
+    fbShotT = [0.75, 0.6, 0.48][ph] / 0.87 + (fbQueue.length ? 0.35 : 0);   // 겹벽 뒤엔 숨 돌릴 틈
     burst(bx, by + 10, "#7a3cff", 8);
     if (!sfx("boing", 0.4)) beep(220, .05, "square", .03);
   }
