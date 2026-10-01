@@ -969,6 +969,8 @@
   #homeJobs #jobList.car .lvMini { display: flex; align-items: center; justify-content: center; gap: 6px; margin-top: -2px; }
   #homeJobs #jobList.car .lvMini b { font-size: 13px; font-weight: 900; color: #ffd23f; text-shadow: 0 1px 0 #4a2a10, 0 0 4px rgba(40,20,0,.8), 1px 0 0 #4a2a10, -1px 0 0 #4a2a10; }
   #homeJobs #jobList.car .lvMini i { position: relative; display: block; width: 74px; height: 8px; border-radius: 5px; background: rgba(30,20,10,.55); border: 1.5px solid #4a2a10; overflow: hidden; }
+  #homeJobs #jobList.car .augCard:not(.sel) .lvMini { display: none; }   /* v0.9.122 앞에 온(고른) 캐릭터만 */
+  #homeJobs #jobList.car .lvMini .lvMax { font-size: 12px; font-weight: 900; color: #fff; letter-spacing: 1px; padding: 0 8px; border-radius: 6px; background: linear-gradient(180deg, #ffb52e, #ff7a2e); border: 1.5px solid #4a2a10; }
   #homeJobs #jobList.car .lvMini em { position: absolute; left: 0; top: 0; bottom: 0; background: linear-gradient(180deg, #ffe07a, #ffb52e); }   /* v0.9.120 점 줄 없앰 */
   #homeJobs .carDots { display: flex; gap: 7px; justify-content: center; }
   #homeJobs .carDots i { width: 8px; height: 8px; border-radius: 50%; background: rgba(255,255,255,.35); }
@@ -1891,7 +1893,7 @@
   const elTitle = document.getElementById("overTitle");
   const coinNote = document.getElementById("coinNote");
 
-  const GAME_VERSION = "v0.9.121";
+  const GAME_VERSION = "v0.9.122";
   /* 제작사 스플래시(bamhobak friends 로고) — 2026-09-20 끔. 다시 켜려면 true */
   const SPLASH_USE = false;   // 코드를 고칠 때마다 뒤 두 자리를 올린다
   document.getElementById("ver").textContent = GAME_VERSION;
@@ -7951,9 +7953,13 @@
           const lv = chrLv(id), xp = lvData.cx[id] || 0, lo = CHR_XP[lv - 1], hi = CHR_XP[lv];
           const m = document.createElement("div"); m.className = "lvMini";
           const t = document.createElement("b"); t.textContent = "Lv " + lv;
-          const bar = document.createElement("i"); const f = document.createElement("em");
-          f.style.width = (hi ? Math.max(0, Math.min(100, (xp - lo) / (hi - lo) * 100)) : 100) + "%";
-          bar.appendChild(f); m.append(t, bar); card.appendChild(m);
+          if (!hi) { const mx = document.createElement("span"); mx.className = "lvMax"; mx.textContent = "MAX"; m.append(t, mx); }   // v0.9.122 최대 레벨은 막대 대신 MAX
+          else {
+            const bar = document.createElement("i"); const f = document.createElement("em");
+            f.style.width = Math.max(0, Math.min(100, (xp - lo) / (hi - lo) * 100)) + "%";
+            bar.appendChild(f); m.append(t, bar);
+          }
+          card.appendChild(m);
         }
         if (car && !jobOwned(id)) { card.classList.add("sil"); const n2 = card.querySelector(".nm2"); if (n2) n2.textContent = "???"; }
         if (lockJ && id !== "bangul") {
