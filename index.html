@@ -1875,7 +1875,7 @@
   const elTitle = document.getElementById("overTitle");
   const coinNote = document.getElementById("coinNote");
 
-  const GAME_VERSION = "v0.9.98";
+  const GAME_VERSION = "v0.9.99";
   /* 제작사 스플래시(bamhobak friends 로고) — 2026-09-20 끔. 다시 켜려면 true */
   const SPLASH_USE = false;   // 코드를 고칠 때마다 뒤 두 자리를 올린다
   document.getElementById("ver").textContent = GAME_VERSION;
@@ -6995,7 +6995,7 @@
     if (clearT >= D0 + DL && !clearHome) {
       clearHome = true; levelTime = 0; level = 1; zoneShown = 0;
       flash = 1;
-      popText(W / 2, H * 0.40, "🏡 무사히 지상으로!", "#ffffff", 28, 2.2);
+      popText(W / 2, H * 0.16, "🏡 무사히 지상으로!", "#ffffff", 28, 2.2);   // v0.9.99 얼굴을 가리지 않게 위로
     }
     if (clearT > D0 + DL + 2.6 && state === STATE.PLAY) { gameCleared = true; gameOver(); }   // v0.9.97 크게 자리 잡은 걸 잠깐 보여 준 뒤
   }
@@ -8502,7 +8502,7 @@
     heartEat = 0; lastHitAt = 0; monkHeartN = 0; lotusDone = false; lotusUntil = 0; mindSlowUntil = 0;
     topT = 0; topGiven = false; riseCd = 0; prevPY = 0; pjMoonN = 0; pjPicks = 0; todoDone = false;
     prophecy2 = null; proph2T = 0; daegilUsed = false; nextProph = null; nextShown = false;
-    fbStarted = false; fbIn = 0; fbSweep = 0; fbPhase = -1; clearT = -1; clearHome = false; gameCleared = false; fbQueue = []; fbSweepAcc = 0; clearLT = 0; landT0 = 0;
+    fbStarted = false; fbIn = 0; fbSweep = 0; fbPhase = -1; clearT = -1; clearHome = false; gameCleared = false; fbQueue = []; fbSweepAcc = 0; clearLT = 0; landT0 = 0; landBump = false;
     startAugPending = accOn(4) && !testMode; startAugNow = false; cloudT = 40 + Math.random() * 30; skillCd = 0; skillUntil = 0; bangIdle = 0;
     aug.blackhole = false; aug.legion = false; roidT = 0;
     aug.doveWhat = false; aug.doveFlock = 0; aug.doveFreq = 1;
@@ -15406,23 +15406,39 @@
     ctx.restore();
     return true;
   }
-  /* v0.9.97 지상에 내려온 뒤 — 캐릭터(정면 카드 그림)가 화면 아래로 커지며 크게 자리 잡는다 */
-  const LAND_IMG = {};
-  let landT0 = 0;
+  /* v0.9.99 지상에 내려온 뒤 — 우주복 낙하 그림 그대로 화면 쪽으로 날아와 얼굴이 화면에 '철퍼덕' 달라붙는다.
+     FALL_FACE = 그림 안 헬멧(얼굴) 가운데 자리(가로·세로 비율) */
+  const FALL_FACE = { bangul: [0.70, 0.60], powerj: [0.72, 0.58], fortune: [0.66, 0.62], levitator: [0.65, 0.68],
+                      fit: [0.62, 0.72], monk: [0.62, 0.65], full: [0.65, 0.62] };
+  let landT0 = 0, landBump = false;
   function drawLanded(now) {
-    const key = job === "powerp" ? (fullOwn ? "full" : "monk") : (JOB_IMG[job] || job);
-    let im = LAND_IMG[key];
-    if (!im) { im = LAND_IMG[key] = new Image(); im.src = "assets/" + key + "_right.png"; }
-    if (!im.complete || !im.naturalWidth) return false;
+    const key = job === "powerp" ? (fullOwn ? "full" : "monk") : job;
+    const im = FALL_IMG[key];
+    if (!im || !im.complete || !im.naturalWidth) return false;
     if (!landT0) landT0 = now;
-    const k = Math.min(1, (now - landT0) / 900), e = 1 - Math.pow(1 - k, 3);   // 0.9초 동안 부드럽게
-    const h1 = player.r * 3, h2 = H * 0.5;
-    const h = h1 + (h2 - h1) * e, w = h * im.naturalWidth / im.naturalHeight;
-    const x = player.x + (W / 2 - player.x) * e;
-    const yb = (player.y + player.r) + (H + h * 0.06 - (player.y + player.r)) * e;   // 발끝이 화면 아래에 닿게
+    const t = (now - landT0) / 1000, k = Math.min(1, t / 0.55), e = k * k;   // 빨라지며 다가온다
+    const f = FALL_FACE[key] || [0.65, 0.62];
+    const w0 = player.r * 4.2 * im.naturalWidth / im.naturalHeight, w1 = W * 2.1;
+    const w = w0 + (w1 - w0) * e, h = w * im.naturalHeight / im.naturalWidth;
+    const fx = player.x + (W / 2 - player.x) * e, fy = H * 0.45 + (H * 0.58 - H * 0.45) * e;
+    let sx = 1, sy = 1;
+    if (k >= 1) {                                   // 붙는 순간 납작해졌다가 살짝 출렁
+      if (!landBump) { landBump = true; shake = Math.max(shake, 16); if (!sfx("boing")) beep(180, .12, "square", .06); if (navigator.vibrate) navigator.vibrate(60); }
+      const b = t - 0.55, amp = Math.exp(-b * 6) * 0.12;
+      sx = 1 + amp * Math.cos(b * 22); sy = 1 - amp * Math.cos(b * 22);
+    }
     ctx.save();
-    ctx.drawImage(im, x - w / 2, yb - h, w, h);
+    ctx.translate(fx, fy);
+    ctx.rotate(Math.sin(now / 160) * 0.25 * (1 - e));
+    ctx.scale(sx, sy);
+    ctx.drawImage(im, -w * f[0], -h * f[1], w, h);
     ctx.restore();
+    if (k >= 1) {                                   // 유리에 눌린 자국 — 얼굴 둘레에 옅은 반사
+      ctx.save(); ctx.globalAlpha = 0.18;
+      ctx.strokeStyle = "#ffffff"; ctx.lineWidth = 6;
+      ctx.beginPath(); ctx.ellipse(fx - w * 0.06, fy - w * 0.1, w * 0.12, w * 0.05, -0.5, 0, 6.283); ctx.stroke();
+      ctx.restore();
+    }
     return true;
   }
   function drawPlayer(now) {
