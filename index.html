@@ -1876,7 +1876,7 @@
   const elTitle = document.getElementById("overTitle");
   const coinNote = document.getElementById("coinNote");
 
-  const GAME_VERSION = "v0.9.104";
+  const GAME_VERSION = "v0.9.105";
   /* 제작사 스플래시(bamhobak friends 로고) — 2026-09-20 끔. 다시 켜려면 true */
   const SPLASH_USE = false;   // 코드를 고칠 때마다 뒤 두 자리를 올린다
   document.getElementById("ver").textContent = GAME_VERSION;
@@ -3960,7 +3960,7 @@
       go: () => { aug.pierce = true; } },
     { id: "fly",        ic: "🪰", nm: "똥파리", ds: "맞을 때마다 똥파리가 나와 5초 동안 똥을 부순다",
       once: true, go: () => { aug.fly = true; } },
-    { id: "stone",      ic: "🗿", nm: "돌부처", ds: "1초 가만히 있으면 돌이 되어 무적(최대 5초) · 그동안 점수·아이템 없음",
+    { id: "stone",      ic: "🗿", nm: "돌부처", ds: "2초 가만히 있으면 돌이 되어 무적(최대 5초) · 그동안 점수·아이템 없음",
       once: true, go: () => { aug.stone = true; stoneT = 0; } },
     { id: "gacha",      ic: "🎰", nm: "뽑기", ds: "증강이 물음표로 나온다 · 대신 절반은 히든",
       once: true, go: () => { aug.gacha = true; } },
@@ -9371,7 +9371,7 @@
           stoneT = Math.min(stoneT, 0);
         } else {
           stoneT += dt;
-          if (!stoneOn && stoneT >= 1) {
+          if (!stoneOn && stoneT >= 2) {   // v0.9.105 1 → 2초
             stoneDur = 0;
             stoneOn = true;
             popText(player.x, player.y - 70, "🗿 돌부처", "#d9d9d9", 22);
@@ -14299,7 +14299,7 @@
     glass: "모든 점수 ×1.25, 몸(판정) ×1.15 (최대 3번)",
     pierce: "갤러그 총알이 똥 하나를 뚫고 계속 날아감",
     fly: "맞을 때마다 똥파리 1마리, 5초 동안 400px/s 로 가까운 똥을 쫓아 반경 18px 부숨",
-    stone: "1초 가만히 있으면 돌(무적, 최대 5초) · 풀린 뒤 1초는 다시 안 굳음 · 돌인 동안 점수·아이템·레벨 시계 멈춤",
+    stone: "2초 가만히 있으면 돌(무적, 최대 5초) · 풀린 뒤 1초는 다시 안 굳음 · 돌인 동안 점수·아이템·레벨 시계 멈춤",
     gacha: "이후 증강 카드가 물음표로 · 칸마다 50% 확률로 히든 증강에서 뽑음",
     snackBig: "간식 타임 동안 몸(판정) 1.5배 · 간식 증강(간식 연장·간식 대박·간식 폭우·왕뼈다귀·군단) 4개 이상",
     toilet: "달마다 증강 선택 2배(보름달 6번) · 하트로 맞으면 50% 확률로 즉사 · 하트 3개 이상 · 레벨 7 이하",
