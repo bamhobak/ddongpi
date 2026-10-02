@@ -10,7 +10,7 @@
 <link rel="apple-touch-icon" href="icon-192.png">
 <title>이피저피똥피</title>
 <link rel="preload" as="image" href="assets/logo.webp">
-<link rel="preload" as="image" href="assets/bg/title.webp">
+<link rel="preload" as="image" href="assets/bg/home_fortune.webp">
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ctext x='50' y='52' font-size='84' text-anchor='middle' dominant-baseline='central'%3E%F0%9F%92%A9%3C/text%3E%3C/svg%3E">
 <style>
   /* 나눔바른고딕 — 흔히 쓰는 한글 5,362자만 남겨 받아 둔 것(둘이 합쳐 426KB).
@@ -787,15 +787,15 @@
     /* v0.9.70 그림 아래 끝(개집)이 아래 탭에 가리지 않게 — 그림 높이를 탭 위 공간에 맞추고 아래를 탭 윗선에 붙인다. 넓은 화면의 옆 빈자리는 같은 그림을 덮어 채운다 */
     background:
       linear-gradient(rgba(10,11,16,.38), rgba(10,11,16,.38)),
-      url(assets/bg/title.webp) center bottom var(--tabH) / auto calc(100% - var(--tabH)) no-repeat,
-      url(assets/bg/title.webp) center top / cover no-repeat;
+      var(--hbg, url(assets/bg/title.webp)) center bottom var(--tabH) / auto calc(100% - var(--tabH)) no-repeat,
+      var(--hbg, url(assets/bg/title.webp)) center top / cover no-repeat;
   }
   @supports (width: max(1px, 1dvh)) {
     #startScreen {   /* 폭이 모자라면(짧은 화면) 폭에 맞춰 키운다 — 옆에 이음매가 안 보이게. 0.575 = 그림 가로/세로 */
       background:
         linear-gradient(rgba(10,11,16,.38), rgba(10,11,16,.38)),
-        url(assets/bg/title.webp) center bottom var(--tabH) / max(100%, calc((100dvh - var(--tabH)) * 0.575)) auto no-repeat,
-        url(assets/bg/title.webp) center top / cover no-repeat;
+        var(--hbg, url(assets/bg/title.webp)) center bottom var(--tabH) / max(100%, calc((100dvh - var(--tabH)) * 0.575)) auto no-repeat,
+        var(--hbg, url(assets/bg/title.webp)) center top / cover no-repeat;
     }
   }
   /* 화면 위쪽에 은은한 빛을 깔아 패널이 떠 보이게 한다 */
@@ -817,6 +817,13 @@
             mask-image: linear-gradient(180deg, transparent, #000);
   }
   #startScreen > * { position: relative; }
+  /* v0.9.128 캐릭터마다 다른 배경(Codex) — 바꿀 때 옛 그림을 위에 덮었다가 서서히 걷는다 */
+  #startScreen > #homeBgFade { position: absolute; inset: 0; pointer-events: none; opacity: 0;
+    background: linear-gradient(rgba(10,11,16,.38), rgba(10,11,16,.38)),
+      var(--hbgPrev) center bottom var(--tabH) / max(100%, calc((100dvh - var(--tabH)) * 0.575)) auto no-repeat,
+      var(--hbgPrev) center top / cover no-repeat; }
+  #startScreen > #homeBgFade.on { animation: hbgFade .45s ease-out forwards; }
+  @keyframes hbgFade { from { opacity: 1; } to { opacity: 0; } }
   /* ---- v0.9.49 하단 탭 — 탭마다 한 쪽(page), 아래 탭 줄은 고정 ---- */
   #startScreen { overflow: hidden !important; padding: 0 !important; justify-content: flex-start; }
   #startScreen > .page {
@@ -883,8 +890,8 @@
   #homeJobs #jobList.car img.ic { filter: drop-shadow(0 5px 5px rgba(30,20,10,.35)); }
   /* v0.9.66 넘기기 버튼·설명 칸 새 그림 (Codex: car_arrow · trait_panel) */
   #homeJobs .carArrow {
-    position: absolute; top: 50%; transform: translateY(-50%); z-index: 200; width: 46px; height: 46px; padding: 0; border: 0; border-radius: 50%;
-    background: url(assets/ui/car_arrow.webp) center / contain no-repeat; box-shadow: none; color: transparent; font-size: 0;
+    position: absolute; top: 50%; transform: translateY(-50%); z-index: 200; width: 38px; height: 52px; padding: 0; border: 0; border-radius: 0;
+    background: url(assets/ui/car_arrow2.webp) center / contain no-repeat;   /* v0.9.128 동그라미 없는 굵은 금색 화살표 (Codex) */ box-shadow: none; color: transparent; font-size: 0;
     filter: drop-shadow(0 3px 3px rgba(40,20,0,.35));
   }
   #homeJobs .carArrow.r:active { transform: translateY(-50%) scale(.9); }
@@ -961,6 +968,7 @@
     background: linear-gradient(180deg, rgba(120,140,255,.13), rgba(120,140,255,.04)); box-shadow: inset 0 0 0 1px rgba(150,170,255,.25); }
   .lvPick .lvPN { display: flex; align-items: center; gap: 8px; }
   .lvPick .lvPN b { font-size: 18px; font-weight: 900; color: var(--pnGold); text-shadow: 0 2px 0 rgba(0,0,0,.45); }
+  .lvPick .lvPN .pk { font-style: normal; font-size: 14px; font-weight: 900; color: #f1f3ff; text-shadow: 0 1px 0 rgba(0,0,0,.5); }
   .lvPick .lvPN small { font-size: 11px; font-weight: 800; color: #e2e5ff; padding: 2px 8px; border-radius: 999px; background: rgba(150,120,255,.32); }
   .lvPick .lvPN .lk { margin-left: auto; font-size: 11.5px; font-weight: 700; color: #8189c2; }
   .lvPick.lock { background: rgba(0,0,0,.22); box-shadow: inset 0 0 0 1px rgba(150,170,255,.1); padding: 9px 10px; }
@@ -971,20 +979,27 @@
   .lvPick.pop { animation: lvPopIn .55s ease-out; }
   @keyframes lvPopIn { 0% { transform: scale(.93); box-shadow: 0 0 0 0 rgba(255,216,107,.9); } 55% { transform: scale(1.03); box-shadow: 0 0 28px 6px rgba(255,216,107,.55); } 100% { transform: none; } }
   .lvChoice { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
-  button.lvOpt { position: relative; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 3px; min-height: 96px; box-sizing: border-box;
-    padding: 22px 8px 10px; border-radius: 12px; text-align: center; font-size: 12px; font-weight: 700; line-height: 1.35; word-break: keep-all;
-    background: linear-gradient(180deg, #2a2f78, #181b4c); border: 2px solid rgba(140,160,255,.45); box-shadow: 0 3px 0 #0b0d2a; color: var(--pnText); }
-  button.lvOpt:active { transform: translateY(2px); box-shadow: 0 1px 0 #0b0d2a; }
-  .lvOpt .ab { position: absolute; left: 7px; top: 6px; width: 20px; height: 20px; border-radius: 6px; font-style: normal; font-size: 12px; font-weight: 900; line-height: 20px;
-    color: #fff; background: linear-gradient(180deg, #62b0ff, #2b63e0); box-shadow: 0 1.5px 0 #10307a, inset 0 1px 0 rgba(255,255,255,.5); }
-  .lvOpt[data-ab="B"] .ab { background: linear-gradient(180deg, #cf96ff, #7c3fe0); box-shadow: 0 1.5px 0 #3d1a7a, inset 0 1px 0 rgba(255,255,255,.5); }
-  .lvOpt b { font-size: 14.5px; font-weight: 900; color: #fff; }
-  .lvOpt span { color: #c2c8f0; }
-  button.lvOpt.sel { background: linear-gradient(180deg, #6a4c12, #33240c); border-color: #ffd86b; color: #fff;
-    box-shadow: inset 0 0 0 1px #fff3b0, 0 0 16px rgba(255,200,60,.55), 0 3px 0 #3a2400; }
-  .lvOpt.sel b { color: var(--pnGold); } .lvOpt.sel span { color: #ffefc6; }
-  .lvOpt.sel::after { content: "✓"; position: absolute; right: -7px; top: -8px; width: 23px; height: 23px; border-radius: 50%; font-size: 14px; font-weight: 900; line-height: 23px;
-    color: #6b3300; background: linear-gradient(180deg, #fff3a8, #ffbe2e); box-shadow: 0 2px 0 #8a4a00, 0 0 8px rgba(255,210,80,.85); }
+  /* v0.9.128 고르기 카드 — 왼쪽 동그란 아이콘(A 보라 · B 파랑), 오른쪽 'A 이름' + 설명. 고른 쪽은 금빛 테두리 + 별 배지 */
+  button.lvOpt { position: relative; display: flex; align-items: center; gap: 6px; min-height: 74px; box-sizing: border-box; padding: 7px 7px 7px 6px; border-radius: 14px;
+    text-align: left; font-size: 11px; font-weight: 700; line-height: 1.32; letter-spacing: -.2px; word-break: keep-all; color: var(--pnText);
+    background: linear-gradient(180deg, #2b3290 0%, #1d2068 55%, #171a52 100%); border: 1.5px solid rgba(120,150,255,.55);
+    box-shadow: inset 0 1px 0 rgba(170,190,255,.35), 0 3px 0 #0a0c2a; }
+  button.lvOpt:active { transform: translateY(2px); box-shadow: inset 0 1px 0 rgba(170,190,255,.35), 0 1px 0 #0a0c2a; }
+  .lvOpt .med { flex-shrink: 0; width: 36px; height: 36px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 19px; line-height: 1;
+    background: radial-gradient(circle at 38% 32%, #e7b6ff, #9b45ff 45%, #4a1590 100%);
+    box-shadow: 0 0 0 2.5px #ffcf4a, 0 0 0 4px #7a4508, 0 2px 6px rgba(0,0,0,.5), inset 0 -4px 8px rgba(40,0,80,.55); }
+  .lvOpt[data-ab="B"] .med { background: radial-gradient(circle at 38% 32%, #b8e4ff, #3c8dff 45%, #12357e 100%); box-shadow: 0 0 0 2.5px #ffcf4a, 0 0 0 4px #7a4508, 0 2px 6px rgba(0,0,0,.5), inset 0 -4px 8px rgba(0,20,70,.55); }
+  .lvOpt .txt { display: flex; flex-direction: column; gap: 2px; min-width: 0; }
+  .lvOpt .ttl { font-size: 13.5px; letter-spacing: -.3px; font-weight: 900; color: #fff; line-height: 1.2; }
+  .lvOpt .ttl em { font-style: normal; font-size: 15px; margin-right: 4px; background: linear-gradient(180deg, #f2b8ff, #a86bff); -webkit-background-clip: text; background-clip: text; color: transparent; }
+  .lvOpt[data-ab="B"] .ttl em { background: linear-gradient(180deg, #f4ff8a, #8ee04a); -webkit-background-clip: text; background-clip: text; }
+  .lvOpt .txt span { color: #c5cbf2; }
+  button.lvOpt.sel { background: linear-gradient(180deg, #4a3a1a, #241a0c); border-color: #ffd45a;
+    box-shadow: inset 0 0 0 1px rgba(255,240,170,.75), 0 0 14px rgba(255,195,50,.6), 0 3px 0 #3a2400; }
+  .lvOpt.sel .ttl { color: #fff; } .lvOpt.sel .txt span { color: #ffeccc; }
+  .lvOpt.sel::after { content: "★"; position: absolute; right: -6px; top: -7px; width: 21px; height: 21px; border-radius: 50%; font-size: 13px; line-height: 21px; text-align: center;
+    color: #5a2a00; background: radial-gradient(circle at 40% 35%, #fff4a8, #ffc22e 70%); box-shadow: 0 0 0 1.5px #7a4508, 0 0 8px rgba(255,210,80,.9); }
+  .lvChoice:not(.wait) .lvOpt:not(.sel) { opacity: .78; }
   .lvChoice.wait .lvOpt { animation: lvWaitB 1.4s ease-in-out infinite; }
   .lvChoice.wait .lvOpt + .lvOpt { animation-delay: .7s; }
   @keyframes lvWaitB { 50% { border-color: #ffd86b; box-shadow: 0 0 12px rgba(255,210,80,.45), 0 3px 0 #0b0d2a; } }
@@ -994,7 +1009,7 @@
   /* 창 — 판은 그대로 두고 안쪽(lpBody)만 굴린다. 제목은 금색 리본 */
   .lvPop { position: fixed; inset: 0; z-index: 9990; display: none; align-items: center; justify-content: center; background: rgba(4,5,22,.72); }
   .lvPop.on { display: flex; }
-  .lvPop .lpIn { position: relative; width: min(92vw, 370px); box-sizing: border-box; display: flex; flex-direction: column; gap: 10px; padding: 36px 16px 16px; margin-top: 18px;
+  .lvPop .lpIn { position: relative; width: min(95vw, 384px); box-sizing: border-box; display: flex; flex-direction: column; gap: 10px; padding: 36px 14px 16px; margin-top: 18px;
     color: var(--pnText); border-style: solid; border-width: 0; border-color: transparent; border-image: url(assets/ui/panel_navy.webp) 66 fill / 33px / 0 stretch;
     filter: drop-shadow(0 12px 26px rgba(0,0,0,.6)); animation: lpShow .22s ease-out; }
   @keyframes lpShow { from { transform: scale(.9); opacity: 0; } }
@@ -1599,6 +1614,8 @@
     </div>
 
     <div id="startScreen" class="screen onHome">
+      <div id="homeBgFade"></div>
+      <script>/* v0.9.128 첫 화면부터 고른 캐릭터의 배경 (기본 루나) */ try { var hj = localStorage.getItem("epjpddongpi_job") || "fortune"; if (["bangul","fit","powerj","levitator","powerp","fortune"].indexOf(hj) >= 0) document.getElementById("startScreen").style.setProperty("--hbg", "url(assets/bg/home_" + hj + ".webp)"); } catch (e) {}</script>
       <div id="ver"></div>
       <button id="meBtn" aria-label="내 정보"><b id="meLv">Lv1</b><span id="meNm">-</span></button>
       <div id="coinBox" title="모은 코인">🪙 0</div>
@@ -1994,7 +2011,7 @@
   const elTitle = document.getElementById("overTitle");
   const coinNote = document.getElementById("coinNote");
 
-  const GAME_VERSION = "v0.9.127";
+  const GAME_VERSION = "v0.9.128";
   /* 제작사 스플래시(bamhobak friends 로고) — 2026-09-20 끔. 다시 켜려면 true */
   const SPLASH_USE = false;   // 코드를 고칠 때마다 뒤 두 자리를 올린다
   document.getElementById("ver").textContent = GAME_VERSION;
@@ -3399,6 +3416,15 @@
       4: { A: "전화위복 — 나쁜 예언 동안 점수 +30%", B: "액막이 — 나쁜 예언 확률 절반" },
       5: { A: "대길 — 판마다 한 번, 좋은 예언 둘을 동시에 10초", B: "천기누설 — 나쁜 예언 동안 똥 떨어질 자리가 보임" }
     }
+  };
+  /* v0.9.128 능력 고르기 카드의 동그란 아이콘 — [A, B] */
+  const CHR_PERK_IC = {
+    bangul:    { 2: ["⏱", "💨"], 3: ["🧼", "🧽"], 4: ["🫧", "🛡"], 5: ["🏠", "🛁"] },
+    fit:       { 2: ["💖", "💯"], 3: ["🥛", "🔥"], 4: ["🛡", "❤"], 5: ["💥", "💪"] },
+    powerj:    { 2: ["🃏", "🎲"], 3: ["📅", "⏳"], 4: ["🌙", "🕔"], 5: ["📝", "🌃"] },
+    levitator: { 2: ["📜", "⛰"], 3: ["🪶", "👣"], 4: ["🔥", "☁"], 5: ["🌀", "🌪"] },
+    powerp:    { 2: ["🍃", "⭐"], 3: ["✨", "🐢"], 4: ["💗", "🌟"], 5: ["🪷", "🤲"] },
+    fortune:   { 2: ["👁", "⌛"], 3: ["🍀", "⚡"], 4: ["☯", "🧿"], 5: ["🎊", "🔭"] }
   };
   /* 오늘의 운세(루나 Lv3 A) — 날마다(한국 날짜) 하나 */
   const DAILY = ["별 점수 +10%", "코인 +10%", "아이템 +5%", "이동 속도 +3%", "간식 타임 +0.5초"];
@@ -7894,13 +7920,24 @@
     if (!jobOwned(job)) { const d = document.createElement("div"); d.textContent = "🔒 아직 열리지 않은 캐릭터"; const d2 = document.createElement("div"); d2.textContent = "여는 법 — " + JOBS[job].needUnlock; homeTraits.append(d, d2); return; }
     for (const line of jobTraitLines(JOBS[job])) { const d = document.createElement("div"); d.textContent = line; homeTraits.appendChild(d); }
   }
+  /* v0.9.128 캐릭터마다 다른 메인 배경 */
+  const HOME_BG = ["bangul", "fit", "powerj", "levitator", "powerp", "fortune"];
+  let hbgCur = getComputedStyle(document.getElementById("startScreen")).getPropertyValue("--hbg").trim();
+  function homeBgSet() {
+    const ss = document.getElementById("startScreen"), fd = document.getElementById("homeBgFade");
+    const u = HOME_BG.includes(job) ? "url(assets/bg/home_" + job + ".webp)" : "url(assets/bg/title.webp)";
+    if (u === hbgCur) return;
+    if (hbgCur && fd) { fd.style.setProperty("--hbgPrev", hbgCur); fd.classList.remove("on"); void fd.offsetWidth; fd.classList.add("on"); }
+    ss.style.setProperty("--hbg", u); hbgCur = u;
+  }
+  window.addEventListener("load", () => { for (const k of HOME_BG) { const im = new Image(); im.src = "assets/bg/home_" + k + ".webp"; } });   // 넘길 때 깜빡이지 않게 미리 받아 둔다
   function carSet(id) {                      // 고른 캐릭터를 바꾼다(다시 그리지 않는다)
     if (id === job || !JOBS[id]) return;
     idleStop();
     job = id;
     if (jobOwned(job)) try { localStorage.setItem(LS_JOB, job); } catch (e) {}   // 잠긴 캐릭터는 구경만 — 저장하지 않는다
     for (const c of jobList.children) c.classList.toggle("sel", c.dataset.job === job);
-    carInfo();
+    carInfo(); homeBgSet();
   }
   const carCards = () => [...jobList.children];
   const carRO = new ResizeObserver(() => carDraw());   // v0.9.124 방울이일 때만 로고가 올라가던 것 — 글꼴이 늦게 와 카드 키가 바뀌어도 고리를 그대로 두던 탓
@@ -8037,6 +8074,7 @@
     carW = jobList.clientWidth; carCenter(); carFit();
   }).observe(document.getElementById("homeJobs"));   // 가려져 있다 보일 때·화면 돌릴 때
   function renderPick() {
+    homeBgSet();
     document.getElementById("meLv").textContent = "Lv" + accLv();   // v0.9.124 왼쪽 위 칩 — 판이 끝나 레벨이 올랐을 수 있다
     if (jobLocked()) job = "bangul";          // 맨몸대결·똥탑등반 — 탭 글자부터 방울이로
     if (petLocked()) { pet = "none"; petView = "none"; }
@@ -8460,6 +8498,7 @@
       if (lvJustOpen === j + ":" + l) { row.classList.add("pop"); lvJustOpen = ""; }
       const h = document.createElement("div"); h.className = "lvPN";            // v0.9.126 Lv 숫자 · 꼬리표 · (잠김이면) 남은 경험치
       const hb = document.createElement("b"); hb.textContent = "Lv" + l + (l === 5 ? " ⭐" : ""); h.appendChild(hb);
+      if (cl >= l && open) { const t = document.createElement("i"); t.className = "pk"; t.textContent = "능력 선택"; h.appendChild(t); }
       if (l === 3) { const t = document.createElement("small"); t.textContent = "모든 캐릭터에 적용"; h.appendChild(t); }
       row.appendChild(h);
       if (cl >= l && !open) {                    // 레벨은 됐다 — 해금 버튼
@@ -8482,9 +8521,13 @@
       for (const ab of ["A", "B"]) {
         const b = document.createElement("button"); b.className = "lvOpt" + (cur === ab ? " sel" : ""); b.dataset.ab = ab;
         const t = P[l][ab], k = t.indexOf(" — ");                        // "이름 — 설명" 이면 이름을 크게
-        const ib = document.createElement("i"); ib.className = "ab"; ib.textContent = ab; b.appendChild(ib);
-        if (k > 0) { const nb = document.createElement("b"); nb.textContent = t.slice(0, k); b.appendChild(nb); }
-        const ds = document.createElement("span"); ds.textContent = k > 0 ? t.slice(k + 3) : t; b.appendChild(ds);
+        const md = document.createElement("i"); md.className = "med"; md.textContent = ((CHR_PERK_IC[j] || {})[l] || ["✨", "✨"])[ab === "A" ? 0 : 1];
+        const tx = document.createElement("div"); tx.className = "txt";
+        const tt = document.createElement("div"); tt.className = "ttl";
+        const em = document.createElement("em"); em.textContent = ab; tt.appendChild(em);
+        tt.appendChild(document.createTextNode(k > 0 ? t.slice(0, k) : ""));
+        const ds = document.createElement("span"); ds.textContent = k > 0 ? t.slice(k + 3) : t;
+        tx.append(tt, ds); b.append(md, tx);
         b.addEventListener("click", () => {
           if (cur === ab) return;
           (lvData.pick[j] = lvData.pick[j] || {})[l] = ab; lvSave();
