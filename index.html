@@ -1215,6 +1215,8 @@
   .lvRow .lvLs { font-size: 11px; font-weight: 700; color: #a9b1e4; }
   .lvRow:not(.on) .lvLs { color: #6d76ad; }
   #homeJobs #jobList.car .augCard.sil .nm2 { min-width: 150px; }   /* v0.9.136 잠긴 캐릭터 '???' 이름판도 다른 이름판 폭으로 — 짧아서 떠 보였다 */
+  #pgShop #shopCoins, #pgShop .shopSub { display: none; }   /* v0.9.147 상점 — 코인 줄·'펫 — 사 두면…' 줄 뺌 (코인은 왼쪽 위에 늘 보인다) */
+  #pgShop #shopList:empty { display: none; }
   #pgBook #bookCount { display: none; }   /* v0.9.146 '쓸 수 있는 증강 n/47' 줄은 뺐다 */
   /* v0.9.145 도감 설명칸은 아래에 떠 있게 — 증강이 많아 스크롤해도 늘 보인다 */
   #pgBook #bookDesc { position: sticky; bottom: 0; z-index: 3; margin-top: auto; filter: drop-shadow(0 -6px 14px rgba(0,0,0,.55)); }
@@ -2143,7 +2145,7 @@
   const elTitle = document.getElementById("overTitle");
   const coinNote = document.getElementById("coinNote");
 
-  const GAME_VERSION = "v0.9.146";
+  const GAME_VERSION = "v0.9.147";
   /* 제작사 스플래시(bamhobak friends 로고) — 2026-09-20 끔. 다시 켜려면 true */
   const SPLASH_USE = false;   // 코드를 고칠 때마다 뒤 두 자리를 올린다
   document.getElementById("ver").textContent = GAME_VERSION;
