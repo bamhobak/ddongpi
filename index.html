@@ -1101,14 +1101,14 @@
   #homeJobs .carDots i { width: 8px; height: 8px; border-radius: 50%; background: rgba(255,255,255,.35); }
   #homeJobs .carDots i.on { background: #ffd23f; box-shadow: 0 0 6px rgba(255,210,63,.8); }
   #homeTraits {
-    width: 100%; max-width: 340px; min-height: 92px; box-sizing: border-box; padding: 19px 30px 29px; margin-top: 14px;   /* v0.9.120 판 안쪽 크림색 칸(위 9%·아래 15% 테두리) 가운데에 글이 오게 */ position: relative;
+    width: 100%; max-width: 340px; min-height: 92px; box-sizing: border-box; padding: 22px 30px 22px; margin-top: 14px;   /* v0.9.120 판 안쪽 크림색 칸(위 9%·아래 15% 테두리) 가운데에 글이 오게 */ position: relative;
     border-style: solid; border-width: 0; border-color: transparent; border-image: url(assets/ui/panel_navy.webp) 66 fill / 30px / 0 stretch;   /* v0.9.126 크림 판 → 남색 금테 */
     color: #f1f3ff; text-shadow: 0 1px 2px rgba(0,0,0,.55); font-size: 13.5px; font-weight: 700; line-height: 1.5; text-align: center;
     display: flex; flex-direction: column; justify-content: center; gap: 1px;
   }
   #homeTraits::before { content: ""; position: absolute; left: 50%; top: -19px; width: 108px; height: 36px; transform: translateX(-50%); background: url(assets/ui/panel_orn.webp) center / contain no-repeat; filter: drop-shadow(0 2px 3px rgba(0,0,0,.45)); }
   #homeJobs .carWrap.off .carArrow, #homeJobs .carDots.off, #homeTraits.off { display: none; }
-  @media (max-height: 700px) { #homeTraits { font-size: 12px; min-height: 76px; padding: 16px 28px 25px; margin-top: 8px; } }
+  @media (max-height: 700px) { #homeTraits { font-size: 12px; min-height: 76px; padding: 18px 28px 18px; margin-top: 8px; } }
   @media (max-height: 760px) { #pgHome h1 img.ttl { width: min(36vw, 150px) !important; } #pgHome #jobList img.ic { height: 70px; } }
   /* 쪽 제목 — 리본 */
   .pgTitle {
@@ -1200,7 +1200,7 @@
   @media (max-height: 760px) { #startScreen > #pgHome { --homeTop: 72px; } }
   /* ── v0.9.131 시작하기 — 글자까지 그려 넣은 버튼 한 장(Codex btn_start) · v0.9.132 장식 없는 심플한 판, 글자 작게 ── */
   #startScreen #pgHome #btnStart { width: 190px; min-width: 0; height: 55px !important; padding: 0; margin: 0;
-    border: 0; border-image: none; border-radius: 0; box-shadow: none; background: url(assets/ui/btn_start.webp?3) center / contain no-repeat;
+    border: 0; border-image: none; border-radius: 0; box-shadow: none; background: url(assets/ui/btn_start.webp?4) center / contain no-repeat;
     color: transparent; font-size: 0 !important; text-shadow: none; animation: none; filter: drop-shadow(0 3px 4px rgba(0,0,0,.35)); }
   #startScreen #pgHome #btnStart:active { transform: translateY(2px) scale(.97); }
   /* v0.9.132 보유 중 — 버튼 말고 글자 표시(눌릴 것처럼 보이지 않게) */
@@ -2086,7 +2086,7 @@
   const elTitle = document.getElementById("overTitle");
   const coinNote = document.getElementById("coinNote");
 
-  const GAME_VERSION = "v0.9.132";
+  const GAME_VERSION = "v0.9.133";
   /* 제작사 스플래시(bamhobak friends 로고) — 2026-09-20 끔. 다시 켜려면 true */
   const SPLASH_USE = false;   // 코드를 고칠 때마다 뒤 두 자리를 올린다
   document.getElementById("ver").textContent = GAME_VERSION;
