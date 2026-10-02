@@ -1196,12 +1196,16 @@
   #optDev button { --bh: 38px; height: var(--bh); box-sizing: border-box; min-width: 120px; border-style: solid; border-color: transparent; border-radius: 0; box-shadow: none; background: none;
     border-width: 0 calc(var(--bh) / 2); border-image: url(assets/ui/btn_blue.webp) 0 60 fill / 0 calc(var(--bh) / 2) / 0 stretch;
     padding: 0 4px calc(var(--bh) * .08); font-size: 13.5px; font-weight: 800; color: #fff; text-shadow: 0 1px 2px rgba(0,50,110,.65); }
-  #startScreen > #pgHome { justify-content: flex-start !important; padding-top: calc(var(--homeTop, 70px) + env(safe-area-inset-top)) !important; }
-  /* ── v0.9.131 시작하기 — 글자까지 그려 넣은 금테 보석 버튼 한 장(Codex btn_start) ── */
-  #startScreen #pgHome #btnStart { width: 264px; min-width: 0; height: 72px !important; padding: 0; margin: 0;
-    border: 0; border-image: none; border-radius: 0; box-shadow: none; background: url(assets/ui/btn_start.webp?1) center / contain no-repeat;
-    color: transparent; font-size: 0 !important; text-shadow: none; animation: glowY 3.4s ease-in-out infinite; }
+  #startScreen > #pgHome { justify-content: flex-start !important; padding-top: calc(var(--homeTop, 100px) + env(safe-area-inset-top)) !important; }   /* v0.9.132 70 → 100 조금 내림 */
+  @media (max-height: 760px) { #startScreen > #pgHome { --homeTop: 72px; } }
+  /* ── v0.9.131 시작하기 — 글자까지 그려 넣은 버튼 한 장(Codex btn_start) · v0.9.132 장식 없는 심플한 판, 글자 작게 ── */
+  #startScreen #pgHome #btnStart { width: 190px; min-width: 0; height: 55px !important; padding: 0; margin: 0;
+    border: 0; border-image: none; border-radius: 0; box-shadow: none; background: url(assets/ui/btn_start.webp?3) center / contain no-repeat;
+    color: transparent; font-size: 0 !important; text-shadow: none; animation: none; filter: drop-shadow(0 3px 4px rgba(0,0,0,.35)); }
   #startScreen #pgHome #btnStart:active { transform: translateY(2px) scale(.97); }
+  /* v0.9.132 보유 중 — 버튼 말고 글자 표시(눌릴 것처럼 보이지 않게) */
+  .shopItem button.own { border: 0 !important; border-image: none !important; background: none !important; box-shadow: none !important; height: auto; min-width: 84px; padding: 0;
+    color: #ffd86b !important; font-size: 13.5px; font-weight: 900; letter-spacing: .5px; text-shadow: 0 1px 2px rgba(0,0,0,.7) !important; cursor: default; opacity: 1 !important; }
   /* 옵션 — 예전 설정 창의 내용 */
   #pgOpt #optRow { display: flex; flex-direction: column; align-items: center; gap: 14px; }
   #pgOpt .setLbl { font-size: 13px; color: #9fb4d0; margin-bottom: -6px; }
@@ -2082,7 +2086,7 @@
   const elTitle = document.getElementById("overTitle");
   const coinNote = document.getElementById("coinNote");
 
-  const GAME_VERSION = "v0.9.131";
+  const GAME_VERSION = "v0.9.132";
   /* 제작사 스플래시(bamhobak friends 로고) — 2026-09-20 끔. 다시 켜려면 true */
   const SPLASH_USE = false;   // 코드를 고칠 때마다 뒤 두 자리를 올린다
   document.getElementById("ver").textContent = GAME_VERSION;
@@ -8184,6 +8188,7 @@
           det.addEventListener("click", e => { e.stopPropagation(); beep(800, .04, "triangle", .04); openChr(id); });
           m.appendChild(det);                            // v0.9.129 경험치 막대 바로 오른쪽에
         }
+        if (car && !jobOwned(id)) { const ph = document.createElement("div"); ph.className = "lvMini"; ph.style.visibility = "hidden"; card.appendChild(ph); }   // v0.9.132 잠긴 캐릭터도 레벨 줄 자리만큼 — 설명판·시작 버튼이 위로 올라가지 않게
         if (car && !jobOwned(id)) { card.classList.add("sil"); const n2 = card.querySelector(".nm2"); if (n2) n2.textContent = "???"; }
         if (lockJ && id !== "bangul") {
           card.classList.add("locked");
@@ -8809,7 +8814,7 @@
       const sp = document.createElement("span"); sp.textContent = P.ds;
       st.append(b, sp);
       const btn = document.createElement("button");
-      if (own) { btn.className = "own"; btn.textContent = "보유"; btn.disabled = true; }
+      if (own) { btn.className = "own"; btn.textContent = "보유 중"; btn.disabled = true; }
       else {
         btn.className = coins >= PET_PRICE ? "buy" : "";
         btn.textContent = "🪙 " + PET_PRICE;
