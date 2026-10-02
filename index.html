@@ -854,7 +854,7 @@
   }
   #tabBar button.on { justify-content: flex-end; padding-bottom: 8px; }
   #tabBar button.on img { transform: translateY(-14px) scale(1.28); }
-  #tabBar button.on span { display: block; margin-top: -10px; color: #ffe27a; }
+  #tabBar button.on span { display: none; }   /* v0.9.137 탭 글자 없이 그림만 */
   #tabBar button.home img { width: 50px; height: 50px; }
   #tabBar button:active img { transform: translateY(-2px) scale(.94); }
   #tabBar button.on:active img { transform: translateY(-14px) scale(1.2); }
@@ -2109,7 +2109,7 @@
   const elTitle = document.getElementById("overTitle");
   const coinNote = document.getElementById("coinNote");
 
-  const GAME_VERSION = "v0.9.136";
+  const GAME_VERSION = "v0.9.137";
   /* 제작사 스플래시(bamhobak friends 로고) — 2026-09-20 끔. 다시 켜려면 true */
   const SPLASH_USE = false;   // 코드를 고칠 때마다 뒤 두 자리를 올린다
   document.getElementById("ver").textContent = GAME_VERSION;

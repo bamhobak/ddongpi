@@ -86,7 +86,7 @@ def gen(n, k):
     cmd = [sys.executable, str(ROOT / "tools/gen_codex.py"), name, prompt, "--ref", *refs,
            "--n", str(k), "--jobs", str(k), "--bg", "opaque", "--raw"]
     subprocess.run(cmd, cwd=ROOT, check=False)
-    return sorted((ROOT / "assets/_gen").glob(name + "_*.png"))
+    return sorted(p for p in (ROOT / "assets/_gen").glob(name + "_*.png") if not p.stem.endswith("_raw"))
 
 
 def main():
