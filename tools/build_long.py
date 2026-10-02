@@ -1,0 +1,62 @@
+# -*- coding: utf-8 -*-
+"""
+긴 배경(assets/_gen/long/strip.png)을 게임용 조각으로 자르고, index.html 의 LONG 상수를 새로 쓴다.
+
+  python tools/build_long.py
+
+- 조각: assets/bg/long/cNN.webp — 아래(꽃밭)부터 CH px 씩. 마지막 조각은 남은 만큼.
+- 상수: LONG_H(전체 높이) · LONG_CH(조각 높이) · LONG_N(조각 수) · LONG_ANCH(스테이지마다 그 칸 한가운데, 아래에서 잰 px)
+  게임은 스테이지 k 의 한가운데 시각(k-0.5)에 화면 가운데가 LONG_ANCH[k-1] 에 오도록 그림을 내린다.
+"""
+import pathlib, re, sys
+from PIL import Image
+
+ROOT = pathlib.Path(__file__).resolve().parent.parent
+LONG = ROOT / "assets/_gen/long"
+OUT = ROOT / "assets/bg/long"
+sys.path.insert(0, str(ROOT / "tools"))
+from gen_long import TH, OVER, build_strip      # 칸 크기·이어 붙이기는 gen_long 과 같게
+
+CH = 1024
+Q = 74
+
+
+def main():
+    build_strip()
+    strip = Image.open(LONG / "strip.png").convert("RGB")
+    H = strip.height
+    # 칸마다 아래에서 잰 한가운데 — build_strip 과 같은 셈
+    anch, top = [TH / 2], TH
+    n = 2
+    while (LONG / ("tile_%02d.png" % n)).exists():
+        dy = int((LONG / ("tile_%02d.dy" % n)).read_text())
+        y0 = TH - OVER + dy
+        anch.append(top + y0 - TH / 2)
+        top += y0
+        n += 1
+    assert abs(top - H) < 2, (top, H)
+    OUT.mkdir(parents=True, exist_ok=True)
+    for old in OUT.glob("c*.webp"):
+        old.unlink()
+    k, total = 0, 0
+    while k * CH < H:
+        b0, b1 = k * CH, min(H, (k + 1) * CH)            # 아래에서 잰 범위
+        piece = strip.crop((0, H - b1, strip.width, H - b0))
+        p = OUT / ("c%02d.webp" % k)
+        piece.save(p, quality=Q, method=6)
+        total += p.stat().st_size
+        k += 1
+    print("조각 %d개 · %.0fKB · 높이 %d · 칸 %d" % (k, total / 1024, H, len(anch)))
+    P = ROOT / "index.html"
+    s = P.read_text(encoding="utf-8")
+    new = ("/*LONG-BEGIN*/ const LONG_H = %d, LONG_CH = %d, LONG_N = %d, LONG_ANCH = [%s]; /*LONG-END*/"
+           % (H, CH, k, ", ".join(str(round(a)) for a in anch)))
+    s2, cnt = re.subn(r"/\*LONG-BEGIN\*/.*?/\*LONG-END\*/", new, s, flags=re.S)
+    if cnt != 1:
+        sys.exit("index.html 에 LONG 표시가 없다")
+    P.write_bytes(s2.encode("utf-8"))
+    print(new)
+
+
+if __name__ == "__main__":
+    main()

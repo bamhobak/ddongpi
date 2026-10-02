@@ -2109,7 +2109,7 @@
   const elTitle = document.getElementById("overTitle");
   const coinNote = document.getElementById("coinNote");
 
-  const GAME_VERSION = "v0.9.137";
+  const GAME_VERSION = "v0.9.138";
   /* 제작사 스플래시(bamhobak friends 로고) — 2026-09-20 끔. 다시 켜려면 true */
   const SPLASH_USE = false;   // 코드를 고칠 때마다 뒤 두 자리를 올린다
   document.getElementById("ver").textContent = GAME_VERSION;
@@ -3093,8 +3093,23 @@
      2026-09-22 18장 전부 방울이 그림체(부드러운 테두리·파스텔)로 다시 그렸다 — OpenAI, 2~18 은 tools/gen_zones.py
      (tools/gen_sprite.py --bg opaque --raw --size 960x2304). 레벨이 흐르면 그림 아래→위로 올라가므로
      맨 아래에만 꽃 핀 잔디 언덕을 두고 위로 갈수록 하늘이 짙어진다. */
-  const ZONE_IMG = [];
-  for (let zi = 0; zi < 18; zi++) {
+  /* v0.9.138 한 장처럼 이어지는 긴 배경 — 꽃밭부터 똥대장네 집까지 스테이지마다 한 칸씩 이어 그린 그림(Codex, tools/gen_long.py)을
+     tools/build_long.py 가 아래부터 LONG_CH px 조각(assets/bg/long/cNN.webp)으로 잘라 둔다. 스테이지 k 의 한가운데 시각(k-0.5)에
+     화면 가운데가 LONG_ANCH[k-1](아래에서 잰 px)에 오도록 레벨 시계를 따라 쭉 내려온다 — 지대마다 그림을 겹쳐 녹이던 방식은 뺐다. */
+  /*LONG-BEGIN*/ const LONG_H = 23409, LONG_CH = 1024, LONG_N = 23, LONG_ANCH = [850, 2130, 3410, 4690, 5970, 7250, 8500, 9756, 11036, 12316, 13596, 14876, 16156, 17436, 18716, 19999, 21279, 22559]; /*LONG-END*/
+  const LONG_IMG = [];
+  function longLoad(i) {
+    if (i < 0 || i >= LONG_N || LONG_IMG[i] !== undefined) return;
+    LONG_IMG[i] = null;
+    const im = new Image();
+    im.onload = () => { LONG_IMG[i] = im; };
+    im.onerror = () => { LONG_IMG[i] = undefined; };
+    im.src = "assets/bg/long/c" + (i < 10 ? "0" : "") + i + ".webp?" + LONG_H;
+  }
+  for (let i = 0; i < 3; i++) longLoad(i);                                   // 처음 꽃밭 부분은 바로
+  window.addEventListener("load", () => { let i = 3; const nx = () => { if (i >= LONG_N) return; longLoad(i++); setTimeout(nx, 250); }; nx(); });
+  const ZONE_IMG = [];   // 옛 지대 그림 — 긴 배경이 없을 때(LONG_N 0)만 받는다
+  if (!LONG_N) for (let zi = 0; zi < 18; zi++) {
     const bi = new Image(), k = zi;
     bi.onload = () => { ZONE_IMG[k] = bi; };
     bi.src = "assets/bg/zone" + (zi + 1 < 10 ? "0" : "") + (zi + 1) + ".webp";
@@ -4467,7 +4482,7 @@
   const ART_WAIT_MAX = 8000;
   function startArtReady() {             // 이 직업 제 그림(sprSet 은 없으면 백수로 대신하므로 직접 본다)과 첫 배경
     const own = dogMode && DOG_SPRS[job] ? DOG_SPRS[job].ground : JOB_SPRS[job];
-    return (!own || !!own.right.img) && !!ZONE_IMG[zoneIdx()];
+    return (!own || !!own.right.img) && longReady();
   }
   function startArtWaiting(now) { return startBeat && now - pauseAt < ART_WAIT_MAX && !startArtReady(); }
   /* 방울이 전용 — 목숨 대신 오염도로 버틴다. 0 에서 시작해 맞을 때마다 DIRT_HIT 씩
@@ -15132,6 +15147,36 @@
      맨 위(그림의 아래쪽이 보이는 자리)에서 시작해 1 일 때 맨 아래까지 내려온다.
      되돌아가는 지점은 지대가 바뀌며 두 그림이 겹쳐 녹는 순간이라 보이지 않는다. */
   const ZONE_FADE = 0.5;   // 다음 지대 그림이 겹쳐 오르는 구간 — 레벨의 뒤 절반
+  /* 지금 화면 아래 끝이 긴 그림의 어디(아래에서 잰 px)인지 — 레벨 시계(t = levelTime/lvSec)를 따라 */
+  function longOff(t, vh) {
+    const lo = vh / 2, hi = Math.max(lo, LONG_H - vh / 2), n = LONG_ANCH.length;
+    let c;
+    if (!n) c = lo;
+    else if (t <= 0.5) c = lo + (Math.max(lo, LONG_ANCH[0]) - lo) * Math.max(0, t) / 0.5;
+    else if (t >= n - 0.5) c = LONG_ANCH[n - 1];
+    else { const k = Math.floor(t - 0.5), f = t - 0.5 - k; c = LONG_ANCH[k] + (LONG_ANCH[k + 1] - LONG_ANCH[k]) * f; }
+    return Math.max(lo, Math.min(hi, c)) - vh / 2;
+  }
+  function longReady() {
+    if (!LONG_N) return true;
+    const vh = H * 960 / W, off = longOff(clearHome ? 0 : levelTime / lvSec(), vh);
+    for (let i = Math.floor(off / LONG_CH); i <= Math.min(LONG_N - 1, Math.floor((off + vh) / LONG_CH)); i++) if (!LONG_IMG[i]) { longLoad(i); return false; }
+    return true;
+  }
+  function drawLong(t) {
+    if (!LONG_N) return false;
+    const sc = W / 960, vh = H / sc, off = longOff(t, vh);
+    const i0 = Math.max(0, Math.floor(off / LONG_CH)), i1 = Math.min(LONG_N - 1, Math.floor((off + vh) / LONG_CH));
+    let all = true;
+    for (let i = i0 - 1; i <= i1 + 1; i++) longLoad(i);                     // 위아래 한 조각씩 미리
+    for (let i = i0; i <= i1; i++) {
+      const im = LONG_IMG[i];
+      if (!im) { all = false; continue; }
+      const topB = i * LONG_CH + im.height;                                  // 이 조각 위 끝(아래에서 잰 px)
+      ctx.drawImage(im, 0, H - (topB - off) * sc, W, im.height * sc + 1);
+    }
+    return all;
+  }
   function drawZoneImg(im, a, prog) {
     if (!im || a <= 0.004) return;
     const sc = Math.max(W / im.width, H / im.height);
@@ -15466,7 +15511,8 @@
          그림만 보여서 배경이 잠깐 서는 것처럼 보였다.
          이제 다음 그림은 레벨의 뒤 절반(ZONE_FADE)에만 겹쳐 오르고, 한 그림은 처음 보이기
          시작할 때부터 다음 그림에 다 덮일 때까지(1.5 레벨) 한 번도 서지 않고 이어서 흐른다. */
-      const t = levelTime / lvSec();
+      const t = clearHome ? 0 : levelTime / lvSec();
+      if (LONG_N) { bgShown = drawLong(t); } else {
       /* 첫 지대(잔디밭)는 겹쳐 오르는 앞 레벨이 없으니 게임 시작(t=0)에 그림 맨 아래(발밑 잔디 언덕)에서
          출발한다 — 다른 지대처럼 -ZONE_FADE 에서 셈을 시작하면 시작부터 1/3 올라가 있어 언덕이 안 보였다.
          흐르는 빠르기는 다른 지대와 같다. */
@@ -15477,6 +15523,7 @@
         drawZoneImg(ZONE_IMG[i1], a1, idle ? 0.5 : pgOf(i1));
       }
       bgShown = !!ZONE_IMG[i0];
+      }
     }
 
     // 간식 타임 속도선 — 우주에서는 길게 늘어진 별빛으로

@@ -25,7 +25,10 @@ STYLE = ("A tall vertical (portrait 9:16) scrolling background painting for a cu
   "lots of charming small details at the LEFT and RIGHT edges, while the CENTER column stays calmer and lower in "
   "contrast so small falling objects remain easy to read. Whimsical and storybook-like — it does NOT need to be "
   "realistic; take the stage name literally and playfully. No characters, no animals, no people, no text, no letters, "
-  "no UI, no frame. ")
+  "no UI, no frame. "
+  "VERY IMPORTANT for gameplay: the CENTRAL HALF of the width must stay mostly OPEN — just the soft sky/space gradient "
+  "with at most a few tiny faint sparkles; put every big or detailed object (clouds, props, planets, decorations) in "
+  "the LEFT and RIGHT thirds, partly cut off by the edges. ")
 CONT = ("The attached FIRST image is the painting so far: only its BOTTOM strip is painted, the flat gray area above it "
   "is empty canvas. Fill the whole empty gray area by continuing the painting UPWARD seamlessly from that strip — "
   "match its colors, lighting, sky gradient and any clouds or objects that cross the boundary exactly, and keep the "
@@ -39,9 +42,45 @@ STAGE = {
   2: "STAGE 'Rainbow Blanket': the sky turns a soft sunny blue and huge soft RAINBOW-colored patchwork quilt blankets "
      "drift across the sky like gentle flying carpets — draped over clouds at the left and right edges, with cozy "
      "stitched patches, little pom-pom tassels and soft folds; pastel rainbow ribbons trail between them.",
-  3: "STAGE 'Cotton Candy Sea': the clouds become a whimsical SEA of fluffy pink, lilac and baby-blue COTTON CANDY — "
-     "rolling cotton-candy waves and floating cotton-candy islands (some still on candy sticks) bobbing like boats in "
-     "a sea of sky, sugar sparkles glittering, a few candy-swirl wave crests. Sweet and dreamy.",
+  3: "STAGE 'Cotton Candy Sea' (솜사탕 = fluffy spun-sugar COTTON CANDY / candy floss, NOT hard candy): "
+     "at the left and right edges, banks of FLUFFY COTTON CANDY FLOSS in pastel pink, lilac and baby blue pile up into "
+     "gentle rolling waves like a fluffy ocean shore, with a few big round cotton-candy puffs on simple white paper "
+     "sticks bobbing like buoys; thin wisps of floss drift across, soft sugar sparkles. Texture of spun sugar threads. "
+     "ABSOLUTELY NO lollipops, NO swirl candies, NO hard candies, NO candy canes, NO waterfalls, NO islands.",
+  4: "STAGE 'Feather Sky': a brighter, higher sky where giant soft white and pastel FEATHERS float and drift gently "
+     "like slow boats, some fluffy downy feathers swirling at the edges, tiny wisps of cloud, a light airy mood.",
+  5: "STAGE 'Cloud Stripes': the sky deepens to a richer blue and the clouds become long neat horizontal STRIPES of "
+     "soft pastel cloud bands (pink, peach, white) stretching in from the edges like ribbons, a few tiny stars begin.",
+  6: "STAGE 'Sparkle Ripples': high in a deep blue-to-navy sky, shimmering SPARKLY RIPPLE waves of light flow in from "
+     "the sides like a gentle glittering sea surface in the air, little twinkling sparkles, first real stars.",
+  7: "STAGE 'Aurora Curtain': night sky; big soft flowing AURORA CURTAINS in mint green, pink and violet hang and ripple "
+     "down from the top-left and top-right like real stage curtains with soft folds, many small twinkling stars.",
+  8: "STAGE 'Shooting Star Village': deep indigo night; cute tiny cottages and lanterns perched on little floating "
+     "star-shaped islands at the edges — a VILLAGE of shooting stars, with friendly shooting stars streaking by with "
+     "pastel trails, a starry sky.",
+  9: "STAGE 'Blue Summit': the very TOP of the blue sky — the atmosphere ends: the bottom shows the glowing cyan-blue "
+     "curved rim of the sky like a mountain summit edge of light, above it near-black navy space full of stars.",
+  10: "STAGE 'Roly-poly Earth': space; a big cute ROUND cartoon Earth (blue oceans, green lands, white swirl clouds) "
+      "partly visible at the left or right edge, a tiny satellite, dark starry space.",
+  11: "STAGE 'Moon Neighborhood': space; a big cute pale round MOON at one edge with tiny cozy moon houses, little "
+      "ladders and lanterns on it (a neighborhood on the moon), soft craters, purple starry space.",
+  12: "STAGE 'Floating Pebbles': cute chunky pastel ROCKS and pebbles of many sizes FLOATING lazily in dark purple "
+      "space at the edges (an asteroid field), some with tiny sparkly crystals, twinkling stars.",
+  13: "STAGE 'Starlight River': a dreamy flowing RIVER made of starlight — pastel pink, lavender and mint glittering "
+      "stream of stars curving across the edges of deep blue space, little sparkles like fish.",
+  14: "STAGE 'Pitch-dark Space': very dark blue-black deep space, sparse tiny stars, two tiny faint distant galaxies "
+      "at the edges, quiet and lonely, a hint of a faint purple glow far above.",
+  15: "STAGE 'Scary Hole': darker purple space with soft violet mist bands swirling inward toward a dark spooky "
+      "black-hole opening that starts to appear at the TOP, a little scary but still cute, few stars.",
+  16: "STAGE 'Glowing Donut': a huge glowing DONUT-shaped ring of light (an accretion disk) in pastel orange, pink and "
+      "gold — drawn like a giant glazed sparkly donut with sprinkles of light — around a black center, mostly at the "
+      "edges, dark purple space.",
+  17: "STAGE 'Rainbow Hula Hoop': giant glowing RAINBOW HULA-HOOP rings of light spinning around a cute black hole, "
+      "several colorful hoops tilted at different angles at the edges, soft purple space, stars being pulled in.",
+  18: "STAGE 'Poop Boss's House' (the final stage, inside the black hole): a surreal dark purple dreamy space where the "
+      "Poop Boss lives — at the left and right edges a whimsical cute palace made of chocolate-brown soft-serve swirl "
+      "towers with little golden crowns, tiny flags and glowing windows, floating swirly pink and cyan light threads. "
+      "No faces, no characters.",
 }
 
 
@@ -99,6 +138,8 @@ def main():
         Image.open(ROOT / "assets/bg/home_bangul.webp").convert("RGB").resize((480, 835)).save(OUT / "style.png")
     for n in a.tiles:
         cands = gen(n, a.n)
+        if not cands:
+            sys.exit("tile %d: 그림을 못 받음 (Codex 한도·오류)" % n)
         scored = []
         for i, p in enumerate(cands):
             im = fit(Image.open(p)); cp = OUT / ("tile_%02d_c%d.png" % (n, i + 1)); im.save(cp)
