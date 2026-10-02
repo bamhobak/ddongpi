@@ -1618,6 +1618,32 @@
     --bh: 44px !important; min-width: 240px; font-size: 15px !important; letter-spacing: 0 !important; font-weight: 800; margin: 0; opacity: 1;
   }
   #btnPetBuy:disabled { min-width: 240px; }
+  /* ── v0.9.140 게임오버·일시정지 — 캐릭터 성장 창과 같은 남색 금테 판 + 금색 리본 제목 · 버튼은 큰 주요 하나 + 보조·나가기 나란히 ── */
+  #overScreen, #pauseScreen { gap: 14px; }
+  .gPanel { position: relative; width: min(92vw, 360px); box-sizing: border-box; display: flex; flex-direction: column; align-items: center; gap: 8px;
+    padding: 34px 16px 18px; margin-top: 22px; border-style: solid; border-width: 0; border-color: transparent;
+    border-image: url(assets/ui/panel_navy.webp) 66 fill / 33px / 0 stretch; filter: drop-shadow(0 10px 22px rgba(0,0,0,.55)); }
+  .gPanel > h2.gTtl, #pauseScreen .gPanel > h2.gTtl, #overScreen .gPanel > h2.gTtl {
+    position: absolute; left: 50%; top: -23px; transform: translateX(-50%); margin: 0; z-index: 2; height: 46px; box-sizing: border-box; width: max-content; min-width: 58%;
+    border-style: solid; border-color: transparent; border-width: 0 46px; border-image: url(assets/ui/ribbon.webp) 0 125 fill / 0 46px / 0 stretch;
+    padding: 0 8px; line-height: 37px; font-size: 19px; font-weight: 900; letter-spacing: 1px; text-align: center; white-space: nowrap;
+    color: #6b3300 !important; text-shadow: 0 1px 0 rgba(255,255,255,.55) !important; animation: none; background: none; }
+  #overPanel #finalScore { margin: 2px 0 6px !important; }
+  .gSub button { flex: 1 1 0 !important; }
+  #overPanel #coinNote { margin: 0; padding: 3px 14px; border-radius: 999px; background: rgba(8,10,34,.55); box-shadow: inset 0 0 0 1px rgba(255,216,107,.4); }
+  #overPanel #overStory { margin-top: 0; color: #e2e6ff; }
+  #overPanel #overBest { margin-top: 0; }
+  #overPanel #overAugs:not([hidden]), #pauseScreen #pauseAugs:not([hidden]) { width: 100%; box-sizing: border-box; padding: 7px 10px; border-radius: 12px;
+    background: rgba(0,0,0,.24); box-shadow: inset 0 0 0 1px rgba(150,170,255,.22); }
+  #overPanel #overAugDesc:empty, #pauseScreen #pauseAugDesc:empty { display: none; }
+  #pauseScreen #pauseSnd { width: 100%; box-sizing: border-box; padding: 8px 10px; border-radius: 12px; background: rgba(0,0,0,.18); }
+  .gBtns { display: flex; flex-direction: column; align-items: center; gap: 10px; width: min(84vw, 300px); }
+  .gSub { display: flex; gap: 8px; width: 100%; }
+  .gBtns #btnRetry, .gBtns #btnResume { width: 100%; min-width: 0 !important; --bh: 56px !important; font-size: 19px !important; font-weight: 900; letter-spacing: 1px !important; margin: 0; }
+  .gSub button, #retryRow.gBtns .gSub #btnRetryJob { flex: 1; min-width: 0 !important; --bh: 44px !important; font-size: 14.5px !important; margin: 0 !important; padding: 0 2px calc(var(--bh) * .08) !important; white-space: nowrap; }
+  .gSub button[hidden] { display: none !important; }
+  .gSub #btnHome, .gSub #btnPauseHome { padding-left: 4px !important; }
+
   #btnSave {
     --bh: 44px; height: var(--bh); box-sizing: border-box; padding: 0 6px calc(var(--bh) * .08); flex-shrink: 0;
     border-style: solid; border-color: transparent; border-width: 0 calc(var(--bh) / 2); border-radius: 0; box-shadow: none; background: none;
@@ -1802,8 +1828,8 @@
     </div>
 
     <div id="pauseScreen" class="screen hidden">
-      <h2>일시정지</h2>
-      <button id="btnResume">계속하기</button>
+      <div class="gPanel">
+      <h2 class="gTtl">일시정지</h2>
       <div id="pauseAugs" hidden></div>
       <div id="pauseAugDesc"></div>
       <div id="pauseSnd">
@@ -1812,8 +1838,11 @@
         <div class="sndRow"><button class="ctrlBtn sndBtn" data-snd="sfx" title="효과음" aria-label="효과음">🔔</button>
           <input class="sndVol" data-snd="sfx" type="range" min="0" max="100" step="5" aria-label="효과음 크기"></div>
       </div>
-      <button id="btnPauseRetry">다시하기</button>
-      <button id="btnPauseHome">처음으로</button>
+      </div>
+      <div class="gBtns">
+        <button id="btnResume">계속하기</button>
+        <div class="gSub"><button id="btnPauseRetry">다시하기</button><button id="btnPauseHome">처음으로</button></div>
+      </div>
     </div>
 
     <!-- v0.9.124 내 정보(이름 · 공통 레벨) — 왼쪽 위 이름을 누르면 -->
@@ -1914,7 +1943,8 @@
     </div>
 
     <div id="overScreen" class="screen hidden">
-      <h2 id="overTitle">게임 오버!</h2>
+      <div class="gPanel" id="overPanel">
+      <h2 id="overTitle" class="gTtl">게임 오버!</h2>
       <div class="big" id="finalScore">0</div>
       <div id="coinNote">🪙 0 coin</div>
       <div id="overStory"></div>
@@ -1931,6 +1961,7 @@
           <button id="btnSave">등록</button>
         </div>
       </div>
+      </div>
 
       <div class="board vsb" data-k="wins">
         <h3>⚔️ 대전 랭킹</h3>
@@ -1945,10 +1976,9 @@
         <div class="note" id="noteOver"></div>
       </div>
 
-      <div id="retryRow">
+      <div id="retryRow" class="gBtns">
         <button id="btnRetry">다시 하기</button>
-        <button id="btnRetryJob" hidden>캐릭터 바꾸기</button>
-        <button id="btnHome">메인으로</button>
+        <div class="gSub"><button id="btnRetryJob" hidden>캐릭터 바꾸기</button><button id="btnHome">메인으로</button></div>
       </div>
     </div>
   </div>
@@ -2109,7 +2139,7 @@
   const elTitle = document.getElementById("overTitle");
   const coinNote = document.getElementById("coinNote");
 
-  const GAME_VERSION = "v0.9.139";
+  const GAME_VERSION = "v0.9.140";
   /* 제작사 스플래시(bamhobak friends 로고) — 2026-09-20 끔. 다시 켜려면 true */
   const SPLASH_USE = false;   // 코드를 고칠 때마다 뒤 두 자리를 올린다
   document.getElementById("ver").textContent = GAME_VERSION;
@@ -13685,7 +13715,7 @@
     let cv2 = document.getElementById("fanfare");
     if (!cv2) {
       cv2 = document.createElement("canvas"); cv2.id = "fanfare";
-      cv2.style.cssText = "position:fixed;inset:0;width:100%;height:100%;pointer-events:none;z-index:50";
+      cv2.style.cssText = "position:fixed;inset:0;left:0;top:0;transform:none;box-shadow:none;width:100%;height:100%;pointer-events:none;z-index:50";   // v0.9.140 전체 canvas 규칙(가운데 맞춤 translate·네온 테두리)이 먹어 왼쪽 위로 반만큼 밀려 있었다
       document.body.appendChild(cv2);
     }
     const dpr = Math.min(2, window.devicePixelRatio || 1), Wc = innerWidth, Hc = innerHeight;
