@@ -155,6 +155,18 @@ def main():
     build_strip()
 
 
+def smooth_seam(im, ys, span=900):
+    """새 칸이 이음매(ys) 바로 위에서 색이 툭 바뀌면(가로 띠) — 위 span 줄의 색을 이음매 아래 색으로 서서히 맞춘다"""
+    import numpy as np
+    A = np.asarray(im, dtype=np.float32).copy()
+    up, dn = A[max(0, ys - 50):ys - 6].mean(axis=0), A[ys + 6:ys + 50].mean(axis=0)
+    k = 121; ker = np.ones(k) / k
+    d = np.stack([np.convolve(np.pad((dn - up)[:, c], k // 2, mode="edge"), ker, mode="valid") for c in range(3)], axis=1)
+    for y in range(max(0, ys - span), ys):
+        u = 1 - (ys - y) / span; A[y] += d * (u * u * (3 - 2 * u))
+    return Image.fromarray(np.clip(A, 0, 255).astype(np.uint8))
+
+
 def build_strip():
     """1칸부터 이어 붙인 긴 그림 — 새 칸의 (TH-OVER+dy) 줄이 앞 칸 맨 위와 같은 자리, 그 아래 BLEND 를 섞는다"""
     tiles = []
@@ -174,6 +186,7 @@ def build_strip():
             mask.paste(round(255 * (1 - y / BLEND)), (0, y0 + y, TW, y0 + y + 1))
         base = out.crop((0, 0, TW, y0 + BLEND))
         out.paste(Image.composite(top, base, mask), (0, 0))
+        # out = smooth_seam(out, y0)   # (모든 이음매에 쓰니 오히려 줄이 생겼다 — 쓰지 않음)
         strip = out
     strip.save(OUT / "strip.png")
     prev = strip.resize((TW // 4, strip.height // 4)); prev.save(OUT / "strip_small.png")

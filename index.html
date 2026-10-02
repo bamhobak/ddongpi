@@ -2139,7 +2139,7 @@
   const elTitle = document.getElementById("overTitle");
   const coinNote = document.getElementById("coinNote");
 
-  const GAME_VERSION = "v0.9.141";
+  const GAME_VERSION = "v0.9.142";
   /* 제작사 스플래시(bamhobak friends 로고) — 2026-09-20 끔. 다시 켜려면 true */
   const SPLASH_USE = false;   // 코드를 고칠 때마다 뒤 두 자리를 올린다
   document.getElementById("ver").textContent = GAME_VERSION;
@@ -3126,7 +3126,7 @@
   /* v0.9.138 한 장처럼 이어지는 긴 배경 — 꽃밭부터 똥대장네 집까지 스테이지마다 한 칸씩 이어 그린 그림(Codex, tools/gen_long.py)을
      tools/build_long.py 가 아래부터 LONG_CH px 조각(assets/bg/long/cNN.webp)으로 잘라 둔다. 스테이지 k 의 한가운데 시각(k-0.5)에
      화면 가운데가 LONG_ANCH[k-1](아래에서 잰 px)에 오도록 레벨 시계를 따라 쭉 내려온다 — 지대마다 그림을 겹쳐 녹이던 방식은 뺐다. */
-  /*LONG-BEGIN*/ const LONG_H = 23409, LONG_CH = 1024, LONG_N = 23, LONG_V = 12992, LONG_ANCH = [850, 2130, 3410, 4690, 5970, 7250, 8500, 9756, 11036, 12316, 13596, 14876, 16156, 17436, 18716, 19999, 21279, 22559]; /*LONG-END*/
+  /*LONG-BEGIN*/ const LONG_H = 23409, LONG_CH = 1024, LONG_N = 23, LONG_V = 14830, LONG_ANCH = [850, 2130, 3410, 4690, 5970, 7250, 8500, 9756, 11036, 12316, 13596, 14876, 16156, 17436, 18716, 19999, 21279, 22559]; /*LONG-END*/
   const LONG_IMG = [];
   function longLoad(i) {
     if (i < 0 || i >= LONG_N || LONG_IMG[i] !== undefined) return;
