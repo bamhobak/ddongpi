@@ -1994,7 +1994,7 @@
   const elTitle = document.getElementById("overTitle");
   const coinNote = document.getElementById("coinNote");
 
-  const GAME_VERSION = "v0.9.126";
+  const GAME_VERSION = "v0.9.127";
   /* 제작사 스플래시(bamhobak friends 로고) — 2026-09-20 끔. 다시 켜려면 true */
   const SPLASH_USE = false;   // 코드를 고칠 때마다 뒤 두 자리를 올린다
   document.getElementById("ver").textContent = GAME_VERSION;
@@ -3333,7 +3333,7 @@
   let coins = 0;      // 지금까지 모은 전체
   /* ── v0.9.84 공통(계정) 레벨과 캐릭터 레벨 — 경험치 = 싱글플레이에서 버틴 초(테스트 모드 제외).
      공통: 1,000 · 5,000 · 11,000 · 22,000 에서 Lv2~5 (평균 220초씩 100판쯤에 Lv5).
-     캐릭터: 공통 Lv2 부터 그 캐릭터로 버틴 초가 쌓인다 — 600 · 2,000 · 4,500 · 9,000 에서 Lv2~5.
+     캐릭터: 그 캐릭터로 버틴 초가 쌓인다(v0.9.127 공통 Lv2 문턱 없앰) — 600 · 2,000 · 4,500 · 9,000 에서 Lv2~5.
      캐릭터 레벨마다 둘 중 하나를 고른다(언제든 바꿀 수 있다). Lv3 은 고르면 모든 캐릭터에 적용된다.
      v0.9.124 레벨이 되면 상세 창에서 '해금'하고 둘 중 하나를 골라야 켜진다(예전처럼 저절로 A 가 아니다). */
   const LS_LV = "epjpddongpi_lv";
@@ -3344,7 +3344,7 @@
   function lvSave() { try { localStorage.setItem(LS_LV, JSON.stringify(lvData)); } catch (e) {} }
   function lvOf(xp, T) { let l = 1; for (let i = 1; i < T.length; i++) if (xp >= T[i]) l = i + 1; return l; }
   function accLv() { return lvOf(lvData.xp, ACC_XP); }
-  function chrLv(j) { return accLv() >= 2 ? lvOf(lvData.cx[j] || 0, CHR_XP) : 1; }
+  function chrLv(j) { return lvOf(lvData.cx[j] || 0, CHR_XP); }   // v0.9.127 공통 Lv 2 문턱 없앰 — 처음부터 쌓인다
   function lvSingle() { return typeof runMode === "undefined" || runMode === "item"; }    // 레벨 보상은 싱글플레이에서만
   function accOn(l) { return lvSingle() && accLv() >= l; }
   function pickOf(j, l) { return chrLv(j) >= l ? ((lvData.pick[j] || {})[l] || null) : null; }
@@ -3357,7 +3357,7 @@
   function myPerk(l, ab) { return lvSingle() && pickOf(job, l) === ab; }                  // 지금 캐릭터의 Lv2·4·5
   function allPerk(j, ab) { return lvSingle() && pickOf(j, 3) === ab; }                  // 캐릭터 j 의 Lv3 — 모든 캐릭터에
   const ACC_REW = {
-    2: "🎲 증강 다시 뽑기(판마다 1회) · 🐶 캐릭터 레벨 시작",
+    2: "🎲 증강 다시 뽑기(판마다 1회)",
     3: "☁️ 구름 상점 — 게임 중 가끔 내려온다. 증강 2개·하트를 코인으로",
     4: "🎁 시작 증강 고르기(3장 중 1장) · ⚡ 하이퍼 모드",
     5: "👑 (준비 중)"
@@ -8442,7 +8442,6 @@
     box.appendChild(accCard());
     const c = document.createElement("div"); c.className = "lvCard";
     const jn = (JOBS[job] && JOBS[job].nm) || job;
-    if (al < 2) { c.innerHTML = '<div class="lvHead"><b>캐릭터 레벨</b></div><div class="lvNote">공통 Lv 2부터 열려요</div>'; box.appendChild(c); return; }
     const cl = chrLv(job), P = CHR_PERKS[job];
     c.innerHTML = '<div class="lvHead"><b></b><em>Lv ' + cl + '</em></div>';
     c.querySelector("b").textContent = jn;
@@ -8474,7 +8473,7 @@
       }
       if (cl < l) {
         const n = document.createElement("span"); n.className = "lk";
-        n.textContent = "🔒 " + (accLv() < 2 ? "공통 Lv 2부터" : "경험치 " + Math.max(0, CHR_XP[l - 1] - xp).toLocaleString() + " 더");
+        n.textContent = "🔒 " + "경험치 " + Math.max(0, CHR_XP[l - 1] - xp).toLocaleString() + " 더";
         h.appendChild(n); c.appendChild(row); continue;   // v0.9.125 레벨이 닿기 전엔 무슨 능력인지 안 보여 준다
       } else if (!cur) {
         const n = document.createElement("span"); n.className = "lvWait"; n.textContent = "하나를 골라줘!"; h.appendChild(n);
@@ -8527,8 +8526,6 @@
     const lv = document.createElement("em"); lv.textContent = "Lv " + chrLv(j);
     hd.append(md, nm, lv); c.appendChild(hd);
     c.appendChild(lvBar(lvData.cx[j] || 0, CHR_XP));
-    const note = document.createElement("div"); note.className = "lvNote";
-    if (accLv() < 2) { note.textContent = "공통 Lv 2부터 캐릭터 경험치가 쌓여요"; c.appendChild(note); }   // v0.9.126 '1초 = 경험치 1' 안내는 뺐다
     if (CHR_PERKS[j]) chrPerkRows(c, j, () => openChr(j));
     box.appendChild(c); lvPopOpen("chrPop");
   }
@@ -8551,11 +8548,11 @@
     const g = Math.max(0, Math.round(sec));
     const a0 = accLv(), c0 = chrLv(job);
     lvData.xp += g;
-    if (accLv() >= 2 || a0 >= 2) lvData.cx[job] = (lvData.cx[job] || 0) + (a0 >= 2 ? g : 0);
+    lvData.cx[job] = (lvData.cx[job] || 0) + g;   // v0.9.127 공통 레벨과 상관없이 처음부터
     lvSave();
     const a1 = accLv(), c1 = chrLv(job);
     for (let l = a0 + 1; l <= a1; l++) achNew.push({ k: "공통 레벨", t: "Lv " + l, how: ACC_REW[l] });
-    if (a0 >= 2 && CHR_PERKS[job]) for (let l = c0 + 1; l <= c1; l++)
+    if (CHR_PERKS[job]) for (let l = c0 + 1; l <= c1; l++)
       achNew.push({ k: "캐릭터 레벨", t: ((JOBS[job] && JOBS[job].nm) || job) + " Lv " + l, how: "캐릭터 카드의 '상세'에서 해금하고 둘 중 하나를 골라요" });
   }
   function renderGrow() {
