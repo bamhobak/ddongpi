@@ -1211,6 +1211,9 @@
   #shopPets .shopItem button .emj { vertical-align: 0; width: 1.05em; height: 1.05em; }
   #shopPets .shopItem button.own { width: 76px; }
   #startScreen > .page:not(#pgHome) { padding-top: calc(72px + env(safe-area-inset-top)); }   /* v0.9.134 이름·코인 칩이 모든 탭에 — 제목 리본을 그 아래로 */
+  .lvRow .lvT { display: flex; flex-direction: column; gap: 1px; }
+  .lvRow .lvLs { font-size: 11px; font-weight: 700; color: #a9b1e4; }
+  .lvRow:not(.on) .lvLs { color: #6d76ad; }
   /* 옵션 — 예전 설정 창의 내용 */
   #pgOpt #optRow { display: flex; flex-direction: column; align-items: center; gap: 14px; }
   #pgOpt .setLbl { font-size: 13px; color: #9fb4d0; margin-bottom: -6px; }
@@ -1670,6 +1673,20 @@
     top: calc(-62px * var(--bf) - 17px); right: calc(-80px * var(--bf) + 4px); z-index: 2;
   }
   .vsb .vsbTabs { display: flex; justify-content: center; gap: 6px; margin: 0 0 5px; }
+  /* ── v0.9.135 랭킹판 — 캐릭터 성장 창과 같은 양식: 남색 금테 판(panel_navy) · 큰 금색 리본 제목 · 유리 같은 남색 칸 ── */
+  #pgRank .board { border-width: 24px 16px 18px !important; border-image: url(assets/ui/panel_navy.webp) 66 fill / 33px / 0 stretch !important; padding: 2px 4px 4px; margin-top: 24px; }
+  #pgRank #lastBoard { border-width: 22px 14px 14px !important; border-image: url(assets/ui/panel_navy.webp) 66 fill / 30px / 0 stretch !important; margin-top: 30px; }
+  #pgRank .board > h3 { height: 42px; line-height: 34px; font-size: 15px; font-weight: 900; letter-spacing: .5px; border-width: 0 42px; border-image-width: 0 42px; margin: -46px auto 4px; }
+  #pgRank #lastBoard > h3 { height: 38px; line-height: 30px; font-size: 13.5px; font-weight: 900; border-width: 0 38px; border-image-width: 0 38px; margin-top: -42px; }
+  #pgRank .board.withTabs .note { top: auto; bottom: -21px; right: 6px; }   /* 리본 날개와 안 겹치게 판 아래 오른쪽으로 */
+  #pgRank .jobTab { border-radius: 10px; border: 1.5px solid rgba(130,155,255,.5); color: #e6e9ff;
+    background: radial-gradient(120% 90% at 50% 18%, #3d46ad, #232870 55%, #181b4f 100%); box-shadow: inset 0 1px 0 rgba(180,195,255,.45), 0 2px 0 #0a0c2a; }
+  #pgRank .jobTab.on { border-color: #ffd86b; color: #ffd86b; background: linear-gradient(180deg, #6a4c12, #33240c);
+    box-shadow: inset 0 0 0 1px #fff3b0, 0 0 10px rgba(255,200,60,.6), 0 2px 0 #3a2400; }
+  #pgRank .jobTab[data-job="all"].on { color: #6b3300; background: linear-gradient(180deg, #ffe58a, #ffc42e); }
+  #pgRank .board .mini { border-radius: 10px; background: linear-gradient(180deg, rgba(120,140,255,.16), rgba(120,140,255,.05)); border: 1px solid rgba(150,170,255,.28); }
+  #pgRank .board li.five .mini { background: linear-gradient(180deg, rgba(120,140,255,.12), rgba(120,140,255,.03)); }
+  #pgRank .vsb .vsbTabs button { border-radius: 9px; }
 </style>
 </head>
 <body>
@@ -2091,7 +2108,7 @@
   const elTitle = document.getElementById("overTitle");
   const coinNote = document.getElementById("coinNote");
 
-  const GAME_VERSION = "v0.9.134";
+  const GAME_VERSION = "v0.9.135";
   /* 제작사 스플래시(bamhobak friends 로고) — 2026-09-20 끔. 다시 켜려면 true */
   const SPLASH_USE = false;   // 코드를 고칠 때마다 뒤 두 자리를 올린다
   document.getElementById("ver").textContent = GAME_VERSION;
@@ -8545,6 +8562,15 @@
     const t = document.createElement("span"); t.textContent = hi ? (Math.round(xp - lo).toLocaleString() + " / " + (hi - lo).toLocaleString()) : "최대 레벨";
     w.append(f, t); return w;
   }
+  /* v0.9.135 혜택 글을 줄로 나눈다 — " · " 는 다른 혜택(새 줄), " — " 뒤는 그 혜택의 설명(작은 글씨 새 줄) */
+  function lvLines(el, txt) {
+    el.textContent = "";
+    for (const part of String(txt).split(" · ")) {
+      const k = part.indexOf(" — ");
+      const d = document.createElement("div"); d.className = "lvL"; d.textContent = k > 0 ? part.slice(0, k) : part; el.appendChild(d);
+      if (k > 0) { const sd = document.createElement("div"); sd.className = "lvLs"; sd.textContent = part.slice(k + 3); el.appendChild(sd); }
+    }
+  }
   function accCard() {
     const al = accLv();
     const a = document.createElement("div"); a.className = "lvCard";
@@ -8553,7 +8579,7 @@
     for (let l = 2; l <= 5; l++) {
       const r = document.createElement("div"); r.className = "lvRow" + (al >= l ? " on" : "");
       r.innerHTML = '<span class="lvN">Lv' + l + '</span><span class="lvT"></span>' + (al >= l ? "" : '<span class="lk">🔒</span>');   // v0.9.126
-      r.querySelector(".lvT").textContent = ACC_REW[l]; a.appendChild(r);
+      lvLines(r.querySelector(".lvT"), ACC_REW[l]); a.appendChild(r);   // v0.9.135 혜택이 여럿이면 줄을 나눈다
     }
     return a;
   }
@@ -8611,7 +8637,8 @@
         const tt = document.createElement("div"); tt.className = "ttl";
         const em = document.createElement("em"); em.textContent = ab; tt.appendChild(em);
         tt.appendChild(document.createTextNode(k > 0 ? t.slice(0, k) : ""));
-        const ds = document.createElement("span"); ds.textContent = k > 0 ? t.slice(k + 3) : t;
+        const ds = document.createElement("span"); ds.style.whiteSpace = "pre-line";
+        ds.textContent = (k > 0 ? t.slice(k + 3) : t).split(" · ").join("\n").replace(/, /g, "\n");   // v0.9.135 다른 혜택은 줄을 나눈다
         tx.append(tt, ds); b.append(md, tx);
         b.addEventListener("click", () => {
           if (cur === ab) return;
