@@ -2139,7 +2139,7 @@
   const elTitle = document.getElementById("overTitle");
   const coinNote = document.getElementById("coinNote");
 
-  const GAME_VERSION = "v0.9.142";
+  const GAME_VERSION = "v0.9.143";
   /* 제작사 스플래시(bamhobak friends 로고) — 2026-09-20 끔. 다시 켜려면 true */
   const SPLASH_USE = false;   // 코드를 고칠 때마다 뒤 두 자리를 올린다
   document.getElementById("ver").textContent = GAME_VERSION;
@@ -7246,7 +7246,9 @@
     const r = 14, gapW = player.r * [3.3, 2.95, 2.7, 2.5][ph] * 1.15 * 1.12 * 1.3;   // v1.0.02 틈 조금 더 넓게 · v0.9.101 똥 조금 작게(15→14)·틈 1.3배
     const fan = (n0, spread, sp) => { const n = Math.max(3, Math.round(n0 * 0.8)); for (let k = 0; k < n; k++) { const a = -spread + 2 * spread * k / (n - 1); fbShot(bx, by, sp * Math.sin(a), sp * Math.cos(a), r); } };   // v0.9.101 부채꼴 탄 수 80%
     const aimed = (n) => { for (let k = 0; k < n; k++) { const tx = player.x + (k - (n - 1) / 2) * 40, ty = groundY; const d = Math.hypot(tx - bx, ty - by); fbShot(bx, by, (tx - bx) / d * V * 1.2, (ty - by) / d * V * 1.2, r); } };
-    const clearGap = (gx) => { for (const q of items) if (q.thrown && q.dark && !q.bounced && Math.abs(q.x - gx) < gapW / 2 + q.r + player.r && q.y > g.y) { q.blast = true; q.bounced = true; q.vy = -Math.abs(q.vy) * 0.6; q.vx = (q.x < gx ? -1 : 1) * 260; } };   // v0.9.119 틈 안에 먼저 떨어지던 똥은 옆으로 튕겨 낸다 (틈이 막히지 않게)
+    const clearGap = (gx) => {   // v0.9.119 틈 안에 먼저 떨어지던 똥은 치운다 (틈이 막히지 않게) · v0.9.143 대각선 위로 튕겨 내던 것을 그 자리에서 펑 사라지게
+      for (let k = items.length - 1; k >= 0; k--) { const q = items[k];
+        if (q.thrown && q.dark && !q.bounced && Math.abs(q.x - gx) < gapW / 2 + q.r + player.r && q.y > g.y) { burst(q.x, q.y, "#8a6bd1", 7); items.splice(k, 1); } } };
     const wall = (gx) => { clearGap(gx); for (let x = r; x < W; x += r * 2.6) if (Math.abs(x - gx) > gapW / 2) fbShot(x, g.y + g.h * 0.75, 0, V * 0.85, r); };
     /* v0.9.94 못 피하는 패턴 없애기 — 벽 틈은 벽이 내려오는 동안 실제로 갈 수 있는 거리 안(70%)에 낸다 */
     const reach = (fromX, yStart, vy) => Math.max(40, (groundY - yStart) / vy * PLAYER_MAX_SPEED * spdMul() * 0.7);
