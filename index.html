@@ -1197,6 +1197,11 @@
     border-width: 0 calc(var(--bh) / 2); border-image: url(assets/ui/btn_blue.webp) 0 60 fill / 0 calc(var(--bh) / 2) / 0 stretch;
     padding: 0 4px calc(var(--bh) * .08); font-size: 13.5px; font-weight: 800; color: #fff; text-shadow: 0 1px 2px rgba(0,50,110,.65); }
   #startScreen > #pgHome { justify-content: flex-start !important; padding-top: calc(var(--homeTop, 70px) + env(safe-area-inset-top)) !important; }
+  /* ── v0.9.131 시작하기 — 글자까지 그려 넣은 금테 보석 버튼 한 장(Codex btn_start) ── */
+  #startScreen #pgHome #btnStart { width: 264px; min-width: 0; height: 72px !important; padding: 0; margin: 0;
+    border: 0; border-image: none; border-radius: 0; box-shadow: none; background: url(assets/ui/btn_start.webp?1) center / contain no-repeat;
+    color: transparent; font-size: 0 !important; text-shadow: none; animation: glowY 3.4s ease-in-out infinite; }
+  #startScreen #pgHome #btnStart:active { transform: translateY(2px) scale(.97); }
   /* 옵션 — 예전 설정 창의 내용 */
   #pgOpt #optRow { display: flex; flex-direction: column; align-items: center; gap: 14px; }
   #pgOpt .setLbl { font-size: 13px; color: #9fb4d0; margin-bottom: -6px; }
@@ -2077,7 +2082,7 @@
   const elTitle = document.getElementById("overTitle");
   const coinNote = document.getElementById("coinNote");
 
-  const GAME_VERSION = "v0.9.130";
+  const GAME_VERSION = "v0.9.131";
   /* 제작사 스플래시(bamhobak friends 로고) — 2026-09-20 끔. 다시 켜려면 true */
   const SPLASH_USE = false;   // 코드를 고칠 때마다 뒤 두 자리를 올린다
   document.getElementById("ver").textContent = GAME_VERSION;
