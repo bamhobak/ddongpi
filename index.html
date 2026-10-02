@@ -1706,6 +1706,21 @@
     top: calc(-62px * var(--bf) - 17px); right: calc(-80px * var(--bf) + 4px); z-index: 2;
   }
   .vsb .vsbTabs { display: flex; justify-content: center; gap: 6px; margin: 0 0 5px; }
+  /* v0.9.148 지난 명예의 전당 — 주 넘기기 줄 */
+  #lastJobs { display: flex; gap: 4px; justify-content: center; margin: 0 0 6px; }
+  #lastJobs button { height: 30px; min-width: 30px; padding: 0 6px; border-radius: 8px; border: 1.5px solid rgba(130,155,255,.45); box-shadow: none;
+    background: radial-gradient(120% 90% at 50% 18%, #3d46ad, #232870 60%); color: #e6e9ff; font-size: 11.5px; font-weight: 800; display: flex; align-items: center; justify-content: center; }
+  #lastJobs button img { height: 26px; width: 26px; object-fit: contain; }
+  #lastJobs button.on { border-color: #ffd86b; background: linear-gradient(180deg, #6a4c12, #33240c); color: #ffd86b; box-shadow: 0 0 8px rgba(255,200,60,.55); }
+  .lastRow .lp.lp45 { opacity: .9; }
+  #lastNav { display: flex; align-items: center; justify-content: center; gap: 10px; margin: 0 0 5px; }
+  #lastNav #lastWk { min-width: 150px; text-align: center; font-size: 12.5px; font-weight: 800; color: #e6e9ff; text-shadow: 0 1px 2px rgba(0,0,0,.6); }
+  #lastNav .lnBtn { width: 22px; height: 30px; padding: 0; border: 0; border-radius: 0; box-shadow: none; color: transparent; font-size: 0;
+    background: url(assets/ui/car_arrow2.webp) center / contain no-repeat; filter: drop-shadow(0 2px 2px rgba(0,0,0,.45)); }
+  #lastNav .lnBtn.l { transform: scaleX(-1); }
+  #lastNav .lnBtn:active:not(:disabled) { transform: scale(.88); } #lastNav .lnBtn.l:active:not(:disabled) { transform: scaleX(-1) scale(.88); }
+  #lastNav .lnBtn:disabled { opacity: .25; filter: grayscale(1); }
+
   /* ── v0.9.135 랭킹판 — 캐릭터 성장 창과 같은 양식: 남색 금테 판(panel_navy) · 큰 금색 리본 제목 · 유리 같은 남색 칸 ── */
   #pgRank .board { border-width: 24px 16px 18px !important; border-image: url(assets/ui/panel_navy.webp) 66 fill / 33px / 0 stretch !important; padding: 2px 4px 4px; margin-top: 24px; }
   #pgRank #lastBoard { border-width: 22px 14px 14px !important; border-image: url(assets/ui/panel_navy.webp) 66 fill / 30px / 0 stretch !important; margin-top: 30px; }
@@ -1768,7 +1783,9 @@
         <div class="note" id="noteStart"></div>
       </div>
       <div class="board last" id="lastBoard">
-        <h3 id="lastTitle">👑 지난주 명예의 전당</h3>
+        <h3 id="lastTitle">👑 지난 명예의 전당</h3>
+        <div id="lastNav"><button class="lnBtn l" aria-label="더 지난주">‹</button><span id="lastWk">지난주</span><button class="lnBtn r" aria-label="최근 주">›</button></div>
+        <div id="lastJobs"></div>
         <div id="boardLast" class="lastRow"><span class="lpNone">불러오는 중…</span></div>
       </div>
       <div class="board vsb" data-k="wins">
@@ -2145,7 +2162,7 @@
   const elTitle = document.getElementById("overTitle");
   const coinNote = document.getElementById("coinNote");
 
-  const GAME_VERSION = "v0.9.147";
+  const GAME_VERSION = "v0.9.148";
   /* 제작사 스플래시(bamhobak friends 로고) — 2026-09-20 끔. 다시 켜려면 true */
   const SPLASH_USE = false;   // 코드를 고칠 때마다 뒤 두 자리를 올린다
   document.getElementById("ver").textContent = GAME_VERSION;
@@ -13991,6 +14008,7 @@
      기록을 지우는 게 아니라 '이번 주 것만' 보여주는 방식이라 초기화가 실패할 일이 없다.
      보는 사람 폰의 시간대와 무관하게 항상 한국시간 기준으로 계산한다. */
   const KST = 9 * 60 * 60 * 1000;
+  var lastAgo = 1, lastEnd = {}, lastJob = "all", lastCache = {};   // v0.9.148 지난 명예의 전당 — 몇 주 전 · 기록이 끊긴 주(캐릭터별) · 캐릭터 · 받아 둔 것
   function weekStartMs(weeksAgo) {                        // 0 = 이번 주, 1 = 지난주
     const k = new Date(Date.now() + KST);                 // UTC 값으로 읽으면 한국 벽시계
     const mondayIndex = (k.getUTCDay() + 6) % 7;          // 월=0 … 일=6
@@ -14044,19 +14062,49 @@
   }
 
   // 지난주 1~3위 — 기록이 있을 때만 시작 화면에 띄운다
+  /* v0.9.148 지난 명예의 전당 — 좌우 버튼으로 더 지난 주까지 (왼쪽 = 더 옛날, 오른쪽 = 최근, 지난주가 끝) */
+  const LAST_MAX = 104;
+  function lastWkLabel(n) {
+    const a = new Date(weekStartMs(n) + KST), b = new Date(weekStartMs(n - 1) + KST - 86400000);
+    const f = d => (d.getUTCMonth() + 1) + "." + d.getUTCDate();
+    return (n === 1 ? "지난주" : n + "주 전") + " · " + f(a) + "~" + f(b);
+  }
+  function lastNavSync() {
+    document.getElementById("lastWk").textContent = lastWkLabel(lastAgo);
+    document.querySelector("#lastNav .lnBtn.r").disabled = lastAgo <= 1;
+    const e = lastEnd[gameMode + ":" + lastJob];
+    document.querySelector("#lastNav .lnBtn.l").disabled = lastAgo >= LAST_MAX || (e && lastAgo >= e);
+    for (const b of document.querySelectorAll("#lastJobs button")) b.classList.toggle("on", b.dataset.job === lastJob);
+  }
+  {                                              // 캐릭터 고르기 — 전체 + 캐릭터 얼굴
+    const box = document.getElementById("lastJobs");
+    const mk = (key, img, title) => {
+      const b = document.createElement("button"); b.dataset.job = key; b.title = title;
+      if (img) { const im = document.createElement("img"); im.src = "assets/" + img + "_right.png"; im.alt = ""; b.appendChild(im); } else b.textContent = "전체";
+      b.addEventListener("click", () => { if (lastJob === key) return; lastJob = key; lastAgo = 1; beep(760, .04, "triangle", .04); refreshLastWeek(); });
+      box.appendChild(b);
+    };
+    mk("all", null, "전체");
+    for (const jid in JOBS) if (!JOBS[jid].gone) mk(jid, JOB_IMG[jid], JOBS[jid].nm);
+  }
+  document.querySelector("#lastNav .lnBtn.l").addEventListener("click", () => { if (lastAgo < LAST_MAX) { lastAgo++; beep(760, .04, "triangle", .04); refreshLastWeek(); } });
+  document.querySelector("#lastNav .lnBtn.r").addEventListener("click", () => { if (lastAgo > 1) { lastAgo--; beep(760, .04, "triangle", .04); refreshLastWeek(); } });
   async function refreshLastWeek() {
     const lastBoard = document.getElementById("lastBoard");
+    lastNavSync();
     if (!SB_ON) { lastNone("랭킹 준비 중입니다"); return; }
     if (gameMode === "vs") { lastNone(""); return; }       // 대전모드는 이 칸이 대전 랭킹 밑에 가려진다
-    const from = weekStartMs(1), to = weekStartMs(0);
+    const ago = lastAgo, jb = lastJob, from = weekStartMs(ago), to = weekStartMs(ago - 1), ek = gameMode + ":" + jb, ck = ek + ":" + ago;
     try {
-      const list = await fetchRange(from, to, 3);
-      if (!list.length) { lastNone("아직 지난주 기록이 없어요"); return; }
+      const list = lastCache[ck] || await fetchRange(from, to, 5, jb === "all" ? null : jb);   // v0.9.148 5위까지 · 캐릭터별
+      lastCache[ck] = list;
+      if (ago !== lastAgo || jb !== lastJob) return;        // 그 사이 다른 주·캐릭터로 넘겼다
+      if (!list.length) { if (ago > 1 && (!lastEnd[ek] || ago < lastEnd[ek])) lastEnd[ek] = ago; lastNavSync(); lastNone(ago === 1 ? "아직 지난주 기록이 없어요" : "이 주에는 기록이 없어요"); return; }
       // 억/만 단위로 줄여 한 줄 칩으로 담는다
       const short = n => n >= 1e8 ? (n / 1e8).toFixed(n >= 1e9 ? 0 : 1) + "억"
                        : n >= 1e4 ? Math.round(n / 1e4).toLocaleString() + "만"
                        : n.toLocaleString();
-      const medal = ["🥇", "🥈", "🥉"];
+      const medal = ["🥇", "🥈", "🥉", "4", "5"];
       const row = document.getElementById("boardLast");
       row.innerHTML = "";
       list.forEach((r, i) => {
@@ -14064,6 +14112,7 @@
         chip.className = "lp";
         const nm = document.createElement("span");
         nm.textContent = medal[i] + " " + r.name;
+        if (i >= 3) chip.classList.add("lp45");
         const sc = document.createElement("b");
         sc.textContent = gameMode === "noitem" ? Number(r.score).toLocaleString() + "m" : short(Number(r.score) || 0);
         chip.append(nm, sc);
@@ -14071,7 +14120,7 @@
       });
       lastBoard.hidden = false;
     } catch (e) {
-      lastNone(gameMode === "vs" ? "" : "지난주 기록을 불러오지 못했어요");
+      lastNone(gameMode === "vs" ? "" : "기록을 불러오지 못했어요");
     }
   }
   // 지난주 칸 — 비어도 숨기지 않는다 (모드마다 화면 배치가 같게, v0.8.61)
