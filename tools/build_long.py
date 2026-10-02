@@ -19,12 +19,21 @@ from gen_long import TH, OVER, build_strip      # 칸 크기·이어 붙이기�
 
 CH = 1024
 Q = 74
+# 이음매에 걸려 찌그러진 것 위에 덮는 그림 — (파일, 가운데 x, 가운데 y(위에서 잰 px), 폭)
+PATCHES = [
+    ("patch_earth.png", 170, 10393, 565),      # v0.9.139 10스테이지 지구 — 10·11칸 이음매에 걸려 납작해졌다
+]
 
 
 def main():
     build_strip()
     strip = Image.open(LONG / "strip.png").convert("RGB")
     H = strip.height
+    for f, cx, cy, w in PATCHES:
+        im = Image.open(LONG / f).convert("RGBA")
+        im = im.resize((w, round(im.height * w / im.width)), Image.LANCZOS)
+        strip.paste(im, (round(cx - im.width / 2), round(cy - im.height / 2)), im)
+    strip.save(LONG / "strip_patched.png")
     # 칸마다 아래에서 잰 한가운데 — build_strip 과 같은 셈
     anch, top = [TH / 2], TH
     n = 2
@@ -49,8 +58,8 @@ def main():
     print("조각 %d개 · %.0fKB · 높이 %d · 칸 %d" % (k, total / 1024, H, len(anch)))
     P = ROOT / "index.html"
     s = P.read_text(encoding="utf-8")
-    new = ("/*LONG-BEGIN*/ const LONG_H = %d, LONG_CH = %d, LONG_N = %d, LONG_ANCH = [%s]; /*LONG-END*/"
-           % (H, CH, k, ", ".join(str(round(a)) for a in anch)))
+    new = ("/*LONG-BEGIN*/ const LONG_H = %d, LONG_CH = %d, LONG_N = %d, LONG_V = %d, LONG_ANCH = [%s]; /*LONG-END*/"
+           % (H, CH, k, total % 100000, ", ".join(str(round(a)) for a in anch)))   # LONG_V — 조각이 바뀌면 주소도 바뀌게(옛 그림 캐시 방지)
     s2, cnt = re.subn(r"/\*LONG-BEGIN\*/.*?/\*LONG-END\*/", new, s, flags=re.S)
     if cnt != 1:
         sys.exit("index.html 에 LONG 표시가 없다")

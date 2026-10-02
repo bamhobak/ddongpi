@@ -2109,7 +2109,7 @@
   const elTitle = document.getElementById("overTitle");
   const coinNote = document.getElementById("coinNote");
 
-  const GAME_VERSION = "v0.9.138";
+  const GAME_VERSION = "v0.9.139";
   /* 제작사 스플래시(bamhobak friends 로고) — 2026-09-20 끔. 다시 켜려면 true */
   const SPLASH_USE = false;   // 코드를 고칠 때마다 뒤 두 자리를 올린다
   document.getElementById("ver").textContent = GAME_VERSION;
@@ -3096,7 +3096,7 @@
   /* v0.9.138 한 장처럼 이어지는 긴 배경 — 꽃밭부터 똥대장네 집까지 스테이지마다 한 칸씩 이어 그린 그림(Codex, tools/gen_long.py)을
      tools/build_long.py 가 아래부터 LONG_CH px 조각(assets/bg/long/cNN.webp)으로 잘라 둔다. 스테이지 k 의 한가운데 시각(k-0.5)에
      화면 가운데가 LONG_ANCH[k-1](아래에서 잰 px)에 오도록 레벨 시계를 따라 쭉 내려온다 — 지대마다 그림을 겹쳐 녹이던 방식은 뺐다. */
-  /*LONG-BEGIN*/ const LONG_H = 23409, LONG_CH = 1024, LONG_N = 23, LONG_ANCH = [850, 2130, 3410, 4690, 5970, 7250, 8500, 9756, 11036, 12316, 13596, 14876, 16156, 17436, 18716, 19999, 21279, 22559]; /*LONG-END*/
+  /*LONG-BEGIN*/ const LONG_H = 23409, LONG_CH = 1024, LONG_N = 23, LONG_V = 12992, LONG_ANCH = [850, 2130, 3410, 4690, 5970, 7250, 8500, 9756, 11036, 12316, 13596, 14876, 16156, 17436, 18716, 19999, 21279, 22559]; /*LONG-END*/
   const LONG_IMG = [];
   function longLoad(i) {
     if (i < 0 || i >= LONG_N || LONG_IMG[i] !== undefined) return;
@@ -3104,7 +3104,7 @@
     const im = new Image();
     im.onload = () => { LONG_IMG[i] = im; };
     im.onerror = () => { LONG_IMG[i] = undefined; };
-    im.src = "assets/bg/long/c" + (i < 10 ? "0" : "") + i + ".webp?" + LONG_H;
+    im.src = "assets/bg/long/c" + (i < 10 ? "0" : "") + i + ".webp?" + LONG_V;
   }
   for (let i = 0; i < 3; i++) longLoad(i);                                   // 처음 꽃밭 부분은 바로
   window.addEventListener("load", () => { let i = 3; const nx = () => { if (i >= LONG_N) return; longLoad(i++); setTimeout(nx, 250); }; nx(); });
@@ -15027,7 +15027,7 @@
       sky: [[ 54, 118, 208], [102, 166, 236], [178, 214, 247]] },
     { nm: "구름 줄무늬",     ic: "🎈", gr: "cloud", cl: 0.22, st: 0.30,
       sky: [[ 24,  62, 142], [ 54, 106, 184], [122, 170, 220]] },
-    { nm: "반짝 물결", ic: "☁️", gr: "cloud", cl: 0.10, st: 0.55,
+    { nm: "반짝 소용돌이", ic: "🌀", gr: "cloud", cl: 0.10, st: 0.55,
       sky: [[ 13,  34,  98], [ 30,  68, 142], [ 76, 122, 182]] },
     { nm: "오로라 커튼", ic: "🌌", gr: "metal", cl: 0.03, st: 0.78, au: 1,
       sky: [[  8,  18,  58], [ 16,  42,  94], [ 30,  72, 122]] },
@@ -15152,7 +15152,7 @@
     const lo = vh / 2, hi = Math.max(lo, LONG_H - vh / 2), n = LONG_ANCH.length;
     let c;
     if (!n) c = lo;
-    else if (t <= 0.5) c = lo + (Math.max(lo, LONG_ANCH[0]) - lo) * Math.max(0, t) / 0.5;
+    else if (n < 2 || t <= 1.5) c = lo + ((n < 2 ? LONG_ANCH[0] : LONG_ANCH[1]) - lo) * Math.max(0, t) / (n < 2 ? 0.5 : 1.5);   // v0.9.139 시작부터 바로 올라간다 (예전엔 1스테이지 앞 절반을 꽃밭에 붙잡아 뒀다)
     else if (t >= n - 0.5) c = LONG_ANCH[n - 1];
     else { const k = Math.floor(t - 0.5), f = t - 0.5 - k; c = LONG_ANCH[k] + (LONG_ANCH[k + 1] - LONG_ANCH[k]) * f; }
     return Math.max(lo, Math.min(hi, c)) - vh / 2;
