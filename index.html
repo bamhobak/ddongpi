@@ -10,7 +10,7 @@
 <link rel="apple-touch-icon" href="icon-192.png">
 <title>이피저피똥피</title>
 <link rel="preload" as="image" href="assets/logo.webp">
-<link rel="preload" as="image" href="assets/bg/home_fortune.webp">
+<link rel="preload" as="image" href="assets/bg/home_fortune.webp?2">
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ctext x='50' y='52' font-size='84' text-anchor='middle' dominant-baseline='central'%3E%F0%9F%92%A9%3C/text%3E%3C/svg%3E">
 <style>
   /* 나눔바른고딕 — 흔히 쓰는 한글 5,362자만 남겨 받아 둔 것(둘이 합쳐 426KB).
@@ -985,10 +985,7 @@
     background: linear-gradient(180deg, #2b3290 0%, #1d2068 55%, #171a52 100%); border: 1.5px solid rgba(120,150,255,.55);
     box-shadow: inset 0 1px 0 rgba(170,190,255,.35), 0 3px 0 #0a0c2a; }
   button.lvOpt:active { transform: translateY(2px); box-shadow: inset 0 1px 0 rgba(170,190,255,.35), 0 1px 0 #0a0c2a; }
-  .lvOpt .med { flex-shrink: 0; width: 36px; height: 36px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 19px; line-height: 1;
-    background: radial-gradient(circle at 38% 32%, #e7b6ff, #9b45ff 45%, #4a1590 100%);
-    box-shadow: 0 0 0 2.5px #ffcf4a, 0 0 0 4px #7a4508, 0 2px 6px rgba(0,0,0,.5), inset 0 -4px 8px rgba(40,0,80,.55); }
-  .lvOpt[data-ab="B"] .med { background: radial-gradient(circle at 38% 32%, #b8e4ff, #3c8dff 45%, #12357e 100%); box-shadow: 0 0 0 2.5px #ffcf4a, 0 0 0 4px #7a4508, 0 2px 6px rgba(0,0,0,.5), inset 0 -4px 8px rgba(0,20,70,.55); }
+  .lvOpt .med { flex-shrink: 0; width: 42px; height: 42px; background: url(assets/ui/perks.webp) 0 0 / 800% 600% no-repeat; filter: drop-shadow(0 2px 3px rgba(0,0,0,.5)); }   /* v0.9.129 능력마다 그린 아이콘(Codex, 8칸×6줄) — 테두리 없이 */
   .lvOpt .txt { display: flex; flex-direction: column; gap: 2px; min-width: 0; }
   .lvOpt .ttl { font-size: 13.5px; letter-spacing: -.3px; font-weight: 900; color: #fff; line-height: 1.2; }
   .lvOpt .ttl em { font-style: normal; font-size: 15px; margin-right: 4px; background: linear-gradient(180deg, #f2b8ff, #a86bff); -webkit-background-clip: text; background-clip: text; color: transparent; }
@@ -1095,11 +1092,11 @@
   #homeJobs #jobList.car .lvMini .lvMax { position: relative; display: block; height: 18px; line-height: 18px; margin-left: -9px; padding: 0 12px 0 16px; border-radius: 0 9px 9px 0;
     font-size: 12px; font-weight: 900; letter-spacing: 1.5px; color: #fff; text-shadow: 0 1px 2px rgba(120,40,0,.8);
     background: linear-gradient(180deg, #ffd86b, #ff9b1f); border: 1.5px solid #7a4508; border-left: 0; box-shadow: inset 0 1px 0 rgba(255,255,255,.6), 0 0 8px rgba(255,190,60,.6); }
-  #homeJobs #jobList.car .lvDet { --bh: 24px; min-width: 0; padding: 0 2px calc(var(--bh) * .08); margin: 0 0 0 6px; flex-shrink: 0; font-size: 12px; letter-spacing: .5px; }
-  #homeJobs #jobList.car .lvDet::before { content: "✦ "; color: #fff6b0; font-size: 10px; }
-  #homeJobs #jobList.car .lvDet.new::after { right: -15px; top: -8px; width: 16px; height: 16px; line-height: 16px; font-size: 10.5px; font-weight: 900;
-    background: radial-gradient(circle at 40% 35%, #ff8aa0, #ff3d5f 70%); box-shadow: 0 0 0 1.5px #fff, 0 0 8px rgba(255,60,95,.8); border: 0; animation: lvDot 1.2s ease-in-out infinite; }
-  @keyframes lvDot { 50% { transform: scale(1.18); } }
+  #homeJobs #jobList.car .lvDet { --bh: 24px; min-width: 0; padding: 0 2px calc(var(--bh) * .08); margin: 0 6px 0 6px; flex-shrink: 0; font-size: 12px; letter-spacing: .5px; }
+  #homeJobs #jobList.car .lvDet.new::after { content: "!"; right: -22px; top: 50%; width: auto; height: auto; margin-top: -10px; border: 0; border-radius: 0; background: none; box-shadow: none;
+    font-size: 17px; font-weight: 900; line-height: 20px; color: #ffd23f; animation: lvDot 1s ease-in-out infinite;
+    text-shadow: 0 1.5px 0 #7a4508, 1px 0 0 #7a4508, -1px 0 0 #7a4508, 0 -1px 0 #7a4508, 0 0 6px rgba(255,200,60,.8); }   /* v0.9.130 해금할 게 있으면 오른쪽에 작은 노란 느낌표 */
+  @keyframes lvDot { 50% { transform: translateY(-2px); } }
   #homeJobs .carDots { display: flex; gap: 7px; justify-content: center; }
   #homeJobs .carDots i { width: 8px; height: 8px; border-radius: 50%; background: rgba(255,255,255,.35); }
   #homeJobs .carDots i.on { background: #ffd23f; box-shadow: 0 0 6px rgba(255,210,63,.8); }
@@ -1159,6 +1156,47 @@
   .shopItem button { --bh: 38px; height: var(--bh); padding: 0 6px calc(var(--bh) * .08); font-size: 13px; font-weight: 800;
     border-style: solid; border-color: transparent; border-width: 0 calc(var(--bh) / 2); border-radius: 0; box-shadow: none; background: none;
     border-image: url(assets/ui/btn_gray.webp) 0 60 fill / 0 calc(var(--bh) / 2) / 0 stretch; color: #5d5480; }
+  /* ── v0.9.130 도감·상점 새 옷 — 남색 금테 판(panel_navy) · 유리 같은 남색 칸 · 금빛 고른 칸 ── */
+  #bookCount, #shopCoins { padding: 4px 14px; border-radius: 999px; background: rgba(8,10,34,.6); box-shadow: inset 0 0 0 1px rgba(255,216,107,.45); }
+  #bookCount { color: #e6e9ff; font-weight: 800; }
+  #shopCoins { font-size: 15px; }
+  #bookList { box-sizing: border-box; padding: 18px 16px 18px; gap: 8px; max-width: 372px;
+    border-style: solid; border-width: 0; border-color: transparent; border-image: url(assets/ui/panel_navy.webp) 66 fill / 30px / 0 stretch; }
+  #bookList .bk { border-radius: 12px; border: 1.5px solid rgba(130,155,255,.5);
+    background: radial-gradient(120% 90% at 50% 18%, #3d46ad, #232870 55%, #181b4f 100%);
+    box-shadow: inset 0 1px 0 rgba(180,195,255,.45), inset 0 -3px 6px rgba(0,0,20,.45), 0 2px 0 #0a0c2a; }
+  #bookList .bk:active { transform: translateY(1px); }
+  #bookList .bk.hid { border-color: rgba(220,150,255,.75);
+    background: radial-gradient(120% 90% at 50% 18%, #8a4fd8, #4f2496 55%, #2e1260 100%);
+    box-shadow: inset 0 1px 0 rgba(240,200,255,.5), inset 0 -3px 6px rgba(20,0,40,.5), 0 0 8px rgba(190,110,255,.45), 0 2px 0 #1a0838; }
+  #bookList .bk.lock { filter: none; opacity: 1; border-color: rgba(110,120,170,.35);
+    background: radial-gradient(120% 90% at 50% 18%, #1f2350, #13153a 70%); box-shadow: inset 0 2px 5px rgba(0,0,0,.55), 0 2px 0 #08091f; }
+  #bookList .bk.lock > * { filter: grayscale(1) brightness(.55); opacity: .55; }
+  #bookList .bk.lock::after { right: -4px; bottom: -5px; font-size: 12px; }
+  #bookList .bk.sel { outline: 0; border-color: #ffd86b; box-shadow: inset 0 0 0 1px #fff3b0, 0 0 12px rgba(255,200,60,.75), 0 2px 0 #3a2400; }
+  #bookDesc { padding: 20px 20px 18px; border-radius: 0; background: none; border-style: solid; border-width: 0; border-color: transparent;
+    border-image: url(assets/ui/panel_navy.webp) 66 fill / 30px / 0 stretch; color: #eef0ff; text-shadow: 0 1px 2px rgba(0,0,0,.5); }
+  #bookDesc b { color: #ffd86b; }
+  .shopSub { color: #e6e9ff; font-weight: 800; padding: 3px 12px; border-radius: 999px; background: rgba(8,10,34,.55); }
+  .shopItem { position: relative; border-radius: 14px; border: 1.5px solid rgba(130,155,255,.55);
+    background: linear-gradient(180deg, #2c3290 0%, #1e2269 55%, #171a52 100%);
+    box-shadow: inset 0 1px 0 rgba(180,195,255,.4), 0 3px 0 #0a0c2a, 0 4px 10px rgba(0,0,0,.35); }
+  .shopItem .si { filter: drop-shadow(0 2px 3px rgba(0,0,0,.45)); }
+  .shopItem img.si { width: 50px; height: 50px; border-radius: 50%; background: radial-gradient(circle, rgba(140,170,255,.35), transparent 70%); }
+  .shopItem .st { color: #eef0ff; }
+  .shopItem .st b { color: #fff; text-shadow: 0 1px 0 rgba(0,0,0,.5); }
+  .shopItem .st span { color: #c2c8f0; opacity: 1; }
+  .shopItem.owned { border-color: rgba(255,216,107,.8);
+    background: linear-gradient(180deg, #3a3474 0%, #262457 55%, #1c1b46 100%);
+    box-shadow: inset 0 0 0 1px rgba(255,236,160,.35), 0 0 10px rgba(255,200,60,.3), 0 3px 0 #0a0c2a; }
+  .shopItem.owned img.si { background: radial-gradient(circle, rgba(255,215,110,.45), transparent 70%); }
+  /* ── v0.9.130 메인 로고 없앰 — 숨은 통계·테스트 터치 자리는 위 가운데에 투명하게 남기고, 나머지를 위로 올려 배경 아래 집이 보이게 ── */
+  #startScreen #pgHome > h1 { display: none !important; }   /* 통계·테스트 모드 들어가는 곳은 옵션 탭 버튼으로 옮겼다 */
+  #optDev { display: flex; gap: 10px; justify-content: center; margin-top: 18px; }
+  #optDev button { --bh: 38px; height: var(--bh); box-sizing: border-box; min-width: 120px; border-style: solid; border-color: transparent; border-radius: 0; box-shadow: none; background: none;
+    border-width: 0 calc(var(--bh) / 2); border-image: url(assets/ui/btn_blue.webp) 0 60 fill / 0 calc(var(--bh) / 2) / 0 stretch;
+    padding: 0 4px calc(var(--bh) * .08); font-size: 13.5px; font-weight: 800; color: #fff; text-shadow: 0 1px 2px rgba(0,50,110,.65); }
+  #startScreen > #pgHome { justify-content: flex-start !important; padding-top: calc(var(--homeTop, 70px) + env(safe-area-inset-top)) !important; }
   /* 옵션 — 예전 설정 창의 내용 */
   #pgOpt #optRow { display: flex; flex-direction: column; align-items: center; gap: 14px; }
   #pgOpt .setLbl { font-size: 13px; color: #9fb4d0; margin-bottom: -6px; }
@@ -1643,7 +1681,7 @@
 
     <div id="startScreen" class="screen onHome">
       <div id="homeBgFade"></div>
-      <script>/* v0.9.128 첫 화면부터 고른 캐릭터의 배경 (기본 루나) */ try { var hj = localStorage.getItem("epjpddongpi_job") || "fortune"; if (["bangul","fit","powerj","levitator","powerp","fortune"].indexOf(hj) >= 0) document.getElementById("startScreen").style.setProperty("--hbg", "url(assets/bg/home_" + hj + ".webp)"); } catch (e) {}</script>
+      <script>/* v0.9.128 첫 화면부터 고른 캐릭터의 배경 (기본 루나) */ try { var hj = localStorage.getItem("epjpddongpi_job") || "fortune"; if (["bangul","fit","powerj","levitator","powerp","fortune"].indexOf(hj) >= 0) document.getElementById("startScreen").style.setProperty("--hbg", "url(assets/bg/home_" + hj + ".webp?2)"); } catch (e) {}</script>
       <div id="ver"></div>
       <button id="meBtn" aria-label="내 정보"><b id="meLv">Lv1</b><span id="meNm">-</span></button>
       <div id="coinBox" title="모은 코인">🪙 0</div>
@@ -2039,7 +2077,7 @@
   const elTitle = document.getElementById("overTitle");
   const coinNote = document.getElementById("coinNote");
 
-  const GAME_VERSION = "v0.9.129";
+  const GAME_VERSION = "v0.9.130";
   /* 제작사 스플래시(bamhobak friends 로고) — 2026-09-20 끔. 다시 켜려면 true */
   const SPLASH_USE = false;   // 코드를 고칠 때마다 뒤 두 자리를 올린다
   document.getElementById("ver").textContent = GAME_VERSION;
@@ -3445,15 +3483,8 @@
       5: { A: "대길 — 판마다 한 번, 좋은 예언 둘을 동시에 10초", B: "천기누설 — 나쁜 예언 동안 똥 떨어질 자리가 보임" }
     }
   };
-  /* v0.9.128 능력 고르기 카드의 동그란 아이콘 — [A, B] */
-  const CHR_PERK_IC = {
-    bangul:    { 2: ["⏱", "💨"], 3: ["🧼", "🧽"], 4: ["🫧", "🛡"], 5: ["🏠", "🛁"] },
-    fit:       { 2: ["💖", "💯"], 3: ["🥛", "🔥"], 4: ["🛡", "❤"], 5: ["💥", "💪"] },
-    powerj:    { 2: ["🃏", "🎲"], 3: ["📅", "⏳"], 4: ["🌙", "🕔"], 5: ["📝", "🌃"] },
-    levitator: { 2: ["📜", "⛰"], 3: ["🪶", "👣"], 4: ["🔥", "☁"], 5: ["🌀", "🌪"] },
-    powerp:    { 2: ["🍃", "⭐"], 3: ["✨", "🐢"], 4: ["💗", "🌟"], 5: ["🪷", "🤲"] },
-    fortune:   { 2: ["👁", "⌛"], 3: ["🍀", "⚡"], 4: ["☯", "🧿"], 5: ["🎊", "🔭"] }
-  };
+  /* v0.9.129 능력 아이콘 시트(assets/ui/perks.webp) 줄 순서 */
+  const PERK_ROW = { bangul: 0, fit: 1, powerj: 2, levitator: 3, powerp: 4, fortune: 5 };
   /* 오늘의 운세(루나 Lv3 A) — 날마다(한국 날짜) 하나 */
   const DAILY = ["별 점수 +10%", "코인 +10%", "아이템 +5%", "이동 속도 +3%", "간식 타임 +0.5초"];
   function dailyIdx() { return Math.floor((Date.now() + 9 * 3600000) / 86400000) % DAILY.length; }
@@ -7953,12 +7984,12 @@
   let hbgCur = getComputedStyle(document.getElementById("startScreen")).getPropertyValue("--hbg").trim();
   function homeBgSet() {
     const ss = document.getElementById("startScreen"), fd = document.getElementById("homeBgFade");
-    const u = HOME_BG.includes(job) ? "url(assets/bg/home_" + job + ".webp)" : "url(assets/bg/title.webp)";
+    const u = HOME_BG.includes(job) ? "url(assets/bg/home_" + job + ".webp?2)" : "url(assets/bg/title.webp)";
     if (u === hbgCur) return;
     if (hbgCur && fd) { fd.style.setProperty("--hbgPrev", hbgCur); fd.classList.remove("on"); void fd.offsetWidth; fd.classList.add("on"); }
     ss.style.setProperty("--hbg", u); hbgCur = u;
   }
-  window.addEventListener("load", () => { for (const k of HOME_BG) { const im = new Image(); im.src = "assets/bg/home_" + k + ".webp"; } });   // 넘길 때 깜빡이지 않게 미리 받아 둔다
+  window.addEventListener("load", () => { for (const k of HOME_BG) { const im = new Image(); im.src = "assets/bg/home_" + k + ".webp?2"; } });   // 넘길 때 깜빡이지 않게 미리 받아 둔다
   function carSet(id) {                      // 고른 캐릭터를 바꾼다(다시 그리지 않는다)
     if (id === job || !JOBS[id]) return;
     idleStop();
@@ -8143,7 +8174,7 @@
             bar.appendChild(f); m.append(t, bar);
           }
           card.appendChild(m);
-          const det = document.createElement("button"); det.className = "lvDet" + (perkTodo(id) ? " new" : ""); det.textContent = "상세";   // v0.9.124 캐릭터 레벨 상세
+          const det = document.createElement("button"); det.className = "lvDet" + (perkTodo(id) ? " new" : ""); det.textContent = "상세+";   // v0.9.124 캐릭터 레벨 상세
           det.addEventListener("pointerdown", e => e.stopPropagation());
           det.addEventListener("click", e => { e.stopPropagation(); beep(800, .04, "triangle", .04); openChr(id); });
           m.appendChild(det);                            // v0.9.129 경험치 막대 바로 오른쪽에
@@ -8366,6 +8397,15 @@
   carWrap.append(document.getElementById("jobList"), carL, carR);      // v0.9.55 넘기기 틀 안에
   document.getElementById("homeJobs").append(carWrap, carDots, homeTraits);
   document.getElementById("pgOpt").appendChild(document.getElementById("optRow"));
+  {                                            // v0.9.130 개발자 통계 · 테스트 모드 — 메인 로고 속 숨은 버튼에서 옵션 탭으로
+    const d = document.createElement("div"); d.id = "optDev";
+    for (const [t, id] of [["📊 개발자 통계", "devDot"], ["🧪 테스트 모드", "testDot"]]) {
+      const b = document.createElement("button"); b.textContent = t;
+      b.addEventListener("click", () => { beep(800, .04, "triangle", .04); document.getElementById(id).click(); });
+      d.appendChild(b);
+    }
+    document.getElementById("pgOpt").appendChild(d);
+  }
   /* 도감 — 지금은 모두 열림. 나중에 잠금이 들어오면 bookOpen() 이 false 인 것은 회색 '?' 로, 여는 법(BOOK_HOW)을 보여 준다 */
   /* v0.9.51 도감 — 못 쓰는 증강(그 펫을 상점에서 안 산 것)은 회색. 누르면 해금 조건, 열린 것은 게임 중 나오는 조건 */
   const BOOK_PET = { "pet:helper": "helper", hungry: "helper",
@@ -8549,7 +8589,9 @@
       for (const ab of ["A", "B"]) {
         const b = document.createElement("button"); b.className = "lvOpt" + (cur === ab ? " sel" : ""); b.dataset.ab = ab;
         const t = P[l][ab], k = t.indexOf(" — ");                        // "이름 — 설명" 이면 이름을 크게
-        const md = document.createElement("i"); md.className = "med"; md.textContent = ((CHR_PERK_IC[j] || {})[l] || ["✨", "✨"])[ab === "A" ? 0 : 1];
+        const md = document.createElement("i"); md.className = "med";
+        const pr = PERK_ROW[j], pc = (l - 2) * 2 + (ab === "A" ? 0 : 1);       // v0.9.129 시트 칸: 줄 = 캐릭터, 칸 = 2A 2B 3A 3B …
+        if (pr !== undefined) md.style.backgroundPosition = (pc / 7 * 100) + "% " + (pr / 5 * 100) + "%";
         const tx = document.createElement("div"); tx.className = "txt";
         const tt = document.createElement("div"); tt.className = "ttl";
         const em = document.createElement("em"); em.textContent = ab; tt.appendChild(em);
