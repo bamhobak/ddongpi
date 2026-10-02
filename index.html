@@ -1173,7 +1173,7 @@
   #bookList .bk.lock > * { filter: grayscale(1) brightness(.55); opacity: .55; }
   #bookList .bk.lock::after { right: -4px; bottom: -5px; font-size: 12px; }
   #bookList .bk.sel { outline: 0; border-color: #ffd86b; box-shadow: inset 0 0 0 1px #fff3b0, 0 0 12px rgba(255,200,60,.75), 0 2px 0 #3a2400; }
-  #bookDesc { padding: 20px 20px 18px; border-radius: 0; background: none; border-style: solid; border-width: 0; border-color: transparent;
+  #bookDesc { padding: 4px 10px; min-height: 92px; flex-shrink: 0; border-radius: 0; display: block; background: none; border-style: solid; border-width: 24px 20px 24px !important; border-color: transparent;
     border-image: url(assets/ui/panel_navy.webp) 66 fill / 30px / 0 stretch; color: #eef0ff; text-shadow: 0 1px 2px rgba(0,0,0,.5); }
   #bookDesc b { color: #ffd86b; }
   .shopSub { color: #e6e9ff; font-weight: 800; padding: 3px 12px; border-radius: 999px; background: rgba(8,10,34,.55); }
@@ -1199,7 +1199,7 @@
   @media (max-height: 760px) { #startScreen > #pgHome { --homeTop: 72px; } }
   /* ── v0.9.131 시작하기 — 글자까지 그려 넣은 버튼 한 장(Codex btn_start) · v0.9.132 장식 없는 심플한 판, 글자 작게 ── */
   #startScreen #pgHome #btnStart { width: 190px; min-width: 0; height: 55px !important; padding: 0; margin: 0;
-    border: 0; border-image: none; border-radius: 0; box-shadow: none; background: url(assets/ui/btn_start.webp?4) center / contain no-repeat;
+    border: 0; border-image: none; border-radius: 0; box-shadow: none; background: url(assets/ui/btn_start.webp?5) center / contain no-repeat;
     color: transparent; font-size: 0 !important; text-shadow: none; animation: none; filter: drop-shadow(0 3px 4px rgba(0,0,0,.35)); }
   #startScreen #pgHome #btnStart:active { transform: translateY(2px) scale(.97); }
   /* v0.9.132 보유 중 — 버튼 말고 글자 표시(눌릴 것처럼 보이지 않게) */
@@ -1214,6 +1214,7 @@
   .lvRow .lvT { display: flex; flex-direction: column; gap: 1px; }
   .lvRow .lvLs { font-size: 11px; font-weight: 700; color: #a9b1e4; }
   .lvRow:not(.on) .lvLs { color: #6d76ad; }
+  #homeJobs #jobList.car .augCard.sil .nm2 { min-width: 150px; }   /* v0.9.136 잠긴 캐릭터 '???' 이름판도 다른 이름판 폭으로 — 짧아서 떠 보였다 */
   /* 옵션 — 예전 설정 창의 내용 */
   #pgOpt #optRow { display: flex; flex-direction: column; align-items: center; gap: 14px; }
   #pgOpt .setLbl { font-size: 13px; color: #9fb4d0; margin-bottom: -6px; }
@@ -2108,7 +2109,7 @@
   const elTitle = document.getElementById("overTitle");
   const coinNote = document.getElementById("coinNote");
 
-  const GAME_VERSION = "v0.9.135";
+  const GAME_VERSION = "v0.9.136";
   /* 제작사 스플래시(bamhobak friends 로고) — 2026-09-20 끔. 다시 켜려면 true */
   const SPLASH_USE = false;   // 코드를 고칠 때마다 뒤 두 자리를 올린다
   document.getElementById("ver").textContent = GAME_VERSION;
@@ -8486,7 +8487,7 @@
       const ok = bookOpen(a); if (ok) open++;
       const el = document.createElement("div");
       el.className = "bk" + (a.hidden ? " hid" : "") + (ok ? "" : " lock") + (bookSel === a.id ? " sel" : "");
-      el.textContent = a.ic;
+      const ic = document.createElement("span"); ic.textContent = a.ic; el.appendChild(ic);   // v0.9.136 그림 시트에 없는 이모지(똥파리 등)도 잠기면 회색이 되게 — 글자도 한 칸에 담는다
       el.addEventListener("click", () => {
         bookSel = a.id;
         for (const q of list.children) q.classList.remove("sel");
