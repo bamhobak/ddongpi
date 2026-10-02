@@ -1712,7 +1712,26 @@
     background: radial-gradient(120% 90% at 50% 18%, #3d46ad, #232870 60%); color: #e6e9ff; font-size: 11.5px; font-weight: 800; display: flex; align-items: center; justify-content: center; }
   #lastJobs button img { height: 26px; width: 26px; object-fit: contain; }
   #lastJobs button.on { border-color: #ffd86b; background: linear-gradient(180deg, #6a4c12, #33240c); color: #ffd86b; box-shadow: 0 0 8px rgba(255,200,60,.55); }
-  .lastRow .lp.lp45 { opacity: .9; }
+  /* v0.9.149 지난 순위 크게 — 칩 대신 한 줄씩 (메달 · 이름 · 점수) */
+  #pgRank #boardLast { flex-direction: column; flex-wrap: nowrap; gap: 5px; padding: 0 4px; }
+  #pgRank #boardLast .lp { display: flex; align-items: center; gap: 8px; width: 100%; box-sizing: border-box; height: 38px; padding: 0 12px;
+    font-size: 15px; font-weight: 800; border-radius: 10px; border: 1px solid rgba(150,170,255,.28);
+    background: linear-gradient(180deg, rgba(120,140,255,.16), rgba(120,140,255,.05)); color: #eef0ff; }
+  #pgRank #boardLast .lp .rk { font-style: normal; width: 24px; text-align: center; font-size: 17px; font-weight: 900; color: #a9b1e4; }
+  #pgRank #boardLast .lp .nm { flex: 1; overflow: hidden; text-overflow: ellipsis; }
+  #pgRank #boardLast .lp b { font-size: 16px; font-weight: 900; color: #ffd86b; font-variant-numeric: tabular-nums; }
+  #pgRank #boardLast .lp.p1 { height: 44px; font-size: 16.5px; border-color: rgba(255,216,107,.8); background: linear-gradient(90deg, rgba(255,200,60,.32), rgba(255,200,60,.06)); box-shadow: 0 0 10px rgba(255,200,60,.3); }
+  #pgRank #boardLast .lp.p1 b { font-size: 18px; color: #ffe27a; text-shadow: 0 0 8px rgba(255,210,63,.6); }
+  #pgRank #boardLast .lp.p2 { border-color: rgba(220,230,245,.6); background: linear-gradient(90deg, rgba(220,230,245,.22), rgba(220,230,245,.04)); }
+  #pgRank #boardLast .lp.p2 b { color: #eef3fb; }
+  #pgRank #boardLast .lp.p3 { border-color: rgba(230,160,100,.6); background: linear-gradient(90deg, rgba(220,140,80,.24), rgba(220,140,80,.04)); }
+  #pgRank #boardLast .lp.p3 b { color: #f0b47a; }
+  #pgRank #lastNav #lastWk { font-size: 15px; min-width: 180px; }
+  #pgRank #lastNav .lnBtn { width: 28px; height: 36px; }
+  #pgRank #lastJobs { gap: 5px; margin-bottom: 8px; }
+  #pgRank #lastJobs button { height: 38px; min-width: 38px; font-size: 13px; border-radius: 10px; }
+  #pgRank #lastJobs button img { width: 32px; height: 32px; }
+  #pgRank #boardLast .lpNone { font-size: 13px; padding: 10px 0; text-align: center; }
   #lastNav { display: flex; align-items: center; justify-content: center; gap: 10px; margin: 0 0 5px; }
   #lastNav #lastWk { min-width: 150px; text-align: center; font-size: 12.5px; font-weight: 800; color: #e6e9ff; text-shadow: 0 1px 2px rgba(0,0,0,.6); }
   #lastNav .lnBtn { width: 22px; height: 30px; padding: 0; border: 0; border-radius: 0; box-shadow: none; color: transparent; font-size: 0;
@@ -2162,7 +2181,7 @@
   const elTitle = document.getElementById("overTitle");
   const coinNote = document.getElementById("coinNote");
 
-  const GAME_VERSION = "v0.9.148";
+  const GAME_VERSION = "v0.9.149";
   /* 제작사 스플래시(bamhobak friends 로고) — 2026-09-20 끔. 다시 켜려면 true */
   const SPLASH_USE = false;   // 코드를 고칠 때마다 뒤 두 자리를 올린다
   document.getElementById("ver").textContent = GAME_VERSION;
@@ -14111,10 +14130,12 @@
         const chip = document.createElement("span");
         chip.className = "lp";
         const nm = document.createElement("span");
-        nm.textContent = medal[i] + " " + r.name;
+        const rk = document.createElement("i"); rk.className = "rk"; rk.textContent = medal[i]; chip.appendChild(rk);
+        nm.textContent = r.name; nm.className = "nm";
         if (i >= 3) chip.classList.add("lp45");
         const sc = document.createElement("b");
-        sc.textContent = gameMode === "noitem" ? Number(r.score).toLocaleString() + "m" : short(Number(r.score) || 0);
+        sc.textContent = gameMode === "noitem" ? Number(r.score).toLocaleString() + "m" : (Number(r.score) || 0).toLocaleString();   // v0.9.149 줄여 쓰지 않고 다
+        chip.classList.add("p" + (i + 1));
         chip.append(nm, sc);
         row.appendChild(chip);
       });
