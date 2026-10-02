@@ -1949,7 +1949,7 @@
   const elTitle = document.getElementById("overTitle");
   const coinNote = document.getElementById("coinNote");
 
-  const GAME_VERSION = "v0.9.124";
+  const GAME_VERSION = "v0.9.125";
   /* 제작사 스플래시(bamhobak friends 로고) — 2026-09-20 끔. 다시 켜려면 true */
   const SPLASH_USE = false;   // 코드를 고칠 때마다 뒤 두 자리를 올린다
   document.getElementById("ver").textContent = GAME_VERSION;
@@ -8407,7 +8407,7 @@
     chrPerkRows(c, job, renderGrow);
     box.appendChild(c);
   }
-  /* v0.9.124 캐릭터 레벨 Lv2~5 — 레벨이 안 되면 🔒(미리 보기), 되면 '해금하기', 해금하면 둘 중 하나 고르기 */
+  /* v0.9.124 캐릭터 레벨 Lv2~5 — 레벨이 안 되면 🔒(v0.9.125 능력은 숨김), 되면 '해금하기', 해금하면 둘 중 하나 고르기 */
   function chrPerkRows(c, j, redraw) {
     const cl = chrLv(j), P = CHR_PERKS[j], xp = lvData.cx[j] || 0;
     for (let l = 2; l <= 5; l++) {
@@ -8427,7 +8427,7 @@
       if (cl < l) {
         const n = document.createElement("div"); n.className = "lvNote";
         n.textContent = accLv() < 2 ? "공통 Lv 2부터 캐릭터 경험치가 쌓여요" : "경험치 " + Math.max(0, CHR_XP[l - 1] - xp).toLocaleString() + " 더 모으면 해금";
-        row.appendChild(n);
+        row.appendChild(n); c.appendChild(row); continue;   // v0.9.125 레벨이 닿기 전엔 무슨 능력인지 안 보여 준다
       } else if (!cur) {
         const n = document.createElement("div"); n.className = "lvWait"; n.textContent = "둘 중 하나를 골라줘!"; row.appendChild(n);
       }
