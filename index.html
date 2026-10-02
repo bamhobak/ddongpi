@@ -1041,8 +1041,7 @@
     color: #fff; font-size: 14px; font-weight: 800; text-shadow: 0 1px 2px rgba(0,0,0,.6); }
   #startScreen #meBtn b { padding: 1px 6px; border-radius: 999px; background: #ffd23f; color: #5a3000; font-size: 11.5px; font-weight: 900; text-shadow: none; }
   #startScreen #meBtn span { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-  #startScreen.onHome #coinBox { top: calc(max(8px, env(safe-area-inset-top)) + 36px) !important; }
-  #startScreen:not(.onHome) #meBtn { display: none; }   /* 이름 칩은 시작(메인) 탭에만 */
+  #startScreen #coinBox { top: calc(max(8px, env(safe-area-inset-top)) + 36px) !important; }   /* v0.9.133 이름 칩은 코인처럼 모든 탭에 */
   #homeJobs #jobList.car .lvDet { --bh: 26px; position: relative; display: block; height: var(--bh); box-sizing: border-box; min-width: 66px; margin: -2px auto 0;
     border-style: solid; border-color: transparent; border-radius: 0; box-shadow: none; background: none; border-width: 0 calc(var(--bh) / 2);
     border-image: url(assets/ui/btn_blue.webp) 0 60 fill / 0 calc(var(--bh) / 2) / 0 stretch; padding: 0 4px calc(var(--bh) * .08);
@@ -1080,7 +1079,7 @@
   #homeJobs #jobList.car .lvMini { position: relative; display: flex; align-items: center; justify-content: center; gap: 0; margin-top: -4px; height: 28px; }
   #homeJobs #jobList.car .lvMini b { position: relative; z-index: 1; flex-shrink: 0; width: 28px; height: 28px; border-radius: 50%; box-sizing: border-box;
     display: flex; flex-direction: column; align-items: center; justify-content: center; line-height: 1;
-    font-size: 15px; font-weight: 900; color: #5a2600; text-shadow: 0 1px 0 rgba(255,255,255,.55);
+    font-size: 16px; font-weight: 900; color: #5a2600; text-shadow: 0 1px 0 rgba(255,255,255,.55);
     background: radial-gradient(circle at 38% 30%, #fff8c4, #ffd23f 48%, #e88a0c 100%);
     box-shadow: 0 0 0 2px #7a4508, 0 2px 4px rgba(0,0,0,.45), inset 0 -3px 4px rgba(170,70,0,.45), inset 0 2px 2px rgba(255,255,255,.6); }
   #homeJobs #jobList.car .lvMini b small { font-size: 7px; font-weight: 900; letter-spacing: .5px; margin-bottom: -1px; color: #8a3f00; text-shadow: none; }
@@ -1206,6 +1205,12 @@
   /* v0.9.132 보유 중 — 버튼 말고 글자 표시(눌릴 것처럼 보이지 않게) */
   .shopItem button.own { border: 0 !important; border-image: none !important; background: none !important; box-shadow: none !important; height: auto; min-width: 84px; padding: 0;
     color: #ffd86b !important; font-size: 13.5px; font-weight: 900; letter-spacing: .5px; text-shadow: 0 1px 2px rgba(0,0,0,.7) !important; cursor: default; opacity: 1 !important; }
+  /* v0.9.133 상점 사기 버튼 — 좁게, 코인 그림과 숫자를 한 줄 가운데로, 버튼 두께만큼 살짝 올려 줄 가운데에 */
+  #shopPets .shopItem button.buy, #shopPets .shopItem button:not(.own) { --bh: 34px; min-width: 0; width: 76px; flex-shrink: 0; margin-top: -3px;
+    display: inline-flex; align-items: center; justify-content: center; gap: 3px; padding: 0 0 calc(var(--bh) * .08); font-size: 14px; line-height: 1; }
+  #shopPets .shopItem button .emj { vertical-align: 0; width: 1.05em; height: 1.05em; }
+  #shopPets .shopItem button.own { width: 76px; }
+  #startScreen > .page:not(#pgHome) { padding-top: calc(72px + env(safe-area-inset-top)); }   /* v0.9.134 이름·코인 칩이 모든 탭에 — 제목 리본을 그 아래로 */
   /* 옵션 — 예전 설정 창의 내용 */
   #pgOpt #optRow { display: flex; flex-direction: column; align-items: center; gap: 14px; }
   #pgOpt .setLbl { font-size: 13px; color: #9fb4d0; margin-bottom: -6px; }
@@ -2086,7 +2091,7 @@
   const elTitle = document.getElementById("overTitle");
   const coinNote = document.getElementById("coinNote");
 
-  const GAME_VERSION = "v0.9.133";
+  const GAME_VERSION = "v0.9.134";
   /* 제작사 스플래시(bamhobak friends 로고) — 2026-09-20 끔. 다시 켜려면 true */
   const SPLASH_USE = false;   // 코드를 고칠 때마다 뒤 두 자리를 올린다
   document.getElementById("ver").textContent = GAME_VERSION;
@@ -8175,7 +8180,7 @@
         if (car && jobOwned(id)) {                     // v0.9.121 캐릭터 레벨 + 경험치 막대(숫자 없이)
           const lv = chrLv(id), xp = lvData.cx[id] || 0, lo = CHR_XP[lv - 1], hi = CHR_XP[lv];
           const m = document.createElement("div"); m.className = "lvMini";
-          const t = document.createElement("b"); t.innerHTML = "<small>LV</small>" + lv;   // v0.9.129 금 메달
+          const t = document.createElement("b"); t.textContent = lv;   // v0.9.129 금 메달 · v0.9.133 'LV' 글자는 빼고 숫자만
           if (!hi) { const mx = document.createElement("span"); mx.className = "lvMax"; mx.textContent = "MAX"; m.append(t, mx); }   // v0.9.122 최대 레벨은 막대 대신 MAX
           else {
             const bar = document.createElement("i"); const f = document.createElement("em");
