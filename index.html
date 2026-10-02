@@ -2181,7 +2181,7 @@
   const elTitle = document.getElementById("overTitle");
   const coinNote = document.getElementById("coinNote");
 
-  const GAME_VERSION = "v0.9.149";
+  const GAME_VERSION = "v0.9.150";
   /* 제작사 스플래시(bamhobak friends 로고) — 2026-09-20 끔. 다시 켜려면 true */
   const SPLASH_USE = false;   // 코드를 고칠 때마다 뒤 두 자리를 올린다
   document.getElementById("ver").textContent = GAME_VERSION;
@@ -14088,11 +14088,18 @@
     const f = d => (d.getUTCMonth() + 1) + "." + d.getUTCDate();
     return (n === 1 ? "지난주" : n + "주 전") + " · " + f(a) + "~" + f(b);
   }
+  async function lastProbe(n, jb) {              // 한 주 더 옛날 기록을 미리 받아 둔다 (왼쪽 화살표를 켤지 정하려고)
+    if (n > LAST_MAX) return;
+    const ck = gameMode + ":" + jb + ":" + n;
+    if (!lastCache[ck]) { try { lastCache[ck] = await fetchRange(weekStartMs(n), weekStartMs(n - 1), 5, jb === "all" ? null : jb); } catch (e) { return; } }
+    if (jb === lastJob) lastNavSync();
+  }
   function lastNavSync() {
     document.getElementById("lastWk").textContent = lastWkLabel(lastAgo);
     document.querySelector("#lastNav .lnBtn.r").disabled = lastAgo <= 1;
-    const e = lastEnd[gameMode + ":" + lastJob];
-    document.querySelector("#lastNav .lnBtn.l").disabled = lastAgo >= LAST_MAX || (e && lastAgo >= e);
+    /* v0.9.150 기록이 있는 주까지만 — 한 주 더 옛날이 비었는지 미리 봐 두고, 비었거나 아직 모르면 왼쪽을 끈다 */
+    const ek = gameMode + ":" + lastJob, nx = lastCache[ek + ":" + (lastAgo + 1)];
+    document.querySelector("#lastNav .lnBtn.l").disabled = lastAgo >= LAST_MAX || !nx || !nx.length;
     for (const b of document.querySelectorAll("#lastJobs button")) b.classList.toggle("on", b.dataset.job === lastJob);
   }
   {                                              // 캐릭터 고르기 — 전체 + 캐릭터 얼굴
@@ -14140,6 +14147,7 @@
         row.appendChild(chip);
       });
       lastBoard.hidden = false;
+      lastProbe(ago + 1, jb);
     } catch (e) {
       lastNone(gameMode === "vs" ? "" : "기록을 불러오지 못했어요");
     }
