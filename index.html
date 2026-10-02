@@ -852,12 +852,12 @@
     background: radial-gradient(ellipse at 50% 100%, rgba(255,210,63,.55), rgba(255,210,63,0) 72%),
                 linear-gradient(180deg, #6a4fd0, #3b2c8c);
   }
-  #tabBar button.on { justify-content: flex-end; padding-bottom: 8px; }
-  #tabBar button.on img { transform: translateY(-14px) scale(1.28); }
+  #tabBar button.on { justify-content: center; padding-bottom: 6px; }   /* v0.9.141 글자가 빠진 만큼 — 고른 아이콘도 칸 가운데 */
+  #tabBar button.on img { transform: translateY(-3px) scale(1.22); }
   #tabBar button.on span { display: none; }   /* v0.9.137 탭 글자 없이 그림만 */
   #tabBar button.home img { width: 50px; height: 50px; }
   #tabBar button:active img { transform: translateY(-2px) scale(.94); }
-  #tabBar button.on:active img { transform: translateY(-14px) scale(1.2); }
+  #tabBar button.on:active img { transform: translateY(-3px) scale(1.14); }
   /* 코인·판 번호는 위로 — 탭 줄에 가리지 않게 */
   #startScreen #coinBox { top: max(8px, env(safe-area-inset-top)); bottom: auto !important; left: 12px; z-index: 6; }
   #startScreen #ver { top: max(12px, env(safe-area-inset-top)); bottom: auto !important; right: 12px !important; z-index: 6; }
@@ -2139,7 +2139,7 @@
   const elTitle = document.getElementById("overTitle");
   const coinNote = document.getElementById("coinNote");
 
-  const GAME_VERSION = "v0.9.140";
+  const GAME_VERSION = "v0.9.141";
   /* 제작사 스플래시(bamhobak friends 로고) — 2026-09-20 끔. 다시 켜려면 true */
   const SPLASH_USE = false;   // 코드를 고칠 때마다 뒤 두 자리를 올린다
   document.getElementById("ver").textContent = GAME_VERSION;
