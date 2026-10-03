@@ -1869,6 +1869,10 @@
   /* ── v0.9.169 랭킹 한 화면 — 지난 명예의 전당은 버튼 → 창, 나의 순위는 촘촘하게 ── */
   #hallPop #lastBoard { border: 0 !important; border-image: none !important; background: none !important; box-shadow: none !important; margin: 0 !important; padding: 0 !important; }
   #hallPop #lastBoard > h3 { display: none; }
+  #hallPop #lastBoard { display: flex; flex-direction: column; }
+  #hallPop #lastNav, #hallPop #lastJobs { position: sticky; z-index: 2; background: #1c2050; }   /* v0.9.188 100위까지 — 주·캐릭터 고르기는 위에 붙어 있게 */
+  #hallPop #lastNav { top: -2px; padding-top: 2px; margin-bottom: 0; padding-bottom: 5px; }
+  #hallPop #lastJobs { top: 34px; padding-bottom: 7px; margin-bottom: 0; }
   #hallPop #lastNav #lastWk { font-size: 14px; color: #e6e9ff; min-width: 150px; }
   #hallPop #boardLast .lp, #hallPop #boardLast .lp.p1 { height: 36px; font-size: 14.5px; }
   #hallPop #boardLast .lp b, #hallPop #boardLast .lp.p1 b { font-size: 15px; }
@@ -2390,7 +2394,7 @@
   const elTitle = document.getElementById("overTitle");
   const coinNote = document.getElementById("coinNote");
 
-  const GAME_VERSION = "v0.9.187";
+  const GAME_VERSION = "v0.9.188";
   /* 제작사 스플래시(bamhobak friends 로고) — 2026-09-20 끔. 다시 켜려면 true */
   const SPLASH_USE = false;   // 코드를 고칠 때마다 뒤 두 자리를 올린다
   document.getElementById("ver").textContent = GAME_VERSION;
@@ -14611,7 +14615,7 @@
   async function lastProbe(n, jb) {              // 한 주 더 옛날 기록을 미리 받아 둔다 (왼쪽 화살표를 켤지 정하려고)
     if (n > LAST_MAX) return;
     const ck = gameMode + ":" + jb + ":" + n;
-    if (!lastCache[ck]) { try { lastCache[ck] = await fetchRange(weekStartMs(n), weekStartMs(n - 1), 5, jb === "all" ? null : jb); } catch (e) { return; } }
+    if (!lastCache[ck]) { try { lastCache[ck] = await fetchRange(weekStartMs(n), weekStartMs(n - 1), 100, jb === "all" ? null : jb); } catch (e) { return; } }
     if (jb === lastJob) lastNavSync();
   }
   function lastNavSync() {
@@ -14692,7 +14696,7 @@
     if (gameMode === "vs") { lastNone(""); return; }       // 대전모드는 이 칸이 대전 랭킹 밑에 가려진다
     const ago = lastAgo, jb = lastJob, from = weekStartMs(ago), to = weekStartMs(ago - 1), ek = gameMode + ":" + jb, ck = ek + ":" + ago;
     try {
-      const list = lastCache[ck] || await fetchRange(from, to, 5, jb === "all" ? null : jb);   // v0.9.148 5위까지 · 캐릭터별
+      const list = lastCache[ck] || await fetchRange(from, to, 100, jb === "all" ? null : jb);   // v0.9.148 캐릭터별 · v0.9.188 100위까지
       lastCache[ck] = list;
       if (ago !== lastAgo || jb !== lastJob) return;        // 그 사이 다른 주·캐릭터로 넘겼다
       if (!list.length) { if (ago > 1 && (!lastEnd[ek] || ago < lastEnd[ek])) lastEnd[ek] = ago; lastNavSync(); lastNone(ago === 1 ? "아직 지난주 기록이 없어요" : "이 주에는 기록이 없어요"); return; }
@@ -14700,14 +14704,14 @@
       const short = n => n >= 1e8 ? (n / 1e8).toFixed(n >= 1e9 ? 0 : 1) + "억"
                        : n >= 1e4 ? Math.round(n / 1e4).toLocaleString() + "만"
                        : n.toLocaleString();
-      const medal = ["🥇", "🥈", "🥉", "4", "5"];
+      const medal = ["🥇", "🥈", "🥉"];
       const row = document.getElementById("boardLast");
       row.innerHTML = "";
       list.forEach((r, i) => {
         const chip = document.createElement("span");
         chip.className = "lp";
         const nm = document.createElement("span");
-        const rk = document.createElement("i"); rk.className = "rk"; rk.textContent = medal[i]; chip.appendChild(rk);
+        const rk = document.createElement("i"); rk.className = "rk"; rk.textContent = medal[i] || String(i + 1); chip.appendChild(rk);
         nm.textContent = r.name; nm.className = "nm";
         if (i >= 3) chip.classList.add("lp45");
         const sc = document.createElement("b");
