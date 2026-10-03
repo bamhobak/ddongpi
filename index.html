@@ -2388,7 +2388,7 @@
   const elTitle = document.getElementById("overTitle");
   const coinNote = document.getElementById("coinNote");
 
-  const GAME_VERSION = "v0.9.181";
+  const GAME_VERSION = "v0.9.182";
   /* 제작사 스플래시(bamhobak friends 로고) — 2026-09-20 끔. 다시 켜려면 true */
   const SPLASH_USE = false;   // 코드를 고칠 때마다 뒤 두 자리를 올린다
   document.getElementById("ver").textContent = GAME_VERSION;
@@ -2534,7 +2534,7 @@
     ctx.restore();
   }
 
-  /* 갤러그 전투기 — 원작처럼 흰 몸통에 빨간 무늬, 파란 속날개, 뾰족한 기수 */
+  /* 우주선 전투기 — 원작처럼 흰 몸통에 빨간 무늬, 파란 속날개, 뾰족한 기수 */
   /* 주먹 총알 — 총알 대신 조그만 주먹이 날아간다.
      위로 곧게 올라가므로 손등이 위를 보고, 아래에 빨간 소매가 따라붙는다.
      roundRect 는 옛 모바일 브라우저에 없어서 타원만으로 그린다. */
@@ -2647,7 +2647,7 @@
     ctx.restore();
   }
 
-  /* 갤러그 우주선 자리 — 캐릭터를 한가운데 두고 좌우로 고르게 늘어선다.
+  /* 우주선 우주선 자리 — 캐릭터를 한가운데 두고 좌우로 고르게 늘어선다.
      예전에는 좌우로 번갈아 놓느라 한 대뿐일 때 왼쪽으로 한 칸 비켜서 있었다. */
   function shipX(k, n) {
     const gap = 40;
@@ -2660,23 +2660,23 @@
   let job = JOB_DEFAULT;
   try { const j = localStorage.getItem(LS_JOB); if (jobOk(j)) job = j; } catch (e) {}
   /* ---------- 펫 ----------
-     직업과 별개로 하나를 데리고 나간다. 전에는 증강(뿌잉·갤러그)이거나 직업 능력(도박사의 비둘기)
+     직업과 별개로 하나를 데리고 나간다. 전에는 증강(뿌잉·우주선)이거나 직업 능력(도박사의 비둘기)
      이었던 것들 — 판 내내 따라다니며 제 몫을 한다. 펫에서 이어지는 히든 증강은 그 펫이 있을 때만 나온다. */
   const PETS = {
     none:   { nm: "없음",   ic: "🚫", ds: "펫 없이 혼자 뛰어요" },
     helper: { nm: "뿌잉", ic: "🐹", img: "assets/hamster.png",
               ds: "가끔 슝 날아올라 지나간 자리의 똥을 부숴요" },
-    galaga: { nm: "갤러그", ic: "🚀", img: "assets/pet_galaga.png",
+    galaga: { nm: "슝슝 우주선", ic: "🚀", img: "assets/pet_galaga.png",
               ds: "우주선이 땅에서 총알을 쏘아 올려요" },
     dove:   { nm: "비둘기", ic: "🕊️", img: "assets/dove.png",
-              ds: "많이 움직이면 날아올라 똥을 터뜨려요 (똥 점수 5배)" },
-    angel:  { nm: "수호천사", ic: "👼", img: "assets/pet_angel.png",
+              ds: "많이 움직이면 날아올라 똥을 터뜨려요" },
+    angel:  { nm: "아기 천사", ic: "👼", img: "assets/pet_angel.png",
               ds: "쓰러지면 한 번 다시 일으켜 주고, 다가오는 똥을 밀어내요" },
     gift:   { nm: "선물 요정", ic: "🧚", img: "assets/pet_fairy.png",
               ds: "가끔 날아가서 똥을 펑! 하트·우산·별·달로 바꿔요" },
-    coincat: { nm: "코인 고양이", ic: "🐈", img: "assets/pet_cat.png",
-              ds: "가끔 코인을 물어다 줘요 · 세 번째엔 5코인" },
-    eel:    { nm: "백만볼트 뱀장어", ic: "⚡", img: "assets/pet_eel.png",
+    coincat: { nm: "동전 야옹이", ic: "🐈", img: "assets/pet_cat.png",
+              ds: "가끔 코인을 물어다 줘요" },
+    eel:    { nm: "찌릿 장어", ic: "⚡", img: "assets/pet_eel.png",
               ds: "가끔 가까운 똥에 찌릿! 번개를 쏘고, 옆 똥까지 번져요" }
   };
   // 게임 화면에 그릴 펫 그림 (카드 그림과 같은 파일)
@@ -2720,7 +2720,7 @@
   /* 맨몸대결·똥탑등반은 방울이만 뛴다 (비누방울 없이). 고른 직업(LS_JOB)은 그대로 두고,
      똥대잔치로 돌아오면 원래 직업으로 되돌린다. */
   function jobLocked() { return gameMode !== "item"; }
-  /* 펫도 같다 — 맨몸대결·똥탑등반은 펫 없이 (파괴형 펫·수호천사가 맞는 횟수를 최대 절반까지 줄여 실력 대결이 안 됐다).
+  /* 펫도 같다 — 맨몸대결·똥탑등반은 펫 없이 (파괴형 펫·아기 천사가 맞는 횟수를 최대 절반까지 줄여 실력 대결이 안 됐다).
      저장한 펫(LS_PET)은 그대로 두고, 똥대잔치로 돌아오면 되돌린다. */
   function petLocked() { return gameMode !== "item"; }
   // hy = 발을 바닥에 고정했을 때 머리(판정 중심)가 player.y 에서 얼마나 떨어지는지.
@@ -3908,7 +3908,7 @@
   }
   // 맞았을 때 — 그 캐릭터의 아픈 소리 (풀소유는 따로, 없으면 옛 hurt)
   const PET_SFX_ONE = { gift: "_2", cat: "_2", eel: "_2", angel: "_2", dove: "_2" };   // v0.9.109 고른 하나만
-  const PET_SFX_OLD = { helper: "helper", galaga: "galaga" };   // v0.9.111 뿌잉·갤러그는 예전 소리 그대로
+  const PET_SFX_OLD = { helper: "helper", galaga: "galaga" };   // v0.9.111 뿌잉·우주선은 예전 소리 그대로
   function petSfx(p, vol) { if (PET_SFX_OLD[p]) return sfx(PET_SFX_OLD[p], vol); return sfx("pet_" + p + (PET_SFX_ONE[p] || (Math.random() < 0.5 ? "_1" : "_2")), vol); }   // v0.9.107
   function hurtSfx(jb) {
     const k = (jb === "powerp" && fullOwn ? "hurt_full" : "hurt_" + jb) + (Math.random() < 0.5 ? "_1" : "_2");   // v0.9.82 둘 중 하나
@@ -4264,7 +4264,7 @@
     timeMul: 1,         // 생존 점수 배율
     feverScoreMul: 1,   // 간식 낙하물 점수 배율
     fallMul: 1,         // 낙하 속도 배율
-    galaga: 0,          // 갤러그 우주선 수 (펫이면 1)
+    galaga: 0,          // 우주선 우주선 수 (펫이면 1)
     hitboxMul: 1,       // 피격 판정 + 캐릭터 크기 배율
     poopMul: 1,         // 똥 크기 배율
     itemRateMul: 1,     // 아이템 등장 간격 배율(작을수록 자주)
@@ -4284,11 +4284,11 @@
     dodge: 0,           // 쏙 피하기 — 맞을 때 피할 확률 (0~0.30)
     dungy: false,       // 꼬질꼬질 (하트가 적을수록 모든 점수가 오른다)
     momMeal: false,     // 쉬었음 청년: 엄마는 우리 딸 믿어 (엄마의 밥상이 떨어진다)
-    chainZap: false,    // 히든: 찌릿찌릿 번개 (갤러그 총알이 옆 똥 두 개로 번진다)
+    chainZap: false,    // 히든: 찌릿찌릿 번개 (우주선 총알이 옆 똥 두 개로 번진다)
     wak: false,         // 히든: 주먹 총알 (주먹이 똥을 튕겨 올리고, 부딪히면 같이 터진다)
     scoreMul: 1,        // 모든 점수에 곱해지는 배율
     dash: false,        // 방귀 대시 (두 번 두드리면 짧게 돌진 · 그동안 무적)
-    pierce: false,      // 뚫는 총알 (갤러그 총알이 똥 하나를 뚫고 지나간다)
+    pierce: false,      // 뚫는 총알 (우주선 총알이 똥 하나를 뚫고 지나간다)
     fly: false,         // 똥파리 (맞을 때마다 파리 한 마리가 5초 동안 똥을 부순다)
     stone: false,       // 얼음 땡 (1초 가만히 있으면 돌 — 무적, 점수·아이템 없음)
     gacha: false,       // 뽑기 (증강이 물음표로 나오고 절반은 히든)
@@ -4396,14 +4396,14 @@
       noCount: true,              // 방패 수는 화면에 우산으로 보이니 보유 뱃지는 생략
       go: () => { shields = Math.min(shields + 3, 10); } },   // 증강으로는 최대 10개까지
     /* ── v0.9.45 펫 증강 — 먹으면 그 펫이 이번 판 내내 함께한다. 여러 마리 가능, 한 마리당 한 번 ── */
-    /* v0.9.76 펫과 그 펫을 키우는 증강(도와줘 뿌잉·갤러그 편대·비둘기 떼)을 한 증강으로 묶었다 — 처음 먹으면 펫이 오고, 또 먹으면 한 단계씩 (최대 5단계) */
+    /* v0.9.76 펫과 그 펫을 키우는 증강(도와줘 뿌잉·우주선 편대·비둘기 떼)을 한 증강으로 묶었다 — 처음 먹으면 펫이 오고, 또 먹으면 한 단계씩 (최대 5단계) */
     { id: "pet:helper",  ic: "🐹", nm: "펫 뿌잉", max: 5, w: 0.7, cond: () => hasPet("helper"),
       nmFn: () => augCount["pet:helper"] ? "펫 뿌잉 " + (augCount["pet:helper"] + 1) + "단계" : "펫 뿌잉",
       ds: "로켓 햄스터가 가끔 슝 날아와서 지나간 자리의 똥을 부숴요",
       dsFn: () => augCount["pet:helper"] ? "뿌잉이 더 커지고 더 자주 날아와요" : "로켓 햄스터가 가끔 슝 날아와서 지나간 자리의 똥을 부숴요",
       go: () => { if (petOn.helper) aug.helper++; else { petOn.helper = true; aug.helper = Math.max(aug.helper, 1); } helperTimer = Math.min(helperTimer, 0.6); } },
-    { id: "pet:galaga",  ic: "🚀", nm: "펫 갤러그", max: 5, w: 0.7, cond: () => hasPet("galaga"),
-      nmFn: () => augCount["pet:galaga"] ? "펫 갤러그 " + (augCount["pet:galaga"] + 1) + "단계" : "펫 갤러그",
+    { id: "pet:galaga",  ic: "🚀", nm: "펫 슝슝 우주선", max: 5, w: 0.7, cond: () => hasPet("galaga"),
+      nmFn: () => augCount["pet:galaga"] ? "펫 슝슝 우주선 " + (augCount["pet:galaga"] + 1) + "단계" : "펫 슝슝 우주선",
       ds: "우주선이 땅에서 총알을 쏘아 올려요",
       dsFn: () => augCount["pet:galaga"] ? "우주선이 한 대 더 생겨요 · 많아지면 하나하나는 천천히 쏴요" : "우주선이 땅에서 총알을 쏘아 올려요",
       go: () => { if (petOn.galaga) aug.galaga++; else { petOn.galaga = true; aug.galaga = Math.max(aug.galaga, 1); } } },
@@ -4412,14 +4412,14 @@
       ds: "많이 움직이면 비둘기가 날아올라 똥을 터뜨려요",
       dsFn: () => augCount["pet:dove"] ? "날아갈 때 비둘기가 한 마리 더 날아요" : "많이 움직이면 비둘기가 날아올라 똥을 터뜨려요",
       go: () => { if (petOn.dove) aug.doveFlock++; else petOn.dove = true; } },
-    { id: "pet:angel",   ic: "👼", nm: "펫 수호천사", ds: "쓰러지면 한 번 다시 일으켜 주고, 다가오는 똥을 밀어내요", once: true, w: 0.6,
+    { id: "pet:angel",   ic: "👼", nm: "펫 아기 천사", ds: "쓰러지면 한 번 다시 일으켜 주고, 다가오는 똥을 밀어내요", once: true, w: 0.6,
       cond: () => hasPet("angel") && level >= 4,
       go: () => { petOn.angel = true; } },
     { id: "pet:gift",    ic: "🧚", nm: "펫 선물 요정", ds: "가끔 날아가서 떨어지는 똥을 선물로 바꿔요", once: true, w: 0.7, cond: () => hasPet("gift"),
       go: () => { petOn.gift = true; giftT = GIFT_EVERY * 0.5; } },
-    { id: "pet:coincat", ic: "🐈", nm: "펫 코인 고양이", ds: "가끔 코인을 물어다 줘요", once: true, w: 0.7, cond: () => hasPet("coincat"),
+    { id: "pet:coincat", ic: "🐈", nm: "펫 동전 야옹이", ds: "가끔 코인을 물어다 줘요", once: true, w: 0.7, cond: () => hasPet("coincat"),
       go: () => { petOn.coincat = true; catT = CAT_EVERY * 0.5; } },
-    { id: "pet:eel",     ic: "⚡", nm: "펫 백만볼트 뱀장어", ds: "가끔 가까운 똥에 찌릿! 번개를 쏘고, 옆 똥까지 번져요", once: true, w: 0.7, cond: () => hasPet("eel"),
+    { id: "pet:eel",     ic: "⚡", nm: "펫 찌릿 장어", ds: "가끔 가까운 똥에 찌릿! 번개를 쏘고, 옆 똥까지 번져요", once: true, w: 0.7, cond: () => hasPet("eel"),
       go: () => { petOn.eel = true; eelT = EEL_EVERY * 0.5; } },
     /* ── 펫 전용 증강 — 그 펫을 데리고 있을 때만 후보에 나온다 ── */
     { id: "doveHome",   ic: "📯", nm: "비둘기 집", ds: "비둘기가 더 자주 날아와요",
@@ -4498,7 +4498,7 @@
       hidden: true, once: true, cond: () => zapOwnN() >= 3 && (petOn.galaga || petOn.helper || petOn.dove || petOn.eel || petOn.gift),   // v0.9.61 똥을 부수는 펫이면 누구든 · v0.9.161 그 펫 3마리 이상 사 둬야
       go: () => { aug.chainZap = true; } },
     { id: "wak",        ic: "👊", nm: "주먹 총알", ds: "총알이 주먹으로 바뀌어요. 맞은 똥이 날아가 다른 똥이랑 같이 펑!",
-      hidden: true, once: true, cond: () => petOn.galaga && aug.galaga >= 2,   // 갤러그 2대 이상
+      hidden: true, once: true, cond: () => petOn.galaga && aug.galaga >= 2,   // 우주선 2대 이상
       go: () => { aug.wak = true; } },
     { id: "clone",      ic: "👯", nm: "꼬마 분신", ds: "작은 분신이 날아가서 똥이랑 같이 펑 터져요",
       hidden: true, once: true,
@@ -4509,7 +4509,7 @@
       max: 3, go: () => { aug.scoreMul *= 1.25; aug.hitboxMul *= 1.15; } },
     /* (☝️ 외줄 타기는 v0.8.58 에 뺐다 — 방어 증강까지 두 배가 되어 우산·잔상·작은 몸으로 사실상 안 죽었다) */
     /* ── v0.9.61 새 증강 ── */
-    { id: "pierce",     ic: "🔩", nm: "뚫는 총알", ds: "갤러그 총알이 똥 하나를 뚫고 지나가요",
+    { id: "pierce",     ic: "🔩", nm: "뚫는 총알", ds: "우주선 총알이 똥 하나를 뚫고 지나가요",
       once: true, cond: () => petOn.galaga,
       go: () => { aug.pierce = true; } },
     { id: "fly",        ic: "🪰", nm: "똥파리", ds: "맞을 때마다 똥파리가 나와서 5초 동안 똥을 부숴요",
@@ -4821,14 +4821,14 @@
      게임 안의 1m = 논리 좌표 12px 로 본다 (캐릭터 키가 대략 1.5m 쯤 되는 비율). */
   let doves = [], moveDist = 0;
   /* ── 새 펫들 ──
-     수호천사: 한 판에 한 번 되살리고, 되살아난 뒤 ANGEL_SEC 동안 둘레 ANGEL_R 안의 똥을 밀어낸다.
+     아기 천사: 한 판에 한 번 되살리고, 되살아난 뒤 ANGEL_SEC 동안 둘레 ANGEL_R 안의 똥을 밀어낸다.
      선물 요정: GIFT_EVERY 마다 날아가 떨어지는 똥 하나를 펑 터뜨려 아이템으로 바꾼다.
-     코인 고양이: CAT_EVERY 마다 위에서 고개를 내밀어 코인을 떨어뜨린다 (세 번째마다 5코인).
-     백만볼트 뱀장어: EEL_EVERY 마다 가장 가까운 똥에 번개 — 옆 똥으로 EEL_CHAIN 개까지 옮겨붙는다. */
+     동전 야옹이: CAT_EVERY 마다 위에서 고개를 내밀어 코인을 떨어뜨린다 (세 번째마다 5코인).
+     찌릿 장어: EEL_EVERY 마다 가장 가까운 똥에 번개 — 옆 똥으로 EEL_CHAIN 개까지 옮겨붙는다. */
   const ANGEL_SEC = 6, ANGEL_R = 92;   // v0.9.45 10초·106 → 6초·92   // v0.9.31 118 → 106
-  const GIFT_EVERY = 18, CAT_EVERY = 9, EEL_EVERY = 7, EEL_CHAIN = 2, EEL_HOP = 110;   // v0.9.45 요정 9→12 · 고양이 7→9 · 뱀장어 5→7초, 2개, 110   // v0.9.31 요정 8→9초 · 뱀장어 4.5→5초, 4→3개   // 뱀장어 옮겨붙는 거리 150 → 120
+  const GIFT_EVERY = 18, CAT_EVERY = 9, EEL_EVERY = 7, EEL_CHAIN = 2, EEL_HOP = 110;   // v0.9.45 요정 9→12 · 고양이 7→9 · 찌릿 장어 5→7초, 2개, 110   // v0.9.31 요정 8→9초 · 찌릿 장어 4.5→5초, 4→3개   // 찌릿 장어 옮겨붙는 거리 150 → 120
   let angelUsed = false, angelAura = 0, angelFx = 0;
-  /* 어깨 위 펫(수호천사·뱀장어)의 자리 — 캐릭터 뒤쪽 어깨를 목표로 부드럽게 쫓아간다.
+  /* 어깨 위 펫(아기 천사·찌릿 장어)의 자리 — 캐릭터 뒤쪽 어깨를 목표로 부드럽게 쫓아간다.
      방향을 바꾸면 반대편 어깨로 순간이동하지 않고, 머리 위로 살짝 떠올라 건너간다. */
   let petFx = 0, petFy = 0, petFon = false;
   function petGoal() {
@@ -4874,7 +4874,7 @@
   const SPOT_MUL = 4, SPOT_HALF = 38;
   let spotX = 0, spotOn = 0, spotMoved = false;
   function prophIs(id) { return (prophecy && prophecy.id === id && prophT > 0) || (prophecy2 && prophecy2.id === id && proph2T > 0); }   // v0.9.85 대길·여운 — 두 번째 예언
-  let bullets = [], shipClock = 0;   // 갤러그: 날아가는 총알과 편대 공용 시계
+  let bullets = [], shipClock = 0;   // 우주선: 날아가는 총알과 편대 공용 시계
   /* ── 리듬 실험 ──
      rhythmOn 이면 평소 생성기를 멈추고, 곡의 박자에 '도착' 하도록 떨어뜨린다.
      rhythmLead 는 몇 초 앞서 내보낼지 — 그만큼의 거리를 그 시간에 주파하도록
@@ -7753,7 +7753,7 @@
   /* 우주선 한 대가 다시 쏘기까지. 대수가 늘수록 각자 느긋해진다 —
      1대 0.6초 · 2대 0.8초 · 3대 1.0초 … (겹칠수록 총 화력의 상승폭이 줄어든다) */
   // 대수별 발사 간격 0.5 / 0.7 / 0.9 / 1.1 / 1.3 초
-  const SHIP_GAP = 0.7, SHIP_GAP_STEP = 0.25;   // v0.9.45 0.56/0.22 → 0.7/0.25   // v0.9.31 0.5/0.2 → 0.56/0.22 (갤러그 화력 약 10%↓)
+  const SHIP_GAP = 0.7, SHIP_GAP_STEP = 0.25;   // v0.9.45 0.56/0.22 → 0.7/0.25   // v0.9.31 0.5/0.2 → 0.56/0.22 (우주선 화력 약 10%↓)
   function shipGap(n) { return SHIP_GAP + SHIP_GAP_STEP * (n - 1); }
   const M_PX = 12, DOVE_EVERY = 110 * M_PX;   // v0.9.45 90m → 110m   // v0.9.31 80m → 90m   // 100m 에서 20% 줄여 80m 마다
   // 히든 '왕 비둘기' — 속도·크기·폭발은 1.5배, 출격은 3/4 거리마다
@@ -8830,8 +8830,8 @@
     legion: "'왕뼈다귀'를 먹으면 나와요", angryUmb: "우산이 5개 넘게 있으면 나와요 (버피는 빼고)",
     carrot: "하트가 2개 넘게 있으면 나와요",
     goldLord: "'무지개 똥'이랑 '자석'을 같이 가지고 있으면 나와요", inter: "'느릿느릿 하늘'을 2개 먹으면 나와요",
-    chainZap: "똥을 부수는 펫(뿌잉·갤러그·비둘기·선물 요정·뱀장어)을 게임 중에 먹으면 나와요", pierce: "게임 중에 '펫 갤러그'를 먼저 먹으면 나와요",
-    snackBig: "간식 증강을 4개 넘게 먹으면 나와요", toilet: "하트가 3개 넘고 레벨 7 아래일 때 나와요", wak: "갤러그가 2대 넘게 있으면 나와요",
+    chainZap: "똥을 부수는 펫(뿌잉·우주선·비둘기·선물 요정·찌릿 장어)을 게임 중에 먹으면 나와요", pierce: "게임 중에 '펫 슝슝 우주선'를 먼저 먹으면 나와요",
+    snackBig: "간식 증강을 4개 넘게 먹으면 나와요", toilet: "하트가 3개 넘고 레벨 7 아래일 때 나와요", wak: "우주선이 2대 넘게 있으면 나와요",
     clone: "레벨 7부터 · 하트가 2개 아래일 때 나와요"
   };
   /* v0.9.161 찌릿찌릿 번개 — 똥을 부수는 펫 다섯 중 3마리 이상 사 두면 열린다 */
@@ -8850,7 +8850,7 @@
       const pid = BOOK_PET[a.id];
       if (!ok) {                                   // v0.9.52 잠긴 것은 해금 조건이 맨 윗줄 (자물쇠와 함께)
         const lk = document.createElement("span"); lk.className = "how lockHow top";
-        lk.textContent = a.id === "chainZap" ? "🔒 뿌잉·갤러그·비둘기·선물 요정·뱀장어 중 3개 이상 구매하면 해금 (" + zapOwnN() + "/3)"
+        lk.textContent = a.id === "chainZap" ? "🔒 뿌잉·우주선·비둘기·선물 요정·찌릿 장어 중 3개 이상 구매하면 해금 (" + zapOwnN() + "/3)"
           : ACH[a.id] && !achU.has(a.id) ? "🔒 " + ACH[a.id].t + " 해금" + achProg(a.id)
           : "🔒 상점에서 '" + PETS[pid].nm + "'를 사면 해금 (" + PET_PRICE + "코인)";
         desc.appendChild(lk);
@@ -10506,7 +10506,7 @@
       }
     }
 
-      // ---- 갤러그 — 땅에 늘어선 우주선이 저마다 제 주기로 총알을 쏘아 올린다 ----
+      // ---- 우주선 — 땅에 늘어선 우주선이 저마다 제 주기로 총알을 쏘아 올린다 ----
     if (aug.galaga > 0) {
       /* 우주선마다 제 박자가 있다 — 다 같이 쏘면 여러 대라도 한 발처럼 보인다.
          한 대는 shipGap(n) 마다 쏘되, k 번째는 그 주기를 n 등분한 만큼 늦게 쏜다.
@@ -10601,7 +10601,7 @@
     }
 
     petFollow(dt);
-    // ---- 수호천사 — 되살아난 뒤 둘레의 똥을 밖으로 밀어낸다 ----
+    // ---- 아기 천사 — 되살아난 뒤 둘레의 똥을 밖으로 밀어낸다 ----
     if (angelFx > 0) angelFx = Math.max(0, angelFx - dt);
     if (angelAura > 0) {
       angelAura = Math.max(0, angelAura - dt);
@@ -10677,7 +10677,7 @@
         if (f.k >= 1) fairies.splice(k, 1);
       }
     }
-    // ---- 코인 고양이 — 위에서 고개를 내밀어 코인을 떨어뜨린다 ----
+    // ---- 동전 야옹이 — 위에서 고개를 내밀어 코인을 떨어뜨린다 ----
     if (petOn.coincat && state === STATE.PLAY) {
       catT -= dt * tsc * gPet();   // v0.9.72 성장 펫 훈련
       if (catT <= 0) {
@@ -10698,11 +10698,11 @@
       }
       if (c.t >= 1.4) cats.splice(k, 1);
     }
-    // ---- 백만볼트 뱀장어 — 가까운 똥에 번개, 옆 똥으로 옮겨붙는다 ----
+    // ---- 찌릿 장어 — 가까운 똥에 번개, 옆 똥으로 옮겨붙는다 ----
     if (petOn.eel && state === STATE.PLAY) {
       eelT -= dt * tsc * gPet();   // v0.9.72 성장 펫 훈련
       if (eelT <= 0) {
-        const ex = petFx, ey = petFy + petArc() + 4;     // 번개는 뱀장어가 있는 자리에서
+        const ex = petFx, ey = petFy + petArc() + 4;     // 번개는 찌릿 장어가 있는 자리에서
         const n = zapChain(ex, ey, EEL_CHAIN + (aug.chainZap ? 2 : 0), 9999, true);
         eelT = n ? EEL_EVERY : 0.5;          // 똥이 없으면 잠깐 뒤 다시
       }
@@ -11300,7 +11300,7 @@
               if (!hurtSfx(job)) beep(140, .25, "sawtooth", .07);
               if (navigator.vibrate) navigator.vibrate(70);
               if (dirtJob() ? dirt >= DIRT_MAX : lives <= 0) {
-                if (angelSave(now)) { items.splice(i, 1); continue; }   // 수호천사 — 한 번 되살린다
+                if (angelSave(now)) { items.splice(i, 1); continue; }   // 아기 천사 — 한 번 되살린다
                 if (reviveSave(now)) { items.splice(i, 1); continue; }  // v0.9.72 성장 부활
                 return startDeath();               // 마지막 똥은 남겨 둔 채 느린 화면으로
               }
@@ -14030,7 +14030,7 @@
      gainMul — 부순 것의 점수 배율. 비둘기는 5배를 준다
      (일반 똥·까다로운 똥·무지개똥·간식 낙하물에 모두 걸린다). */
   /* 번개 — (x0,y0) 에서 가장 가까운 똥으로, 거기서 다시 가장 가까운 똥으로 n 번 옮겨붙는다.
-     first=true 면 첫 표적은 거리 제한 없이 화면에서 가장 가까운 것(뱀장어), 아니면 hop 안에서만.
+     first=true 면 첫 표적은 거리 제한 없이 화면에서 가장 가까운 것(찌릿 장어), 아니면 hop 안에서만.
      부순 개수를 돌려준다. */
   function zapChain(x0, y0, n, firstRange, first, hop) {
     const HOP = hop || EEL_HOP;              // 옆 똥으로 건너갈 수 있는 거리
@@ -14057,7 +14057,7 @@
       burst(pts[k][0], pts[k][1], "#bfe9ff", 10);
     }
     shake = Math.max(shake, 4);
-    if (!(first === true ? petSfx("eel") : sfx("laser", 0.5))) { beep(220, .08, "sawtooth", .035); beep(1600, .05, "square", .025); }   // v0.9.107 뱀장어는 제 소리
+    if (!(first === true ? petSfx("eel") : sfx("laser", 0.5))) { beep(220, .08, "sawtooth", .035); beep(1600, .05, "square", .025); }   // v0.9.107 찌릿 장어는 제 소리
     return pts.length - 1;
   }
   // 선물 요정이 똥을 바꾼 아이템 — 하트·우산·별·달 중 하나 (직업 규칙은 그대로 따른다)
@@ -14073,7 +14073,7 @@
     items.push({ type, emoji: b.emoji, x, y, r: rr, vx: 0, vy: 150 * (H / BASE_H),
                  rot: 0, vr: 0, size: rr * 2, bob: Math.random() * 6.28, born: elapsed });
   }
-  // 정해진 자리에 코인 하나 (코인 고양이·선물 요정) — v 는 1/3/5
+  // 정해진 자리에 코인 하나 (동전 야옹이·선물 요정) — v 는 1/3/5
   function makeCoinAt(x, y, v) {
     const k = COIN_KINDS.find(c => c.v === v) || COIN_KINDS[0];
     items.push({ type: "coin", emoji: k.emoji, img: k.img, coin: k.v,
@@ -14082,7 +14082,7 @@
                  bob: Math.random() * 6.28, born: elapsed });
     coinSeen++; coinSeenV += k.v;
   }
-  // 수호천사 — 쓰러지는 순간 한 번 되살린다. 되살렸으면 true
+  // 아기 천사 — 쓰러지는 순간 한 번 되살린다. 되살렸으면 true
   function angelSave(now) {
     if (!petOn.angel || angelUsed || testMode) return false;
     angelUsed = true;
@@ -14093,7 +14093,7 @@
     shake = Math.max(shake, 16);
     burst(player.x, player.y, "#fff3c4", 40); burst(player.x, player.y, "#ffffff", 30);
     rings.push({ x: player.x, y: player.y + player.hy, t: 0, life: 0.6, r1: 180, color: "#ffe9a8" });
-    popText(player.x, player.y - 90, "👼 수호천사가 지켜 줬다!", "#fff3c4", 22);
+    popText(player.x, player.y - 90, "👼 아기 천사가 지켜 줬다!", "#fff3c4", 22);
     if (!petSfx("angel")) { beep(880, .12, "triangle", .06); beep(1320, .2, "triangle", .05); }
     if (navigator.vibrate) navigator.vibrate([30, 40, 80]);
     return true;
@@ -15367,11 +15367,11 @@
     goldLord: "무지개똥 끌어오는 반경·힘 2배(아이템과 같게), 무지개똥 점수 2배",
     inter: "8초마다 2초 동안 세상만 느려짐(점수 시계는 그대로) · 간식 타임엔 안 걸림",
     afterimage: "맞을 때 피할 확률 첫 개 10%, 이후 +5%p씩(최대 5개 30%) · 우산보다 먼저 굴림",
-    chainZap: "갤러그 총알·뿌잉·비둘기·선물 요정이 똥을 부술 때 번개로 옆 똥 2개(100px 안) 더 · 뱀장어는 번개가 2개 더 옮겨붙음",
-    wak: "갤러그 총알이 주먹 — 맞은 똥이 튕겨 올라가 처음 부딪힌 똥과 반경 42px 폭발 · 갤러그 2대 이상",
+    chainZap: "우주선 총알·뿌잉·비둘기·선물 요정이 똥을 부술 때 번개로 옆 똥 2개(100px 안) 더 · 찌릿 장어는 번개가 2개 더 옮겨붙음",
+    wak: "우주선 총알이 주먹 — 맞은 똥이 튕겨 올라가 처음 부딪힌 똥과 반경 42px 폭발 · 우주선 2대 이상",
     clone: "1.5초마다 작은 분신이 머리 위 똥에게 날아가 반경 110px 폭발(특수똥도) · 레벨 7부터, 하트 2개 이하일 때",
     glass: "모든 점수 ×1.25, 몸(판정) ×1.15 (최대 3번)",
-    pierce: "갤러그 총알이 똥 하나를 뚫고 계속 날아감",
+    pierce: "우주선 총알이 똥 하나를 뚫고 계속 날아감",
     fly: "맞을 때마다 똥파리 1마리, 5초 동안 400px/s 로 가까운 똥을 쫓아 반경 18px 부숨",
     stone: "2초 가만히 있으면 돌(무적, 최대 5초) · 풀린 뒤 1초는 다시 안 굳음 · 돌인 동안 점수·아이템·레벨 시계 멈춤",
     gacha: "이후 증강 카드가 물음표로 · 칸마다 50% 확률로 히든 증강에서 뽑음",
@@ -16921,7 +16921,7 @@
     ctx.restore();
   }
 
-  /* 새 펫 — 캐릭터 뒤쪽에 붙어 다니는 모습(수호천사·뱀장어)과 수호천사의 오라 */
+  /* 새 펫 — 캐릭터 뒤쪽에 붙어 다니는 모습(아기 천사·찌릿 장어)과 아기 천사의 오라 */
   function drawPetsBack(now) {
     const t = now / 1000;
     if (angelAura > 0) {                     // 되살아난 뒤의 오라 — 금빛 고리가 숨 쉬듯 커졌다 작아진다
@@ -16943,7 +16943,7 @@
       ctx.setLineDash([]);
       ctx.restore();
     }
-    // 수호천사 — 아직 쓰지 않았거나 오라가 도는 동안 어깨 위에 떠 있다
+    // 아기 천사 — 아직 쓰지 않았거나 오라가 도는 동안 어깨 위에 떠 있다
     if (petOn.angel && PET_IMG.angel && (!angelUsed || angelAura > 0)) {
       const big = angelAura > 0 ? 1.35 : 1;
       const sz = 42 * big;                // v0.8.08 전신 그림이 되며 34 → 42 (얼굴만 있던 옛 그림과 보이는 크기를 맞춤)
@@ -16954,7 +16954,7 @@
       ctx.drawImage(PET_IMG.angel, x - sz / 2, y - sz / 2, sz, sz);
       ctx.restore();
     }
-    // 백만볼트 뱀장어 — 어깨 뒤에서 살랑거린다. 번개를 쏠 때 번쩍인다
+    // 찌릿 장어 — 어깨 뒤에서 살랑거린다. 번개를 쏠 때 번쩍인다
     if (petOn.eel && PET_IMG.eel) {
       const sz = 40;
       if (!petFon) petFollow(0);
@@ -16968,7 +16968,7 @@
       ctx.restore();
     }
   }
-  /* 앞쪽 — 날아다니는 선물 요정, 고개 내민 코인 고양이, 번개 */
+  /* 앞쪽 — 날아다니는 선물 요정, 고개 내민 동전 야옹이, 번개 */
   function drawPetsFront(now) {
     for (const b of bolts) {                 // 번개 — 지그재그 두 겹(굵은 빛 + 가는 심)
       const k = b.t / b.life;
@@ -17812,7 +17812,7 @@
         }
       }
     }
-    // 갤러그 — 총알과 우주선
+    // 우주선 — 총알과 우주선
     if (bullets.length) {
       if (aug.wak) {                              // 주먹 총알 — 조그만 주먹
         for (const bu of bullets) drawFist(bu.x, bu.y);
