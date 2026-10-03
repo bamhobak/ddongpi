@@ -2410,7 +2410,7 @@
   const elTitle = document.getElementById("overTitle");
   const coinNote = document.getElementById("coinNote");
 
-  const GAME_VERSION = "v0.9.205";
+  const GAME_VERSION = "v0.9.206";
   /* 제작사 스플래시(bamhobak friends 로고) — 2026-09-20 끔. 다시 켜려면 true */
   const SPLASH_USE = false;   // 코드를 고칠 때마다 뒤 두 자리를 올린다
   document.getElementById("ver").textContent = GAME_VERSION;
@@ -11184,11 +11184,12 @@
       // 끝점만 보면 빠른 똥이 캐릭터를 뛰어넘을 수 있어서, 이번 프레임에 지나온 선분과의 거리를 본다
       const hitR = it.r + player.r * (dmg ? .632 : .78) * hitMul();
       const segD = (!it.bounced && !it.ghost) ? segDist(player.x, cy, prevX, prevY, it.x, it.y) : 1e9;
-      const hit = segD < hitR && !stoneOn;      // 얼음 땡 — 돌인 동안은 똥도 아이템도 그냥 지나간다
+      const stonePass = stoneOn && !(it.type === "poop" && it.dark);   // v0.9.206 얼음 땡 — 다크똥은 돌이어도 맞는다
+      const hit = segD < hitR && !stonePass;      // 얼음 땡 — 돌인 동안은 (다크똥 말고) 똥도 아이템도 그냥 지나간다
       /* 아슬! — 떨어지는 내내 히트박스에 가장 가까웠던 틈을 적어 둔다 (바닥에 닿을 때 점수가 갈린다).
          무적인 동안은 재지 않는다 — 맞고 난 뒤 1초를 공짜 스침으로 쓰지 못하게.
          대시 중에는 예외라, 뚫고 지나간 똥이 그대로 스침으로 잡힌다. */
-      if (dmg && !it.bounced && !it.ghost && (dashT > 0 || now >= invUntil) && !stoneOn) {
+      if (dmg && !it.bounced && !it.ghost && (dashT > 0 || now >= invUntil) && !stonePass) {
         const gap = segD - hitR;
         if (it.gap === undefined || gap < it.gap) it.gap = gap;
         if (gap <= GRAZE_GAP && !it.grazed) { it.grazed = true; onGraze(it); }
@@ -11375,6 +11376,7 @@
                 continue;
               }
               lastHitAt = elapsed; monkHeartN = 0; lotusDone = false;
+              if (stoneOn) { stoneOn = false; stoneT = -1; burst(player.x, player.y + player.hy, "#b9b9b9", 14); }   // v0.9.206 다크똥에 맞으면 돌이 깨진다
               if (allPerk("powerp", "B")) mindSlowUntil = now + 2000;   // 마음 비우기
               if (!testMode) {             // 테스트 모드는 맞아도 줄지 않는다
                 if (dirtJob()) dirt = Math.min(DIRT_MAX, dirt + DIRT_HIT);
@@ -15468,7 +15470,7 @@
     glass: "모든 점수 ×1.25, 몸(판정) ×1.15 (최대 3번)",
     pierce: "우주선 총알이 똥 하나를 뚫고 계속 날아감",
     fly: "맞을 때마다 똥파리 1마리, 5초 동안 400px/s 로 가까운 똥을 쫓아 반경 18px 부숨",
-    stone: "2초 가만히 있으면 돌(무적, 최대 5초) · 풀린 뒤 1초는 다시 안 굳음 · 돌인 동안 점수·아이템 없음 (스테이지는 흐름)",
+    stone: "2초 가만히 있으면 돌(무적, 최대 5초) · 풀린 뒤 1초는 다시 안 굳음 · 돌인 동안 점수·아이템 없음 (스테이지는 흐름) · 다크똥은 돌이어도 맞음",
     gacha: "이후 증강 카드가 물음표로 · 칸마다 50% 확률로 히든 증강에서 뽑음",
     snackBig: "간식 타임 동안 몸(판정) 1.5배 · 간식 증강(간식 시간 더!·간식 냠냠 대박·간식 비·대왕 간식·군단) 4개 이상",
     toilet: "달마다 증강 선택 2배(보름달 6번) · 하트로 맞으면 50% 확률로 즉사 · 하트 3개 이상 · 레벨 7 이하",
