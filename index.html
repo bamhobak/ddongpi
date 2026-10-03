@@ -2409,7 +2409,7 @@
   const elTitle = document.getElementById("overTitle");
   const coinNote = document.getElementById("coinNote");
 
-  const GAME_VERSION = "v0.9.198";
+  const GAME_VERSION = "v0.9.200";
   /* 제작사 스플래시(bamhobak friends 로고) — 2026-09-20 끔. 다시 켜려면 true */
   const SPLASH_USE = false;   // 코드를 고칠 때마다 뒤 두 자리를 올린다
   document.getElementById("ver").textContent = GAME_VERSION;
@@ -3407,7 +3407,7 @@
   /* v0.9.138 한 장처럼 이어지는 긴 배경 — 꽃밭부터 똥대장네 집까지 스테이지마다 한 칸씩 이어 그린 그림(Codex, tools/gen_long.py)을
      tools/build_long.py 가 아래부터 LONG_CH px 조각(assets/bg/long/cNN.webp)으로 잘라 둔다. 스테이지 k 의 한가운데 시각(k-0.5)에
      화면 가운데가 LONG_ANCH[k-1](아래에서 잰 px)에 오도록 레벨 시계를 따라 쭉 내려온다 — 지대마다 그림을 겹쳐 녹이던 방식은 뺐다. */
-  /*LONG-BEGIN*/ const LONG_H = 23409, LONG_CH = 1024, LONG_N = 23, LONG_V = 25238, LONG_ANCH = [850, 2130, 3410, 4690, 5970, 7250, 8500, 9756, 11036, 12316, 13596, 14876, 16156, 17436, 18716, 19999, 21279, 22559]; /*LONG-END*/
+  /*LONG-BEGIN*/ const LONG_H = 23409, LONG_CH = 1024, LONG_N = 23, LONG_V = 24158, LONG_ANCH = [850, 2130, 3410, 4690, 5970, 7250, 8500, 9756, 11036, 12316, 13596, 14876, 16156, 17436, 18716, 19999, 21279, 22559]; /*LONG-END*/
   const LONG_IMG = [];
   function longLoad(i) {
     if (i < 0 || i >= LONG_N || LONG_IMG[i] !== undefined) return;
@@ -4615,7 +4615,7 @@
     if (job === "powerp" && myPerk(2, "B")) invUntil = Math.max(invUntil, performance.now() + 500);     // v0.9.85 무무
     if (job === "powerp" && myPerk(5, "B") && starCount % 5 === 0) { invUntil = Math.max(invUntil, performance.now() + 3000); popText(player.x, player.y - 100, "🙏 빈손의 힘", "#ffe9a8", 20); }
     score += sc("별", gain);
-    popGain(x, y, gain, "⭐×" + starCount, "#ffd23f");
+    popGain(x, y, gain, "⭐", "#ffd23f");   // v0.9.199 몇 번째(×n)는 안 보여 준다
     if (!sfx("star")) { beep(1400, .1, "square", .05); beep(1750, .12, "square", .04); }
     return gain;
   }
@@ -9491,8 +9491,11 @@
     const zb = zapOwnN();
     petOwned.add(id);
     try { localStorage.setItem(LS_PET_OWN, JSON.stringify([...petOwned])); } catch (e) {}
-    const pa = AUGMENTS.find(x => x.id === "pet:" + id);      // v0.9.195 펫 증강이 열린 것도 알림으로 (번개 해금보다 먼저)
-    if (pa) unlockQ.push({ k: "증강", t: pa.ic + " " + pa.nm, how: "게임 중에 달을 먹으면 나와요" });
+    /* v0.9.195 펫 증강이 열린 것도 알림으로 · v0.9.199 그 펫으로 함께 열리는 증강(둘기 집·왕 둘기 등)도 하나씩 */
+    for (const a of AUGMENTS) {
+      if (a.gone || BOOK_PET[a.id] !== id || !bookOpen(a)) continue;
+      unlockQ.push({ k: "증강", t: a.ic + " " + a.nm, how: a.id.startsWith("pet:") ? "게임 중에 달을 먹으면 나와요" : (BOOK_COND[a.id] ? "✨ " + BOOK_COND[a.id] : "게임 중에 달을 먹으면 나와요") });
+    }
     zapUnlockCheck(zb);
     unlockShow();
     if (!sfx("giant")) { beep(880, .1, "triangle", .06); beep(1320, .16, "triangle", .05); }
@@ -10186,7 +10189,7 @@
      푼돈은 조용히 떠오르고, 큰돈은 고리가 퍼지면서 화면이 흔들린다. */
   /* gain 은 이제 화면에 적지 않는다 — 글씨 크기·고리·화면 흔들림으로만 크기를 전한다.
      문턱은 똥 한 개 값을 기준으로 잡아 레벨이 올라도 등급이 밀리지 않는다. */
-  function popGain(x, y, gain, text, color) {
+  function popGain(x, y, gain, text, color, noRing) {
     const w = gain / Math.max(1, poopGain());
     const tier = w >= 60 ? 2 : w >= 8 ? 1 : 0;
     floats.push({
@@ -10194,7 +10197,7 @@
       life: [1, 1.15, 1.35][tier], size: [22, 28, 36][tier], tier, pop: 1,
       vx: (Math.random() - Math.random()) * 14
     });
-    if (tier >= 1) {
+    if (tier >= 1 && !noRing) {
       rings.push({ x, y, t: 0, life: 0.46 + tier * 0.14,
                    r1: 74 + tier * 62, color: color || "#ffd23f" });
       shake = Math.max(shake, 6 + tier * 6);
@@ -11187,8 +11190,7 @@
           if (it.gold) {                    // 무지개똥 — 먹으면 점수 (레벨이 오를수록 값지다)
             const g = Math.round(120 * (aug.goldLord ? 2 : 1) * scoreMul() * level);
             score += sc("무지개똥", g); achBump("gold");
-            burst(it.x, it.y, "hsl(" + Math.round(goldFx(now, it.rseed || 0).hue) + ",100%,62%)", 20);
-            popGain(it.x, it.y, g, "🌈", "#ffe07a");
+            popGain(it.x, it.y, g, "🌈", "#ffe07a", true);   // v0.9.199 무지개똥 — 퍼지는 고리·조각 없이
             if (!sfx("gold")) beep(1250, .1, "square", .05);
             items.splice(i, 1);
             continue;
@@ -14258,8 +14260,7 @@
       if (it.gold) {                         // 무지개똥 — 부수면 직접 먹은 것과 같은 점수
         const g = Math.round(120 * (aug.goldLord ? 2 : 1) * scoreMul() * level * gm);
         score += sc("무지개똥", g); achBump("gold");
-        burst(it.x, it.y, "#ffd23f", 18);
-        popText(it.x, it.y, "🌈", "#ffe07a");   // 액수는 적지 않는다
+        popText(it.x, it.y, "🌈", "#ffe07a");   // v0.9.200 퍼지는 조각 없이   // 액수는 적지 않는다
         items.splice(i, 1);
         continue;
       }

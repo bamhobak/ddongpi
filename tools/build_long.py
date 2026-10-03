@@ -25,6 +25,30 @@ PATCHES = [
 ]
 
 
+def grade_seams(strip, span=700, cap=28.0):
+    """v0.9.199 칸끼리 색감 맞추기 — 이음매 위·아래 띠의 색 차이(중앙값, 옆으로 아주 넓게 뭉갬)를 반씩 나눠
+    위아래 span 줄에 걸쳐 서서히 메운다. 그림은 그대로, 색만 바뀐다"""
+    import numpy as np
+    from gen_long import BLEND
+    A = np.asarray(strip, dtype=np.float32).copy(); H, W = A.shape[:2]
+    top, n = TH, 2
+    k = 481; ker = np.ones(k) / k
+    while (LONG / ("tile_%02d.png" % n)).exists():
+        dy = int((LONG / ("tile_%02d.dy" % n)).read_text()); y0 = TH - OVER + dy
+        s0 = H - top; s1 = s0 + BLEND                       # 섞인 띠 [s0, s1]
+        up = np.median(A[s0 - 180:s0 - 30], axis=0); dn = np.median(A[s1 + 30:s1 + 180], axis=0)   # 열마다
+        d = np.stack([np.convolve(np.pad((dn - up)[:, c], k // 2, mode="edge"), ker, mode="valid") for c in range(3)], axis=1)
+        d = np.clip(d, -cap, cap)
+        # 고침 c(y): 위로 멀리 0 → 섞인 띠 위끝 s0 에서 +d/2 → 띠 안에서 곧게 -d/2 로 → 아래끝 s1 에서 -d/2 → 아래로 멀리 0 (끊김 없이)
+        for y in range(max(0, s0 - span), min(H, s1 + span)):
+            if y < s0:   u = 1 - (s0 - y) / span; c = 0.5 * u * u * (3 - 2 * u)
+            elif y <= s1: c = 0.5 - (y - s0) / max(1, s1 - s0)
+            else:        u = 1 - (y - s1) / span; c = -0.5 * u * u * (3 - 2 * u)
+            A[y] += d * c
+        top += y0; n += 1
+    return Image.fromarray(np.clip(A, 0, 255).astype(np.uint8))
+
+
 def main():
     build_strip()
     strip = Image.open(LONG / "strip.png").convert("RGB")
@@ -33,6 +57,7 @@ def main():
         im = Image.open(LONG / f).convert("RGBA")
         im = im.resize((w, round(im.height * w / im.width)), Image.LANCZOS)
         strip.paste(im, (round(cx - im.width / 2), round(cy - im.height / 2)), im)
+    strip = grade_seams(strip)
     strip.save(LONG / "strip_patched.png")
     # 칸마다 아래에서 잰 한가운데 — build_strip 과 같은 셈
     anch, top = [TH / 2], TH
