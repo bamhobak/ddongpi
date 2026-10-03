@@ -2388,7 +2388,7 @@
   const elTitle = document.getElementById("overTitle");
   const coinNote = document.getElementById("coinNote");
 
-  const GAME_VERSION = "v0.9.182";
+  const GAME_VERSION = "v0.9.184";
   /* 제작사 스플래시(bamhobak friends 로고) — 2026-09-20 끔. 다시 켜려면 true */
   const SPLASH_USE = false;   // 코드를 고칠 때마다 뒤 두 자리를 올린다
   document.getElementById("ver").textContent = GAME_VERSION;
@@ -2668,13 +2668,13 @@
               ds: "가끔 슝 날아올라 지나간 자리의 똥을 부숴요" },
     galaga: { nm: "슝슝 우주선", ic: "🚀", img: "assets/pet_galaga.png",
               ds: "우주선이 땅에서 총알을 쏘아 올려요" },
-    dove:   { nm: "비둘기", ic: "🕊️", img: "assets/dove.png",
+    dove:   { nm: "둘기", ic: "🕊️", img: "assets/dove.png",
               ds: "많이 움직이면 날아올라 똥을 터뜨려요" },
     angel:  { nm: "아기 천사", ic: "👼", img: "assets/pet_angel.png",
               ds: "쓰러지면 한 번 다시 일으켜 주고, 다가오는 똥을 밀어내요" },
     gift:   { nm: "선물 요정", ic: "🧚", img: "assets/pet_fairy.png",
               ds: "가끔 날아가서 똥을 펑! 하트·우산·별·달로 바꿔요" },
-    coincat: { nm: "동전 야옹이", ic: "🐈", img: "assets/pet_cat.png",
+    coincat: { nm: "야옹이", ic: "🐈", img: "assets/pet_cat.png",
               ds: "가끔 코인을 물어다 줘요" },
     eel:    { nm: "찌릿 장어", ic: "⚡", img: "assets/pet_eel.png",
               ds: "가끔 가까운 똥에 찌릿! 번개를 쏘고, 옆 똥까지 번져요" }
@@ -3312,11 +3312,11 @@
   let fetchRest = 0;        // 남은 쉬는 시간
 
   // 간식 타임에는 똥 이모지 대신 이 이미지가 떨어진다
-  /* v0.9.35 간식(Codex) — 뼈다귀·개껌·육포가 섞여 쏟아지고, 대왕은 왕뼈다귀. 우주에서도 같은 그림 */
+  /* v0.9.35 간식(Codex) · v0.9.183 사람 간식으로 — 막대사탕·딸기 도넛·줄무늬 사탕이 섞여 쏟아지고, 대왕은 왕관 딸기 케이크 (파일 이름은 옛 그대로) */
   const SNACK_IMG = [], SNACK_FILES = ["snack_bone", "snack_chew", "snack_jerky"];
   let snackKing = null;
-  for (const f of SNACK_FILES) { const im = new Image(); im.onload = () => SNACK_IMG.push(im); im.src = "assets/" + f + ".png?2"; }   // v0.9.144 두툼한 간식(Codex)
-  { const im = new Image(); im.onload = () => { snackKing = im; }; im.src = "assets/snack_king.png?2"; }
+  for (const f of SNACK_FILES) { const im = new Image(); im.onload = () => SNACK_IMG.push(im); im.src = "assets/" + f + ".png?3"; }   // v0.9.144 두툼한 간식(Codex)
+  { const im = new Image(); im.onload = () => { snackKing = im; }; im.src = "assets/snack_king.png?3"; }
   function snackPic(it) {
     if (it && it.giant && snackKing) return snackKing;
     if (!SNACK_IMG.length) return null;
@@ -4269,7 +4269,7 @@
     poopMul: 1,         // 똥 크기 배율
     itemRateMul: 1,     // 아이템 등장 간격 배율(작을수록 자주)
     feverRateMul: 1,    // 간식 낙하 간격 배율(작을수록 많이 쏟아짐)
-    giant: 0,           // 왕뼈다귀 등장 스택
+    giant: 0,           // 왕 케이크 등장 스택
     magnet: 0,          // 아이템 자석 반경 (1회 한정 증강)
     helper: 0,          // 뿌잉 인원 (펫이면 1)
     helperRush: false,  // 히든: 뿌잉 대폭주 (크기 확대)
@@ -4277,7 +4277,7 @@
     steelUmb: false,    // 히든: 강철 우산 (방패가 없으면 6.5초마다 하나 생긴다)
     starburst: false,   // 히든: 별똥별 (별을 먹으면 화면의 똥이 전부 사라진다)
     blackhole: false,   // 히든: 블랙홀 (자석 강화 + 간식 낙하물도 조금 끌어당김)
-    legion: false,      // 히든: 왕뼈다귀 친구들 (대왕 등장·점수 강화)
+    legion: false,      // 히든: 왕 케이크 친구들 (대왕 등장·점수 강화)
     doveWhat: false,    // 히든: 왕 비둘기 (비둘기 펫이 세지고 자주 나온다)
     doveFlock: 0,       // 비둘기 떼 — 한 번 출격에 더 나가는 마리 수
     doveFreq: 1,        // 비둘기 집 — 출격 거리 배율 (작을수록 자주)
@@ -4307,7 +4307,7 @@
     dungy:      { t: "하트 1개로 50초 버티면" },
     goldLord:   { t: "무지개 똥 20개 먹으면", key: "gold", n: 20 },
     starburst:  { t: "한 판에 별 5개 먹으면" },
-    legion:     { t: "왕뼈다귀 10개 먹으면", key: "giant", n: 10 },
+    legion:     { t: "왕 케이크 10개 먹으면", key: "giant", n: 10 },
     inter:      { t: "레벨 15까지 가면" },
     clone:      { t: "하트 1개로 30초 버티면" },
     afterimage: { t: "한 번도 안 맞고 레벨 6까지 가면" },
@@ -4407,22 +4407,22 @@
       ds: "우주선이 땅에서 총알을 쏘아 올려요",
       dsFn: () => augCount["pet:galaga"] ? "우주선이 한 대 더 생겨요 · 많아지면 하나하나는 천천히 쏴요" : "우주선이 땅에서 총알을 쏘아 올려요",
       go: () => { if (petOn.galaga) aug.galaga++; else { petOn.galaga = true; aug.galaga = Math.max(aug.galaga, 1); } } },
-    { id: "pet:dove",    ic: "🕊️", nm: "펫 비둘기", max: 5, w: 0.7, cond: () => hasPet("dove"),
-      nmFn: () => augCount["pet:dove"] ? "펫 비둘기 " + (augCount["pet:dove"] + 1) + "단계" : "펫 비둘기",
-      ds: "많이 움직이면 비둘기가 날아올라 똥을 터뜨려요",
-      dsFn: () => augCount["pet:dove"] ? "날아갈 때 비둘기가 한 마리 더 날아요" : "많이 움직이면 비둘기가 날아올라 똥을 터뜨려요",
+    { id: "pet:dove",    ic: "🕊️", nm: "펫 둘기", max: 5, w: 0.7, cond: () => hasPet("dove"),
+      nmFn: () => augCount["pet:dove"] ? "펫 둘기 " + (augCount["pet:dove"] + 1) + "단계" : "펫 둘기",
+      ds: "많이 움직이면 둘기가 날아올라 똥을 터뜨려요",
+      dsFn: () => augCount["pet:dove"] ? "날아갈 때 둘기가 한 마리 더 날아요" : "많이 움직이면 둘기가 날아올라 똥을 터뜨려요",
       go: () => { if (petOn.dove) aug.doveFlock++; else petOn.dove = true; } },
     { id: "pet:angel",   ic: "👼", nm: "펫 아기 천사", ds: "쓰러지면 한 번 다시 일으켜 주고, 다가오는 똥을 밀어내요", once: true, w: 0.6,
       cond: () => hasPet("angel") && level >= 4,
       go: () => { petOn.angel = true; } },
     { id: "pet:gift",    ic: "🧚", nm: "펫 선물 요정", ds: "가끔 날아가서 떨어지는 똥을 선물로 바꿔요", once: true, w: 0.7, cond: () => hasPet("gift"),
       go: () => { petOn.gift = true; giftT = GIFT_EVERY * 0.5; } },
-    { id: "pet:coincat", ic: "🐈", nm: "펫 동전 야옹이", ds: "가끔 코인을 물어다 줘요", once: true, w: 0.7, cond: () => hasPet("coincat"),
+    { id: "pet:coincat", ic: "🐈", nm: "펫 야옹이", ds: "가끔 코인을 물어다 줘요", once: true, w: 0.7, cond: () => hasPet("coincat"),
       go: () => { petOn.coincat = true; catT = CAT_EVERY * 0.5; } },
     { id: "pet:eel",     ic: "⚡", nm: "펫 찌릿 장어", ds: "가끔 가까운 똥에 찌릿! 번개를 쏘고, 옆 똥까지 번져요", once: true, w: 0.7, cond: () => hasPet("eel"),
       go: () => { petOn.eel = true; eelT = EEL_EVERY * 0.5; } },
     /* ── 펫 전용 증강 — 그 펫을 데리고 있을 때만 후보에 나온다 ── */
-    { id: "doveHome",   ic: "📯", nm: "비둘기 집", ds: "비둘기가 더 자주 날아와요",
+    { id: "doveHome",   ic: "📯", nm: "둘기 집", ds: "둘기가 더 자주 날아와요",
       max: 3, cond: () => petOn.dove,
       go: () => { aug.doveFreq *= 1 - 0.2 * dim("doveHome"); } },   // 80m → 64m → 53m …
     { id: "hungry",     ic: "😋", nm: "먹보 뿌잉", ds: "뿌잉이 아이템을 대신 먹어 줘요",
@@ -4431,9 +4431,9 @@
     { id: "roid",       ic: "💪", nm: "근육 빵빵", ds: "6초 동안 몸이 2배로 커지고, 닿는 똥을 모두 튕겨 내요",   // v0.9.40 옛 이름 '스테로이드 과다 복용' 
       max: 99, noCount: true, cond: () => job === "fit" && level >= 7,   // 헬스걸 전용 — 우산 세 개 자리
       go: () => { roidT = 6; } },   // v0.9.31 7 → 6초
-    { id: "doveWhat",   ic: "🕊️", nm: "왕 비둘기", ds: "비둘기가 더 크고 빨라지고, 더 자주 날아와요",
+    { id: "doveWhat",   ic: "🕊️", nm: "왕 둘기", ds: "둘기가 더 크고 빨라지고, 더 자주 날아와요",
       hidden: true, once: true,
-      cond: () => petOn.dove && Math.max(0, (augCount["pet:dove"] || 0) - 1) + (augCount["doveHome"] || 0) >= 2,   // 비둘기 강화 2개 이상 (펫 비둘기 2단계부터 + 비둘기 집)
+      cond: () => petOn.dove && Math.max(0, (augCount["pet:dove"] || 0) - 1) + (augCount["doveHome"] || 0) >= 2,   // 비둘기 강화 2개 이상 (펫 둘기 2단계부터 + 비둘기 집)
       go: () => { aug.doveWhat = true; } },
     { id: "steelUmb",   ic: "☔", nm: "우산 택배", ds: "우산이 없으면 저절로 배달돼요",
       hidden: true, once: true,
@@ -4445,7 +4445,7 @@
     { id: "blackhole",  ic: "🕳️", nm: "블랙홀",     ds: "아이템을 더 세게 끌어당겨요. 간식도 조금 끌려와요",
       hidden: true, once: true, cond: () => aug.magnet > 0,
       go: () => { aug.blackhole = true; aug.magnet = 390; } },   // 자석 220 → 390 으로 확장
-    { id: "legion",     ic: "🍗", nm: "왕뼈다귀 친구들", ds: "왕뼈다귀가 우르르 몰려와요",
+    { id: "legion",     ic: "🍰", nm: "왕 케이크 친구들", ds: "왕 케이크가 우르르 몰려와요",
       hidden: true, once: true, cond: () => aug.giant > 0,
       go: () => { aug.legion = true; } },
     { id: "magnet",     ic: "🧲", nm: "자석",       ds: "가까운 아이템이 졸졸 끌려와요",
@@ -4458,7 +4458,7 @@
     { id: "lucky",      ic: "🍀", nm: "네잎클로버",       ds: "아이템이 더 자주 나와요",
       // 첫 개는 +15%, 겹칠수록 0.85배씩 덜 먹는다 (5개 누적 +69%, 실측 +65%)
       go: () => { aug.itemRateMul /= 1 + 0.15 * dim("lucky"); } },
-    { id: "giant",      ic: "🦴", nm: "왕뼈다귀", ds: "커다란 왕뼈다귀 간식이 나와요",
+    { id: "giant",      ic: "🎂", nm: "왕 케이크", ds: "커다란 왕 케이크 간식이 나와요",
       once: true, go: () => { aug.giant = 1; } },
     { id: "downpour",   ic: "🌧️", nm: "간식 비", ds: "간식이 비처럼 더 많이 쏟아져요",
       go: () => { aug.feverRateMul = 1 / (1 / aug.feverRateMul + 0.20); } },   // 먹을 때마다 양 +20%, 감쇠 없음
@@ -4823,7 +4823,7 @@
   /* ── 새 펫들 ──
      아기 천사: 한 판에 한 번 되살리고, 되살아난 뒤 ANGEL_SEC 동안 둘레 ANGEL_R 안의 똥을 밀어낸다.
      선물 요정: GIFT_EVERY 마다 날아가 떨어지는 똥 하나를 펑 터뜨려 아이템으로 바꾼다.
-     동전 야옹이: CAT_EVERY 마다 위에서 고개를 내밀어 코인을 떨어뜨린다 (세 번째마다 5코인).
+     야옹이: CAT_EVERY 마다 위에서 고개를 내밀어 코인을 떨어뜨린다 (세 번째마다 5코인).
      찌릿 장어: EEL_EVERY 마다 가장 가까운 똥에 번개 — 옆 똥으로 EEL_CHAIN 개까지 옮겨붙는다. */
   const ANGEL_SEC = 6, ANGEL_R = 92;   // v0.9.45 10초·106 → 6초·92   // v0.9.31 118 → 106
   const GIFT_EVERY = 18, CAT_EVERY = 9, EEL_EVERY = 7, EEL_CHAIN = 2, EEL_HOP = 110;   // v0.9.45 요정 9→12 · 고양이 7→9 · 찌릿 장어 5→7초, 2개, 110   // v0.9.31 요정 8→9초 · 찌릿 장어 4.5→5초, 4→3개   // 찌릿 장어 옮겨붙는 거리 150 → 120
@@ -8823,14 +8823,14 @@
   const BOOK_COND = {   // v0.9.163 꼬마·강아지 눈높이 말투
     small: "버피는 못 먹어요", umbrella3: "버피는 못 먹어요", dash: "도도는 못 먹어요",
     "pet:angel": "레벨 4부터 나와요",
-    doveHome: "게임 중에 '펫 비둘기'를 먼저 먹으면 나와요",
+    doveHome: "게임 중에 '펫 둘기'를 먼저 먹으면 나와요",
     hungry: "뿌잉이랑 자석을 같이 가지고 있으면 나와요",
-    roid: "버피만 · 레벨 7부터 나와요", doveWhat: "비둘기 강화나 비둘기 집을 2개 넘게 먹으면 나와요",
+    roid: "버피만 · 레벨 7부터 나와요", doveWhat: "둘기 강화나 둘기 집을 2개 넘게 먹으면 나와요",
     steelUmb: "'우산 세 개'를 먹으면 나와요 (버피는 빼고)", starburst: "'반짝반짝 별'을 먹으면 나와요", blackhole: "'자석'을 먹으면 나와요",
-    legion: "'왕뼈다귀'를 먹으면 나와요", angryUmb: "우산이 5개 넘게 있으면 나와요 (버피는 빼고)",
+    legion: "'왕 케이크'를 먹으면 나와요", angryUmb: "우산이 5개 넘게 있으면 나와요 (버피는 빼고)",
     carrot: "하트가 2개 넘게 있으면 나와요",
     goldLord: "'무지개 똥'이랑 '자석'을 같이 가지고 있으면 나와요", inter: "'느릿느릿 하늘'을 2개 먹으면 나와요",
-    chainZap: "똥을 부수는 펫(뿌잉·우주선·비둘기·선물 요정·찌릿 장어)을 게임 중에 먹으면 나와요", pierce: "게임 중에 '펫 슝슝 우주선'를 먼저 먹으면 나와요",
+    chainZap: "똥을 부수는 펫(뿌잉·우주선·둘기·선물 요정·찌릿 장어)을 게임 중에 먹으면 나와요", pierce: "게임 중에 '펫 슝슝 우주선'를 먼저 먹으면 나와요",
     snackBig: "간식 증강을 4개 넘게 먹으면 나와요", toilet: "하트가 3개 넘고 레벨 7 아래일 때 나와요", wak: "우주선이 2대 넘게 있으면 나와요",
     clone: "레벨 7부터 · 하트가 2개 아래일 때 나와요"
   };
@@ -8850,7 +8850,7 @@
       const pid = BOOK_PET[a.id];
       if (!ok) {                                   // v0.9.52 잠긴 것은 해금 조건이 맨 윗줄 (자물쇠와 함께)
         const lk = document.createElement("span"); lk.className = "how lockHow top";
-        lk.textContent = a.id === "chainZap" ? "🔒 뿌잉·우주선·비둘기·선물 요정·찌릿 장어 중 3개 이상 구매하면 해금 (" + zapOwnN() + "/3)"
+        lk.textContent = a.id === "chainZap" ? "🔒 뿌잉·우주선·둘기·선물 요정·찌릿 장어 중 3개 이상 구매하면 해금 (" + zapOwnN() + "/3)"
           : ACH[a.id] && !achU.has(a.id) ? "🔒 " + ACH[a.id].t + " 해금" + achProg(a.id)
           : "🔒 상점에서 '" + PETS[pid].nm + "'를 사면 해금 (" + PET_PRICE + "코인)";
         desc.appendChild(lk);
@@ -9646,7 +9646,7 @@
     { min: 44, max: 52, score: 25, w: 5  },
     { min: 52, max: 62, score: 40, w: 3  }   // 초대형 — 가장 드물다
   ];
-  // 왕뼈다귀 — 기존 최대(52~62)의 2배 크기, 점수는 최대 등급(75)의 3배
+  // 왕 케이크 — 기존 최대(52~62)의 2배 크기, 점수는 최대 등급(75)의 3배
   const GIANT = { min: 104, max: 124, score: 138, w: 3, giant: true };
   /* 코인 — 평범한 게임 중에만, 똥이 나올 때 덤으로 함께 떨어진다.
      크기도 모양도 한 가지, 색만 셋이다. w 는 뽑기 비중(합 100 = 그대로 %). */
@@ -10224,7 +10224,7 @@
     // 간식 타임 끝나는 순간엔 화면이 똥으로 가득 차 있으니 1초 무적으로 숨 돌릴 틈을 준다
     if (wasFever && !fever && state === STATE.PLAY) {
       invUntil = Math.max(invUntil, now + 1500);
-      /* 왕뼈다귀도 다른 낙하물처럼 그대로 남겨 둔다. 간식 낙하물은
+      /* 왕 케이크도 다른 낙하물처럼 그대로 남겨 둔다. 간식 낙하물은
          타임이 끝나도 피해를 주지 않으니(dmg 판정에서 fever 껍질은 빠진다)
          떠 있는 동안 마저 먹을 수 있다. */
       beep(520, .12, "triangle", .04);          // 무적 — 소리와 함께 캐릭터 둘레에 옅은 빛(drawInvGlow)
@@ -10677,7 +10677,7 @@
         if (f.k >= 1) fairies.splice(k, 1);
       }
     }
-    // ---- 동전 야옹이 — 위에서 고개를 내밀어 코인을 떨어뜨린다 ----
+    // ---- 야옹이 — 위에서 고개를 내밀어 코인을 떨어뜨린다 ----
     if (petOn.coincat && state === STATE.PLAY) {
       catT -= dt * tsc * gPet();   // v0.9.72 성장 펫 훈련
       if (catT <= 0) {
@@ -11134,7 +11134,7 @@
             // 낙하물은 개당 점수를 띄우지 않는다 (한꺼번에 쏟아져서 화면이 지저분해진다)
             /* 흔들림은 점수가 아니라 크기로 정한다.
                점수는 레벨당 1.3배씩 부풀어서, 후반엔 제일 작은 간식 하나에도
-               화면이 최대로 흔들렸다. 왕뼈다귀(반지름 104~124)이 기준이고,
+               화면이 최대로 흔들렸다. 왕 케이크(반지름 104~124)이 기준이고,
                작은 것들은 거의 흔들리지 않는다 — 터지는 입자와 소리로 충분하다. */
             const sh = it.giant
               ? 26 + Math.min(1, (it.sz - GIANT.min) / (GIANT.max - GIANT.min)) * 6
@@ -14073,7 +14073,7 @@
     items.push({ type, emoji: b.emoji, x, y, r: rr, vx: 0, vy: 150 * (H / BASE_H),
                  rot: 0, vr: 0, size: rr * 2, bob: Math.random() * 6.28, born: elapsed });
   }
-  // 정해진 자리에 코인 하나 (동전 야옹이·선물 요정) — v 는 1/3/5
+  // 정해진 자리에 코인 하나 (야옹이·선물 요정) — v 는 1/3/5
   function makeCoinAt(x, y, v) {
     const k = COIN_KINDS.find(c => c.v === v) || COIN_KINDS[0];
     items.push({ type: "coin", emoji: k.emoji, img: k.img, coin: k.v,
@@ -15353,11 +15353,11 @@
     steelUmb: "우산이 하나도 없으면 6.5초마다 한 개 배송",
     starburst: "별을 먹으면 화면의 똥 전부 제거(무지개똥·다크똥·간식 제외), 개당 똥 점수 6배, 0.5초 동안 새 똥 안 나옴",
     blackhole: "자석 반경 220 → 390px, 간식 낙하물도 반경 195px 안에서 끌림",
-    legion: "왕뼈다귀 등장 2.1배, 점수 1.5배",
+    legion: "왕 케이크 등장 2.1배, 점수 1.5배",
     magnet: "아이템·무지개똥을 반경 220px 안에서 끌어옴(무지개똥은 반경·힘 절반) · 코인은 자석 없어도 110px",
     dash: "화면 두 번 두드리면 그 자리로 순간이동(가까우면 보는 쪽 210px), 재사용 10초, 지나온 길의 똥은 스친 것으로 침 · 무적 없음 · 도도는 안 나옴",
     lucky: "아이템 등장 간격 ÷(1+0.15) (겹칠수록 덜, 5개 ≈ +65%)",
-    giant: "간식 타임에 왕뼈다귀(반지름 104~124, 점수 138)가 섞여 나옴",
+    giant: "간식 타임에 왕 케이크(반지름 104~124, 점수 138)가 섞여 나옴",
     downpour: "간식 타임 낙하량 +20% (먹을 때마다, 줄지 않음)",
     angryUmb: "우산이 깨질 때 화면 2/3를 덮는 폭발로 똥을 날려 보냄(날아간 똥끼리 부딪히면 터짐) · 우산 5개 이상일 때 나옴",
     gold: "똥이 무지개똥으로 바뀔 확률 첫 개 8%, 이후 +7%p씩 · 무지개똥 = 120 × 레벨 × 점수배율",
@@ -15375,7 +15375,7 @@
     fly: "맞을 때마다 똥파리 1마리, 5초 동안 400px/s 로 가까운 똥을 쫓아 반경 18px 부숨",
     stone: "2초 가만히 있으면 돌(무적, 최대 5초) · 풀린 뒤 1초는 다시 안 굳음 · 돌인 동안 점수·아이템·레벨 시계 멈춤",
     gacha: "이후 증강 카드가 물음표로 · 칸마다 50% 확률로 히든 증강에서 뽑음",
-    snackBig: "간식 타임 동안 몸(판정) 1.5배 · 간식 증강(간식 시간 더!·간식 냠냠 대박·간식 비·왕뼈다귀·군단) 4개 이상",
+    snackBig: "간식 타임 동안 몸(판정) 1.5배 · 간식 증강(간식 시간 더!·간식 냠냠 대박·간식 비·왕 케이크·군단) 4개 이상",
     toilet: "달마다 증강 선택 2배(보름달 6번) · 하트로 맞으면 50% 확률로 즉사 · 하트 3개 이상 · 레벨 7 이하",
     twoRand: "일반 증강 중 무작위 2개를 바로 받음"
   };
@@ -16968,7 +16968,7 @@
       ctx.restore();
     }
   }
-  /* 앞쪽 — 날아다니는 선물 요정, 고개 내민 동전 야옹이, 번개 */
+  /* 앞쪽 — 날아다니는 선물 요정, 고개 내민 야옹이, 번개 */
   function drawPetsFront(now) {
     for (const b of bolts) {                 // 번개 — 지그재그 두 겹(굵은 빛 + 가는 심)
       const k = b.t / b.life;
