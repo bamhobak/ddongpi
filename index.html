@@ -1097,6 +1097,19 @@
   #ulPop .ulOk { --bh: 46px; height: var(--bh); box-sizing: border-box; min-width: 170px; margin-top: 6px; border-style: solid; border-color: transparent; border-radius: 0; box-shadow: none; background: none;
     border-width: 0 calc(var(--bh) / 2); border-image: url(assets/ui/btn_yellow.webp) 0 60 fill / 0 calc(var(--bh) / 2) / 0 stretch;
     padding: 0 4px calc(var(--bh) * .08); font-size: 17px; font-weight: 900; color: #6b3300; text-shadow: 0 1px 0 rgba(255,255,255,.55); }
+
+  /* ── v0.9.178 도감 탭 잠금(공통 Lv2) · 열림 안내 ── */
+  #startScreen.bookLock #tabBar button[data-pg="book"] { background: linear-gradient(180deg, #4a4a55, #34343d) !important; }
+  #startScreen.bookLock #tabBar button[data-pg="book"] img { filter: grayscale(1) brightness(.62) !important; }
+  #guideBook { position: fixed; inset: 0; z-index: 9999; }
+  #guideBook .gbHole { position: fixed; padding: 0; border: 0; border-radius: 14px; background: transparent; cursor: pointer;
+    box-shadow: 0 0 0 9999px rgba(4,5,22,.72), 0 0 0 4px #ffd86b, 0 0 22px 6px rgba(255,210,63,.85); animation: gbPulse 1.1s ease-in-out infinite; }
+  @keyframes gbPulse { 50% { box-shadow: 0 0 0 9999px rgba(4,5,22,.72), 0 0 0 6px #ffe58a, 0 0 32px 10px rgba(255,210,63,1); } }
+  #guideBook .gbTip { position: fixed; width: 220px; box-sizing: border-box; padding: 12px 14px; border-radius: 14px; text-align: center; pointer-events: none;
+    background: #1a1d4e; border: 2.5px solid #ffd86b; color: #eef0ff; font-size: 14px; font-weight: 800; line-height: 1.5; box-shadow: 0 6px 18px rgba(0,0,0,.5); }
+  #guideBook .gbTip b { color: #ffd86b; font-size: 17px; }
+  #guideBook .gbArrow { position: fixed; font-size: 34px; pointer-events: none; animation: gbBob .7s ease-in-out infinite; }
+  @keyframes gbBob { 50% { transform: translateY(8px); } }
   #startScreen #meBtn { position: absolute; top: max(8px, env(safe-area-inset-top)); left: 12px; z-index: 6; display: flex; align-items: center; gap: 6px;
     max-width: 150px; padding: 4px 12px 4px 5px; border-radius: 999px; box-shadow: none; background: rgba(8,9,16,.55); border: 1px solid rgba(255,210,63,.35);
     color: #fff; font-size: 14px; font-weight: 800; text-shadow: 0 1px 2px rgba(0,0,0,.6); }
@@ -2358,7 +2371,7 @@
   const elTitle = document.getElementById("overTitle");
   const coinNote = document.getElementById("coinNote");
 
-  const GAME_VERSION = "v0.9.177";
+  const GAME_VERSION = "v0.9.178";
   /* 제작사 스플래시(bamhobak friends 로고) — 2026-09-20 끔. 다시 켜려면 true */
   const SPLASH_USE = false;   // 코드를 고칠 때마다 뒤 두 자리를 올린다
   document.getElementById("ver").textContent = GAME_VERSION;
@@ -8758,6 +8771,7 @@
     beep(700, .04, "triangle", .04); setPage("opt");
   });
   for (const b of document.querySelectorAll("#tabBar button")) b.addEventListener("click", () => {
+    if (b.dataset.pg === "book" && accLv() < 2) { beep(220, .08, "square", .04); popHint("🔒 공통 레벨 2가 되면 열려요"); return; }   // v0.9.178
     if (b.dataset.pg === curPage) return;
     beep(700, .04, "triangle", .04);
     setPage(b.dataset.pg);
@@ -9190,6 +9204,34 @@
     hp.querySelector(".lpClose").addEventListener("click", () => { beep(700, .04, "triangle", .04); hp.classList.remove("on"); });
     hp.addEventListener("click", e => { if (e.target === hp) hp.classList.remove("on"); });
   }
+
+  /* v0.9.178 도감 탭 — 공통 Lv2 에 열린다. 열리면 한 번, 화면을 덮고 도감 탭만 눌리게 '이거 클릭해 보세요!' */
+  const LS_GUIDE_BOOK = "epjpddongpi_guide_book";
+  function bookLockSync() { document.getElementById("startScreen").classList.toggle("bookLock", accLv() < 2); }
+  function guideBook() {
+    bookLockSync();
+    const ss = document.getElementById("startScreen");
+    if (accLv() < 2 || ss.classList.contains("hidden") || ss.classList.contains("firstRun")) return;
+    try { if (localStorage.getItem(LS_GUIDE_BOOK)) return; } catch (e) { return; }
+    if (document.querySelector(".lvPop.on") || document.getElementById("guideBook")) { setTimeout(guideBook, 600); return; }
+    const tab = document.querySelector('#tabBar button[data-pg="book"]'); if (!tab) return;
+    const r = tab.getBoundingClientRect(); if (!r.width) return;
+    const g = document.createElement("div"); g.id = "guideBook";
+    const hole = document.createElement("button"); hole.className = "gbHole"; hole.setAttribute("aria-label", "도감 열기");
+    hole.style.left = r.left + "px"; hole.style.top = r.top + "px"; hole.style.width = r.width + "px"; hole.style.height = r.height + "px";
+    const tip = document.createElement("div"); tip.className = "gbTip"; tip.innerHTML = "📖 도감이 열렸어요!<br><b>이거 클릭해 보세요!</b>";
+    tip.style.left = Math.max(12, Math.min(innerWidth - 232, r.left + r.width / 2 - 110)) + "px"; tip.style.bottom = (innerHeight - r.top + 18) + "px";
+    const arr = document.createElement("div"); arr.className = "gbArrow"; arr.textContent = "👇";
+    arr.style.left = (r.left + r.width / 2 - 18) + "px"; arr.style.top = (r.top - 46) + "px";
+    g.append(hole, tip, arr); document.body.appendChild(g);
+    if (!sfx("star")) beep(1320, .1, "triangle", .05);
+    hole.addEventListener("click", () => {
+      try { localStorage.setItem(LS_GUIDE_BOOK, "1"); } catch (e) {}
+      g.remove(); beep(900, .05, "triangle", .05); setPage("book");
+    });
+  }
+  new MutationObserver(() => setTimeout(guideBook, 450)).observe(document.getElementById("startScreen"), { attributes: true, attributeFilter: ["class"] });
+  setTimeout(guideBook, 1200);
   /* v0.9.124 두 창 — 내 정보(이름 · 공통 레벨) / 캐릭터 레벨 상세 */
   function lvPopOpen(id) { document.getElementById(id).classList.add("on"); }
   function openMe() {
