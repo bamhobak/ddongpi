@@ -1286,6 +1286,8 @@
     border: 0; border-image: none; border-radius: 0; box-shadow: none; background: url(assets/ui/btn_start.webp?5) center / contain no-repeat;
     color: transparent; font-size: 0 !important; text-shadow: none; animation: none; filter: drop-shadow(0 3px 4px rgba(0,0,0,.35)); }
   #startScreen #pgHome #btnStart:active { transform: translateY(2px) scale(.97); }
+  #startScreen #pgHome #btnStart.loading { filter: grayscale(.9) brightness(.8) drop-shadow(0 3px 4px rgba(0,0,0,.35)); pointer-events: none; position: relative; }   /* v0.9.186 불러오는 중 */
+  #startScreen #pgHome #btnStart.loading::after { content: "불러오는 중…"; position: absolute; left: 0; right: 0; top: 100%; margin-top: 4px; font-size: 12px !important; font-weight: 800; color: #fff; text-shadow: 0 1px 2px rgba(0,0,0,.7); }
   /* v0.9.132 보유 중 — 버튼 말고 글자 표시(눌릴 것처럼 보이지 않게) */
   .shopItem button.own { border: 0 !important; border-image: none !important; background: none !important; box-shadow: none !important; height: auto; min-width: 84px; padding: 0;
     color: #ffd86b !important; font-size: 13.5px; font-weight: 900; letter-spacing: .5px; text-shadow: 0 1px 2px rgba(0,0,0,.7) !important; cursor: default; opacity: 1 !important; }
@@ -2388,7 +2390,7 @@
   const elTitle = document.getElementById("overTitle");
   const coinNote = document.getElementById("coinNote");
 
-  const GAME_VERSION = "v0.9.185";
+  const GAME_VERSION = "v0.9.186";
   /* 제작사 스플래시(bamhobak friends 로고) — 2026-09-20 끔. 다시 켜려면 true */
   const SPLASH_USE = false;   // 코드를 고칠 때마다 뒤 두 자리를 올린다
   document.getElementById("ver").textContent = GAME_VERSION;
@@ -4270,7 +4272,7 @@
     poopMul: 1,         // 똥 크기 배율
     itemRateMul: 1,     // 아이템 등장 간격 배율(작을수록 자주)
     feverRateMul: 1,    // 간식 낙하 간격 배율(작을수록 많이 쏟아짐)
-    giant: 0,           // 왕 케이크 등장 스택
+    giant: 0,           // 대왕 간식 등장 스택
     magnet: 0,          // 아이템 자석 반경 (1회 한정 증강)
     helper: 0,          // 뿌잉 인원 (펫이면 1)
     helperRush: false,  // 히든: 뿌잉 대폭주 (크기 확대)
@@ -4278,7 +4280,7 @@
     steelUmb: false,    // 히든: 강철 우산 (방패가 없으면 6.5초마다 하나 생긴다)
     starburst: false,   // 히든: 별똥별 (별을 먹으면 화면의 똥이 전부 사라진다)
     blackhole: false,   // 히든: 블랙홀 (자석 강화 + 간식 낙하물도 조금 끌어당김)
-    legion: false,      // 히든: 왕 케이크 친구들 (대왕 등장·점수 강화)
+    legion: false,      // 히든: 대왕 간식 친구들 (대왕 등장·점수 강화)
     doveWhat: false,    // 히든: 왕 비둘기 (비둘기 펫이 세지고 자주 나온다)
     doveFlock: 0,       // 비둘기 떼 — 한 번 출격에 더 나가는 마리 수
     doveFreq: 1,        // 비둘기 집 — 출격 거리 배율 (작을수록 자주)
@@ -4308,7 +4310,7 @@
     dungy:      { t: "하트 1개로 50초 버티면" },
     goldLord:   { t: "무지개 똥 20개 먹으면", key: "gold", n: 20 },
     starburst:  { t: "한 판에 별 5개 먹으면" },
-    legion:     { t: "왕 케이크 10개 먹으면", key: "giant", n: 10 },
+    legion:     { t: "대왕 간식 10개 먹으면", key: "giant", n: 10 },
     inter:      { t: "레벨 15까지 가면" },
     clone:      { t: "하트 1개로 30초 버티면" },
     afterimage: { t: "한 번도 안 맞고 레벨 6까지 가면" },
@@ -4446,7 +4448,7 @@
     { id: "blackhole",  ic: "🕳️", nm: "블랙홀",     ds: "아이템을 더 세게 끌어당겨요. 간식도 조금 끌려와요",
       hidden: true, once: true, cond: () => aug.magnet > 0,
       go: () => { aug.blackhole = true; aug.magnet = 390; } },   // 자석 220 → 390 으로 확장
-    { id: "legion",     ic: "🍰", nm: "왕 케이크 친구들", ds: "왕 케이크가 우르르 몰려와요",
+    { id: "legion",     ic: "🍰", nm: "대왕 간식 친구들", ds: "대왕 간식이 우르르 몰려와요",
       hidden: true, once: true, cond: () => aug.giant > 0,
       go: () => { aug.legion = true; } },
     { id: "magnet",     ic: "🧲", nm: "자석",       ds: "가까운 아이템이 졸졸 끌려와요",
@@ -4459,7 +4461,7 @@
     { id: "lucky",      ic: "🍀", nm: "네잎클로버",       ds: "아이템이 더 자주 나와요",
       // 첫 개는 +15%, 겹칠수록 0.85배씩 덜 먹는다 (5개 누적 +69%, 실측 +65%)
       go: () => { aug.itemRateMul /= 1 + 0.15 * dim("lucky"); } },
-    { id: "giant",      ic: "🎂", nm: "왕 케이크", ds: "커다란 왕 케이크 간식이 나와요",
+    { id: "giant",      ic: "🎂", nm: "대왕 간식", ds: "커다란 대왕 간식이 나와요",
       once: true, go: () => { aug.giant = 1; } },
     { id: "downpour",   ic: "🌧️", nm: "간식 비", ds: "간식이 비처럼 더 많이 쏟아져요",
       go: () => { aug.feverRateMul = 1 / (1 / aug.feverRateMul + 0.20); } },   // 먹을 때마다 양 +20%, 감쇠 없음
@@ -8828,7 +8830,7 @@
     hungry: "뿌잉이랑 자석을 같이 가지고 있으면 나와요",
     roid: "버피만 · 레벨 7부터 나와요", doveWhat: "둘기 강화나 둘기 집을 2개 넘게 먹으면 나와요",
     steelUmb: "'우산 세 개'를 먹으면 나와요 (버피는 빼고)", starburst: "'반짝반짝 별'을 먹으면 나와요", blackhole: "'자석'을 먹으면 나와요",
-    legion: "'왕 케이크'를 먹으면 나와요", angryUmb: "우산이 5개 넘게 있으면 나와요 (버피는 빼고)",
+    legion: "'대왕 간식'을 먹으면 나와요", angryUmb: "우산이 5개 넘게 있으면 나와요 (버피는 빼고)",
     carrot: "하트가 2개 넘게 있으면 나와요",
     goldLord: "'무지개 똥'이랑 '자석'을 같이 가지고 있으면 나와요", inter: "'느릿느릿 하늘'을 2개 먹으면 나와요",
     chainZap: "똥을 부수는 펫(뿌잉·우주선·둘기·선물 요정·찌릿 장어)을 게임 중에 먹으면 나와요", pierce: "게임 중에 '펫 슝슝 우주선'를 먼저 먹으면 나와요",
@@ -9461,7 +9463,21 @@
     }
   }
   setPage("home");
+  /* v0.9.186 그림이 다 오기 전엔 시작하기를 막는다 — 새로 켜자마자 누르면 캐릭터·배경 없이 빈 하늘로 READY 가 떴다 */
+  function homeArtReady() {
+    const own = JOB_SPRS[job];
+    if (own && own.right && !own.right.img) return false;
+    let ok = true;
+    if (LONG_N) for (let i = 0; i < Math.min(3, LONG_N); i++) if (!LONG_IMG[i]) { longLoad(i); ok = false; }   // 못 받은 건 다시 (한꺼번에)
+    return ok;
+  }
+  {
+    const b = document.getElementById("btnStart");
+    const tick = () => { const ok = homeArtReady(); b.classList.toggle("loading", !ok); if (!ok) setTimeout(tick, 250); };
+    tick();
+  }
   document.getElementById("btnStart").addEventListener("click", () => {
+    if (!homeArtReady()) { document.getElementById("btnStart").classList.add("loading"); return; }   // v0.9.186 준비 중
     if (!jobOwned(job)) { beep(220, .12, "square", .05); return; }      // 잠긴 캐릭터로는 못 시작한다
     dogMode = false; partyWant = false;                                 // 시작하기 — 고른 캐릭터로 바로
     if (!savedName()) { hiOpen(); return; }   // 이름부터 정하고 시작 (v0.9.155 환영 창)
@@ -9647,7 +9663,7 @@
     { min: 44, max: 52, score: 25, w: 5  },
     { min: 52, max: 62, score: 40, w: 3  }   // 초대형 — 가장 드물다
   ];
-  // 왕 케이크 — 기존 최대(52~62)의 2배 크기, 점수는 최대 등급(75)의 3배
+  // 대왕 간식 — 기존 최대(52~62)의 2배 크기, 점수는 최대 등급(75)의 3배
   const GIANT = { min: 104, max: 124, score: 138, w: 3, giant: true };
   /* 코인 — 평범한 게임 중에만, 똥이 나올 때 덤으로 함께 떨어진다.
      크기도 모양도 한 가지, 색만 셋이다. w 는 뽑기 비중(합 100 = 그대로 %). */
@@ -10225,7 +10241,7 @@
     // 간식 타임 끝나는 순간엔 화면이 똥으로 가득 차 있으니 1초 무적으로 숨 돌릴 틈을 준다
     if (wasFever && !fever && state === STATE.PLAY) {
       invUntil = Math.max(invUntil, now + 1500);
-      /* 왕 케이크도 다른 낙하물처럼 그대로 남겨 둔다. 간식 낙하물은
+      /* 대왕 간식도 다른 낙하물처럼 그대로 남겨 둔다. 간식 낙하물은
          타임이 끝나도 피해를 주지 않으니(dmg 판정에서 fever 껍질은 빠진다)
          떠 있는 동안 마저 먹을 수 있다. */
       beep(520, .12, "triangle", .04);          // 무적 — 소리와 함께 캐릭터 둘레에 옅은 빛(drawInvGlow)
@@ -11135,7 +11151,7 @@
             // 낙하물은 개당 점수를 띄우지 않는다 (한꺼번에 쏟아져서 화면이 지저분해진다)
             /* 흔들림은 점수가 아니라 크기로 정한다.
                점수는 레벨당 1.3배씩 부풀어서, 후반엔 제일 작은 간식 하나에도
-               화면이 최대로 흔들렸다. 왕 케이크(반지름 104~124)이 기준이고,
+               화면이 최대로 흔들렸다. 대왕 간식(반지름 104~124)이 기준이고,
                작은 것들은 거의 흔들리지 않는다 — 터지는 입자와 소리로 충분하다. */
             const sh = it.giant
               ? 26 + Math.min(1, (it.sz - GIANT.min) / (GIANT.max - GIANT.min)) * 6
@@ -15354,11 +15370,11 @@
     steelUmb: "우산이 하나도 없으면 6.5초마다 한 개 배송",
     starburst: "별을 먹으면 화면의 똥 전부 제거(무지개똥·다크똥·간식 제외), 개당 똥 점수 6배, 0.5초 동안 새 똥 안 나옴",
     blackhole: "자석 반경 220 → 390px, 간식 낙하물도 반경 195px 안에서 끌림",
-    legion: "왕 케이크 등장 2.1배, 점수 1.5배",
+    legion: "대왕 간식 등장 2.1배, 점수 1.5배",
     magnet: "아이템·무지개똥을 반경 220px 안에서 끌어옴(무지개똥은 반경·힘 절반) · 코인은 자석 없어도 110px",
     dash: "화면 두 번 두드리면 그 자리로 순간이동(가까우면 보는 쪽 210px), 재사용 10초, 지나온 길의 똥은 스친 것으로 침 · 무적 없음 · 도도는 안 나옴",
     lucky: "아이템 등장 간격 ÷(1+0.15) (겹칠수록 덜, 5개 ≈ +65%)",
-    giant: "간식 타임에 왕 케이크(반지름 104~124, 점수 138)가 섞여 나옴",
+    giant: "간식 타임에 대왕 간식(반지름 104~124, 점수 138)가 섞여 나옴",
     downpour: "간식 타임 낙하량 +20% (먹을 때마다, 줄지 않음)",
     angryUmb: "우산이 깨질 때 화면 2/3를 덮는 폭발로 똥을 날려 보냄(날아간 똥끼리 부딪히면 터짐) · 우산 5개 이상일 때 나옴",
     gold: "똥이 무지개똥으로 바뀔 확률 첫 개 8%, 이후 +7%p씩 · 무지개똥 = 120 × 레벨 × 점수배율",
@@ -15376,7 +15392,7 @@
     fly: "맞을 때마다 똥파리 1마리, 5초 동안 400px/s 로 가까운 똥을 쫓아 반경 18px 부숨",
     stone: "2초 가만히 있으면 돌(무적, 최대 5초) · 풀린 뒤 1초는 다시 안 굳음 · 돌인 동안 점수·아이템·레벨 시계 멈춤",
     gacha: "이후 증강 카드가 물음표로 · 칸마다 50% 확률로 히든 증강에서 뽑음",
-    snackBig: "간식 타임 동안 몸(판정) 1.5배 · 간식 증강(간식 시간 더!·간식 냠냠 대박·간식 비·왕 케이크·군단) 4개 이상",
+    snackBig: "간식 타임 동안 몸(판정) 1.5배 · 간식 증강(간식 시간 더!·간식 냠냠 대박·간식 비·대왕 간식·군단) 4개 이상",
     toilet: "달마다 증강 선택 2배(보름달 6번) · 하트로 맞으면 50% 확률로 즉사 · 하트 3개 이상 · 레벨 7 이하",
     twoRand: "일반 증강 중 무작위 2개를 바로 받음"
   };
@@ -17912,9 +17928,12 @@
         else if (f.t < 0.34) sc = 1.28 - 1.556 * (f.t - 0.16);    // 1.28 → 1.00
       }
       ctx.save();
-      ctx.translate(f.x, f.y);
-      if (sc !== 1) ctx.scale(sc, sc);
       ctx.font = "800 " + (f.size || 22) + "px NationalPension, NanumBarunGothic, system-ui, sans-serif";
+      /* v0.9.186 화면 끝에서 떠도 글자가 잘리지 않게 — 글자 폭 절반만큼 안쪽으로 */
+      const hw = (ctx.measureText(f.text).width + (f.img ? f.size * 1.15 + 3 : 0)) / 2 * Math.max(1, sc) + 6;
+      const fx = hw * 2 >= W ? W / 2 : Math.max(hw, Math.min(W - hw, f.x));
+      ctx.translate(fx, f.y);
+      if (sc !== 1) ctx.scale(sc, sc);
       ctx.lineWidth = f.tier >= 1 ? 6 : 4;
       ctx.lineJoin = "round";
       ctx.strokeStyle = "rgba(0,0,0,.42)";
