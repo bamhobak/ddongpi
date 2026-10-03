@@ -2294,7 +2294,7 @@
        밀어 숨길 뿐 남겨 두어 textContent 가 그대로다(글자를 읽는 코드가 안 깨진다). 나중에 붙는 글자는 MutationObserver 가 잡는다.
      · 캔버스 글자: fillText/strokeText 를 감싸 이모지 자리에 그림을 그린다 — 자리 폭은 원래 이모지 폭 그대로라 배치가 안 바뀐다.
      그림이 아직 안 왔거나 목록에 없는 이모지는 원래 이모지로 나온다. */
-  /*ICONS-BEGIN*/ const ICON_KEYS = ["🐍", "🪙", "⭐", "🌙", "🌕", "☂", "❤", "💧", "🧻", "🔮", "💩", "🚀", "🕊", "👼", "🧚", "🐈", "🦴", "🍗", "⏸", "🏆", "👑", "✏", "🎵", "🔔", "🎉", "🥊", "🗼", "🔄", "🏠", "🔒", "🔓", "🔁", "🥇", "🥈", "🥉", "✨", "⚠", "⏱", "🏃", "🎈", "💪", "📋", "🎯", "🙏", "🫧", "🧘", "🚫", "🦸", "⚡", "🔥", "🐢", "🐦", "📯", "💥", "😋", "💉", "☔", "🌠", "🕳", "🌝", "🧲", "💨", "🍀", "🌧", "💢", "🌈", "📱", "🥕", "🦄", "🕰", "🎲", "👻", "👊", "👯", "🍷", "☝", "🍚", "🌀", "🐕", "🎰", "🪜", "🎼", "✂", "🌱", "⛰", "☁", "🌤", "🧊", "❄", "🛰", "🌍", "☄", "🌌", "🌑", "🌒", "⚫", "🍌", "😵", "🤢", "😜", "😭", "👍", "⚔", "🪐", "🌬", "🌫", "🏋", "🔩", "🍪", "🤏", "🟤", "🪺", "🦢", "📦", "🌂", "💞", "⏩", "🫙", "🪀", "🧑‍🚀"]; const ICON_COLS = 10, ICON_ROWS = 12, ICON_CELL = 96; /*ICONS-END*/
+  /*ICONS-BEGIN*/ const ICON_KEYS = ["🐍", "🪙", "⭐", "🌙", "🌕", "☂", "❤", "💧", "🧻", "🔮", "💩", "🚀", "🕊", "👼", "🧚", "🐈", "🦴", "🍗", "⏸", "🏆", "👑", "✏", "🎵", "🔔", "🎉", "🥊", "🗼", "🔄", "🏠", "🔒", "🔓", "🔁", "🥇", "🥈", "🥉", "✨", "⚠", "⏱", "🏃", "🎈", "💪", "📋", "🎯", "🙏", "🫧", "🧘", "🚫", "🦸", "⚡", "🔥", "🐢", "🐦", "📯", "💥", "😋", "💉", "☔", "🌠", "🕳", "🌝", "🧲", "💨", "🍀", "🌧", "💢", "🌈", "📱", "🥕", "🦄", "🕰", "🎲", "👻", "👊", "👯", "🍷", "☝", "🍚", "🌀", "🐕", "🎰", "🪜", "🎼", "✂", "🌱", "⛰", "☁", "🌤", "🧊", "❄", "🛰", "🌍", "☄", "🌌", "🌑", "🌒", "⚫", "🍌", "😵", "🤢", "😜", "😭", "👍", "⚔", "🪐", "🌬", "🌫", "🏋", "🔩", "🍪", "🤏", "🟤", "🪺", "🦢", "📦", "🌂", "💞", "⏩", "🫙", "🪀", "🗿", "🧑‍🚀"]; const ICON_COLS = 10, ICON_ROWS = 13, ICON_CELL = 96; /*ICONS-END*/
   const ICON_IDX = new Map(ICON_KEYS.map((k, i) => [k, i]));
   const ICON_RE = ICON_KEYS.length ? new RegExp("(" + ICON_KEYS.slice().sort((a, b) => b.length - a.length)
     .map(k => k.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")).join("|") + ")\\uFE0F?", "gu") : null;
@@ -2414,7 +2414,7 @@
   const elTitle = document.getElementById("overTitle");
   const coinNote = document.getElementById("coinNote");
 
-  const GAME_VERSION = "v0.9.213";
+  const GAME_VERSION = "v0.9.214";
   /* 제작사 스플래시(bamhobak friends 로고) — 2026-09-20 끔. 다시 켜려면 true */
   const SPLASH_USE = false;   // 코드를 고칠 때마다 뒤 두 자리를 올린다
   document.getElementById("ver").textContent = GAME_VERSION;
@@ -4543,7 +4543,7 @@
       go: () => { aug.pierce = true; } },
     { id: "fly",        ic: "🪰", nm: "똥파리", ds: "맞을 때마다 똥파리가 나와서 5초 동안 똥을 부숴요",
       once: true, go: () => { aug.fly = true; } },
-    { id: "stone",      ic: "🧊", nm: "얼음 땡", ds: "2초 가만히 있으면 돌이 돼서 안 맞아요(최대 5초) · 그동안 점수랑 아이템은 없어요",
+    { id: "stone",      ic: "🗿", nm: "돌부처", ds: "2초 가만히 있으면 돌이 돼서 안 맞아요(최대 5초) · 그동안 점수랑 아이템은 없어요",
       once: true, go: () => { aug.stone = true; stoneT = 0; } },
     { id: "gacha",      ic: "🪀", nm: "뽑기", ds: "증강이 물음표로 나와요 · 그중 절반은 비밀 증강",
       once: true, go: () => { aug.gacha = true; } },
@@ -7974,12 +7974,9 @@
     const kd = (prophIs("reverse") || (vsOn() && vsReversed(player, performance.now()))) ? -1 : 1;   // 거꾸로 가는 날·어지럼 저주 — 끄는 방향과 반대로
     const wantX = drag.px + (pointerX(e) - drag.fx) * DRAG_GAIN * kd;
     let x = Math.max(player.r, Math.min(worldW() - player.r, wantX));   // 여럿이 판은 하늘이 화면보다 넓다
-    if (x !== wantX && job === "levitator" && myPerk(5, "A") && state === STATE.PLAY && !vsLike()) {   // v0.9.85 축지법 — 반대편 끝으로
-      const span = worldW() - 2 * player.r, nx = wantX < player.r ? wantX + span : wantX - span;
-      drag.px += nx - wantX;
-      x = Math.max(player.r, Math.min(worldW() - player.r, nx));
-      burst(player.x, player.y + player.hy, "#d8e6ff", 10);
-      player.x = x; burst(x, player.y + player.hy, "#d8e6ff", 10);
+    if (wrapOn()) {   // v0.9.85 축지법 — 반대편 끝으로 · v0.9.214 몸이 조금씩 넘어간다
+      x = wrapMod(wantX);
+      drag.px += x - wantX;
     } else if (x !== wantX) drag.px += x - wantX;            // 끝에 닿으면 기준점을 끌어온다
     player.tx = x;
     if (flyOn) {
@@ -8031,7 +8028,7 @@
     if (now - lastTapAt < DTAP_MS && Math.hypot(x - lastTapX, y - lastTapY) < DTAP_DIST) {
       lastTapAt = -1e9;                 // 세 번째 두드림이 이어서 또 터지지 않게
       tapDownAt = 0;
-      tryDash(now, partyOn() ? x + PARTY.camX : x);   // 여럿이 — 화면 자리를 하늘 자리로
+      tryDash(now, partyOn() ? x + PARTY.camX : x, y);   // 여럿이 — 화면 자리를 하늘 자리로 · v0.9.214 나는 캐릭터는 누른 높이로도
       return;
     }
     tapDownAt = now; tapDownX = x; tapDownY = y; tapMoved = 0;
@@ -10406,7 +10403,7 @@
     const vk = vsSplit();                             // 한 폰 대전 — 방향키는 P2 몫
     if ((!vk && keys.ArrowLeft)  || keys.a || keys.A) player.tx -= kx * kd;
     if ((!vk && keys.ArrowRight) || keys.d || keys.D) player.tx += kx * kd;
-    player.tx = Math.max(player.r, Math.min(W - player.r, player.tx));
+    player.tx = wrapOn() ? wrapMod(player.tx) : Math.max(player.r, Math.min(W - player.r, player.tx));   // v0.9.214 축지법은 끝이 이어진다
     if (flyOn) {
       if (keys.ArrowUp   || keys.w || keys.W) player.ty -= ky;
       if (keys.ArrowDown || keys.s || keys.S) player.ty += ky;
@@ -10423,9 +10420,12 @@
     // 대전모드 — 밟혀서 멈춘 동안은 제자리 (손가락 목표는 그대로 두어 풀리면 가던 쪽으로 간다)
     if (vsLike()) vsMoveBody(player, dt, now);          // 대전모드 — 밟혀 멈춤·바나나·얼음·구린내
     else {
-      const want = (player.tx - player.x) * Math.min(1, dt * 20);
+      let dTx = player.tx - player.x;
+      if (wrapOn()) dTx = wrapMod(dTx + W / 2) - W / 2;   // v0.9.214 축지법 — 끝을 넘어 가까운 쪽으로
+      const want = dTx * Math.min(1, dt * 20);
       const maxStep = PLAYER_MAX_SPEED * spdMul() * dt;
       player.x += Math.max(-maxStep, Math.min(maxStep, want));
+      if (wrapOn()) player.x = wrapMod(player.x);
     }
     /* ── 방귀 대시 — 돌진하는 동안은 끌기보다 앞선다 ──
        끌기 기준점(drag.px)과 목표(player.tx)를 함께 끌고 가야, 대시가 끝나는 순간
@@ -10448,7 +10448,7 @@
           if (!stoneOn && stoneT >= 2) {   // v0.9.105 1 → 2초
             stoneDur = 0;
             stoneOn = true;
-            popText(player.x, player.y - 70, "🗿 얼음 땡", "#d9d9d9", 22);
+            popText(player.x, player.y - 70, "🗿 돌부처", "#d9d9d9", 22);
             burst(player.x, player.y + player.hy, "#d0d0d0", 12);
             beep(180, .12, "triangle", .06);
           }
@@ -10842,7 +10842,7 @@
         if (shieldTimer <= 0) {
           shieldTimer = UMB_SEC;
           shields = 1;
-          popText(player.x, player.y - 60, "☔ 우산 도착!", "#7ec8ff");
+          popText(player.x, player.y - 60, "📦 우산 도착!", "#7ec8ff");
           beep(880, .12, "triangle", .05);
         }
       } else {
@@ -11145,7 +11145,8 @@
       if (it.bob !== undefined) it.bob += dt * tsc * 4;
 
       const cy = player.y + player.hy;
-      const dx = it.x - player.x, dy = it.y - cy;
+      const pX = wrapNear(player.x, it.x);   // v0.9.214 축지법 — 끝에 걸친 몸은 양쪽에서 맞고 먹는다
+      const dx = it.x - pX, dy = it.y - cy;
       if ((aug.blackhole || job === "levitator") && it.type === "poop" && it.skin === "fever") {
         // 간식 낙하물은 가까이 왔을 때만 끌어당긴다 (전부 빨아들이면 너무 세다)
         // 부양사 기본치는 블랙홀의 절반 반경·45% 힘
@@ -11187,7 +11188,7 @@
       const dmg = it.type === "poop" && !powered && it.skin !== "fever";
       // 끝점만 보면 빠른 똥이 캐릭터를 뛰어넘을 수 있어서, 이번 프레임에 지나온 선분과의 거리를 본다
       const hitR = it.r + player.r * (dmg ? .632 : .78) * hitMul();
-      const segD = (!it.bounced && !it.ghost) ? segDist(player.x, cy, prevX, prevY, it.x, it.y) : 1e9;
+      const segD = (!it.bounced && !it.ghost) ? segDist(pX, cy, prevX, prevY, it.x, it.y) : 1e9;
       const stonePass = stoneOn && !(it.type === "poop" && it.dark);   // v0.9.206 얼음 땡 — 다크똥은 돌이어도 맞는다
       const hit = segD < hitR && !stonePass;      // 얼음 땡 — 돌인 동안은 (다크똥 말고) 똥도 아이템도 그냥 지나간다
       /* 아슬! — 떨어지는 내내 히트박스에 가장 가까웠던 틈을 적어 둔다 (바닥에 닿을 때 점수가 갈린다).
@@ -11367,7 +11368,7 @@
                 umbBlast = { x: bx, y: by, r: bR, t: 0.42 };
                 shake = Math.max(shake, 26);
                 feverFlash = Math.max(feverFlash, 0.4);
-                popText(player.x, player.y - 95, "💢 화난 우산!", "#7ec8ff", 26);
+                popText(player.x, player.y - 95, "🌂 화난 우산!", "#7ec8ff", 26);
                 if (!sfx("angry")) beep(190, .22, "square", .06);
               }
             } else {
@@ -11702,13 +11703,22 @@
   /* sx — 두 번째로 두드린 자리. v0.8.00 부터 거리 제한 없이 **그 자리로 바로 간다**
      (예전에는 두드린 쪽으로 210px 만 갔다). 캐릭터 바로 위를 두드렸거나 키보드로 냈을 때는
      갈 곳이 없으니 보고 있는 쪽으로 DASH_DIST 만큼 간다. */
-  function tryDash(now, sx) {
+  /* v0.9.214 축지법(부양사 Lv5 A) — 화면 좌우가 이어진다. 몸은 반쯤 넘어가면 반대쪽에 나머지가 보인다(통째로 순간이동하지 않는다) */
+  function wrapOn() { return job === "levitator" && myPerk(5, "A") && state === STATE.PLAY && !vsLike() && !partyOn(); }
+  function wrapMod(x) { return ((x % W) + W) % W; }
+  function wrapNear(px, x) { if (!wrapOn()) return px; const d = x - px; return d > W / 2 ? px + W : d < -W / 2 ? px - W : px; }   // 물건 쪽에 더 가까운 몸 자리
+  function tryDash(now, sx, sy) {
     if (!aug.dash || state !== STATE.PLAY || dying > 0) return;
     if (dashCd > 0 || dashT > 0) return;
-    const x0 = player.x;
-    const near = Math.abs(sx - x0) < DASH_MIN;
+    const x0 = player.x, y0 = player.y;
+    /* v0.9.214 하늘을 나는 캐릭터(부양사 등)는 누른 자리로 위아래까지 — 몸 가운데가 누른 자리에 오게 */
+    const fly2 = flyOn && sy !== undefined && !partyOn() && !vsLike();
+    let ny = y0;
+    if (fly2) ny = Math.max(H * FLY_TOP, Math.min(groundY, sy - player.hy));
+    const near = Math.abs(sx - x0) < DASH_MIN && Math.abs(ny - y0) < DASH_MIN;
     let nx = near ? x0 + (facing === "left" ? -1 : 1) * DASH_DIST : sx;
-    if (prophIs("reverse")) nx = x0 - (nx - x0);      // 거꾸로 가는 날 — 조작이 통째로 뒤집힌다
+    if (near) ny = y0;
+    if (prophIs("reverse")) { nx = x0 - (nx - x0); if (fly2) ny = Math.max(H * FLY_TOP, Math.min(groundY, y0 - (ny - y0))); }      // 거꾸로 가는 날 — 조작이 통째로 뒤집힌다
     nx = Math.max(player.r, Math.min(worldW() - player.r, nx));
     dashDir = nx >= x0 ? 1 : -1;
     /* 가는 쪽을 보게 한다 (v0.8.22) — 보는 쪽은 매 프레임 움직인 방향으로 정하는데, 순간이동은 그 셈 밖에서
@@ -11722,10 +11732,10 @@
     const gspr = currentSprite(now), gfl = sprFlipped(now);
     if (gspr) {
       // 겹 수는 간 거리에 맞춘다 — 짧게 가면 몇 겹만 (많이 남기면 한자리에 뭉쳐 지저분하다)
-      const n = Math.max(4, Math.min(DASH_GHOSTS, Math.round(Math.abs(nx - x0) / 22)));
+      const n = Math.max(4, Math.min(DASH_GHOSTS, Math.round(Math.hypot(nx - x0, ny - y0) / 22)));
       for (let i = 0; i < n; i++) {
         const f = i / (n - 1);                                 // 0 출발 ~ 1 도착
-        ghosts.push({ x: x0 + (nx - x0) * f, y: player.y, tilt: player.tilt, flip: gfl, spr: gspr,
+        ghosts.push({ x: x0 + (nx - x0) * f, y: y0 + (ny - y0) * f, tilt: player.tilt, flip: gfl, spr: gspr,
                       t: 0, life: DASH_GHOST_LIFE * (0.45 + 0.55 * f),   // 도착지 쪽이 오래 남는다
                       a: 0.3 + 0.55 * f, st: 1.75 - 0.75 * f });
       }
@@ -11735,13 +11745,14 @@
     const R = player.r * 0.632 * hitMul();
     for (const q of items) {
       if (q.type !== "poop" || q.skin === "fever" || q.bounced || q.ghost) continue;
-      if (segDist(q.x, q.y, x0, cy, nx, cy) > R + q.r) continue;
+      if (segDist(q.x, q.y, x0, cy, nx, cy + (ny - y0)) > R + q.r) continue;
       q.gap = -1;                                    // 바닥에 닿을 때 3배
       if (!q.grazed) { q.grazed = true; onGraze(q); }
     }
 
     player.x = player.tx = nx;                       // 순간이동
     if (drag) drag.px = nx;
+    if (fly2) { player.y = player.ty = ny; if (drag) drag.py = ny; }   // v0.9.214 위아래도
     dashT = DASH_TAIL;                               // 아주 짧은 여운 — 이 동안은 스침을 계속 잰다
     dashCd = DASH_CD;
     if (partyOn()) {                                 // 여럿이 — 로블록스판처럼 3번 · 4초마다 · 도착 뒤 1초 무적
@@ -11752,7 +11763,7 @@
        도착한 자리에 똥이 있으면 바로 맞아야 한다. 아무 데나 뛰어들어도 되는 도피 수단이 아니다. */
     // 방귀 연기 — 출발한 자리에 뭉게뭉게, 지나온 길에도 흩뿌린다
     burst(x0, cy + 14, "#c7e39a", 14);
-    for (let i = 1; i < 5; i++) burst(x0 + (nx - x0) * (i / 5), cy + 10, "#dcecb8", 4);
+    for (let i = 1; i < 5; i++) burst(x0 + (nx - x0) * (i / 5), cy + (ny - y0) * (i / 5) + 10, "#dcecb8", 4);
     popText(nx, player.y - 46, "💨 방귀 대시!", "#b9e08a", 22);
     shake = Math.max(shake, 13);
     if (!sfx("dash")) { beep(150, .14, "sawtooth", .05); beep(90, .18, "square", .04); }
@@ -17860,10 +17871,31 @@
   /* 방귀 대시 눈금 — 화면 오른쪽 아래 동그란 표시 (v0.8.01, 예전엔 머리 위라 캐릭터와 겹쳤다).
      다 차면 초록으로 환해지고 💨 가 도드라진다. 차는 중에는 남은 만큼 테두리가 돌아간다.
      증강을 가진 사람에게만 보인다 (안 고른 사람 화면에는 아무것도 늘지 않는다). */
+  const dashBtnImg = new Image(); dashBtnImg.src = "assets/ui/dash_btn.webp";   // v0.9.214 방귀 대시 버튼 그림(Codex)
   function drawDashGauge(now) {
     if (!aug.dash || dying > 0) return;
     const ready = dashCd <= 0;
     const k = ready ? 1 : 1 - dashCd / DASH_CD;      // 0 → 1 로 차오른다
+    if (hudOk(dashBtnImg)) {                          // v0.9.214 그림 버튼 — 차는 중엔 회색, 남은 만큼 어둡게 덮고, 다 차면 통통 뛴다
+      const R = 25, cx = W - 18 - R, cy = H - 24 - R;
+      const sc = ready ? 1 + 0.06 * Math.max(0, Math.sin(now / 160)) : 1, d = R * 2 * sc;
+      ctx.save();
+      if (!ready) { ctx.globalAlpha = 0.75; if (canvasFilterOk) ctx.filter = "grayscale(1) brightness(.8)"; }
+      ctx.drawImage(dashBtnImg, cx - d / 2, cy - d / 2, d, d);
+      ctx.filter = "none"; ctx.globalAlpha = 1;
+      if (!ready) {
+        ctx.fillStyle = "rgba(0,0,0,.38)";            // 남은 시간만큼 어두운 부채꼴
+        ctx.beginPath(); ctx.moveTo(cx, cy); ctx.arc(cx, cy, R * 0.86, -1.5708 + 6.283 * k, -1.5708 + 6.283); ctx.closePath(); ctx.fill();
+        ctx.lineWidth = 3.5; ctx.strokeStyle = "#cdf59a"; ctx.lineCap = "round";
+        ctx.beginPath(); ctx.arc(cx, cy, R + 1, -1.5708, -1.5708 + 6.283 * k); ctx.stroke();
+      } else {
+        ctx.globalAlpha = 0.35 + 0.25 * Math.sin(now / 200);   // 준비됨 — 바깥 빛
+        ctx.strokeStyle = "#e9ffb0"; ctx.lineWidth = 3;
+        ctx.beginPath(); ctx.arc(cx, cy, R * sc + 3, 0, 6.283); ctx.stroke();
+      }
+      ctx.restore();
+      return;
+    }
     const R = 20, cx = W - 20 - R, cy = H - 26 - R;
     ctx.save();
     ctx.beginPath(); ctx.arc(cx, cy, R, 0, 6.283);
@@ -18192,7 +18224,12 @@
       if (state !== STATE.OVER) drawPetsBack(now);
       if (vsOn() && state !== STATE.OVER && state !== STATE.READY) drawVsWorld(now);   // 얼음·껍질·구름·비둘기
       if (partyNow) { drawPartyBodies(now); drawPartyUpper(now); }
-      if (state !== STATE.OVER || gameCleared) drawPlayer(now);   // v1.0.02 클리어 화면 뒤에도 붙은 캐릭터
+      if (state !== STATE.OVER || gameCleared) {
+        drawPlayer(now);   // v1.0.02 클리어 화면 뒤에도 붙은 캐릭터
+        if (wrapOn() && (player.x < player.r * 3 || player.x > W - player.r * 3)) {   // v0.9.214 축지법 — 끝에 걸치면 반대쪽에 나머지 몸
+          ctx.save(); ctx.translate(player.x < W / 2 ? W : -W, 0); drawPlayer(now); ctx.restore();
+        }
+      }
       if (vsOn() && state !== STATE.OVER && state !== STATE.READY) { asRival(() => drawPlayer(now)); drawVsTags(now); drawVsRoulette(now); drawVsRead(now); drawVsUpper(now); }
       // v0.9.190 무적 둘레 동그라미는 없앴다 (증강 뒤·맞은 뒤 모두) — drawInvGlow 는 안 부른다
     }

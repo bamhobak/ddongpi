@@ -114,10 +114,11 @@ NEW = [
     ("🦢", "aug_kingdove", "a chubby white dove with wings spread wide wearing a small shiny golden crown on its head"),
     ("📦", "aug_umbdelivery", "an open cardboard delivery box with a closed blue umbrella sticking out of it, little speed lines behind the box (umbrella delivery)"),
     ("🌂", "aug_angryumb", "an open red umbrella whose canopy has angry slanted eyebrows and angry eyes, with a bursting POW-shaped spark around it (no letters)"),
-    ("💞", "aug_hearttrade", "a red heart on the left, a chubby curved arrow in the middle, and a shiny gold star on the right (trading a heart for points)"),
+    ("💞", "aug_hearttrade", "a red heart on the left giving itself away, a chubby curved swap arrow in the middle, and a big shiny golden UPWARD arrow with sparkles on the right (give up one heart, your score goes up)"),
     ("⏩", "aug_fast", "a chubby orange fast-forward double triangle arrow with white speed lines behind it"),
     ("🫙", "aug_fragile", "a glossy see-through glass heart with a small crack, tilted and teetering, with tiny wobble lines (fragile, risky)"),
     ("🪀", "aug_gacha", "a cute capsule toy gacha machine: a round glass dome full of colorful capsules on a red base with a big turn knob"),
+    ("🗿", "aug_stonebuddha", "OVERRIDE: this time DO draw the cute puppy from the reference image — the same puppy turned into a gray STONE statue, sitting cross-legged in meditation like a little stone Buddha, paws resting in its lap, serene closed eyes and a gentle smile, rough carved stone texture with a few tiny cracks and a little green moss, sitting on a small round stone base. Whole body is gray stone (no fur color)"),   # v0.9.214 돌부처
     ("🧑‍🚀", "astronaut", "a white astronaut helmet with a big glossy blue visor (helmet only, nobody inside)"),
 ]
 
