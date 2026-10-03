@@ -1962,7 +1962,7 @@
         <span id="devDot" aria-label="통계"></span>
       </span></h1>
       <div id="homeJobs"></div>
-      <div id="startRow"><button id="btnStart">시작하기</button><button id="btnHyper" aria-label="하이퍼 모드">⚡</button></div>
+      <div id="startRow"><button id="btnStart">시작하기</button><button id="btnHyper" aria-label="스피드 모드">⚡</button></div>
       </section>
       <section class="page" id="pgRank">
       <div id="boardSlot">
@@ -2410,7 +2410,7 @@
   const elTitle = document.getElementById("overTitle");
   const coinNote = document.getElementById("coinNote");
 
-  const GAME_VERSION = "v0.9.207";
+  const GAME_VERSION = "v0.9.208";
   /* 제작사 스플래시(bamhobak friends 로고) — 2026-09-20 끔. 다시 켜려면 true */
   const SPLASH_USE = false;   // 코드를 고칠 때마다 뒤 두 자리를 올린다
   document.getElementById("ver").textContent = GAME_VERSION;
@@ -3369,7 +3369,7 @@
                               ["poop", "poop"], ["darkpoop", "dark_poop"],
                               ["droplet", "droplet"],
                               ["coin", "coin"], ["coin3", "coin3"], ["coin5", "coin5"],
-                              ["fortune", "crystal_ball"]]) {
+                              ["fortune", "crystal_ball"], ["cloud", "cloud_shop"]]) {   // v0.9.208 구름 상점 = 구름 위 가게
     const im = new Image();
     im.onload = () => { ITEM_IMG[type] = im; };
     im.src = "assets/item_" + file + ".png";
@@ -3527,7 +3527,7 @@
     c.save();
     c.translate(S / 2, S / 2);
     c.rotate(1.05);                       // 왼쪽 아래 → 오른쪽 위로 기운 띠
-    const off = (now * R.cyc / 3000 + seed * 37) % R.cyc;   // v0.9.77 3초에 한 바퀴 (6초에서 두 배 빠르게)
+    const off = (now * R.cyc / 2500 + seed * 37) % R.cyc;   // v0.9.208 20% 더 빠르게 (3초 → 2.5초)   // v0.9.77 3초에 한 바퀴 (6초에서 두 배 빠르게)
     c.drawImage(R.str, -2 * R.cyc + off, -R.str.height / 2);
     c.restore();
     c.globalCompositeOperation = "multiply";        // 입체 그림자를 입히고
@@ -3550,7 +3550,7 @@
   /* 무지개똥은 일반 똥과 헷갈리지 않게 무지갯빛으로 돌면서 번쩍인다.
      seed 를 섞어 서로 다른 색으로 떨어진다. */
   function goldFx(now, seed) {
-    const hue = (now * 0.24 + seed * 53) % 360;   // v0.9.77 색 도는 속도도 두 배 (0.12 → 0.24)
+    const hue = (now * 0.288 + seed * 53) % 360;   // v0.9.208 +20%   // v0.9.77 색 도는 속도도 두 배 (0.12 → 0.24)
     const puls = 0.5 + 0.5 * Math.sin(now / 420 + seed);         // 0~1 로 천천히 오가는 반짝임
     return {
       hue: hue,
@@ -3801,7 +3801,7 @@
   const ACC_REW = {
     2: "🎲 증강 다시 뽑기(판마다 1회)",
     3: "☁️ 구름 상점 — 게임 중 가끔 내려온다. 증강 2개·하트를 코인으로",
-    4: "🎁 시작 증강 고르기(3장 중 1장) · ⚡ 하이퍼 모드 — 게임 속도 2배",
+    4: "🎁 시작 증강 고르기(3장 중 1장) · ⚡ 스피드 모드 — 게임 속도 2배",
     5: "👑 (준비 중)"
   };
   const CHR_PERKS = {
@@ -3902,7 +3902,7 @@
   const SFX_GAIN = { star: 3.4,
                      // v0.9.107 펫 효과음(Ludo) — 펫마다 둘, 무작위. 예전 소리와 같은 크기로
                      pet_dove_2: 0.2,
-                     pet_gift_1: 0.27, pet_gift_2: 0.47, pet_cat_1: 0.35, pet_cat_2: 0.4, pet_eel_1: 0.38, pet_eel_2: 0.3, pet_angel_1: 0.89, pet_angel_2: 0.62, aug: 0.9, fever: 0.8, hurt: 0.8,
+                     pet_gift_1: 0.27, pet_gift_2: 0.47, pet_cat_1: 0.35, pet_cat_2: 0.4, pet_eel_1: 0.36, pet_eel_2: 0.27, zap: 0.25, pet_angel_1: 0.89, pet_angel_2: 0.62, aug: 0.9, fever: 0.8, hurt: 0.8,
                      // v0.8.73 캐릭터마다 아픈 소리 (Ludo) — 옛 hurt 와 같은 크기로 들리게 맞췄다
                      // v0.9.82 강아지 소리로 다시(Ludo) — 캐릭터마다 둘, 맞을 때마다 무작위. 옛 캐릭터 소리와 같은 크기로 맞췄다
                      hurt_bangul_1: 2.04, hurt_bangul_2: 1.33, hurt_powerj_1: 1.42, hurt_powerj_2: 1.49, hurt_fortune_1: 1.4, hurt_fortune_2: 1.96, hurt_levitator_1: 1.83, hurt_levitator_2: 1.41,
@@ -3924,7 +3924,7 @@
     if (sfxAsked || !ac) return;
     sfxAsked = true;
     for (const k in SFX_GAIN) {
-      fetch("assets/sfx/" + k + ".mp3" + (k.startsWith("pet_") ? "?v2" : ""))
+      fetch("assets/sfx/" + k + ".mp3" + (k.startsWith("pet_") ? "?v3" : ""))
         .then(r => r.arrayBuffer())
         .then(b => ac.decodeAudioData(b))
         .then(buf => { sfxBuf[k] = buf; })
@@ -4319,7 +4319,7 @@
     gacha: false,       // 뽑기 (증강이 물음표로 나오고 절반은 히든)
     snackBig: false,    // 히든: 배불뚝이 (간식 타임에 몸 1.5배)
     toilet: false,      // 히든: 변기 모자 (달마다 증강 두 번 · 맞으면 절반 확률로 즉사)
-    maxLives: 5
+    maxLives: 10   // v0.9.208 하트 최대 5 → 10
   };
   let augCount = {};    // 증강별 획득 횟수
 
@@ -4474,7 +4474,7 @@
       hidden: true, once: true, cond: () => aug.giant > 0,
       go: () => { aug.legion = true; } },
     { id: "magnet",     ic: "🧲", nm: "자석",       ds: "가까운 아이템이 졸졸 끌려와요",
-      once: true, go: () => { aug.magnet = 220; } },   // 끌어당기는 반지름(px)
+      once: true, go: () => { aug.magnet = 220; } },   // 끌어당기는 반지름(px) · 구름 상점은 무엇으로도 끌려오지 않는다(v0.9.208)
     /* 조작이 끌기 하나뿐이라 실력을 드러낼 통로가 좁다. 기본 기능으로 넣지 않고 증강으로만 둔다 —
        조작이 복잡해지는 건 원하는 사람만 지게. 부양사는 이미 두 배 반으로 빠르니 안 나온다. */
     { id: "dash",       ic: "💨", nm: "방귀 대시",   ds: "화면을 두 번 톡톡 누르면 그 자리로 뿡! 날아가요",
@@ -8801,12 +8801,12 @@
   function syncHyper() {
     btnHyper.style.display = accLv() >= 4 ? "" : "none";
     btnHyper.classList.toggle("on", !!lvData.hyper);
-    btnHyper.title = lvData.hyper ? "하이퍼 모드 켜짐 — 게임 속도 2배" : "하이퍼 모드 꺼짐";
+    btnHyper.title = lvData.hyper ? "스피드 모드 켜짐 — 게임 속도 2배" : "스피드 모드 꺼짐";
   }
   btnHyper.addEventListener("click", () => {
     lvData.hyper = !lvData.hyper; lvSave(); syncHyper();
     beep(lvData.hyper ? 1100 : 600, .07, "square", .045);
-    popHint(lvData.hyper ? "⚡ 하이퍼 모드 ON — 게임 속도 2배" : "하이퍼 모드 OFF");
+    popHint(lvData.hyper ? "⚡ 스피드 모드 ON — 게임 속도 2배" : "스피드 모드 OFF");
   });
   function popHint(t) {
     let e = document.getElementById("hintToast");
@@ -9116,7 +9116,7 @@
     // 계정 레벨
     const a = sec("⭐ 공통(계정) 레벨");
     seg(row(a, "레벨"), lv5, t2.acc, v => { t2.acc = v; });
-    const an = document.createElement("div"); an.className = "t2Note"; an.textContent = "Lv2 다시 뽑기 · Lv3 구름 상점 · Lv4 시작 증강 고르기·하이퍼 모드"; a.appendChild(an);
+    const an = document.createElement("div"); an.className = "t2Note"; an.textContent = "Lv2 다시 뽑기 · Lv3 구름 상점 · Lv4 시작 증강 고르기·스피드 모드"; a.appendChild(an);
     // 캐릭터 레벨
     const ch = sec("🐶 캐릭터 레벨");
     for (const j in t2.cl) seg(row(ch, jobShort(j), jobPic(j)), lv5, t2.cl[j], v => { t2.cl[j] = v; });
@@ -9432,7 +9432,7 @@
     let box = document.getElementById("cloudShop");
     if (!box) {
       box = document.createElement("div"); box.id = "cloudShop"; box.className = "screen hidden";
-      box.innerHTML = '<h2>☁️ 구름 상점</h2><div class="csCoin"></div><div class="csList"></div><button class="csLeave">떠나기</button>';
+      box.innerHTML = '<h2><img src="assets/item_cloud_shop.png" alt="" style="height:1.6em;vertical-align:middle;margin-right:4px">구름 상점</h2><div class="csCoin"></div><div class="csList"></div><button class="csLeave">떠나기</button>';
       document.querySelector("#augScreen").parentElement.appendChild(box);
       box.querySelector(".csLeave").addEventListener("click", () => { box.classList.add("hidden"); closeAugScreen(); });
     }
@@ -9658,7 +9658,7 @@
     resetBonusTimers();          // 증강 배율을 되돌린 뒤라야 첫 타이머가 제대로 잡힌다
     aug.helper = 0; aug.helperRush = false; aug.hungry = false; aug.galaga = 0;
     helpers = []; fetchers = [];
-    helperTimer = 0; helperQueue = 0; helperGap = 0; fetchRest = 0; aug.maxLives = 5;
+    helperTimer = 0; helperQueue = 0; helperGap = 0; fetchRest = 0; aug.maxLives = 10;
     // ---- 펫 ---- 판 내내 한 마리. 기록에는 증강 목록에 'pet:<id>' 로 함께 남긴다
     for (const k in petOn) delete petOn[k];   // v0.9.45 펫은 증강으로 모은다 — 판마다 비운다
     aug.helper = 0; aug.galaga = 0;
@@ -10922,7 +10922,7 @@
     if (aug.hungry && !fetchers.length && fetchRest <= 0) {
       let pick = null;
       for (const it of items) {                 // 가장 오래 떠 있던 것 하나만
-        if (it.type === "poop" || it.claimed) continue;
+        if (it.type === "poop" || it.type === "cloud" || it.claimed) continue;   // v0.9.208 구름 상점은 뿌잉이 물어 오지 않는다
         if (elapsed - it.born < FETCH_DELAY) continue;
         if (!pick || it.born < pick.born) pick = it;
       }
@@ -11160,7 +11160,7 @@
          자석·복이 굴러온다가 있으면 둘 중 센 쪽을 쓴다. */
       const COIN_R0 = 110 * gMag(), COIN_F0 = 0.5;
       const coinBase = !(job === "powerp" && !fullOwn);   // v0.9.32 무무(무소유)는 코인이 저절로 끌려오지 않는다 (자석 증강·풀소유면 끌려온다)
-      if (!stoneOn && ((magR > 0 && (it.type !== "poop" || it.gold)) || (it.type === "coin" && (coinBase || magR > 0)))) {
+      if (!stoneOn && it.type !== "cloud" && ((magR > 0 && (it.type !== "poop" || it.gold)) || (it.type === "coin" && (coinBase || magR > 0)))) {
         const d = Math.hypot(dx, dy);
         /* 무지개똥과 코인은 아이템의 절반 반경·절반 힘.
            (무지개똥은 수집가를 먹으면 그 2배가 되어 아이템과 같아진다) */
@@ -14155,7 +14155,7 @@
       burst(pts[k][0], pts[k][1], "#bfe9ff", 10);
     }
     shake = Math.max(shake, 4);
-    if (!(first === true ? petSfx("eel") : sfx("laser", 0.5))) { beep(220, .08, "sawtooth", .035); beep(1600, .05, "square", .025); }   // v0.9.107 찌릿 장어는 제 소리
+    if (!(first === true ? petSfx("eel") : sfx("zap"))) { beep(220, .08, "sawtooth", .035); beep(1600, .05, "square", .025); }   // v0.9.107 찌릿 장어는 제 소리 · v0.9.208 전기 소리 새로(Ludo) — 번지는 번개도 레이저 대신 찌릿
     return pts.length - 1;
   }
   // 선물 요정이 똥을 바꾼 아이템 — 하트·우산·별·달 중 하나 (직업 규칙은 그대로 따른다)
@@ -14404,8 +14404,8 @@
     elFinal.textContent = "";
     elFinal.classList.add("digits");
     const box = document.createElement("span"); box.className = "dg";
-    const maxW = Math.min(340, innerWidth - 40);
-    let h = 62, gapK = -0.06;
+    const maxW = Math.min(260, innerWidth * 0.66);   // v0.9.208 판 안에 여유 있게 (340 → 260)
+    let h = 54, gapK = -0.06;
     const widthAt = hh => { let w = 0; for (const ch of txt) { const d = ch === "," ? 10 : ch.charCodeAt(0) - 48; w += (d >= 0 && d <= 10 ? DIGIT_W[d] * hh / DIGIT_CH : hh * 0.5) + gapK * hh; } return w; };
     if (widthAt(h) > maxW) h = Math.max(30, h * maxW / widthAt(h));
     const k = h / DIGIT_CH, sheetW = DIGIT_CW * 11 * k;
@@ -17433,10 +17433,10 @@
         if (it.gold) {                       // 무지개똥 — 무지갯빛으로 돌며 번쩍인다
           if (it.rseed === undefined) it.rseed = Math.random() * 1000;   // 흐름·색 기준 — 위치(x)를 쓰면 옆으로 움직일 때 띠가 확 밀렸다
           const fx = goldFx(now, it.rseed);
-          const R = it.size * (0.92 + fx.puls * 0.08);
+          const R = it.size * (0.74 + fx.puls * 0.05);   // v0.9.208 오라를 몸에 더 바짝 (0.92 → 0.74)
           const gg = ctx.createRadialGradient(0, 0, 0, 0, 0, R);
           gg.addColorStop(0, "hsla(" + fx.hue + ",80%,78%," + (0.5 + fx.puls * 0.12).toFixed(2) + ")");
-          gg.addColorStop(0.42, "hsla(" + ((fx.hue + 60) % 360) + ",75%,72%," + (0.22 + fx.puls * 0.08).toFixed(2) + ")");
+          gg.addColorStop(0.62, "hsla(" + ((fx.hue + 60) % 360) + ",75%,72%," + (0.22 + fx.puls * 0.08).toFixed(2) + ")");
           gg.addColorStop(1, "hsla(" + ((fx.hue + 120) % 360) + ",70%,72%,0)");
           ctx.fillStyle = gg;
           ctx.beginPath(); ctx.arc(0, 0, R, 0, 6.283); ctx.fill();
