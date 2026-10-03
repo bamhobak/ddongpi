@@ -1804,7 +1804,7 @@
 
     <div id="startScreen" class="screen onHome">
       <div id="homeBgFade"></div>
-      <script>/* v0.9.128 첫 화면부터 고른 캐릭터의 배경 (기본 루나) */ try { var hj = localStorage.getItem("epjpddongpi_job") || "fortune"; if (["bangul","fit","powerj","levitator","powerp","fortune"].indexOf(hj) >= 0) document.getElementById("startScreen").style.setProperty("--hbg", "url(assets/bg/home_" + hj + ".webp?2)"); } catch (e) {}</script>
+      <script>/* v0.9.128 첫 화면부터 고른 캐릭터의 배경 (기본 루나) */ try { var hj = localStorage.getItem("epjpddongpi_job") || "bangul"; if (["bangul","fit","powerj","levitator","powerp","fortune"].indexOf(hj) >= 0) document.getElementById("startScreen").style.setProperty("--hbg", "url(assets/bg/home_" + hj + ".webp?2)"); } catch (e) {}</script>
       <div id="ver"></div>
       <button id="meBtn" aria-label="내 정보"><b id="meLv">Lv1</b><span id="meNm">-</span></button>
       <div id="coinBox" title="모은 코인">🪙 0</div>
@@ -2214,7 +2214,7 @@
   const elTitle = document.getElementById("overTitle");
   const coinNote = document.getElementById("coinNote");
 
-  const GAME_VERSION = "v0.9.153";
+  const GAME_VERSION = "v0.9.154";
   /* 제작사 스플래시(bamhobak friends 로고) — 2026-09-20 끔. 다시 켜려면 true */
   const SPLASH_USE = false;   // 코드를 고칠 때마다 뒤 두 자리를 올린다
   document.getElementById("ver").textContent = GAME_VERSION;
@@ -2243,10 +2243,10 @@
                ds: "힘들때마다 차려지는 엄마의 따뜻한 밥상 · 코인이 2배로 나온다" },
     /* 점술가 — 도박사 자리를 이어받았다. 가끔 떨어지는 수정 구슬(옛 포춘쿠키)을 먹으면 10초 동안 예언 하나가 이뤄진다.
        (옛 도박사 기록은 순위표에 도박사로 그대로 남는다 — JOB_NAMES·JOB_IMG 에만 남겨 두었다) */
-    fortune: { nm: "루나 · 점술가", ic: "🔮", ds: "10초마다 예언이 저절로 바뀐다 · 좋은 예언 넷, 나쁜 예언 하나" },
-    levitator: { nm: "도도 · 부양사", ic: "☁️", ds: "하늘 어디든 날 수 있다 · 높이 있을수록 점수 UP" },
-    fit: { nm: "버피 · 헬스견", ic: "💪", ds: "목숨 5개로 시작 · 우산이 안 나온다 · 하트가 어마무시하게 잘 나온다 · 벌크업 좀 된 상태" },
-    powerj: { nm: "제이 · 계획러", ic: "📋", ds: "달이 잘 나온다 · 대신 증강은 계획대로 1개만" },
+    fortune: { nm: "루나 · 점술가", ic: "🔮", needUnlock: "별 30개 먹기 (누적)", ds: "10초마다 예언이 저절로 바뀐다 · 좋은 예언 넷, 나쁜 예언 하나" },
+    levitator: { nm: "도도 · 부양사", ic: "☁️", needUnlock: "한 판에 7스테이지(오로라 커튼)까지 가기", ds: "하늘 어디든 날 수 있다 · 높이 있을수록 점수 UP" },
+    fit: { nm: "버피 · 헬스견", ic: "💪", needUnlock: "한 판에 60초 버티기", ds: "목숨 5개로 시작 · 우산이 안 나온다 · 하트가 어마무시하게 잘 나온다 · 벌크업 좀 된 상태" },
+    powerj: { nm: "제이 · 계획러", ic: "📋", needUnlock: "달 15개 먹기 (누적)", ds: "달이 잘 나온다 · 대신 증강은 계획대로 1개만" },
     /* 파워P — 파워J 의 거울. 달은 남들만큼 오는데, 올 때마다 네 장을 펼쳐 놓고 고른다.
        아이디가 powerp2 인 것은, powerp 는 무소유가 예전에 파워P 였을 때 쓰던 이름이라
        이미 차 있기 때문이다 (옛 기록과 순위표가 그 이름을 쓴다). */
@@ -2480,7 +2480,7 @@
     const off = (k - ((n || 1) - 1) / 2) * gap;
     return Math.max(22, Math.min(W - 22, player.x + off));
   }
-  const JOB_DEFAULT = "fortune";                 // v0.8.70 쉬었음 청년을 빼면서 기본 직업은 루나(점술가)
+  const JOB_DEFAULT = "bangul";                  // v0.8.70 루나 · v0.9.154 처음엔 방울이만 열려 있으니 방울이
   function jobShort(j) { return JOBS[j].nm.split(" · ")[0]; }   // "버피 · 헬스견" → "버피"
   function jobOk(j) { return !!(JOBS[j] && !JOBS[j].gone); }
   let job = JOB_DEFAULT;
@@ -4166,11 +4166,14 @@
     if (!achLive()) return;
     const v = achData.c[key] = (achData.c[key] || 0) + (n || 1);
     achDirty = true;
+    for (const jid in JOB_UNLOCK_N) if (JOB_UNLOCK_N[jid][0] === key && v >= JOB_UNLOCK_N[jid][1]) jobUnlock(jid);   // v0.9.154 누적 캐릭터 해금
     for (const id in ACH) if (ACH[id].key === key && v >= ACH[id].n) achUnlock(id);
   }
   function achTick(dt) {                     // 매 프레임 — 버티기·레벨 업적, 쌓인 횟수 저장
     if (!achLive()) return;
     if (elapsed >= 100 && coinGot === 0) jobUnlock("powerp");   // 무무 — 100초 넘게 코인을 하나도 안 먹기
+    if (elapsed >= 60) jobUnlock("fit");                        // v0.9.154 버피 — 한 판에 60초
+    if (level >= 7) jobUnlock("levitator");                     // v0.9.154 도도 — 7스테이지(오로라 커튼)
     if (level >= 15) achUnlock("inter");
     if (level >= 6 && runHits === 0) achUnlock("afterimage");
     if (lives === 1) { lowT += dt; if (lowT >= 30) achUnlock("clone"); if (lowT >= 50) achUnlock("dungy"); }
@@ -4399,6 +4402,7 @@
   function eatStar(x, y) {
     // 먹은 개수에 비례: 1번째 1,500 → 2번째 3,000 → 3번째 4,500 …
     starCount++;
+    achBump("star");                         // v0.9.154 루나 해금(별 30개 누적)
     if (starCount >= 5) achUnlock("starburst");
     const gain = Math.round(2000 * starCount * aug.starMul * scoreMul() * (job === "powerp" && myPerk(4, "B") ? 1.3 : 1) * (dailyIs(0) ? 1.1 : 1));
     if (job === "powerp" && myPerk(2, "B")) invUntil = Math.max(invUntil, performance.now() + 500);     // v0.9.85 무무
@@ -8118,6 +8122,18 @@
   let carW = 0, carPos = 0, carTo = 0, carRaf = 0, carDrag = null, carNoClick = 0;
   function jobOwned(id) { return !JOBS[id] || !JOBS[id].needUnlock || jobUnlocked.has(id); }   // v0.9.61 잠긴 캐릭터(JOBS[id].needUnlock = 여는 조건) — 고리에 실루엣으로
   const jobUnlocked = new Set(Array.isArray(achData.j) ? achData.j : []);   // v0.9.62 업적 기록(LS_ACH)의 j 에 함께 저장
+  if (!achData.jv) {        // v0.9.154 캐릭터 잠금이 생기기 전부터 놀던 기기는 모두 열어 둔다 (한 번만 보고 표시)
+    let old = (lvData.xp || 0) > 0 || Object.keys(achData.c || {}).length > 0 || coins > 0;
+    try { for (let i = 0; i < localStorage.length && !old; i++) { const k = localStorage.key(i); if (k && k.startsWith("epjpddongpi_best_")) old = true; } } catch (e) {}
+    if (old) for (const id in JOBS) if (JOBS[id].needUnlock) jobUnlocked.add(id);
+    achData.j = [...jobUnlocked]; achData.jv = 1; achSave();
+  }
+  /* 누적 조건은 진행도도 보여 준다 */
+  const JOB_UNLOCK_N = { fortune: ["star", 30], powerj: ["moon", 15] };
+  function unlockHow(id) {
+    const u = JOB_UNLOCK_N[id], t = JOBS[id].needUnlock;
+    return u ? t + " · " + Math.min(u[1], achData.c[u[0]] || 0) + "/" + u[1] : t;
+  }
   if (!jobOwned(job)) job = JOB_DEFAULT;
   function jobUnlock(id) {
     if (jobOwned(id) || !achLive()) return;
@@ -8130,7 +8146,7 @@
     [...carDots.children].forEach((d, k) => d.classList.toggle("on", k === i));
     carL.disabled = carR.disabled = cards.length < 2;   // v0.9.56 끝에서 더 가면 반대쪽 끝으로 돈다
     homeTraits.innerHTML = "";
-    if (!jobOwned(job)) { const d = document.createElement("div"); d.textContent = "🔒 아직 열리지 않은 캐릭터"; const d2 = document.createElement("div"); d2.textContent = "여는 법 — " + JOBS[job].needUnlock; homeTraits.append(d, d2); return; }
+    if (!jobOwned(job)) { const d = document.createElement("div"); d.textContent = "🔒 아직 열리지 않은 캐릭터"; const d2 = document.createElement("div"); d2.textContent = "여는 법 — " + unlockHow(job); homeTraits.append(d, d2); return; }
     for (const line of jobTraitLines(JOBS[job])) { const d = document.createElement("div"); d.textContent = line; homeTraits.appendChild(d); }
   }
   /* v0.9.128 캐릭터마다 다른 메인 배경 */
@@ -8798,7 +8814,7 @@
   let t2 = null;
   function openT2() {
     try { if (!localStorage.getItem(LS_T2BAK)) { const b = {}; for (const k of t2Keys()) b[k] = localStorage.getItem(k); localStorage.setItem(LS_T2BAK, JSON.stringify(b)); } } catch (e) {}
-    t2 = { coins, acc: accLv(), cl: {}, owned: jobUnlocked.has("powerp"), pets: new Set(petOwned), augs: "keep", perks: false };
+    t2 = { coins, acc: accLv(), cl: {}, owned: Object.keys(JOBS).filter(k => JOBS[k].needUnlock).every(k => jobUnlocked.has(k)), pets: new Set(petOwned), augs: "keep", perks: false };
     for (const j in JOBS) if (!JOBS[j].gone) t2.cl[j] = lvOf(lvData.cx[j] || 0, CHR_XP);
     renderT2(); lvPopOpen("t2Pop");
   }
@@ -8837,7 +8853,7 @@
     seg(pr, [[false, "그대로"], [true, "모두 지우기(다시 해금부터)"]], t2.perks, v => { t2.perks = v; });
     // 캐릭터 해금
     const u = sec("🔓 해금");
-    seg(row(u, "무무 캐릭터"), [[true, "열림"], [false, "잠김"]], t2.owned, v => { t2.owned = v; });
+    seg(row(u, "캐릭터"), [[true, "모두 열림"], [false, "방울이만"]], t2.owned, v => { t2.owned = v; });
     seg(row(u, "증강(업적)"), [["keep", "그대로"], ["all", "모두 열기"], ["none", "모두 잠그기"]], t2.augs, v => { t2.augs = v; });
     const pets = Object.keys(PETS).filter(k => k !== "none");
     const allPet = pets.every(k => t2.pets.has(k)), noPet = pets.every(k => !t2.pets.has(k));
@@ -8867,9 +8883,8 @@
       for (const j in t2.cl) { const cur = lvData.cx[j] || 0; if (lvOf(cur, CHR_XP) !== t2.cl[j]) lvData.cx[j] = CHR_XP[t2.cl[j] - 1]; }
       if (t2.perks) { lvData.pick = {}; lvData.un = {}; }
       localStorage.setItem(LS_LV, JSON.stringify(lvData));
-      const jset = new Set(Array.isArray(achData.j) ? achData.j : []);
-      if (t2.owned) jset.add("powerp"); else jset.delete("powerp");
-      achData.j = [...jset];
+      achData.j = t2.owned ? Object.keys(JOBS).filter(k => JOBS[k].needUnlock) : []; achData.jv = 1;
+      if (!t2.owned) localStorage.setItem(LS_JOB, "bangul");
       if (t2.augs === "all") achData.u = Object.keys(ACH);
       else if (t2.augs === "none") achData.u = [];
       else achData.u = [...achU];
