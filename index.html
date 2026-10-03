@@ -1286,6 +1286,7 @@
     border: 0; border-image: none; border-radius: 0; box-shadow: none; background: url(assets/ui/btn_start.webp?5) center / contain no-repeat;
     color: transparent; font-size: 0 !important; text-shadow: none; animation: none; filter: drop-shadow(0 3px 4px rgba(0,0,0,.35)); }
   #startScreen #pgHome #btnStart:active { transform: translateY(2px) scale(.97); }
+  #startScreen #pgHome #btnStart.jobLock { filter: grayscale(1) brightness(.75) drop-shadow(0 3px 4px rgba(0,0,0,.3)) !important; pointer-events: none; animation: none !important; transform: none !important; }   /* v0.9.191 잠긴 캐릭터 — 회색, 눌리지 않음 */
   #startScreen #pgHome #btnStart.loading { filter: grayscale(.9) brightness(.8) drop-shadow(0 3px 4px rgba(0,0,0,.35)); pointer-events: none; position: relative; }   /* v0.9.186 불러오는 중 */
   #startScreen #pgHome #btnStart.loading::after { content: "불러오는 중…"; position: absolute; left: 0; right: 0; top: 100%; margin-top: 4px; font-size: 12px !important; font-weight: 800; color: #fff; text-shadow: 0 1px 2px rgba(0,0,0,.7); }
   /* v0.9.132 보유 중 — 버튼 말고 글자 표시(눌릴 것처럼 보이지 않게) */
@@ -2394,7 +2395,7 @@
   const elTitle = document.getElementById("overTitle");
   const coinNote = document.getElementById("coinNote");
 
-  const GAME_VERSION = "v0.9.190";
+  const GAME_VERSION = "v0.9.191";
   /* 제작사 스플래시(bamhobak friends 로고) — 2026-09-20 끔. 다시 켜려면 true */
   const SPLASH_USE = false;   // 코드를 고칠 때마다 뒤 두 자리를 올린다
   document.getElementById("ver").textContent = GAME_VERSION;
@@ -8333,6 +8334,7 @@
   }
   function carChrome(on) { carWrap.classList.toggle("off", !on); carDots.classList.toggle("off", !on); homeTraits.classList.toggle("off", !on); if (!on) jobList.style.height = ""; }
   function carInfo() {                       // 점 · 화살표 · 특징
+    { const bs = document.getElementById("btnStart"); if (bs) bs.classList.toggle("jobLock", !jobOwned(job)); }   // v0.9.191 잠긴 캐릭터면 시작하기 회색
     const cards = [...jobList.children], i = cards.findIndex(c => c.dataset.job === job);
     [...carDots.children].forEach((d, k) => d.classList.toggle("on", k === i));
     carL.disabled = carR.disabled = cards.length < 2;   // v0.9.56 끝에서 더 가면 반대쪽 끝으로 돈다
