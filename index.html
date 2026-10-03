@@ -1067,6 +1067,14 @@
   #hiPop #hiGo { --bh: 50px; height: var(--bh); box-sizing: border-box; min-width: 200px; border-style: solid; border-color: transparent; border-radius: 0; box-shadow: none; background: none;
     border-width: 0 calc(var(--bh) / 2); border-image: url(assets/ui/btn_yellow.webp) 0 60 fill / 0 calc(var(--bh) / 2) / 0 stretch;
     padding: 0 4px calc(var(--bh) * .08); font-size: 18px; font-weight: 900; color: #6b3300; text-shadow: 0 1px 0 rgba(255,255,255,.55); }
+
+  /* v0.9.158 처음 시작 — 시작하기만 */
+  #startScreen.firstRun #tabBar, #startScreen.firstRun #meBtn, #startScreen.firstRun #coinBox, #startScreen.firstRun #btnOpt,
+  #startScreen.firstRun #homeJobs, #startScreen.firstRun #btnHyper { pointer-events: none !important; }
+  #startScreen.firstRun #tabBar, #startScreen.firstRun #meBtn, #startScreen.firstRun #coinBox, #startScreen.firstRun #btnOpt,
+  #startScreen.firstRun .carArrow, #startScreen.firstRun .lvDet { opacity: .38; filter: grayscale(.6); }
+  #startScreen.firstRun #btnStart { pointer-events: auto !important; animation: frPulse 1.3s ease-in-out infinite !important; }
+  @keyframes frPulse { 50% { transform: scale(1.06); filter: drop-shadow(0 0 12px rgba(255,210,63,.9)); } }
   #startScreen #meBtn { position: absolute; top: max(8px, env(safe-area-inset-top)); left: 12px; z-index: 6; display: flex; align-items: center; gap: 6px;
     max-width: 150px; padding: 4px 12px 4px 5px; border-radius: 999px; box-shadow: none; background: rgba(8,9,16,.55); border: 1px solid rgba(255,210,63,.35);
     color: #fff; font-size: 14px; font-weight: 800; text-shadow: 0 1px 2px rgba(0,0,0,.6); }
@@ -2237,7 +2245,7 @@
   const elTitle = document.getElementById("overTitle");
   const coinNote = document.getElementById("coinNote");
 
-  const GAME_VERSION = "v0.9.157";
+  const GAME_VERSION = "v0.9.158";
   /* 제작사 스플래시(bamhobak friends 로고) — 2026-09-20 끔. 다시 켜려면 true */
   const SPLASH_USE = false;   // 코드를 고칠 때마다 뒤 두 자리를 올린다
   document.getElementById("ver").textContent = GAME_VERSION;
@@ -8977,6 +8985,21 @@
   document.getElementById("hiGo").addEventListener("click", hiSave);
   document.getElementById("hiName").addEventListener("keydown", e => { e.stopPropagation(); if (e.key === "Enter") { e.preventDefault(); hiSave(); } });
   setTimeout(hiOpen, 600);
+
+  /* v0.9.158 처음 시작 — 첫 판을 마치기 전에는 시작하기만 눌린다 (탭·옵션·이름·캐릭터 넘기기·상세는 흐리게 막는다).
+     예전부터 하던 사람(경험치·코인·최고 기록이 있으면)은 막지 않는다 */
+  const LS_PLAYED = "epjpddongpi_played";
+  function firstRunOn() {
+    try { if (localStorage.getItem(LS_PLAYED)) return false; } catch (e) { return false; }
+    if ((lvData.xp || 0) > 0 || coins > 0) return false;
+    try { for (let i = 0; i < localStorage.length; i++) { const k = localStorage.key(i); if (k && k.startsWith("epjpddongpi_best_")) return false; } } catch (e) {}
+    return true;
+  }
+  function firstRunDone() {
+    try { localStorage.setItem(LS_PLAYED, "1"); } catch (e) {}
+    document.getElementById("startScreen").classList.remove("firstRun");
+  }
+  document.getElementById("startScreen").classList.toggle("firstRun", firstRunOn());
   /* v0.9.124 두 창 — 내 정보(이름 · 공통 레벨) / 캐릭터 레벨 상세 */
   function lvPopOpen(id) { document.getElementById(id).classList.add("on"); }
   function openMe() {
@@ -14105,6 +14128,7 @@
   function gameOver() {
     if (vsOn()) return vsOver();
     if (partyOn()) return partyOver();
+    firstRunDone();                          // v0.9.158 첫 판을 마쳤다 — 다른 버튼도 풀린다
     state = STATE.OVER;
     dying = 0; hitStop = 0;
     btnPause.classList.remove("on");
