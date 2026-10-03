@@ -2274,7 +2274,7 @@
   const elTitle = document.getElementById("overTitle");
   const coinNote = document.getElementById("coinNote");
 
-  const GAME_VERSION = "v0.9.162";
+  const GAME_VERSION = "v0.9.163";
   /* 제작사 스플래시(bamhobak friends 로고) — 2026-09-20 끔. 다시 켜려면 true */
   const SPLASH_USE = false;   // 코드를 고칠 때마다 뒤 두 자리를 올린다
   document.getElementById("ver").textContent = GAME_VERSION;
@@ -2421,7 +2421,7 @@
   }
 
   /* 갤러그 전투기 — 원작처럼 흰 몸통에 빨간 무늬, 파란 속날개, 뾰족한 기수 */
-  /* 고무고무노 피스톨 — 총알 대신 조그만 주먹이 날아간다.
+  /* 주먹 총알 — 총알 대신 조그만 주먹이 날아간다.
      위로 곧게 올라가므로 손등이 위를 보고, 아래에 빨간 소매가 따라붙는다.
      roundRect 는 옛 모바일 브라우저에 없어서 타원만으로 그린다. */
   function drawFist(x, y) {
@@ -2645,7 +2645,7 @@
       b.swimK = (b.swimK || 0) + (rk - (b.swimK || 0)) * Math.min(1, dt * 6);
       b.swimPhase = (b.swimPhase || 0) + dt * (1 / SWIM_IDLE_CYCLE + (1 / SWIM_FAST_CYCLE - 1 / SWIM_IDLE_CYCLE) * b.swimK);
     }
-    if (!running || stoneOn) { swimPrevX = player.x; return; }   // v0.9.104 돌부처 — 돌인 동안은 헤엄·둥실거림도 멈춘다
+    if (!running || stoneOn) { swimPrevX = player.x; return; }   // v0.9.104 얼음 땡 — 돌인 동안은 헤엄·둥실거림도 멈춘다
     floatT += dt;
     const v = swimPrevX === null ? 0 : Math.abs(player.x - swimPrevX) / Math.max(dt, 1e-3);
     swimPrevX = player.x;
@@ -2692,7 +2692,7 @@
     return { x: player.x + off, y: player.y + FOOT - sh + sh * spr.bcy - sprLift(spr), r: sh * spr.brr };
   }
   // 판정·그림 크기 배율 — 스테로이드 약발 중에는 두 배
-  function hitMul() { return aug.hitboxMul * (roidT > 0 ? 2 : 1) * (prophIs("heavy") ? 1.3 : 1) * (aug.snackBig && performance.now() < powerUntil ? 1.5 : 1) * gSlim(); }   // v0.9.72 성장 날씬함   // 간식은 살 안쪄요 — 간식 타임 1.5배
+  function hitMul() { return aug.hitboxMul * (roidT > 0 ? 2 : 1) * (prophIs("heavy") ? 1.3 : 1) * (aug.snackBig && performance.now() < powerUntil ? 1.5 : 1) * gSlim(); }   // v0.9.72 성장 날씬함   // 배불뚝이 — 간식 타임 1.5배
   function spriteHeight(spr) { return (player.r * 2 * hitMul()) / spr.head * spr.adj; }
   /* v0.9.06 캐릭터마다 몸 가운데 높이가 달랐다(판정 반지름의 1.2~1.9배) — 세트마다 lift 만큼 그림과 판정을 함께 올려 방울이에 맞춘다 */
   function sprLift(spr) { return spr && spr.lift ? spr.lift * player.r * hitMul() : 0; }
@@ -4154,23 +4154,23 @@
     steelUmb: false,    // 히든: 강철 우산 (방패가 없으면 6.5초마다 하나 생긴다)
     starburst: false,   // 히든: 별똥별 (별을 먹으면 화면의 똥이 전부 사라진다)
     blackhole: false,   // 히든: 블랙홀 (자석 강화 + 간식 낙하물도 조금 끌어당김)
-    legion: false,      // 히든: 왕뼈다귀 군단 (대왕 등장·점수 강화)
-    doveWhat: false,    // 히든: 비둘기 무엇? (비둘기 펫이 세지고 자주 나온다)
+    legion: false,      // 히든: 왕뼈다귀 친구들 (대왕 등장·점수 강화)
+    doveWhat: false,    // 히든: 왕 비둘기 (비둘기 펫이 세지고 자주 나온다)
     doveFlock: 0,       // 비둘기 떼 — 한 번 출격에 더 나가는 마리 수
-    doveFreq: 1,        // 귀소 본능 — 출격 거리 배율 (작을수록 자주)
-    dodge: 0,           // 그건 제 잔상입니다만? — 맞을 때 피할 확률 (0~0.30)
-    dungy: false,       // 똥묻히기 (하트가 적을수록 모든 점수가 오른다)
+    doveFreq: 1,        // 비둘기 집 — 출격 거리 배율 (작을수록 자주)
+    dodge: 0,           // 쏙 피하기 — 맞을 때 피할 확률 (0~0.30)
+    dungy: false,       // 꼬질꼬질 (하트가 적을수록 모든 점수가 오른다)
     momMeal: false,     // 쉬었음 청년: 엄마는 우리 딸 믿어 (엄마의 밥상이 떨어진다)
-    chainZap: false,    // 히든: 연쇄 전류 (갤러그 총알이 옆 똥 두 개로 번진다)
-    wak: false,         // 히든: 고무고무노 피스톨 (주먹이 똥을 튕겨 올리고, 부딪히면 같이 터진다)
+    chainZap: false,    // 히든: 찌릿찌릿 번개 (갤러그 총알이 옆 똥 두 개로 번진다)
+    wak: false,         // 히든: 주먹 총알 (주먹이 똥을 튕겨 올리고, 부딪히면 같이 터진다)
     scoreMul: 1,        // 모든 점수에 곱해지는 배율
     dash: false,        // 방귀 대시 (두 번 두드리면 짧게 돌진 · 그동안 무적)
-    pierce: false,      // 관통 총알 (갤러그 총알이 똥 하나를 뚫고 지나간다)
+    pierce: false,      // 뚫는 총알 (갤러그 총알이 똥 하나를 뚫고 지나간다)
     fly: false,         // 똥파리 (맞을 때마다 파리 한 마리가 5초 동안 똥을 부순다)
-    stone: false,       // 돌부처 (1초 가만히 있으면 돌 — 무적, 점수·아이템 없음)
+    stone: false,       // 얼음 땡 (1초 가만히 있으면 돌 — 무적, 점수·아이템 없음)
     gacha: false,       // 뽑기 (증강이 물음표로 나오고 절반은 히든)
-    snackBig: false,    // 히든: 간식은 살 안쪄요 (간식 타임에 몸 1.5배)
-    toilet: false,      // 히든: 머리 위의 변기 (달마다 증강 두 번 · 맞으면 절반 확률로 즉사)
+    snackBig: false,    // 히든: 배불뚝이 (간식 타임에 몸 1.5배)
+    toilet: false,      // 히든: 변기 모자 (달마다 증강 두 번 · 맞으면 절반 확률로 즉사)
     maxLives: 5
   };
   let augCount = {};    // 증강별 획득 횟수
@@ -4179,20 +4179,20 @@
      key 가 있으면 판을 넘어 쌓이는 횟수(n 번), 없으면 그 순간 achUnlock 을 부른다. 기기에 저장(LS_ACH). */
   const LS_ACH = "epjpddongpi_ach";
   const ACH = {
-    blackhole:  { t: "블랙홀에 처음 도달하기" },
-    angryUmb:   { t: "한 판에 우산 5개 줍기" },
-    dungy:      { t: "하트 1개로 50초 버티기" },
-    goldLord:   { t: "무지개똥 20개 먹기", key: "gold", n: 20 },
-    starburst:  { t: "한 판에 별 5개 먹기" },
-    legion:     { t: "왕뼈다귀 10개 먹기", key: "giant", n: 10 },
-    inter:      { t: "레벨 15 도달하기" },
-    clone:      { t: "목숨 1개로 30초 버티기" },
-    afterimage: { t: "한 번도 안 맞고 레벨 6 도달하기" },
-    steelUmb:   { t: "우산으로 똥 30번 막기", key: "block", n: 30 },
-    fly:        { t: "똥에 50번 맞기", key: "hit", n: 50 },
-    gacha:      { t: "증강 50개 고르기", key: "pick", n: 50 },
-    snackBig:   { t: "간식 타임 20번 열기", key: "fever", n: 20 },
-    toilet:     { t: "달 30개 먹기", key: "moon", n: 30 }
+    blackhole:  { t: "블랙홀까지 처음 가면" },
+    angryUmb:   { t: "한 판에 우산 5개 주우면" },
+    dungy:      { t: "하트 1개로 50초 버티면" },
+    goldLord:   { t: "무지개 똥 20개 먹으면", key: "gold", n: 20 },
+    starburst:  { t: "한 판에 별 5개 먹으면" },
+    legion:     { t: "왕뼈다귀 10개 먹으면", key: "giant", n: 10 },
+    inter:      { t: "레벨 15까지 가면" },
+    clone:      { t: "하트 1개로 30초 버티면" },
+    afterimage: { t: "한 번도 안 맞고 레벨 6까지 가면" },
+    steelUmb:   { t: "우산으로 똥 30번 막으면", key: "block", n: 30 },
+    fly:        { t: "똥에 50번 맞으면", key: "hit", n: 50 },
+    gacha:      { t: "증강 50개 고르면", key: "pick", n: 50 },
+    snackBig:   { t: "간식 타임 20번 열면", key: "fever", n: 20 },
+    toilet:     { t: "달 30개 먹으면", key: "moon", n: 30 }
   };
   let achData = { c: {}, u: [] }, achDirty = false, achFlushT = 0;
   try { const d = JSON.parse(localStorage.getItem(LS_ACH) || "null"); if (d && d.c && Array.isArray(d.u)) achData = d; } catch (e) {}
@@ -4251,23 +4251,23 @@
   function nameOf(a) { return a.nmFn ? a.nmFn() : a.nm; }
 
   const AUGMENTS = [
-    { id: "fever_time", ic: "🔥", nm: "간식 연장", ds: "간식 타임 증가",
+    { id: "fever_time", ic: "🔥", nm: "간식 시간 더!", ds: "간식 타임이 더 길어져요",
       go: () => { aug.feverBonus += 1500; } },   // 먹을 때마다 +1.5초, 감쇠 없음
-    { id: "star50",     ic: "⭐", nm: "별빛 증폭",   ds: "별 점수 증가",
+    { id: "star50",     ic: "⭐", nm: "반짝반짝 별",   ds: "별을 먹으면 점수를 더 많이 받아요",
       go: () => { aug.starMul += 0.25 * dim("star50"); } },
-    { id: "time2x",     ic: "⏱️", nm: "시간 가속",   ds: "생존 점수 증가",
+    { id: "time2x",     ic: "⏱️", nm: "오래오래 버티기",   ds: "오래 버틸수록 점수가 더 빨리 쌓여요",
       go: () => { aug.timeMul *= 1 + 0.5 * dim("time2x"); } },
-    { id: "fever50",    ic: "🌙", nm: "간식 대박", ds: "간식 낙하물 점수 증가",
+    { id: "fever50",    ic: "🌙", nm: "간식 냠냠 대박", ds: "간식 타임에 먹는 간식 점수가 올라요",
       go: () => { aug.feverScoreMul += 0.20; } },   // 먹을 때마다 +20%, 감쇠 없음
-    { id: "slow",       ic: "🐢", nm: "느린 하늘",   ds: "똥이 느리게 떨어진다",
+    { id: "slow",       ic: "🐢", nm: "느릿느릿 하늘",   ds: "똥이 느릿느릿 떨어져요",
       go: () => { aug.fallMul *= 1 - 0.12 * dim("slow"); } },
-    { id: "small",      ic: "🎯", nm: "다이어트 성공", ds: "몸집이 작아진다",
+    { id: "small",      ic: "🎯", nm: "쏙 작아지기", ds: "몸이 작아져서 똥을 피하기 쉬워요",
       cond: () => job !== "fit",   // 헬스걸은 벌크업이 정체성 — 마운자로를 맞지 않는다
-      nmFn: () => "다이어트 " + ((augCount["small"] || 0) + 1) + "단계",
+      nmFn: () => "쏙 작아지기 " + ((augCount["small"] || 0) + 1) + "단계",
       go: () => { aug.hitboxMul *= 1 - 0.12 * dim("small"); } },
-    { id: "tinypoop",   ic: "🫧", nm: "작아진 똥",   ds: "똥이 작아진다",
+    { id: "tinypoop",   ic: "🫧", nm: "꼬마 똥",   ds: "떨어지는 똥이 작아져요",
       go: () => { aug.poopMul *= 1 - 0.12 * dim("tinypoop"); } },
-    { id: "umbrella3",  ic: "☂️", nm: "우산 다발", ds: "우산을 3개 얻는다",
+    { id: "umbrella3",  ic: "☂️", nm: "우산 세 개", ds: "우산을 3개 받아요. 우산이 똥을 막아 줘요",
       max: 99,                    // 조건이 막아주므로 보유 상한은 사실상 없음
       cond: () => job !== "fit" && shields < 10,   // 헬스걸은 방패가 없는 직업 — 미등장
       noCount: true,              // 방패 수는 화면에 우산으로 보이니 보유 뱃지는 생략
@@ -4276,134 +4276,134 @@
     /* v0.9.76 펫과 그 펫을 키우는 증강(도와줘 뿌잉·갤러그 편대·비둘기 떼)을 한 증강으로 묶었다 — 처음 먹으면 펫이 오고, 또 먹으면 한 단계씩 (최대 5단계) */
     { id: "pet:helper",  ic: "🐹", nm: "펫 뿌잉", max: 5, w: 0.7, cond: () => hasPet("helper"),
       nmFn: () => augCount["pet:helper"] ? "펫 뿌잉 " + (augCount["pet:helper"] + 1) + "단계" : "펫 뿌잉",
-      ds: "로켓 햄스터가 때때로 날아올라 지나간 자리의 똥을 부순다",
-      dsFn: () => augCount["pet:helper"] ? "뿌잉이 더 커지고 더 자주 날아온다" : "로켓 햄스터가 때때로 날아올라 지나간 자리의 똥을 부순다",
+      ds: "로켓 햄스터가 가끔 슝 날아와서 지나간 자리의 똥을 부숴요",
+      dsFn: () => augCount["pet:helper"] ? "뿌잉이 더 커지고 더 자주 날아와요" : "로켓 햄스터가 가끔 슝 날아와서 지나간 자리의 똥을 부숴요",
       go: () => { if (petOn.helper) aug.helper++; else { petOn.helper = true; aug.helper = Math.max(aug.helper, 1); } helperTimer = Math.min(helperTimer, 0.6); } },
     { id: "pet:galaga",  ic: "🚀", nm: "펫 갤러그", max: 5, w: 0.7, cond: () => hasPet("galaga"),
       nmFn: () => augCount["pet:galaga"] ? "펫 갤러그 " + (augCount["pet:galaga"] + 1) + "단계" : "펫 갤러그",
-      ds: "우주선이 땅에서 총알을 쏘아 올린다",
-      dsFn: () => augCount["pet:galaga"] ? "우주선이 한 대 더 늘어난다 · 늘어날수록 각자 느긋해진다" : "우주선이 땅에서 총알을 쏘아 올린다",
+      ds: "우주선이 땅에서 총알을 쏘아 올려요",
+      dsFn: () => augCount["pet:galaga"] ? "우주선이 한 대 더 생겨요 · 많아지면 하나하나는 천천히 쏴요" : "우주선이 땅에서 총알을 쏘아 올려요",
       go: () => { if (petOn.galaga) aug.galaga++; else { petOn.galaga = true; aug.galaga = Math.max(aug.galaga, 1); } } },
     { id: "pet:dove",    ic: "🕊️", nm: "펫 비둘기", max: 5, w: 0.7, cond: () => hasPet("dove"),
       nmFn: () => augCount["pet:dove"] ? "펫 비둘기 " + (augCount["pet:dove"] + 1) + "단계" : "펫 비둘기",
-      ds: "110m 움직일 때마다 날아올라 똥을 터뜨린다",
-      dsFn: () => augCount["pet:dove"] ? "출격할 때 비둘기가 한 마리 더 날아오른다" : "110m 움직일 때마다 날아올라 똥을 터뜨린다",
+      ds: "많이 움직이면 비둘기가 날아올라 똥을 터뜨려요",
+      dsFn: () => augCount["pet:dove"] ? "날아갈 때 비둘기가 한 마리 더 날아요" : "많이 움직이면 비둘기가 날아올라 똥을 터뜨려요",
       go: () => { if (petOn.dove) aug.doveFlock++; else petOn.dove = true; } },
-    { id: "pet:angel",   ic: "👼", nm: "펫 수호천사", ds: "쓰러지면 한 번 되살려 주고, 잠깐 다가오는 똥을 밀어낸다", once: true, w: 0.6,
+    { id: "pet:angel",   ic: "👼", nm: "펫 수호천사", ds: "쓰러지면 한 번 다시 일으켜 주고, 다가오는 똥을 밀어내요", once: true, w: 0.6,
       cond: () => hasPet("angel") && level >= 4,
       go: () => { petOn.angel = true; } },
-    { id: "pet:gift",    ic: "🧚", nm: "펫 선물 요정", ds: "때때로 날아가 떨어지는 똥을 아이템으로 바꾼다", once: true, w: 0.7, cond: () => hasPet("gift"),
+    { id: "pet:gift",    ic: "🧚", nm: "펫 선물 요정", ds: "가끔 날아가서 떨어지는 똥을 선물로 바꿔요", once: true, w: 0.7, cond: () => hasPet("gift"),
       go: () => { petOn.gift = true; giftT = GIFT_EVERY * 0.5; } },
-    { id: "pet:coincat", ic: "🐈", nm: "펫 코인 고양이", ds: "때때로 코인을 물어다 떨어뜨린다", once: true, w: 0.7, cond: () => hasPet("coincat"),
+    { id: "pet:coincat", ic: "🐈", nm: "펫 코인 고양이", ds: "가끔 코인을 물어다 줘요", once: true, w: 0.7, cond: () => hasPet("coincat"),
       go: () => { petOn.coincat = true; catT = CAT_EVERY * 0.5; } },
-    { id: "pet:eel",     ic: "⚡", nm: "펫 백만볼트 뱀장어", ds: "때때로 가까운 똥에 번개를 쏘고, 옆 똥으로 옮겨붙는다", once: true, w: 0.7, cond: () => hasPet("eel"),
+    { id: "pet:eel",     ic: "⚡", nm: "펫 백만볼트 뱀장어", ds: "가끔 가까운 똥에 찌릿! 번개를 쏘고, 옆 똥까지 번져요", once: true, w: 0.7, cond: () => hasPet("eel"),
       go: () => { petOn.eel = true; eelT = EEL_EVERY * 0.5; } },
     /* ── 펫 전용 증강 — 그 펫을 데리고 있을 때만 후보에 나온다 ── */
-    { id: "doveHome",   ic: "📯", nm: "귀소 본능", ds: "비둘기가 더 자주 출격한다",
+    { id: "doveHome",   ic: "📯", nm: "비둘기 집", ds: "비둘기가 더 자주 날아와요",
       max: 3, cond: () => petOn.dove,
       go: () => { aug.doveFreq *= 1 - 0.2 * dim("doveHome"); } },   // 80m → 64m → 53m …
-    { id: "hungry",     ic: "😋", nm: "먹보 뿌잉", ds: "뿌잉이 아이템을 대신 먹어준다",
+    { id: "hungry",     ic: "😋", nm: "먹보 뿌잉", ds: "뿌잉이 아이템을 대신 먹어 줘요",
       hidden: true, once: true, cond: () => petOn.helper && aug.magnet > 0,   // 뿌잉 펫 + 자석
       go: () => { aug.hungry = true; } },
-    { id: "roid",       ic: "💪", nm: "벌크업", ds: "6초 동안 몸이 2배로 부풀고, 모든 똥을 튕겨낸다",   // v0.9.40 옛 이름 '스테로이드 과다 복용' 
-      max: 99, noCount: true, cond: () => job === "fit" && level >= 7,   // 헬스걸 전용 — 우산 다발 자리
+    { id: "roid",       ic: "💪", nm: "근육 빵빵", ds: "6초 동안 몸이 2배로 커지고, 닿는 똥을 모두 튕겨 내요",   // v0.9.40 옛 이름 '스테로이드 과다 복용' 
+      max: 99, noCount: true, cond: () => job === "fit" && level >= 7,   // 헬스걸 전용 — 우산 세 개 자리
       go: () => { roidT = 6; } },   // v0.9.31 7 → 6초
-    { id: "doveWhat",   ic: "🕊️", nm: "비둘기 무엇?", ds: "비둘기가 1.5배 빠르고 커진다 · 더 자주 출격",
+    { id: "doveWhat",   ic: "🕊️", nm: "왕 비둘기", ds: "비둘기가 더 크고 빨라지고, 더 자주 날아와요",
       hidden: true, once: true,
-      cond: () => petOn.dove && Math.max(0, (augCount["pet:dove"] || 0) - 1) + (augCount["doveHome"] || 0) >= 2,   // 비둘기 강화 2개 이상 (펫 비둘기 2단계부터 + 귀소 본능)
+      cond: () => petOn.dove && Math.max(0, (augCount["pet:dove"] || 0) - 1) + (augCount["doveHome"] || 0) >= 2,   // 비둘기 강화 2개 이상 (펫 비둘기 2단계부터 + 비둘기 집)
       go: () => { aug.doveWhat = true; } },
-    { id: "steelUmb",   ic: "☔", nm: "우산 로켓배송", ds: "우산이 없으면 저절로 배송된다",
+    { id: "steelUmb",   ic: "☔", nm: "우산 택배", ds: "우산이 없으면 저절로 배달돼요",
       hidden: true, once: true,
       cond: () => augCount["umbrella3"] > 0 && job !== "fit",   // 헬스걸은 하트 자동재생이 돼버려 제외
       go: () => { aug.steelUmb = true; shieldTimer = UMB_SEC; } },
-    { id: "starburst",  ic: "🌠", nm: "별똥별",     ds: "별이 하늘의 똥을 쓸어버린다",
+    { id: "starburst",  ic: "🌠", nm: "별똥별",     ds: "별을 먹으면 하늘의 똥을 싹 쓸어 줘요",
       hidden: true, once: true, cond: () => augCount["star50"] > 0,
       go: () => { aug.starburst = true; } },
-    { id: "blackhole",  ic: "🕳️", nm: "블랙홀",     ds: "끌어당기는 힘이 더 세지며, 간식도 약간의 영향을 받는다",
+    { id: "blackhole",  ic: "🕳️", nm: "블랙홀",     ds: "아이템을 더 세게 끌어당겨요. 간식도 조금 끌려와요",
       hidden: true, once: true, cond: () => aug.magnet > 0,
       go: () => { aug.blackhole = true; aug.magnet = 390; } },   // 자석 220 → 390 으로 확장
-    { id: "legion",     ic: "🍗", nm: "왕뼈다귀 군단", ds: "왕뼈다귀가 떼로 몰려온다",
+    { id: "legion",     ic: "🍗", nm: "왕뼈다귀 친구들", ds: "왕뼈다귀가 우르르 몰려와요",
       hidden: true, once: true, cond: () => aug.giant > 0,
       go: () => { aug.legion = true; } },
-    { id: "magnet",     ic: "🧲", nm: "자석",       ds: "근처의 아이템이 끌려온다",
+    { id: "magnet",     ic: "🧲", nm: "자석",       ds: "가까운 아이템이 졸졸 끌려와요",
       once: true, go: () => { aug.magnet = 220; } },   // 끌어당기는 반지름(px)
     /* 조작이 끌기 하나뿐이라 실력을 드러낼 통로가 좁다. 기본 기능으로 넣지 않고 증강으로만 둔다 —
        조작이 복잡해지는 건 원하는 사람만 지게. 부양사는 이미 두 배 반으로 빠르니 안 나온다. */
-    { id: "dash",       ic: "💨", nm: "방귀 대시",   ds: "두 번 두드리면 해당 위치로 대시",
+    { id: "dash",       ic: "💨", nm: "방귀 대시",   ds: "화면을 두 번 톡톡 누르면 그 자리로 뿡! 날아가요",
       once: true, cond: () => job !== "levitator",
       go: () => { aug.dash = true; dashCd = 0; dashT = 0; } },
-    { id: "lucky",      ic: "🍀", nm: "행운",       ds: "아이템이 더 자주 등장",
+    { id: "lucky",      ic: "🍀", nm: "네잎클로버",       ds: "아이템이 더 자주 나와요",
       // 첫 개는 +15%, 겹칠수록 0.85배씩 덜 먹는다 (5개 누적 +69%, 실측 +65%)
       go: () => { aug.itemRateMul /= 1 + 0.15 * dim("lucky"); } },
-    { id: "giant",      ic: "🦴", nm: "왕뼈다귀", ds: "왕뼈다귀 간식 등장",
+    { id: "giant",      ic: "🦴", nm: "왕뼈다귀", ds: "커다란 왕뼈다귀 간식이 나와요",
       once: true, go: () => { aug.giant = 1; } },
-    { id: "downpour",   ic: "🌧️", nm: "간식 폭우", ds: "간식이 더 많이 쏟아진다",
+    { id: "downpour",   ic: "🌧️", nm: "간식 비", ds: "간식이 비처럼 더 많이 쏟아져요",
       go: () => { aug.feverRateMul = 1 / (1 / aug.feverRateMul + 0.20); } },   // 먹을 때마다 양 +20%, 감쇠 없음
-    { id: "angryUmb",   ic: "💢", nm: "성난 우산",   ds: "방패가 깨질 때 우산이 터져 주변을 크게 쓸어버린다",
+    { id: "angryUmb",   ic: "💢", nm: "화난 우산",   ds: "우산이 깨질 때 펑! 터져서 주변 똥을 멀리 날려요",
       hidden: true, once: true,
       cond: () => job !== "fit" && shields >= 5,   // 헬스걸은 방패가 없어 의미가 없다
       go: () => { aug.angryUmb = true; } },
-    { id: "gold",       ic: "🌈", nm: "무지개똥 연금술", ds: "똥이 가끔 무지개똥으로 변한다. 먹으면 점수!",
+    { id: "gold",       ic: "🌈", nm: "무지개 똥", ds: "똥이 가끔 무지개 똥으로 바뀌어요. 먹으면 점수!",
       // 1개째는 8%, 그 뒤로는 7%p 씩 (감쇠 없음) — 쌓을수록 값을 한다
       go: () => { aug.goldChance += augCount["gold"] ? 0.07 : 0.08; } },
-    { id: "dopa",       ic: "📱", nm: "도파민 중독",  ds: "똥이 빨라지고, 생존 점수가 크게 오른다",
+    { id: "dopa",       ic: "📱", nm: "빨리빨리",  ds: "똥이 빨라지는 대신, 버티는 점수가 많이 올라요",
       go: () => { aug.fallMul *= 1 + 0.10 * dim("dopa"); aug.timeMul *= 1 + 0.5 * dim("dopa"); } },
-    { id: "carrot",     ic: "🥕", nm: "하트 당근거래", ds: "목숨 1개를 팔고, 앞으로 얻는 모든 점수 +20%",
+    { id: "carrot",     ic: "🥕", nm: "하트 바꾸기", ds: "하트 1개를 주고, 앞으로 받는 점수가 20% 늘어나요",
       // 목숨을 파는 증강이라, 목숨 대신 오염도로 버티는 방울이에게는 나오지 않는다
       max: 5, cond: () => !dirtJob() && lives >= 2,
       go: () => { lives = Math.max(1, lives - 1); aug.scoreMul *= 1.2; } },
-    { id: "dungy",      ic: "💩", nm: "똥묻히기", ds: "하트가 적을수록 모든 점수가 오른다 · 하트 1개면 2배",
+    { id: "dungy",      ic: "💩", nm: "꼬질꼬질", ds: "하트가 적을수록 점수가 올라요 · 하트 1개면 2배",
       once: true,                               // v0.9.65 모든 캐릭터 공통 (예전엔 방울이 전용 · 오염도 기준)
       go: () => { aug.dungy = true; } },
-    { id: "goldLord",   ic: "🦄", nm: "무지개 수집가", ds: "무지개똥이 두 배 멀리서 세게 끌려오고, 점수 2배",
-      // 무지개똥 연금술 + 자석 — 무지개똥을 만들 수 있고, 끌어올 수 있어야 뜻이 산다
+    { id: "goldLord",   ic: "🦄", nm: "무지개 수집가", ds: "무지개 똥이 멀리서도 쌩 끌려오고, 점수가 2배",
+      // 무지개 똥 + 자석 — 무지개똥을 만들 수 있고, 끌어올 수 있어야 뜻이 산다
       hidden: true, once: true,
       cond: () => (augCount["gold"] || 0) >= 1 && aug.magnet > 0,
       go: () => { aug.goldLord = true; } },
-    { id: "inter",      ic: "🕰️", nm: "인터스텔라", ds: "이따금 세상만 느려진다. 점수 시계는 그대로",
+    { id: "inter",      ic: "🕰️", nm: "느린 세상", ds: "가끔 세상이 느려져요. 점수 시계는 그대로 가요",
       hidden: true, once: true, cond: () => augCount["slow"] >= 2,
       go: () => { aug.inter = true; interTimer = 8; bulletT = 2; } },
     /* 회피 확률은 일부러 안 적는다 — 숫자를 세는 것보다 '가끔 스르륵 피해진다'는
        느낌으로 두는 게 낫다. 안쪽 값은 10% 로 시작해 한 장마다 5%p 씩 (최대 30%). */
-    { id: "afterimage", ic: "👻", nm: "그건 제 잔상입니다만?", ds: "맞을 때 가끔 잔상만 남기고 피한다",
+    { id: "afterimage", ic: "👻", nm: "쏙 피하기", ds: "맞을 때 가끔 그림자만 남기고 쏙 피해요",
       max: 5,
       dsFn: () => (augCount["afterimage"] || 0)
-        ? "더 자주 잔상만 남기고 피한다"
-        : "맞을 때 가끔 잔상만 남기고 피한다",
+        ? "더 자주 쏙 피해요"
+        : "맞을 때 가끔 그림자만 남기고 쏙 피해요",
       go: () => { aug.dodge += augCount["afterimage"] ? 0.05 : 0.10; } },
-    { id: "chainZap",   ic: "⚡", nm: "연쇄 전류", ds: "펫이 똥을 부술 때 번개가 튀어 옆 똥 두 개가 더 터진다",
+    { id: "chainZap",   ic: "⚡", nm: "찌릿찌릿 번개", ds: "펫이 똥을 부술 때 번개가 튀어서 옆 똥 두 개도 터져요",
       hidden: true, once: true, cond: () => zapOwnN() >= 3 && (petOn.galaga || petOn.helper || petOn.dove || petOn.eel || petOn.gift),   // v0.9.61 똥을 부수는 펫이면 누구든 · v0.9.161 그 펫 3마리 이상 사 둬야
       go: () => { aug.chainZap = true; } },
-    { id: "wak",        ic: "👊", nm: "고무고무노 피스톨", ds: "총알이 주먹이 된다. 맞은 똥은 튕겨 날아가 처음 부딪힌 똥과 함께 터진다",
+    { id: "wak",        ic: "👊", nm: "주먹 총알", ds: "총알이 주먹으로 바뀌어요. 맞은 똥이 날아가 다른 똥이랑 같이 펑!",
       hidden: true, once: true, cond: () => petOn.galaga && aug.galaga >= 2,   // 갤러그 2대 이상
       go: () => { aug.wak = true; } },
-    { id: "clone",      ic: "👯", nm: "벼랑 끝 분신술", ds: "작은 분신이 날아가 똥과 함께 자폭한다",
+    { id: "clone",      ic: "👯", nm: "꼬마 분신", ds: "작은 분신이 날아가서 똥이랑 같이 펑 터져요",
       hidden: true, once: true,
       cond: () => level >= 7 && (dirtJob() ? dirt >= DIRT_HIT * 2 : lives <= 2),
       go: () => { aug.clone = true; cloneTimer = 1.5; } },
     /* ── v0.8.49 새 증강 셋 ── */
-    { id: "glass",      ic: "🍷", nm: "유리 멘탈", ds: "점수 +25%, 대신 몸(판정) +15% 커짐",
+    { id: "glass",      ic: "🍷", nm: "아슬아슬", ds: "점수가 25% 올라요. 대신 몸이 조금 커져요",
       max: 3, go: () => { aug.scoreMul *= 1.25; aug.hitboxMul *= 1.15; } },
     /* (☝️ 외줄 타기는 v0.8.58 에 뺐다 — 방어 증강까지 두 배가 되어 우산·잔상·작은 몸으로 사실상 안 죽었다) */
     /* ── v0.9.61 새 증강 ── */
-    { id: "pierce",     ic: "🔩", nm: "관통 총알", ds: "갤러그의 총알이 똥을 하나 관통한다",
+    { id: "pierce",     ic: "🔩", nm: "뚫는 총알", ds: "갤러그 총알이 똥 하나를 뚫고 지나가요",
       once: true, cond: () => petOn.galaga,
       go: () => { aug.pierce = true; } },
-    { id: "fly",        ic: "🪰", nm: "똥파리", ds: "맞을 때마다 똥파리가 나와 5초 동안 똥을 부순다",
+    { id: "fly",        ic: "🪰", nm: "똥파리", ds: "맞을 때마다 똥파리가 나와서 5초 동안 똥을 부숴요",
       once: true, go: () => { aug.fly = true; } },
-    { id: "stone",      ic: "🗿", nm: "돌부처", ds: "2초 가만히 있으면 돌이 되어 무적(최대 5초) · 그동안 점수·아이템 없음",
+    { id: "stone",      ic: "🗿", nm: "얼음 땡", ds: "2초 가만히 있으면 돌이 돼서 안 맞아요(최대 5초) · 그동안 점수랑 아이템은 없어요",
       once: true, go: () => { aug.stone = true; stoneT = 0; } },
-    { id: "gacha",      ic: "🎰", nm: "뽑기", ds: "증강이 물음표로 나온다 · 대신 절반은 히든",
+    { id: "gacha",      ic: "🎰", nm: "뽑기", ds: "증강이 물음표로 나와요 · 그중 절반은 비밀 증강",
       once: true, go: () => { aug.gacha = true; } },
-    { id: "snackBig",   ic: "🍩", nm: "간식은 살 안쪄요", ds: "간식 타임에 몸이 1.5배 커져 더 넓게 받아먹는다",
+    { id: "snackBig",   ic: "🍩", nm: "배불뚝이", ds: "간식 타임에 몸이 커져서 간식을 더 많이 받아먹어요",
       hidden: true, once: true,
       cond: () => (augCount["fever_time"] || 0) + (augCount["fever50"] || 0) + (augCount["downpour"] || 0) + (augCount["giant"] || 0) + (augCount["legion"] || 0) >= 4,   // 간식 증강 4개 이상
       go: () => { aug.snackBig = true; } },
-    { id: "toilet",     ic: "🚽", nm: "머리 위의 변기", ds: "달마다 증강을 두 번 고른다 · 맞으면 절반 확률로 즉사",
+    { id: "toilet",     ic: "🚽", nm: "변기 모자", ds: "달마다 증강을 두 번 골라요 · 대신 맞으면 반반 확률로 바로 끝나요",
       hidden: true, once: true,
       cond: () => !dirtJob() && lives >= 3 && level <= 7,   // 하트 3개 이상 + 레벨 7 이하 (방울이는 하트가 없어 제외)
       go: () => { aug.toilet = true; } },
-    { id: "twoRand",    ic: "🌀", nm: "대충 두 개", ds: "증강 중 랜덤으로 두 개 받음",
+    { id: "twoRand",    ic: "🌀", nm: "아무거나 두 개", ds: "증강 두 개를 아무거나 받아요",
       go: () => {
         const got = [];
         for (let k = 0; k < 2; k++) {
@@ -4612,7 +4612,7 @@
           return;
         }
         closeAugScreen();
-        /* v0.9.39 대충 두 개 — '대충 두 개' 글자는 빼고 받은 두 개만 오래(2.5초) 보여 준다 */
+        /* v0.9.39 아무거나 두 개 — '아무거나 두 개' 글자는 빼고 받은 두 개만 오래(2.5초) 보여 준다 */
         if (twoRandGot) twoRandGot.forEach((t, i) => popText(player.x, player.y - 70 - i * 32, t, "#9fe8ff", 22, 2.5));
         else popText(player.x, player.y - 70, a.ic + " " + picked, "#ffd23f", 24);
       });
@@ -4683,17 +4683,17 @@
   let invUntil = 0, powerUntil = 0;
   let magNear = 0;                 // 자석에 끌리는 정도 (0~1) — 소리 크기에 쓴다
   let shields = 0;                 // 남은 방패 수 — 우산 아이템은 최대 1, 증강으로만 여러 개
-  const UMB_SEC = 6.5;             // 우산 로켓배송: 방패가 없을 때 몇 초마다 하나씩 오는지
+  const UMB_SEC = 6.5;             // 우산 택배: 방패가 없을 때 몇 초마다 하나씩 오는지
   let shieldTimer = UMB_SEC;       // 다음 하나까지 남은 시간
-  let spawnHold = 0;               // 별똥별·성난 우산: 똥 생성이 멈춰 있는 남은 시간
-  let umbBlast = null;             // 성난 우산 폭발 파동 {x, y, r, t}
-  let bulletT = 0, interTimer = 8;// 인터스텔라: 불릿타임 남은 시간 / 다음 발동까지
+  let spawnHold = 0;               // 별똥별·화난 우산: 똥 생성이 멈춰 있는 남은 시간
+  let umbBlast = null;             // 화난 우산 폭발 파동 {x, y, r, t}
+  let bulletT = 0, interTimer = 8;// 느린 세상: 불릿타임 남은 시간 / 다음 발동까지
   /* ── 아슬! (스침) · 방귀 대시 ── */
   let grazeFxCd = 0;               // 스침 소리가 쉬는 시간 (연달아 스칠 때 겹쳐 울리지 않게)
   let grazeCount = 0;              // 이번 판에 스쳐 보낸 똥 수 (게임오버 이야기에 쓴다)
   let dashT = 0, dashCd = 0, dashDir = 1;   // 돌진 남은 시간 / 재사용 대기 / 나아가는 쪽
   let noHitSec = 0;                // 마지막 피격 이후 버틴 시간 (무소유 배율용)
-  let clones = [], cloneTimer = 0; // 벼랑 끝 분신술: 날아가는 작은 이재들
+  let clones = [], cloneTimer = 0; // 꼬마 분신: 날아가는 작은 이재들
   /* 비둘기 펫 — 80m 움직일 때마다 머리 위에서 비둘기가 날아오른다.
      게임 안의 1m = 논리 좌표 12px 로 본다 (캐릭터 키가 대략 1.5m 쯤 되는 비율). */
   let doves = [], moveDist = 0;
@@ -7621,19 +7621,19 @@
   /* 리듬은 시험 장치라 테스트 모드 안에서만 산다. 켜 둔 채 테스트를 나가도
      일반 게임에는 한 톨도 새지 않도록, 쓰는 곳마다 이 문을 지난다. */
   function rhythmActive() { return rhythmOn && testMode; }
-  let ghosts = [];                   // 그건 제 잔상입니다만? — 피한 자리에 남는 잔상
+  let ghosts = [];                   // 쏙 피하기 — 피한 자리에 남는 잔상
   /* 아슬! — 똥을 스쳐 보낸 순간 캐릭터 머리에서 튀는 땀방울.
      놀란 건 캐릭터지 똥이 아니라서, 효과를 똥이 아니라 몸에 붙인다. */
   let sweats = [];
   const SWEAT_MAX = 24;
-  let wakBooms = [];                 // 고무고무노 피스톨 — 똥끼리 부딪혀 터진 자리의 고리
+  let wakBooms = [];                 // 주먹 총알 — 똥끼리 부딪혀 터진 자리의 고리
   /* 우주선 한 대가 다시 쏘기까지. 대수가 늘수록 각자 느긋해진다 —
      1대 0.6초 · 2대 0.8초 · 3대 1.0초 … (겹칠수록 총 화력의 상승폭이 줄어든다) */
   // 대수별 발사 간격 0.5 / 0.7 / 0.9 / 1.1 / 1.3 초
   const SHIP_GAP = 0.7, SHIP_GAP_STEP = 0.25;   // v0.9.45 0.56/0.22 → 0.7/0.25   // v0.9.31 0.5/0.2 → 0.56/0.22 (갤러그 화력 약 10%↓)
   function shipGap(n) { return SHIP_GAP + SHIP_GAP_STEP * (n - 1); }
   const M_PX = 12, DOVE_EVERY = 110 * M_PX;   // v0.9.45 90m → 110m   // v0.9.31 80m → 90m   // 100m 에서 20% 줄여 80m 마다
-  // 히든 '비둘기 무엇?' — 속도·크기·폭발은 1.5배, 출격은 3/4 거리마다
+  // 히든 '왕 비둘기' — 속도·크기·폭발은 1.5배, 출격은 3/4 거리마다
   function doveMul()   { return aug.doveWhat ? 1.5 : 1; }
   function doveEvery() { return DOVE_EVERY * (aug.doveWhat ? 0.75 : 1) * aug.doveFreq; }
   let inputHoldUntil = 0;          // 이 시각까지는 화면 터치를 조작으로 받지 않는다
@@ -7643,7 +7643,7 @@
   const CLOUD_AUG = 8, CLOUD_HEART = 5;   // 값(코인)
   let flies = [];                  // 똥파리 { x, y, a(방향), life, ph, t(노리는 똥), re }
   const FLY_LIFE = 5, FLY_SPEED = 400, FLY_R = 18;
-  let stoneT = 0, stoneOn = false, stoneDur = 0; // 돌부처 — 가만히 있은 시간 · 지금 돌인가 · 돌이 된 지 몇 초
+  let stoneT = 0, stoneOn = false, stoneDur = 0; // 얼음 땡 — 가만히 있은 시간 · 지금 돌인가 · 돌이 된 지 몇 초
   const STONE_MAX = 5;
   let mvPX = 0, mvPY = 0;          // 지난 프레임 자리 (움직였는지 재는 기준)
   let runUmb = 0, runHits = 0, dirtHiT = 0, lowT = 0;   // 업적용 — 이번 판 우산 · 맞은 횟수 · 오염 75%↑ 버틴 시간 · 목숨 1개로 버틴 시간
@@ -8670,21 +8670,21 @@
                      "pet:galaga": "galaga", wak: "galaga", pierce: "galaga",
                      "pet:dove": "dove", doveHome: "dove", doveWhat: "dove",
                      "pet:angel": "angel", "pet:gift": "gift", "pet:coincat": "coincat", "pet:eel": "eel" };
-  const BOOK_COND = {
+  const BOOK_COND = {   // v0.9.163 꼬마·강아지 눈높이 말투
     small: "버피는 못 먹어요", umbrella3: "버피는 못 먹어요", dash: "도도는 못 먹어요",
     "pet:angel": "레벨 4부터 나와요",
-    doveHome: "게임 중 '펫 비둘기'를 먼저 먹어야 나와요",
-    hungry: "뿌잉 + 자석을 가졌을 때",
-    roid: "버피 전용 · 레벨 7부터", doveWhat: "펫 비둘기 강화(2단계부터)·귀소 본능을 합쳐 2개 이상 먹었을 때",
-    steelUmb: "'우산 다발'을 먹은 뒤 (버피 제외)", starburst: "'별빛 증폭'을 먹은 뒤", blackhole: "'자석'을 먹은 뒤",
-    legion: "'왕뼈다귀'를 먹은 뒤", angryUmb: "우산이 5개 이상일 때 (버피 제외)",
-    carrot: "목숨이 2개 이상일 때",
-    goldLord: "'무지개똥 연금술' + '자석'을 가졌을 때", inter: "'느린 하늘'을 2개 먹은 뒤",
-    chainZap: "똥을 부수는 펫(뿌잉·갤러그·비둘기·선물 요정·뱀장어)을 게임 중 먹은 뒤", pierce: "게임 중 '펫 갤러그'를 먼저 먹어야 나와요",
-    snackBig: "간식 증강을 4개 이상 먹었을 때", toilet: "하트 3개 이상 · 레벨 7 이하일 때", wak: "갤러그가 2대 이상일 때",
-    clone: "레벨 7부터 · 목숨이 2개 이하일 때"
+    doveHome: "게임 중에 '펫 비둘기'를 먼저 먹으면 나와요",
+    hungry: "뿌잉이랑 자석을 같이 가지고 있으면 나와요",
+    roid: "버피만 · 레벨 7부터 나와요", doveWhat: "비둘기 강화나 비둘기 집을 2개 넘게 먹으면 나와요",
+    steelUmb: "'우산 세 개'를 먹으면 나와요 (버피는 빼고)", starburst: "'반짝반짝 별'을 먹으면 나와요", blackhole: "'자석'을 먹으면 나와요",
+    legion: "'왕뼈다귀'를 먹으면 나와요", angryUmb: "우산이 5개 넘게 있으면 나와요 (버피는 빼고)",
+    carrot: "하트가 2개 넘게 있으면 나와요",
+    goldLord: "'무지개 똥'이랑 '자석'을 같이 가지고 있으면 나와요", inter: "'느릿느릿 하늘'을 2개 먹으면 나와요",
+    chainZap: "똥을 부수는 펫(뿌잉·갤러그·비둘기·선물 요정·뱀장어)을 게임 중에 먹으면 나와요", pierce: "게임 중에 '펫 갤러그'를 먼저 먹으면 나와요",
+    snackBig: "간식 증강을 4개 넘게 먹으면 나와요", toilet: "하트가 3개 넘고 레벨 7 아래일 때 나와요", wak: "갤러그가 2대 넘게 있으면 나와요",
+    clone: "레벨 7부터 · 하트가 2개 아래일 때 나와요"
   };
-  /* v0.9.161 연쇄 전류 — 똥을 부수는 펫 다섯 중 3마리 이상 사 두면 열린다 */
+  /* v0.9.161 찌릿찌릿 번개 — 똥을 부수는 펫 다섯 중 3마리 이상 사 두면 열린다 */
   const ZAP_PETS = ["helper", "galaga", "dove", "gift", "eel"];
   function zapOwnN() { return ZAP_PETS.filter(p => hasPet(p)).length; }
   function bookOpen(a) { const p = BOOK_PET[a.id]; if (a.id === "chainZap" && zapOwnN() < 3) return false; return (!p || hasPet(p)) && (!ACH[a.id] || achU.has(a.id)); }   // v0.9.61 업적으로 여는 증강도 잠긴 채 보인다
@@ -8701,15 +8701,15 @@
       if (!ok) {                                   // v0.9.52 잠긴 것은 해금 조건이 맨 윗줄 (자물쇠와 함께)
         const lk = document.createElement("span"); lk.className = "how lockHow top";
         lk.textContent = a.id === "chainZap" ? "🔒 뿌잉·갤러그·비둘기·선물 요정·뱀장어 중 3개 이상 구매하면 해금 (" + zapOwnN() + "/3)"
-          : ACH[a.id] && !achU.has(a.id) ? "🔒 해금 업적 — " + ACH[a.id].t + achProg(a.id)
-          : "🔒 해금 조건 — 상점에서 펫 '" + PETS[pid].nm + "' 구매 (" + PET_PRICE + "코인)";
+          : ACH[a.id] && !achU.has(a.id) ? "🔒 " + ACH[a.id].t + " 해금" + achProg(a.id)
+          : "🔒 상점에서 '" + PETS[pid].nm + "'를 사면 해금 (" + PET_PRICE + "코인)";
         desc.appendChild(lk);
       }
       const b = document.createElement("b"); b.textContent = a.ic + " " + a.nm;
       desc.append(b, document.createElement("br"), document.createTextNode(a.ds || ""));
       const how = document.createElement("span"); how.className = "how";
-      how.textContent = !ok ? "" : BOOK_COND[a.id] ? (a.hidden ? "✨ 히든 · " : "나오는 조건 · ") + BOOK_COND[a.id]
-        : a.hidden ? "✨ 히든 증강" : "";
+      how.textContent = !ok ? "" : BOOK_COND[a.id] ? (a.hidden ? "✨ 비밀 증강 · " : "나오는 조건 · ") + BOOK_COND[a.id]
+        : a.hidden ? "✨ 비밀 증강" : "";
       if (how.textContent) desc.appendChild(how);
     };
     for (const a of all) {
@@ -9057,9 +9057,9 @@
     document.getElementById("ulPop").classList.remove("on"); beep(800, .04, "triangle", .04);
     setTimeout(unlockShow, 260);
   });
-  /* 펫을 사서 연쇄 전류가 열렸는지 */
+  /* 펫을 사서 찌릿찌릿 번개가 열렸는지 */
   function zapUnlockCheck(before) {
-    if (before < 3 && zapOwnN() >= 3) { unlockQ.push({ k: "증강", t: "⚡ 연쇄 전류", how: "똥을 부수는 펫 3마리를 모았다! 이제 게임 중 히든 증강으로 나와요" }); unlockShow(); }
+    if (before < 3 && zapOwnN() >= 3) { unlockQ.push({ k: "증강", t: "⚡ 찌릿찌릿 번개", how: "똥을 부수는 펫 3마리를 모았어요! 이제 게임 중에 비밀 증강으로 나와요" }); unlockShow(); }
   }
   /* v0.9.124 두 창 — 내 정보(이름 · 공통 레벨) / 캐릭터 레벨 상세 */
   function lvPopOpen(id) { document.getElementById(id).classList.add("on"); }
@@ -9647,7 +9647,7 @@
     beep(660, .08, "triangle", .04); beep(990, .1, "triangle", .035);
   }
   function spawnPoop(mul, special, forceX, forceAng, forceDark) {
-    if (spawnHold > 0) return;              // 성난 우산 직후에는 똥이 나오지 않는다
+    if (spawnHold > 0) return;              // 화난 우산 직후에는 똥이 나오지 않는다
     const m = (mul || 1) * (H / BASE_H);   // 화면이 길면 그만큼 빨리 떨어져야 체감이 같다
     // 간식 타임에 나온 것은 외형·점수를 스스로 기억한다 → 간식 타임이 끝나도 모습이 바뀌지 않는다
     const inFever = fever;
@@ -9656,12 +9656,12 @@
        특수똥이면 그대로 '다크특수똥'이 된다 (성질은 유지하고 무적만 얹는다). */
     const dark = forceDark !== undefined ? !!forceDark
                : (!inFever && Math.random() < darkChance());
-    // 무지개똥 연금술 — 맞아도 무해하고 먹으면 점수 (특수똥은 위협으로 남아야 해서 제외)
+    // 무지개 똥 — 맞아도 무해하고 먹으면 점수 (특수똥은 위협으로 남아야 해서 제외)
     let gold = false;
     if (!inFever && !dark && !special && aug.goldChance > 0 && Math.random() < aug.goldChance) {
       gold = true;
     }
-    // 간식 낙하물은 크기가 곧 점수라서 '작아진 똥'의 영향을 받지 않는다
+    // 간식 낙하물은 크기가 곧 점수라서 '꼬마 똥'의 영향을 받지 않는다
     let r = cls ? (cls.min + Math.random() * (cls.max - cls.min)) * 1.05   // v0.9.104 간식 5% 크게
                 // 5% 줄이되 제일 작은 똥(12.6)보다 작아지지는 않는다
                 // 대전모드는 크기 범위 아래 30%(제일 작은 똥)를 뺀다 — 30% 줄인 판에서 너무 안 보여서
@@ -9674,7 +9674,7 @@
        평범한 똥만 POOP_SLOW 만큼 전체적으로 느려진다 (레벨 상승분까지 함께). */
     const baseVy = inFever ? FEVER_VY + Math.random() * 110
                            : (207.0 + level * 11.452 + Math.random() * 99) * POOP_SLOW;
-    /* 간식 낙하물은 언제나 같은 속도로 떨어진다 — 레벨·지대·증강(느린 하늘·도파민)
+    /* 간식 낙하물은 언제나 같은 속도로 떨어진다 — 레벨·지대·증강(느릿느릿 하늘·도파민)
        어느 것에도 영향받지 않는다. 화면 높이 보정(m)만 그대로 둔다. */
     let vy = inFever ? baseVy * m
                      : baseVy * m * DIFF_F * spaceF() * bhDiff() * aug.fallMul * lateMul() * (prophIs("fast") ? 1.3 : prophIs("slow") ? 0.7 : 1);
@@ -9928,7 +9928,7 @@
 
   /* ---------- 업데이트 ---------- */
   function update(dt, now) {
-    /* 인터스텔라 불릿타임 — 캐릭터를 뺀 세상 전부가 이 배율로 느려진다.
+    /* 느린 세상 불릿타임 — 캐릭터를 뺀 세상 전부가 이 배율로 느려진다.
        똥·아이템·뿌잉·비둘기·분신·미사일·구름과 그것들이 나오는 시계까지 모두 포함.
        점수·레벨 시계와 캐릭터 조작은 dt 그대로라 나만 제 속도로 움직인다. */
     if (grazeFxCd > 0) grazeFxCd -= dt;
@@ -10059,7 +10059,7 @@
     noHitSec += dt;                          // 안 맞고 버틴 시간 (피격 시 절반 감소)
     /* 레벨 시계는 간식 타임 동안 멈춘다. 무적으로 낙하물을 줍는 시간까지
        레벨에 포함되면, 정작 실력으로 버틴 시간이 아닌데도 난이도가 올라간다. */
-    if (!fever && !stoneOn) levelTime += dt;   // 돌부처 — 돌인 동안은 레벨 시계도 멈춘다 (점수 없이 레벨만 올려 두지 못하게)
+    if (!fever && !stoneOn) levelTime += dt;   // 얼음 땡 — 돌인 동안은 레벨 시계도 멈춘다 (점수 없이 레벨만 올려 두지 못하게)
     /* 스테이지는 자리가 고정이다 — 한 판 내내 같은 하늘에서 이어진다.
        판마다 다른 자리라 스테이지가 올라갈수록 풍경도 올라간다. */
     level = 1 + Math.floor(levelTime / lvSec());
@@ -10141,7 +10141,7 @@
     /* ── 방귀 대시 — 돌진하는 동안은 끌기보다 앞선다 ──
        끌기 기준점(drag.px)과 목표(player.tx)를 함께 끌고 가야, 대시가 끝나는 순간
        손가락이 잡고 있던 원래 자리로 확 빨려 돌아가지 않는다. */
-    /* ── v0.9.61 돌부처 — 이번 프레임에 얼마나 움직였나로 가른다 ── */
+    /* ── v0.9.61 얼음 땡 — 이번 프레임에 얼마나 움직였나로 가른다 ── */
     if (aug.stone) {
       const spd = Math.hypot(player.x - mvPX, player.y - mvPY) / Math.max(dt, 1e-4);
       mvPX = player.x; mvPY = player.y;
@@ -10159,7 +10159,7 @@
           if (!stoneOn && stoneT >= 2) {   // v0.9.105 1 → 2초
             stoneDur = 0;
             stoneOn = true;
-            popText(player.x, player.y - 70, "🗿 돌부처", "#d9d9d9", 22);
+            popText(player.x, player.y - 70, "🗿 얼음 땡", "#d9d9d9", 22);
             burst(player.x, player.y + player.hy, "#d0d0d0", 12);
             beep(180, .12, "triangle", .06);
           }
@@ -10262,21 +10262,21 @@
       if (wakBooms[k].t >= 0.35) wakBooms.splice(k, 1);
     }
 
-    // ---- 인터스텔라: 10초마다 2초씩 세상만 느려진다 (점수 시계는 그대로) ----
+    // ---- 느린 세상: 10초마다 2초씩 세상만 느려진다 (점수 시계는 그대로) ----
     if (aug.inter) {
       if (bulletT > 0) bulletT -= dt;
       else if (!fever) {
         interTimer -= dt;
         if (interTimer <= 0) {
           interTimer = 8; bulletT = 2;
-          popText(W / 2, H * 0.35, "🕰️ 인터스텔라", "#9fd4ff", 26);
+          popText(W / 2, H * 0.35, "🕰️ 느린 세상", "#9fd4ff", 26);
           beep(320, .14, "sine", .05);
           beep(210, .2, "sine", .05);
         }
       }
     }
 
-    // ---- 벼랑 끝 분신술: 작은 이재가 가장 가까운 똥에게 날아가 자폭한다 ----
+    // ---- 꼬마 분신: 작은 이재가 가장 가까운 똥에게 날아가 자폭한다 ----
     if (aug.clone) {
       cloneTimer -= dt * tsc;
       if (cloneTimer <= 0) {
@@ -10343,7 +10343,7 @@
         if (q.special === "laser" && !aug.wak) continue;
         if (Math.hypot(q.x - bu.x, q.y - bu.y) > q.r + 6) continue;
         if (aug.wak && !q.gold && q.skin !== "fever") {
-          /* 고무고무노 피스톨 — 부수지 않고 위로 튕겨 올린다. 날아가는 똥은 사람을 해치지 않고,
+          /* 주먹 총알 — 부수지 않고 위로 튕겨 올린다. 날아가는 똥은 사람을 해치지 않고,
              처음 부딪히는 똥과 함께 반경 50px 로 터진다 (아래 wak 처리).
              무지개똥·간식은 튕기면 먹을 기회가 날아가니 예전처럼 그 자리에서 부순다. */
           q.vx = (q.x - bu.x) * 5 + (Math.random() - .5) * 140;
@@ -10359,9 +10359,9 @@
              지그재그똥은 방향이 뒤집힌다 (예전에는 전부 통째로 사라졌다). */
           smashPoopsAround(bu.x, bu.y, 8);
           burst(bu.x, bu.y, "#9fe8ff", 10);
-          if (aug.chainZap) zapChain(bu.x, bu.y, 2, 100, null, 100);   // v0.9.31 번지는 거리 120 → 100   // 히든 '연쇄 전류' — 가까운(120px 안) 똥 두 개까지만 번진다
+          if (aug.chainZap) zapChain(bu.x, bu.y, 2, 100, null, 100);   // v0.9.31 번지는 거리 120 → 100   // 히든 '찌릿찌릿 번개' — 가까운(120px 안) 똥 두 개까지만 번진다
         }
-        if (bu.pierce > 0) { bu.pierce--; bu.skip = q; }   // 관통 총알 — 하나는 뚫고 계속 날아간다
+        if (bu.pierce > 0) { bu.pierce--; bu.skip = q; }   // 뚫는 총알 — 하나는 뚫고 계속 날아간다
         else hit = true;
         break;
       }
@@ -10401,7 +10401,7 @@
       if (bump || (alive && d2 < (c.t.r || 20) + 14 * dm) || c.y < -40) {
         // 비둘기가 부순 똥은 똥점수 5배
         smashPoopsAround(c.x, c.y, 50 * dm, true, 5);
-        if (aug.chainZap) zapChain(c.x, c.y, 2, 100, null, 100);   // 연쇄 전류 — 비둘기
+        if (aug.chainZap) zapChain(c.x, c.y, 2, 100, null, 100);   // 찌릿찌릿 번개 — 비둘기
           // 폭발 반경 50px
         burst(c.x, c.y, "#eaf6ff", 18);
         shake = Math.max(shake, 6);
@@ -10420,7 +10420,7 @@
         if (q.type !== "poop" || q.bounced || q.skin === "fever" || q.gold) continue;
         const dx = q.x - ax, dy = q.y - ay, d = Math.hypot(dx, dy);
         if (d > ANGEL_R + q.r) continue;
-        /* 성난 우산처럼 바깥으로 날려 보낸다 — 날아가는 똥은 사람을 해치지 않고,
+        /* 화난 우산처럼 바깥으로 날려 보낸다 — 날아가는 똥은 사람을 해치지 않고,
            내려오던 다른 똥과 부딪히면 둘 다 터진다. 다크똥도 밀려난다(부서지지는 않는다). */
         const ux = d > 1 ? dx / d : (Math.random() - .5), uy = d > 1 ? dy / d : -1;
         const sp = 640;
@@ -10473,7 +10473,7 @@
           const q = f.t, ix = items.indexOf(q);
           if (ix >= 0) items.splice(ix, 1);
           giftItemAt(q.x, q.y);
-          if (aug.chainZap) zapChain(q.x, q.y, 2, 100, null, 100);   // 연쇄 전류 — 선물 요정
+          if (aug.chainZap) zapChain(q.x, q.y, 2, 100, null, 100);   // 찌릿찌릿 번개 — 선물 요정
           burst(q.x, q.y, "#ffd6f5", 16); burst(q.x, q.y, "#fff3a8", 12); burst(q.x, q.y, "#9fe8ff", 10);
           rings.push({ x: q.x, y: q.y, t: 0, life: 0.45, r1: 70, color: "#ffc2ec" });
           popText(q.x, q.y - 34, "펑!", "#ffc2ec", 20);
@@ -10546,7 +10546,7 @@
       }
     }
 
-    // ---- 우산 로켓배송: 방패가 하나도 없을 때만 시간을 재서 하나 배송한다 ----
+    // ---- 우산 택배: 방패가 하나도 없을 때만 시간을 재서 하나 배송한다 ----
     if (aug.steelUmb) {
       if (shields <= 0) {
         shieldTimer -= dt * tsc;
@@ -10602,7 +10602,7 @@
       const nb4 = items.length;
       if (hp.zapCd > 0) hp.zapCd -= dt;
       smashPoopsAround(hp.x, hp.y, HELPER_R * helperScale());
-      if (aug.chainZap && items.length !== nb4 && !(hp.zapCd > 0)) { zapChain(hp.x, hp.y, 2, 100, null, 100); hp.zapCd = 0.35; }   // 연쇄 전류 — 뿌잉   // 지나가는 자리의 똥
+      if (aug.chainZap && items.length !== nb4 && !(hp.zapCd > 0)) { zapChain(hp.x, hp.y, 2, 100, null, 100); hp.zapCd = 0.35; }   // 찌릿찌릿 번개 — 뿌잉   // 지나가는 자리의 똥
       if (hp.y < -HELPER_H - 40 || hp.x < -160 || hp.x > W + 160) helpers.splice(k, 1);
     }
 
@@ -10774,7 +10774,7 @@
 
     for (let i = items.length - 1; i >= 0; i--) {
       const it = items[i];
-      /* 별똥별·성난 우산처럼 순회 도중 목록을 무더기로 지우는 일이 있으면
+      /* 별똥별·화난 우산처럼 순회 도중 목록을 무더기로 지우는 일이 있으면
          인덱스가 새 길이를 넘어설 수 있다 — 그 칸은 건너뛴다 (없으면 게임이 멈춘다) */
       if (!it) continue;
       if (it.hold > 0) { it.hold -= dt * tsc; continue; }   // v0.9.85 예고 중 — 아직 나오지 않았다
@@ -10807,7 +10807,7 @@
           continue;
         }
       } else if (it.special === "zigzag") {
-        // 흔들리는 속도·폭도 '느린 하늘'의 영향을 받는다 (세로만 느려지면 더 촘촘해져서 어색하다)
+        // 흔들리는 속도·폭도 '느릿느릿 하늘'의 영향을 받는다 (세로만 느려지면 더 촘촘해져서 어색하다)
         const k3 = it.sk === undefined ? 1 : it.sk;
         it.phase += dt * tsc * lerp(2.1, 3.0, k3) * aug.fallMul;          // 처음엔 느긋하게 흔든다
         // 195.5 = 230 의 85% — 처음엔 그 60% 폭으로 시작한다
@@ -10897,7 +10897,7 @@
       // 끝점만 보면 빠른 똥이 캐릭터를 뛰어넘을 수 있어서, 이번 프레임에 지나온 선분과의 거리를 본다
       const hitR = it.r + player.r * (dmg ? .632 : .78) * hitMul();
       const segD = (!it.bounced && !it.ghost) ? segDist(player.x, cy, prevX, prevY, it.x, it.y) : 1e9;
-      const hit = segD < hitR && !stoneOn;      // 돌부처 — 돌인 동안은 똥도 아이템도 그냥 지나간다
+      const hit = segD < hitR && !stoneOn;      // 얼음 땡 — 돌인 동안은 똥도 아이템도 그냥 지나간다
       /* 아슬! — 떨어지는 내내 히트박스에 가장 가까웠던 틈을 적어 둔다 (바닥에 닿을 때 점수가 갈린다).
          무적인 동안은 재지 않는다 — 맞고 난 뒤 1초를 공짜 스침으로 쓰지 못하게.
          대시 중에는 예외라, 뚫고 지나간 똥이 그대로 스침으로 잡힌다. */
@@ -11014,7 +11014,7 @@
               items.splice(i, 1);
               continue;
             }
-            /* 그건 제 잔상입니다만? — 똥은 잔상을 뚫고 그냥 지나간다.
+            /* 쏙 피하기 — 똥은 잔상을 뚫고 그냥 지나간다.
                우산보다 먼저 굴리므로, 피하면 우산이 그대로 남는다. 방울(방울이 전용)은
                저절로 다시 차니 위에서 먼저 터뜨리고, 주워야 생기는 우산부터 아낀다.
                이 똥은 다시 판정하지 않는다 (다음 프레임에 또 걸리지 않게). */
@@ -11025,7 +11025,7 @@
                 ghosts.push({ x: player.x + dir * k * 16, y: player.y, tilt: player.tilt,
                               flip: fl, spr: spr, t: -k * 0.04, life: 0.5 });
               burst(player.x, cy, "#cbb8ff", 10);
-              popText(player.x, player.y - 60, "그건 제 잔상입니다만?", "#cbb8ff", 18);
+              popText(player.x, player.y - 60, "쏙 피하기", "#cbb8ff", 18);
               if (!sfx("dodge")) beep(880, .06, "sine", .04);
               continue;
             }
@@ -11050,7 +11050,7 @@
               if (!sfx("break")) beep(400, .12, "triangle", .06);
               if (navigator.vibrate) navigator.vibrate(60);
               if (aug.angryUmb) {
-                /* 성난 우산 — 우산이 터지면서 넓게 퍼지는 폭발이 똥을 쓸어낸다.
+                /* 화난 우산 — 우산이 터지면서 넓게 퍼지는 폭발이 똥을 쓸어낸다.
                    반경은 화면의 2/3 넘게 덮도록 잡는다 (까다로운 똥도 함께 부순다).
                    지금 부딪힌 똥(i)은 바로 아래 공용 splice 가 지우므로 건드리지 않는다. */
                 const bx = player.x, by = player.y + player.hy;
@@ -11076,7 +11076,7 @@
                 umbBlast = { x: bx, y: by, r: bR, t: 0.42 };
                 shake = Math.max(shake, 26);
                 feverFlash = Math.max(feverFlash, 0.4);
-                popText(player.x, player.y - 95, "💢 성난 우산!", "#7ec8ff", 26);
+                popText(player.x, player.y - 95, "💢 화난 우산!", "#7ec8ff", 26);
                 if (!sfx("angry")) beep(190, .22, "square", .06);
               }
             } else {
@@ -11093,7 +11093,7 @@
               if (!testMode) {             // 테스트 모드는 맞아도 줄지 않는다
                 if (dirtJob()) dirt = Math.min(DIRT_MAX, dirt + DIRT_HIT);
                 else lives--;
-                if (aug.toilet && !dirtJob() && lives > 0 && Math.random() < 0.5) {   // 머리 위의 변기 — 절반 확률로 즉사
+                if (aug.toilet && !dirtJob() && lives > 0 && Math.random() < 0.5) {   // 변기 모자 — 절반 확률로 즉사
                   lives = 0;
                   popText(player.x, player.y - 100, "🚽 쾅!", "#ffffff", 30, 1.4);
                 }
@@ -11147,7 +11147,7 @@
       }
     }
 
-    /* 성난 우산에 날아간 똥은 부딪히는 똥을 관통하며 계속 부순다 (연쇄 청소).
+    /* 화난 우산에 날아간 똥은 부딪히는 똥을 관통하며 계속 부순다 (연쇄 청소).
        주먹에 맞은 똥은 처음 부딪히는 똥과 함께 반경 50px 로 터진다. */
     let boom = false;
     const waks = [];
@@ -11240,7 +11240,7 @@
       burst(it.x, it.y, full ? "#ffe9a8" : "#cfe4ff", full ? 40 : 20);
       if (full) { flash = 0; feverFlash = 1; shake = Math.max(shake, 14); }
       achBump("moon");
-      openAugment((full ? 3 : 1) * (aug.toilet ? 2 : 1));     // 보름달은 3연속 선택 · 머리 위의 변기면 두 배
+      openAugment((full ? 3 : 1) * (aug.toilet ? 2 : 1));     // 보름달은 3연속 선택 · 변기 모자면 두 배
       return true;
     }
     if (it.type === "coin") {
@@ -11336,7 +11336,7 @@
                      "무지개똥": "gold", "똥": "poop", "생존": "time", "명당": "spot" };
   let scoreSrc = {};
   function sc(key, v) {
-    if (stoneOn) return 0;                 // 돌부처 — 돌인 동안은 점수가 안 오른다
+    if (stoneOn) return 0;                 // 얼음 땡 — 돌인 동안은 점수가 안 오른다
     scoreSrc[key] = (scoreSrc[key] || 0) + v;
     return v;
   }
@@ -13294,7 +13294,7 @@
      바나나는 폰에 버튼이 없어서 먹으면 1.5초마다 내 뒤에 저절로 하나씩(3개) 깐다. 대시는 두 번 두드리기 그대로(3번). */
   const PA_LIST = [
     { id: "slim",       ic: "🎯", nm: "홀쭉이 변신",           max: 5, w: 10 },
-    { id: "afterimage", ic: "👻", nm: "그건 제 잔상입니다만?", max: 5, w: 10 },
+    { id: "afterimage", ic: "👻", nm: "쏙 피하기", max: 5, w: 10 },
     { id: "dash",       ic: "💨", nm: "방귀 대시",             max: 1, w: 8, uses: 3 },
     { id: "giant",      ic: "🦍", nm: "근육 폭발",             max: 0, w: 6, instant: true },
     { id: "magnet",     ic: "🧲", nm: "자석",                  max: 1, w: 6 },
@@ -13955,7 +13955,7 @@
       if (job === "fit") lives = Math.min(aug.maxLives, lives + 1);
       else shields = Math.min(shields + 1, 5);
     }
-    if (pr.id === "fever") {                 // 간식이 온다 — 3초 바로 (간식 연장 증강은 안 붙는다)
+    if (pr.id === "fever") {                 // 간식이 온다 — 3초 바로 (간식 시간 더! 증강은 안 붙는다)
       const t0 = now || performance.now();
       powerUntil = Math.max(powerUntil, t0) + 3000;
       feverDur = Math.max(3000, powerUntil - t0);
@@ -14801,7 +14801,7 @@
     return box;
   }
 
-  // {star50:2, lucky:1} → "별빛 증폭 x2, 행운"
+  // {star50:2, lucky:1} → "반짝반짝 별 x2, 행운"
   function augLabel(augs) {
     const keys = Object.keys(augs || {});
     if (!keys.length) return "-";
@@ -15134,13 +15134,13 @@
     fly: "맞을 때마다 똥파리 1마리, 5초 동안 400px/s 로 가까운 똥을 쫓아 반경 18px 부숨",
     stone: "2초 가만히 있으면 돌(무적, 최대 5초) · 풀린 뒤 1초는 다시 안 굳음 · 돌인 동안 점수·아이템·레벨 시계 멈춤",
     gacha: "이후 증강 카드가 물음표로 · 칸마다 50% 확률로 히든 증강에서 뽑음",
-    snackBig: "간식 타임 동안 몸(판정) 1.5배 · 간식 증강(간식 연장·간식 대박·간식 폭우·왕뼈다귀·군단) 4개 이상",
+    snackBig: "간식 타임 동안 몸(판정) 1.5배 · 간식 증강(간식 시간 더!·간식 냠냠 대박·간식 비·왕뼈다귀·군단) 4개 이상",
     toilet: "달마다 증강 선택 2배(보름달 6번) · 하트로 맞으면 50% 확률로 즉사 · 하트 3개 이상 · 레벨 7 이하",
     twoRand: "일반 증강 중 무작위 2개를 바로 받음"
   };
   const DEV_JOB_DETAIL = {
     bangul: ["비누방울 1겹 두르고 시작 — 맞으면 방울만 터지고 0.9초 무적", "방울은 15초 뒤 다시 맺힘", "하트 3개", "레벨 보상: 아래 표"],
-    fit: ["하트 5개로 시작, 최대 30개", "몸(판정) 1.3배", "하트 등장 5배, 우산 자리에 하트", "우산·다이어트·우산 다발·성난 우산 안 나옴", "레벨 7부터 '벌크업'(6초 몸 2배·똥 튕김) 계속 나옴"],
+    fit: ["하트 5개로 시작, 최대 30개", "몸(판정) 1.3배", "하트 등장 5배, 우산 자리에 하트", "우산·다이어트·우산 세 개·화난 우산 안 나옴", "레벨 7부터 '벌크업'(6초 몸 2배·똥 튕김) 계속 나옴"],
     powerj: ["달 등장 1.8배", "증강 카드 1장만(다시 뽑기 없음)", "같은 증강 연속 등장을 더 세게 막음(바로 다음 1/8)"],
     levitator: ["처음부터 하늘 어디든 날 수 있음(위아래 이동)", "이동 속도 2.5배", "높이 있을수록 모든 점수 +0~100%(꼭대기 2배)", "아이템을 반경 121px 에서 끌어옴(자석 없이)", "방귀 대시 안 나옴"],
     powerp: ["잠긴 캐릭터 — 코인 안 먹고 100초 버티면 해금", "달이 안 나옴(증강 없음)", "별 등장 1.5배", "안 맞은 초당 점수 +10%(상한 없음), 하트를 잃으면 그 시간 절반을 잃음", "코인 2배 · 코인 자동으로 안 끌려옴", "코인을 연달아 3개 쥐면 '풀소유'(코인 7.5배)", "판 끝에 흘려보낸 코인 값 1당 점수 +1%"],
@@ -15152,7 +15152,7 @@
     coin: "0.5초마다 코인 하나씩 떨어짐 (10초에 약 20개)",
     double: "모든 점수 2배",
     shield: "바뀌는 순간 우산 +1 (최대 5) · 버피는 하트 +1",
-    fever: "바로 간식 타임 3초 (간식 연장 증강은 안 붙음)",
+    fever: "바로 간식 타임 3초 (간식 시간 더! 증강은 안 붙음)",
     magnet: "화면 어디서든 아이템·코인이 끌려옴 (반경 2400px, 힘 1.8배)",
     sight: "천리안 — 떨어지는 똥이 바닥 어디에 닿을지 선으로 보임",
     spot: "명당 — 땅에 빛나는 자리가 생기고, 그 위에 서면 생존 점수 4배 · 절반쯤에 한 번 옮겨 감",
@@ -15529,7 +15529,7 @@
   /* 점수 눈금 — 모든 점수가 여기를 지나므로, 이 값만 바꾸면
      항목 사이의 균형은 그대로 두고 자릿수만 키우거나 줄일 수 있다. */
   const SCORE_SCALE = 3;
-  /* 똥묻히기 — 지금 오염도에 비례해 점수가 오른다. 0%면 1배, 100%면 2배.
+  /* 꼬질꼬질 — 지금 오염도에 비례해 점수가 오른다. 0%면 1배, 100%면 2배.
      한 번만 먹는 증강이고, 빗방울로 씻으면 배율도 같이 내려간다.
      (100% 는 곧 끝이라, 실제로 누리는 최대는 75% = 1.75배다) */
   function dungyMul() { return aug.dungy ? 1 + 1 / Math.max(1, lives) : 1; }   // 하트 1개 2배 · 2개 1.5배 · 3개 1.33배 …
@@ -16454,12 +16454,12 @@
       }
       // 발이 항상 FOOT 선에 닿도록 아래를 기준으로 그린다 (작아져도 뜨지 않는다)
       if (flip) { ctx.save(); ctx.scale(-1, 1); }
-      const stIm = stoneOn ? stoneImg() : null;      // v0.9.118 돌부처 — Codex 돌 조각상 그림 (헤엄 첫 장과 같은 자리·크기)
+      const stIm = stoneOn ? stoneImg() : null;      // v0.9.118 얼음 땡 — Codex 돌 조각상 그림 (헤엄 첫 장과 같은 자리·크기)
       if (stIm) {
         const b = STONE_BB[stIm.k];
         ctx.drawImage(stIm.im, -sw * spr.cx + b[0] * sw, FOOT - sh + b[1] * sh, (b[2] - b[0]) * sw, (b[3] - b[1]) * sh);
       } else {
-      if (stoneOn && canvasFilterOk) ctx.filter = "grayscale(1) contrast(1.2) brightness(.82)";   // 돌부처 — 돌빛
+      if (stoneOn && canvasFilterOk) ctx.filter = "grayscale(1) contrast(1.2) brightness(.82)";   // 얼음 땡 — 돌빛
       drawSpr(spr.img, -sw * spr.cx, FOOT - sh, sw, sh);
       if (stoneOn) {
         if (canvasFilterOk) ctx.filter = "none";
@@ -17524,7 +17524,7 @@
     ctx.restore();
   }
   function drawEffects() {
-    // 성난 우산 폭발 — 퍼져 나가는 파동
+    // 화난 우산 폭발 — 퍼져 나가는 파동
     if (umbBlast) {
       const k = 1 - umbBlast.t / 0.42;                 // 0 → 1
       const rr = umbBlast.r * (0.25 + 0.75 * k);
@@ -17541,7 +17541,7 @@
       ctx.beginPath(); ctx.arc(umbBlast.x, umbBlast.y, rr, 0, 6.283); ctx.fill();
       ctx.restore();
     }
-    // 벼랑 끝 분신술 — 작은 이재가 날아간다
+    // 꼬마 분신 — 작은 이재가 날아간다
     if (clones.length) {
       const S = sprSet();
       const ci = (S.right && S.right.img) ? S.right : (SPR.right.img ? SPR.right : null);
@@ -17559,7 +17559,7 @@
     }
     // 갤러그 — 총알과 우주선
     if (bullets.length) {
-      if (aug.wak) {                              // 고무고무노 피스톨 — 조그만 주먹
+      if (aug.wak) {                              // 주먹 총알 — 조그만 주먹
         for (const bu of bullets) drawFist(bu.x, bu.y);
       } else {
         /* v0.9.44 쨍한 노랑 — 하늘·구름 위에서도 잘 보이게 조금 굵히고 짙은 테두리를 두른다 */
@@ -17690,7 +17690,7 @@
     } else drawScreenFx();
   }
   function drawScreenFx() {
-    if (bulletT > 0) {                    // 인터스텔라 — 세상이 파랗게 잠긴다
+    if (bulletT > 0) {                    // 느린 세상 — 세상이 파랗게 잠긴다
       ctx.fillStyle = "rgba(110,170,255,.08)";
       ctx.fillRect(0, 0, W, H);
     }
