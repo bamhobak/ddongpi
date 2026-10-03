@@ -105,6 +105,7 @@ NEW = [
     ("🌬", "rule_wind", "swirling blue wind gusts with a green leaf"),
     ("🌫", "rule_fog", "a thick lavender-grey fog cloud"),
     ("🏋", "rule_heavy", "a chubby pink dumbbell"),
+    ("🔩", "pierce", "a glowing golden-yellow bullet-shaped laser bolt with a speed trail flying straight THROUGH a small chubby brown soft-serve poop blob (no face), bursting out the other side with a little star-shaped pop, diagonal from lower-left to upper-right"),   # v0.9.207 뚫는 총알
     ("🧑‍🚀", "astronaut", "a white astronaut helmet with a big glossy blue visor (helmet only, nobody inside)"),
 ]
 
