@@ -2410,7 +2410,7 @@
   const elTitle = document.getElementById("overTitle");
   const coinNote = document.getElementById("coinNote");
 
-  const GAME_VERSION = "v0.9.203";
+  const GAME_VERSION = "v0.9.204";
   /* 제작사 스플래시(bamhobak friends 로고) — 2026-09-20 끔. 다시 켜려면 true */
   const SPLASH_USE = false;   // 코드를 고칠 때마다 뒤 두 자리를 올린다
   document.getElementById("ver").textContent = GAME_VERSION;
@@ -10116,7 +10116,7 @@
   /* 타이머가 가리킨 것 대신 새로 뽑을 확률 — 레벨 1에서 10%, 레벨마다 1.5%p 씩.
      드물게 나오는 종류는 한 번 건너뛰면 간격이 두 배가 되어, 이 값이 곧 들쭉날쭉함이다.
      비율대로 다시 뽑는 것이라 종류별 등장 비율은 그대로다. 50%에서 멈춘다 (레벨 28). */
-  function bonusSwap() { return 0; }   // v0.9.203 차례가 된 아이템을 다른 걸로 바꿔치기하지 않는다 (예전 10~50%)
+  function bonusSwap() { return Math.min(0.25, 0.05 + 0.01 * (level - 1)); }   // v0.9.204 바꿔치기 — 레벨 1에서 5%, 레벨마다 1%p, 25%에서 멈춘다 (레벨 21)
   function resetBonusTimers() {
     /* 첫 등장까지의 시간. 예전에는 편차가 큰 지수분포라 어떤 판은 별이 한참 안 나왔다.
        평균의 25~85% 사이로만 잡아 매판 초반 흐름이 비슷하게 흘러가도록 했다. */
