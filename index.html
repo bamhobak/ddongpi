@@ -1036,6 +1036,23 @@
     background: radial-gradient(circle at 50% 38%, #5a63d0, #1b1e52 72%); box-shadow: 0 0 0 3px #ffd86b, 0 0 0 5px #7a4a08, 0 0 16px rgba(255,210,90,.55); }
   .lvPop .chrHead .med img { width: 60px; height: 60px; object-fit: contain; }
   .lvPop .chrHead b { flex: 1; font-size: 18px; font-weight: 900; color: #fff; text-shadow: 0 2px 0 rgba(0,0,0,.5); }
+
+  /* ── v0.9.151 테스트 모드2 ── */
+  #t2Body .t2Sec { display: flex; flex-direction: column; gap: 6px; padding: 9px 10px; border-radius: 12px; background: rgba(0,0,0,.22); box-shadow: inset 0 0 0 1px rgba(150,170,255,.2); }
+  #t2Body .t2H { font-size: 13.5px; font-weight: 900; color: #ffd86b; }
+  #t2Body .t2Row { display: flex; align-items: center; gap: 6px; flex-wrap: wrap; }
+  #t2Body .t2Row > span { min-width: 74px; font-size: 12.5px; font-weight: 800; color: #e6e9ff; display: flex; align-items: center; gap: 4px; }
+  #t2Body .t2Row > span img { width: 24px; height: 24px; object-fit: contain; }
+  #t2Body .seg { display: flex; gap: 3px; }
+  #t2Body .seg button, #t2Body .t2Mini { min-width: 30px; height: 28px; padding: 0 7px; border-radius: 7px; box-shadow: none; font-size: 12.5px; font-weight: 800;
+    border: 1.5px solid rgba(130,155,255,.45); background: #232870; color: #e6e9ff; }
+  #t2Body .seg button.on { border-color: #ffd86b; background: linear-gradient(180deg, #ffe58a, #ffc42e); color: #5a2a00; }
+  #t2Body input[type=number] { width: 110px; height: 30px; box-sizing: border-box; padding: 0 8px; border-radius: 8px; border: 2px solid rgba(255,216,107,.6); background: #0d1036; color: #fff; font-size: 15px; font-weight: 800; }
+  #t2Body .t2Note { font-size: 11.5px; color: #a9b1e4; line-height: 1.45; }
+  .t2Btns { display: flex; justify-content: center; }
+  .t2Btns .t2Save { --bh: 44px; height: var(--bh); box-sizing: border-box; min-width: 220px; border-style: solid; border-color: transparent; border-radius: 0; box-shadow: none; background: none;
+    border-width: 0 calc(var(--bh) / 2); border-image: url(assets/ui/btn_yellow.webp) 0 60 fill / 0 calc(var(--bh) / 2) / 0 stretch;
+    padding: 0 4px calc(var(--bh) * .08); font-size: 15px; font-weight: 900; color: #6b3300; text-shadow: 0 1px 0 rgba(255,255,255,.55); }
   #startScreen #meBtn { position: absolute; top: max(8px, env(safe-area-inset-top)); left: 12px; z-index: 6; display: flex; align-items: center; gap: 6px;
     max-width: 150px; padding: 4px 12px 4px 5px; border-radius: 999px; box-shadow: none; background: rgba(8,9,16,.55); border: 1px solid rgba(255,210,63,.35);
     color: #fff; font-size: 14px; font-weight: 800; text-shadow: 0 1px 2px rgba(0,0,0,.6); }
@@ -1191,7 +1208,7 @@
   .shopItem.owned img.si { background: radial-gradient(circle, rgba(255,215,110,.45), transparent 70%); }
   /* ── v0.9.130 메인 로고 없앰 — 숨은 통계·테스트 터치 자리는 위 가운데에 투명하게 남기고, 나머지를 위로 올려 배경 아래 집이 보이게 ── */
   #startScreen #pgHome > h1 { display: none !important; }   /* 통계·테스트 모드 들어가는 곳은 옵션 탭 버튼으로 옮겼다 */
-  #optDev { display: flex; gap: 10px; justify-content: center; margin-top: 18px; }
+  #optDev { display: flex; flex-wrap: wrap; gap: 10px; justify-content: center; margin-top: 18px; max-width: 330px; }
   #optDev button { --bh: 38px; height: var(--bh); box-sizing: border-box; min-width: 120px; border-style: solid; border-color: transparent; border-radius: 0; box-shadow: none; background: none;
     border-width: 0 calc(var(--bh) / 2); border-image: url(assets/ui/btn_blue.webp) 0 60 fill / 0 calc(var(--bh) / 2) / 0 stretch;
     padding: 0 4px calc(var(--bh) * .08); font-size: 13.5px; font-weight: 800; color: #fff; text-shadow: 0 1px 2px rgba(0,50,110,.65); }
@@ -1904,6 +1921,13 @@
       </div>
       <button class="lpClose">닫기</button>
     </div></div>
+    <!-- v0.9.151 테스트 모드2 — 계정·캐릭터 레벨, 코인, 해금 상태 고치기 -->
+    <div id="t2Pop" class="lvPop"><div class="lpIn">
+      <div class="lpTtl">테스트 모드2</div>
+      <div class="lpBody" id="t2Body"></div>
+      <div class="t2Btns"><button class="t2Save">저장하고 다시 불러오기</button></div>
+      <button class="lpClose">닫기</button>
+    </div></div>
     <!-- v0.9.124 캐릭터 레벨 상세 — 카드 아래 '상세' -->
     <div id="chrPop" class="lvPop"><div class="lpIn">
       <div class="lpTtl">캐릭터 성장</div>
@@ -2181,7 +2205,7 @@
   const elTitle = document.getElementById("overTitle");
   const coinNote = document.getElementById("coinNote");
 
-  const GAME_VERSION = "v0.9.150";
+  const GAME_VERSION = "v0.9.151";
   /* 제작사 스플래시(bamhobak friends 로고) — 2026-09-20 끔. 다시 켜려면 true */
   const SPLASH_USE = false;   // 코드를 고칠 때마다 뒤 두 자리를 올린다
   document.getElementById("ver").textContent = GAME_VERSION;
@@ -8521,9 +8545,9 @@
   document.getElementById("pgOpt").appendChild(document.getElementById("optRow"));
   {                                            // v0.9.130 개발자 통계 · 테스트 모드 — 메인 로고 속 숨은 버튼에서 옵션 탭으로
     const d = document.createElement("div"); d.id = "optDev";
-    for (const [t, id] of [["📊 개발자 통계", "devDot"], ["🧪 테스트 모드", "testDot"]]) {
+    for (const [t, id] of [["📊 개발자 통계", "devDot"], ["🧪 테스트 모드", "testDot"], ["🛠 테스트 모드2", "test2"]]) {
       const b = document.createElement("button"); b.textContent = t;
-      b.addEventListener("click", () => { beep(800, .04, "triangle", .04); document.getElementById(id).click(); });
+      b.addEventListener("click", () => { beep(800, .04, "triangle", .04); if (id === "test2") openPwScreen("test2"); else document.getElementById(id).click(); });
       d.appendChild(b);
     }
     document.getElementById("pgOpt").appendChild(d);
@@ -8752,6 +8776,96 @@
       }
       c.appendChild(row);
     }
+  }
+
+  /* ---------- v0.9.151 테스트 모드2 ----------
+     계정 레벨·캐릭터 레벨·코인·캐릭터 해금·펫·증강 잠금을 고쳐서 그 상황을 실제로 시험한다.
+     처음 열 때 지금 상태를 LS_T2BAK 에 한 번 떠 둔다 → '처음 상태로 되돌리기'.
+     고친 값은 기기에 저장하고 페이지를 다시 불러온다 (게임 곳곳이 들고 있는 값을 한 번에 맞추려고). */
+  const LS_T2BAK = "epjpddongpi_t2bak";
+  const T2_KEYS = [LS_COINS, LS_LV, LS_ACH, LS_PET_OWN];
+  let t2 = null;
+  function openT2() {
+    try { if (!localStorage.getItem(LS_T2BAK)) { const b = {}; for (const k of T2_KEYS) b[k] = localStorage.getItem(k); localStorage.setItem(LS_T2BAK, JSON.stringify(b)); } } catch (e) {}
+    t2 = { coins, acc: accLv(), cl: {}, owned: jobUnlocked.has("powerp"), pets: new Set(petOwned), augs: "keep", perks: false };
+    for (const j in JOBS) if (!JOBS[j].gone) t2.cl[j] = lvOf(lvData.cx[j] || 0, CHR_XP);
+    renderT2(); lvPopOpen("t2Pop");
+  }
+  function renderT2() {
+    const box = document.getElementById("t2Body"); box.innerHTML = "";
+    const sec = (title) => { const d = document.createElement("div"); d.className = "t2Sec"; const h = document.createElement("div"); h.className = "t2H"; h.textContent = title; d.appendChild(h); box.appendChild(d); return d; };
+    const row = (parent, label, img) => { const r = document.createElement("div"); r.className = "t2Row"; const sp = document.createElement("span");
+      if (img) { const im = document.createElement("img"); im.src = img; sp.appendChild(im); } sp.appendChild(document.createTextNode(label)); r.appendChild(sp); parent.appendChild(r); return r; };
+    const seg = (parent, opts, cur, onPick) => { const g = document.createElement("div"); g.className = "seg";
+      for (const [v, t] of opts) { const b = document.createElement("button"); b.textContent = t; if (v === cur) b.classList.add("on");
+        b.addEventListener("click", () => { beep(820, .03, "triangle", .03); onPick(v); renderT2(); }); g.appendChild(b); }
+      parent.appendChild(g); return g; };
+    const lv5 = [[1, "1"], [2, "2"], [3, "3"], [4, "4"], [5, "5"]];
+    // 코인
+    const c = sec("🪙 코인");
+    const cr = row(c, "가진 코인");
+    const inp = document.createElement("input"); inp.type = "number"; inp.min = 0; inp.value = t2.coins;
+    inp.addEventListener("input", () => { t2.coins = Math.max(0, parseInt(inp.value, 10) || 0); });
+    inp.addEventListener("keydown", e => e.stopPropagation());
+    cr.appendChild(inp);
+    const cq = row(c, "");
+    for (const [t, f] of [["0", () => 0], ["+100", v => v + 100], ["+1000", v => v + 1000], ["9999", () => 9999]]) {
+      const b = document.createElement("button"); b.className = "t2Mini"; b.textContent = t;
+      b.addEventListener("click", () => { t2.coins = f(t2.coins); renderT2(); }); cq.appendChild(b);
+    }
+    // 계정 레벨
+    const a = sec("⭐ 공통(계정) 레벨");
+    seg(row(a, "레벨"), lv5, t2.acc, v => { t2.acc = v; });
+    const an = document.createElement("div"); an.className = "t2Note"; an.textContent = "Lv2 다시 뽑기 · Lv3 구름 상점 · Lv4 시작 증강 고르기·하이퍼 모드"; a.appendChild(an);
+    // 캐릭터 레벨
+    const ch = sec("🐶 캐릭터 레벨");
+    for (const j in t2.cl) seg(row(ch, jobShort(j), jobPic(j)), lv5, t2.cl[j], v => { t2.cl[j] = v; });
+    const allR = row(ch, "모두");
+    seg(allR, lv5, 0, v => { for (const j in t2.cl) t2.cl[j] = v; });
+    const pr = row(ch, "능력 고른 것");
+    seg(pr, [[false, "그대로"], [true, "모두 지우기(다시 해금부터)"]], t2.perks, v => { t2.perks = v; });
+    // 캐릭터 해금
+    const u = sec("🔓 해금");
+    seg(row(u, "무무 캐릭터"), [[true, "열림"], [false, "잠김"]], t2.owned, v => { t2.owned = v; });
+    seg(row(u, "증강(업적)"), [["keep", "그대로"], ["all", "모두 열기"], ["none", "모두 잠그기"]], t2.augs, v => { t2.augs = v; });
+    const pets = Object.keys(PETS).filter(k => k !== "none");
+    const allPet = pets.every(k => t2.pets.has(k)), noPet = pets.every(k => !t2.pets.has(k));
+    seg(row(u, "펫"), [["all", "모두 보유"], ["none", "모두 없음"]], allPet ? "all" : noPet ? "none" : "", v => { t2.pets = new Set(v === "all" ? pets : []); });
+    // 되돌리기
+    const r = sec("↩️ 되돌리기");
+    const rn = document.createElement("div"); rn.className = "t2Note"; rn.textContent = "테스트 모드2를 처음 열기 전 상태(코인·레벨·업적·펫)로 되돌립니다.";
+    r.appendChild(rn);
+    const rb = document.createElement("button"); rb.className = "t2Mini"; rb.textContent = "처음 상태로 되돌리기";
+    rb.addEventListener("click", () => askYesNo("테스트 전 상태로 되돌릴까요?", () => {
+      try { const b = JSON.parse(localStorage.getItem(LS_T2BAK) || "null"); if (b) { for (const k of T2_KEYS) { if (b[k] == null) localStorage.removeItem(k); else localStorage.setItem(k, b[k]); } localStorage.removeItem(LS_T2BAK); } } catch (e) {}
+      location.reload();
+    }));
+    r.appendChild(rb);
+  }
+  document.querySelector("#t2Pop .t2Save").addEventListener("click", () => {
+    if (!t2) return;
+    try {
+      localStorage.setItem(LS_COINS, String(t2.coins));
+      lvData.xp = Math.max(t2.acc >= 2 ? ACC_XP[t2.acc - 1] : 0, Math.min(lvData.xp, (ACC_XP[t2.acc] || 1e12) - 1));
+      if (lvOf(lvData.xp, ACC_XP) !== t2.acc) lvData.xp = ACC_XP[t2.acc - 1];
+      for (const j in t2.cl) { const cur = lvData.cx[j] || 0; if (lvOf(cur, CHR_XP) !== t2.cl[j]) lvData.cx[j] = CHR_XP[t2.cl[j] - 1]; }
+      if (t2.perks) { lvData.pick = {}; lvData.un = {}; }
+      localStorage.setItem(LS_LV, JSON.stringify(lvData));
+      const jset = new Set(Array.isArray(achData.j) ? achData.j : []);
+      if (t2.owned) jset.add("powerp"); else jset.delete("powerp");
+      achData.j = [...jset];
+      if (t2.augs === "all") achData.u = Object.keys(ACH);
+      else if (t2.augs === "none") achData.u = [];
+      else achData.u = [...achU];
+      localStorage.setItem(LS_ACH, JSON.stringify(achData));
+      localStorage.setItem(LS_PET_OWN, JSON.stringify([...t2.pets].filter(k => k !== "none")));
+    } catch (e) {}
+    location.reload();
+  });
+  {
+    const p = document.getElementById("t2Pop");
+    p.querySelector(".lpClose").addEventListener("click", () => { beep(700, .04, "triangle", .04); p.classList.remove("on"); });
+    p.addEventListener("click", e => { if (e.target === p) p.classList.remove("on"); });
   }
   /* v0.9.124 두 창 — 내 정보(이름 · 공통 레벨) / 캐릭터 레벨 상세 */
   function lvPopOpen(id) { document.getElementById(id).classList.add("on"); }
@@ -15022,9 +15136,10 @@
   let pwPurpose = "test";                   // "test" = 테스트 모드로 시작, "tower" = 똥탑등반 열기
   function openPwScreen(purpose) {
     pwPurpose = purpose;
-    document.getElementById("testTitle").textContent = purpose === "tower" ? "🗼 똥탑등반" : "테스트 모드";
+    document.getElementById("testTitle").textContent = purpose === "tower" ? "🗼 똥탑등반" : purpose === "test2" ? "테스트 모드2" : "테스트 모드";
     document.getElementById("testSub").textContent = purpose === "tower"
-      ? "아직 준비 중인 스테이지입니다 · 개발자 비밀번호" : "목숨 무한 · 기록은 남지 않습니다";
+      ? "아직 준비 중인 스테이지입니다 · 개발자 비밀번호"
+      : purpose === "test2" ? "레벨·코인·해금 상태를 마음대로 바꿔 실제 상황을 시험합니다" : "목숨 무한 · 기록은 남지 않습니다";
     testPw.value = ""; testMsg.textContent = "";
     testScreen.classList.remove("hidden");
     testPw.focus();
@@ -15062,6 +15177,7 @@
     testPw.value = "";
     testScreen.classList.add("hidden");
     if (pwPurpose === "tower") return;     // 똥탑등반은 v0.8.98 에 뺐다
+    if (pwPurpose === "test2") { openT2(); return; }
     openJobSelect(true);                   // 테스트 모드도 직업을 고르고 시작
   }
 
