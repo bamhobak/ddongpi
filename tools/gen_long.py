@@ -49,8 +49,10 @@ STAGE = {
      "ABSOLUTELY NO lollipops, NO swirl candies, NO hard candies, NO candy canes, NO waterfalls, NO islands.",
   4: "STAGE 'Feather Sky': a brighter, higher sky where giant soft white and pastel FEATHERS float and drift gently "
      "like slow boats, some fluffy downy feathers swirling at the edges, tiny wisps of cloud, a light airy mood.",
-  5: "STAGE 'Cloud Stripes': the sky deepens to a richer blue and the clouds become long neat horizontal STRIPES of "
-     "soft pastel cloud bands (pink, peach, white) stretching in from the edges like ribbons, a few tiny stars begin.",
+  5: "STAGE 'Cloud Stripes' (구름 줄무늬): a whimsical sky where the fluffy clouds are painted with bold cheerful candy STRIPES — "
+     "pink-and-white, mint-and-white and lemon-and-white striped clouds like striped socks and candy canes, some long "
+     "striped cloud ribbons waving in from the sides, and two or three cute striped hot-air balloons (pastel stripes) "
+     "floating at the edges. Bright, playful and clearly different from plain clouds.",
   6: "STAGE 'Sparkle Ripples': high in a deep blue-to-navy sky, shimmering SPARKLY RIPPLE waves of light flow in from "
      "the sides like a gentle glittering sea surface in the air, little twinkling sparkles, first real stars.",
   7: "STAGE 'Aurora Curtain': night sky; big soft flowing AURORA CURTAINS in mint green, pink and violet hang and ripple "
