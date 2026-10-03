@@ -1078,6 +1078,23 @@
   #startScreen.firstRun .carArrow, #startScreen.firstRun .lvDet { opacity: .38; filter: grayscale(.6); }
   #startScreen.firstRun #btnStart { pointer-events: auto !important; animation: frPulse 1.3s ease-in-out infinite !important; }
   @keyframes frPulse { 50% { transform: scale(1.06); filter: drop-shadow(0 0 12px rgba(255,210,63,.9)); } }
+
+  /* ── v0.9.162 해금 알림 ── */
+  #ulPop { z-index: 9995; }
+  #ulPop .lpIn { align-items: center; text-align: center; gap: 8px; padding-top: 40px; width: min(84vw, 320px); }
+  #ulPop .ulPic { position: relative; width: 120px; height: 120px; display: flex; align-items: center; justify-content: center; font-size: 66px; line-height: 1; }
+  #ulPop .ulPic::before { content: ""; position: absolute; inset: -10px; border-radius: 50%; z-index: -1;
+    background: radial-gradient(circle, rgba(255,216,107,.55), rgba(255,216,107,0) 70%); animation: ulGlow 1.6s ease-in-out infinite; }
+  @keyframes ulGlow { 50% { transform: scale(1.12); opacity: .7; } }
+  #ulPop .ulPic img { width: 120px; height: 120px; object-fit: contain; filter: drop-shadow(0 4px 6px rgba(0,0,0,.45)); }
+  #ulPop .ulKind { font-size: 12.5px; font-weight: 800; color: #1a1d4e; background: linear-gradient(180deg, #ffe58a, #ffc42e); padding: 2px 12px; border-radius: 999px; }
+  #ulPop .ulName { font-size: 21px; font-weight: 900; color: #fff; text-shadow: 0 2px 0 rgba(0,0,0,.5); }
+  #ulPop .ulHow { font-size: 13px; font-weight: 700; color: #c2c8f0; line-height: 1.45; }
+  #ulPop .lpIn { animation: ulIn .35s cubic-bezier(.2,1.4,.4,1); }
+  @keyframes ulIn { from { transform: scale(.6); opacity: 0; } }
+  #ulPop .ulOk { --bh: 46px; height: var(--bh); box-sizing: border-box; min-width: 170px; margin-top: 6px; border-style: solid; border-color: transparent; border-radius: 0; box-shadow: none; background: none;
+    border-width: 0 calc(var(--bh) / 2); border-image: url(assets/ui/btn_yellow.webp) 0 60 fill / 0 calc(var(--bh) / 2) / 0 stretch;
+    padding: 0 4px calc(var(--bh) * .08); font-size: 17px; font-weight: 900; color: #6b3300; text-shadow: 0 1px 0 rgba(255,255,255,.55); }
   #startScreen #meBtn { position: absolute; top: max(8px, env(safe-area-inset-top)); left: 12px; z-index: 6; display: flex; align-items: center; gap: 6px;
     max-width: 150px; padding: 4px 12px 4px 5px; border-radius: 999px; box-shadow: none; background: rgba(8,9,16,.55); border: 1px solid rgba(255,210,63,.35);
     color: #fff; font-size: 14px; font-weight: 800; text-shadow: 0 1px 2px rgba(0,0,0,.6); }
@@ -1964,6 +1981,15 @@
       <div id="hiErr"></div>
       <button id="hiGo">좋아요!</button>
     </div></div>
+    <!-- v0.9.162 해금 알림 — 하나씩 -->
+    <div id="ulPop" class="lvPop"><div class="lpIn">
+      <div class="lpTtl">새로 열렸어요!</div>
+      <div class="ulPic"></div>
+      <div class="ulKind"></div>
+      <div class="ulName"></div>
+      <div class="ulHow"></div>
+      <button class="ulOk">확인</button>
+    </div></div>
     <!-- v0.9.151 테스트 모드2 — 계정·캐릭터 레벨, 코인, 해금 상태 고치기 -->
     <div id="t2Pop" class="lvPop"><div class="lpIn">
       <div class="lpTtl">테스트 모드2</div>
@@ -2248,7 +2274,7 @@
   const elTitle = document.getElementById("overTitle");
   const coinNote = document.getElementById("coinNote");
 
-  const GAME_VERSION = "v0.9.160";
+  const GAME_VERSION = "v0.9.162";
   /* 제작사 스플래시(bamhobak friends 로고) — 2026-09-20 끔. 다시 켜려면 true */
   const SPLASH_USE = false;   // 코드를 고칠 때마다 뒤 두 자리를 올린다
   document.getElementById("ver").textContent = GAME_VERSION;
@@ -2277,15 +2303,15 @@
                ds: "힘들때마다 차려지는 엄마의 따뜻한 밥상 · 코인이 2배로 나온다" },
     /* 점술가 — 도박사 자리를 이어받았다. 가끔 떨어지는 수정 구슬(옛 포춘쿠키)을 먹으면 10초 동안 예언 하나가 이뤄진다.
        (옛 도박사 기록은 순위표에 도박사로 그대로 남는다 — JOB_NAMES·JOB_IMG 에만 남겨 두었다) */
-    fortune: { nm: "루나 · 점술가", ic: "🔮", needUnlock: "별 30개 먹기 (누적)", ds: "10초마다 예언이 저절로 바뀐다 · 좋은 예언 넷, 나쁜 예언 하나" },
-    levitator: { nm: "도도 · 부양사", ic: "☁️", needUnlock: "한 판에 7스테이지(오로라 커튼)까지 가기", ds: "하늘 어디든 날 수 있다 · 높이 있을수록 점수 UP" },
-    fit: { nm: "버피 · 헬스견", ic: "💪", needUnlock: "한 판에 60초 버티기", ds: "목숨 5개로 시작 · 우산이 안 나온다 · 하트가 어마무시하게 잘 나온다 · 벌크업 좀 된 상태" },
-    powerj: { nm: "제이 · 계획러", ic: "📋", needUnlock: "달 15개 먹기 (누적)", ds: "달이 잘 나온다 · 대신 증강은 계획대로 1개만" },
+    fortune: { nm: "루나 · 점술가", ic: "🔮", needUnlock: "별 30개 먹으면 해금", ds: "10초마다 예언이 저절로 바뀐다 · 좋은 예언 넷, 나쁜 예언 하나" },
+    levitator: { nm: "도도 · 부양사", ic: "☁️", needUnlock: "한 판에 7스테이지까지 가면 해금", ds: "하늘 어디든 날 수 있다 · 높이 있을수록 점수 UP" },
+    fit: { nm: "버피 · 헬스견", ic: "💪", needUnlock: "한 판에 60초 이상 버티면 해금", ds: "목숨 5개로 시작 · 우산이 안 나온다 · 하트가 어마무시하게 잘 나온다 · 벌크업 좀 된 상태" },
+    powerj: { nm: "제이 · 계획러", ic: "📋", needUnlock: "달 15개 먹으면 해금", ds: "달이 잘 나온다 · 대신 증강은 계획대로 1개만" },
     /* 파워P — 파워J 의 거울. 달은 남들만큼 오는데, 올 때마다 네 장을 펼쳐 놓고 고른다.
        아이디가 powerp2 인 것은, powerp 는 무소유가 예전에 파워P 였을 때 쓰던 이름이라
        이미 차 있기 때문이다 (옛 기록과 순위표가 그 이름을 쓴다). */
     powerp2: { nm: "파워P", ic: "🎯", gone: true, ds: "증강을 4개 중에서 고른다" },
-    powerp: { nm: "무무 · 무소유", ic: "🙏", needUnlock: "코인을 하나도 안 먹고 100초 버티기",   // v0.9.62 잠긴 캐릭터
+    powerp: { nm: "무무 · 무소유", ic: "🙏", needUnlock: "코인 하나도 안 먹고 100초 버티면 해금",   // v0.9.62 잠긴 캐릭터
               ds: "달이 아예 안 나온다 · 별이 조금 잘 나온다 · 안 맞을수록 점수가 치솟는다" },
     bangul: { nm: "방울이 · 집순이", ic: "🫧", ds: "비누방울이 한 대를 대신 맞고 터진다 · 잠시 뒤 다시 맺힌다" }
   };
@@ -4346,7 +4372,7 @@
         : "맞을 때 가끔 잔상만 남기고 피한다",
       go: () => { aug.dodge += augCount["afterimage"] ? 0.05 : 0.10; } },
     { id: "chainZap",   ic: "⚡", nm: "연쇄 전류", ds: "펫이 똥을 부술 때 번개가 튀어 옆 똥 두 개가 더 터진다",
-      hidden: true, once: true, cond: () => petOn.galaga || petOn.helper || petOn.dove || petOn.eel || petOn.gift,   // v0.9.61 똥을 부수는 펫이면 누구든
+      hidden: true, once: true, cond: () => zapOwnN() >= 3 && (petOn.galaga || petOn.helper || petOn.dove || petOn.eel || petOn.gift),   // v0.9.61 똥을 부수는 펫이면 누구든 · v0.9.161 그 펫 3마리 이상 사 둬야
       go: () => { aug.chainZap = true; } },
     { id: "wak",        ic: "👊", nm: "고무고무노 피스톨", ds: "총알이 주먹이 된다. 맞은 똥은 튕겨 날아가 처음 부딪힌 똥과 함께 터진다",
       hidden: true, once: true, cond: () => petOn.galaga && aug.galaga >= 2,   // 갤러그 2대 이상
@@ -8166,13 +8192,13 @@
   const JOB_UNLOCK_N = { fortune: ["star", 30], powerj: ["moon", 15] };
   function unlockHow(id) {
     const u = JOB_UNLOCK_N[id], t = JOBS[id].needUnlock;
-    return u ? t + " · " + Math.min(u[1], achData.c[u[0]] || 0) + "/" + u[1] : t;
+    return u ? t + " (" + Math.min(u[1], achData.c[u[0]] || 0) + "/" + u[1] + ")" : t;
   }
   if (!jobOwned(job)) job = JOB_DEFAULT;
   function jobUnlock(id) {
     if (jobOwned(id) || !achLive()) return;
     jobUnlocked.add(id); achData.j = [...jobUnlocked]; achSave();
-    achNew.push({ k: "캐릭터", t: JOBS[id].nm, how: JOBS[id].needUnlock });
+    achNew.push({ k: "캐릭터", t: JOBS[id].nm, how: JOBS[id].needUnlock, img: jobPic(id) });
   }
   function carChrome(on) { carWrap.classList.toggle("off", !on); carDots.classList.toggle("off", !on); homeTraits.classList.toggle("off", !on); if (!on) jobList.style.height = ""; }
   function carInfo() {                       // 점 · 화살표 · 특징
@@ -8180,7 +8206,7 @@
     [...carDots.children].forEach((d, k) => d.classList.toggle("on", k === i));
     carL.disabled = carR.disabled = cards.length < 2;   // v0.9.56 끝에서 더 가면 반대쪽 끝으로 돈다
     homeTraits.innerHTML = "";
-    if (!jobOwned(job)) { const d = document.createElement("div"); d.textContent = "🔒 아직 열리지 않은 캐릭터"; const d2 = document.createElement("div"); d2.textContent = "여는 법 — " + unlockHow(job); homeTraits.append(d, d2); return; }
+    if (!jobOwned(job)) { const d = document.createElement("div"); d.textContent = "🔒 " + unlockHow(job); homeTraits.append(d); return; }   // v0.9.161 자물쇠 + 조건만
     for (const line of jobTraitLines(JOBS[job])) { const d = document.createElement("div"); d.textContent = line; homeTraits.appendChild(d); }
   }
   /* v0.9.128 캐릭터마다 다른 메인 배경 */
@@ -8472,8 +8498,10 @@
     coins -= PET_PRICE;                    // 판에서 주운 코인(coinRun)과는 상관없다 — 모아 둔 전체에서 뺀다
     try { localStorage.setItem(LS_COINS, String(coins)); } catch (e) {}
     showCoins();
+    const zb = zapOwnN();
     petOwned.add(id);
     try { localStorage.setItem(LS_PET_OWN, JSON.stringify([...petOwned])); } catch (e) {}
+    zapUnlockCheck(zb);
     pet = id;                              // 산 펫을 바로 데리고 간다
     try { localStorage.setItem(LS_PET, pet); } catch (e) {}
     if (!sfx("giant")) { beep(880, .1, "triangle", .06); beep(1320, .16, "triangle", .05); }
@@ -8652,11 +8680,14 @@
     legion: "'왕뼈다귀'를 먹은 뒤", angryUmb: "우산이 5개 이상일 때 (버피 제외)",
     carrot: "목숨이 2개 이상일 때",
     goldLord: "'무지개똥 연금술' + '자석'을 가졌을 때", inter: "'느린 하늘'을 2개 먹은 뒤",
-    chainZap: "똥을 부수는 펫(뿌잉·갤러그·비둘기·선물 요정·뱀장어)을 먹은 뒤", pierce: "게임 중 '펫 갤러그'를 먼저 먹어야 나와요",
+    chainZap: "똥을 부수는 펫(뿌잉·갤러그·비둘기·선물 요정·뱀장어)을 게임 중 먹은 뒤", pierce: "게임 중 '펫 갤러그'를 먼저 먹어야 나와요",
     snackBig: "간식 증강을 4개 이상 먹었을 때", toilet: "하트 3개 이상 · 레벨 7 이하일 때", wak: "갤러그가 2대 이상일 때",
     clone: "레벨 7부터 · 목숨이 2개 이하일 때"
   };
-  function bookOpen(a) { const p = BOOK_PET[a.id]; return (!p || hasPet(p)) && (!ACH[a.id] || achU.has(a.id)); }   // v0.9.61 업적으로 여는 증강도 잠긴 채 보인다
+  /* v0.9.161 연쇄 전류 — 똥을 부수는 펫 다섯 중 3마리 이상 사 두면 열린다 */
+  const ZAP_PETS = ["helper", "galaga", "dove", "gift", "eel"];
+  function zapOwnN() { return ZAP_PETS.filter(p => hasPet(p)).length; }
+  function bookOpen(a) { const p = BOOK_PET[a.id]; if (a.id === "chainZap" && zapOwnN() < 3) return false; return (!p || hasPet(p)) && (!ACH[a.id] || achU.has(a.id)); }   // v0.9.61 업적으로 여는 증강도 잠긴 채 보인다
   let bookSel = null;
   function renderBook() {
     const list = document.getElementById("bookList"), desc = document.getElementById("bookDesc");
@@ -8669,7 +8700,8 @@
       const pid = BOOK_PET[a.id];
       if (!ok) {                                   // v0.9.52 잠긴 것은 해금 조건이 맨 윗줄 (자물쇠와 함께)
         const lk = document.createElement("span"); lk.className = "how lockHow top";
-        lk.textContent = ACH[a.id] && !achU.has(a.id) ? "🔒 해금 업적 — " + ACH[a.id].t + achProg(a.id)
+        lk.textContent = a.id === "chainZap" ? "🔒 뿌잉·갤러그·비둘기·선물 요정·뱀장어 중 3개 이상 구매하면 해금 (" + zapOwnN() + "/3)"
+          : ACH[a.id] && !achU.has(a.id) ? "🔒 해금 업적 — " + ACH[a.id].t + achProg(a.id)
           : "🔒 해금 조건 — 상점에서 펫 '" + PETS[pid].nm + "' 구매 (" + PET_PRICE + "코인)";
         desc.appendChild(lk);
       }
@@ -9003,6 +9035,32 @@
     document.getElementById("startScreen").classList.remove("firstRun");
   }
   document.getElementById("startScreen").classList.toggle("firstRun", firstRunOn());
+
+  /* v0.9.162 해금 알림 — 판이 끝날 때(게임 중 열린 것) · 상점에서 산 순간(게임 밖에서 열린 것) 모두 같은 창으로, 하나씩 */
+  const unlockQ = [];
+  function unlockShow() {
+    const p = document.getElementById("ulPop");
+    if (p.classList.contains("on") || !unlockQ.length) return;
+    if (typeof state !== "undefined" && state === STATE.PLAY) return;     // 게임 중엔 미뤄 둔다 (판이 끝나면 보여 준다)
+    const u = unlockQ.shift();
+    const pic = p.querySelector(".ulPic"); pic.innerHTML = "";
+    if (u.img) { const im = document.createElement("img"); im.src = u.img; im.alt = ""; pic.appendChild(im); }
+    else { const m = /^(\S+)\s+(.*)$/u.exec(u.t); pic.textContent = m ? m[1] : "✨"; }
+    p.querySelector(".ulKind").textContent = u.k;
+    p.querySelector(".ulName").textContent = u.img ? u.t : (/^(\S+)\s+(.*)$/u.exec(u.t) || [0, 0, u.t])[2];
+    p.querySelector(".ulHow").textContent = u.how || "";
+    lvPopOpen("ulPop");
+    if (!sfx("star")) beep(1320, .12, "triangle", .05);
+    setTimeout(() => beep(1760, .1, "triangle", .04), 120);
+  }
+  document.querySelector("#ulPop .ulOk").addEventListener("click", () => {
+    document.getElementById("ulPop").classList.remove("on"); beep(800, .04, "triangle", .04);
+    setTimeout(unlockShow, 260);
+  });
+  /* 펫을 사서 연쇄 전류가 열렸는지 */
+  function zapUnlockCheck(before) {
+    if (before < 3 && zapOwnN() >= 3) { unlockQ.push({ k: "증강", t: "⚡ 연쇄 전류", how: "똥을 부수는 펫 3마리를 모았다! 이제 게임 중 히든 증강으로 나와요" }); unlockShow(); }
+  }
   /* v0.9.124 두 창 — 내 정보(이름 · 공통 레벨) / 캐릭터 레벨 상세 */
   function lvPopOpen(id) { document.getElementById(id).classList.add("on"); }
   function openMe() {
@@ -9198,8 +9256,10 @@
           coins -= PET_PRICE;
           try { localStorage.setItem(LS_COINS, String(coins)); } catch (e) {}
           showCoins();
+          const zb = zapOwnN();
           petOwned.add(id);
           try { localStorage.setItem(LS_PET_OWN, JSON.stringify([...petOwned])); } catch (e) {}
+          zapUnlockCheck(zb);
           if (!sfx("giant")) { beep(880, .1, "triangle", .06); beep(1320, .16, "triangle", .05); }
           renderShop();
           });
@@ -14155,8 +14215,9 @@
     overStory(s);
     lvGain(elapsed);                         // v0.9.84 경험치 = 버틴 초
     {                                        // v0.9.63 이번에 열린 증강·캐릭터
-      const box = document.getElementById("overUnlock"); box.innerHTML = ""; box.hidden = !achNew.length;
-      if (achNew.length) {
+      const box = document.getElementById("overUnlock"); box.innerHTML = ""; box.hidden = true;
+      if (achNew.length) { unlockQ.push(...achNew); achNew.length = 0; setTimeout(unlockShow, 700); }   // v0.9.162 판이 끝나는 순간 알림 창으로 하나씩
+      if (false) {
         const h = document.createElement("b"); h.textContent = "🏆 새로 열렸어요!"; box.appendChild(h);
         for (const u of achNew) {
           const r = document.createElement("div"); r.className = "ur";
