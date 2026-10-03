@@ -2388,7 +2388,7 @@
   const elTitle = document.getElementById("overTitle");
   const coinNote = document.getElementById("coinNote");
 
-  const GAME_VERSION = "v0.9.180";
+  const GAME_VERSION = "v0.9.181";
   /* 제작사 스플래시(bamhobak friends 로고) — 2026-09-20 끔. 다시 켜려면 true */
   const SPLASH_USE = false;   // 코드를 고칠 때마다 뒤 두 자리를 올린다
   document.getElementById("ver").textContent = GAME_VERSION;
@@ -16741,7 +16741,7 @@
         const bcy2 = hasB ? (FOOT - sh + sh * spr.bcy) : player.hy;
         /* v0.9.172 방울이 그림이 통째로 들어가는 크기 — 그림 크기(sw·sh, 커지면 같이 커진다)에서 정한다. 가운데는 그림 한가운데 */
         /* v0.9.173 머리를 가운데로 감싼다 — 좌우를 바꿔도 방울 자리·크기는 그대로(뒤집지도 않는다). 반지름은 좌우 어느 쪽이든 그림이 다 들어가게 */
-        const cx3 = 0, cy3 = player.hy;
+        const cx3 = 0, cy3 = headOffset(spr);   // v0.9.181 READY 동안엔 player.hy 가 아직 0 이라 방울이 아래로 내려가 있었다 — 그림에서 바로 구한다
         const ex = sw * Math.max(spr.cx, 1 - spr.cx), up = player.hy - (FOOT - sh), dn = FOOT - player.hy;
         const rr = player.r * hitMul() * 1.33;   // v0.9.177 15% 작게 (1.565 → 1.33)   // v0.9.176 크기는 몸 크기만 따라간다 — 머리 높이(hy)가 READY·게임 중에 달라 방울 크기가 바뀌던 것
         drawBubbleImg(cx3, cy3, rr, now, 0.92);
