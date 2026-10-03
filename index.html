@@ -1071,12 +1071,12 @@
     padding: 0 4px calc(var(--bh) * .08); font-size: 18px; font-weight: 900; color: #6b3300; text-shadow: 0 1px 0 rgba(255,255,255,.55); }
 
   /* v0.9.158 처음 시작 — 시작하기만 */
-  #startScreen.firstRun #tabBar button:not(.home), #startScreen.firstRun #meBtn, #startScreen.firstRun #coinBox, #startScreen.firstRun #btnOpt,
+  #startScreen.firstRun #tabBar button:not(.home), #startScreen.firstRun #meBtn, #startScreen.firstRun #coinBox,
   #startScreen.firstRun #homeJobs, #startScreen.firstRun #btnHyper { pointer-events: none !important; }
   /* 아래 탭 — 가운데 시작 탭은 그대로 켜 두고, 나머지는 흐리게가 아니라 회색으로 잠근다 (v0.9.159) */
   #startScreen.firstRun #tabBar button:not(.home) { background: linear-gradient(180deg, #4a4a55, #34343d) !important; }
   #startScreen.firstRun #tabBar button:not(.home) img { filter: grayscale(1) brightness(.62) !important; }
-  #startScreen.firstRun #meBtn, #startScreen.firstRun #coinBox, #startScreen.firstRun #btnOpt,
+  #startScreen.firstRun #meBtn, #startScreen.firstRun #coinBox,
   #startScreen.firstRun .carArrow, #startScreen.firstRun .lvDet { opacity: .38; filter: grayscale(.6); }
   #startScreen.firstRun #btnStart { pointer-events: auto !important; animation: frPulse 1.3s ease-in-out infinite !important; }
   @keyframes frPulse { 50% { transform: scale(1.06); filter: drop-shadow(0 0 12px rgba(255,210,63,.9)); } }
@@ -2388,7 +2388,7 @@
   const elTitle = document.getElementById("overTitle");
   const coinNote = document.getElementById("coinNote");
 
-  const GAME_VERSION = "v0.9.179";
+  const GAME_VERSION = "v0.9.180";
   /* 제작사 스플래시(bamhobak friends 로고) — 2026-09-20 끔. 다시 켜려면 true */
   const SPLASH_USE = false;   // 코드를 고칠 때마다 뒤 두 자리를 올린다
   document.getElementById("ver").textContent = GAME_VERSION;
