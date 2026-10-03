@@ -2390,7 +2390,7 @@
   const elTitle = document.getElementById("overTitle");
   const coinNote = document.getElementById("coinNote");
 
-  const GAME_VERSION = "v0.9.186";
+  const GAME_VERSION = "v0.9.187";
   /* 제작사 스플래시(bamhobak friends 로고) — 2026-09-20 끔. 다시 켜려면 true */
   const SPLASH_USE = false;   // 코드를 고칠 때마다 뒤 두 자리를 올린다
   document.getElementById("ver").textContent = GAME_VERSION;
@@ -7778,7 +7778,7 @@
   let shake = 0, flash = 0, feverFlash = 0;
   /* 방울이의 비누방울 — 한 대를 대신 맞고 터진다. 하트처럼 쌓이지 않고 늘 한 겹뿐이라,
      연달아 맞는 자리에서는 지켜 주지 못한다. */
-  const BUBBLE_SEC = 15;             // 터진 뒤 다시 맺히기까지
+  const BUBBLE_SEC = 20;             // 터진 뒤 다시 맺히기까지 (v0.9.187 15 → 20초)
   let bubbleOn = false, bubbleT = 0;
   /* v0.9.84 방울이 레벨 — 두 겹·집콕·대왕 비누방울(스킬) */
   let bubLayers = 1, bangIdle = 0, bangPX = 0, skillCd = 0, skillUntil = 0;
@@ -15397,7 +15397,7 @@
     twoRand: "일반 증강 중 무작위 2개를 바로 받음"
   };
   const DEV_JOB_DETAIL = {
-    bangul: ["비누방울 1겹 두르고 시작 — 맞으면 방울만 터지고 0.9초 무적", "방울은 15초 뒤 다시 맺힘", "하트 3개", "레벨 보상: 아래 표"],
+    bangul: ["비누방울 1겹 두르고 시작 — 맞으면 방울만 터지고 0.9초 무적", "방울은 20초 뒤 다시 맺힘", "하트 3개", "레벨 보상: 아래 표"],
     fit: ["하트 5개로 시작, 최대 30개", "몸(판정) 1.3배", "하트 등장 5배, 우산 자리에 하트", "우산·다이어트·우산 세 개·화난 우산 안 나옴", "레벨 7부터 '벌크업'(6초 몸 2배·똥 튕김) 계속 나옴"],
     powerj: ["달 등장 1.8배", "증강 카드 1장만(다시 뽑기 없음)", "같은 증강 연속 등장을 더 세게 막음(바로 다음 1/8)"],
     levitator: ["처음부터 하늘 어디든 날 수 있음(위아래 이동)", "이동 속도 2.5배", "높이 있을수록 모든 점수 +0~100%(꼭대기 2배)", "아이템을 반경 121px 에서 끌어옴(자석 없이)", "방귀 대시 안 나옴"],
