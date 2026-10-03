@@ -10,7 +10,7 @@
 <link rel="apple-touch-icon" href="icon-192.png">
 <title>이피저피똥피</title>
 <link rel="preload" as="image" href="assets/logo.webp">
-<link rel="preload" as="image" href="assets/bg/home_fortune.webp?3">
+<link rel="preload" as="image" href="assets/bg/home_fortune.webp?4">
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ctext x='50' y='52' font-size='84' text-anchor='middle' dominant-baseline='central'%3E%F0%9F%92%A9%3C/text%3E%3C/svg%3E">
 <style>
   /* 나눔바른고딕 — 흔히 쓰는 한글 5,362자만 남겨 받아 둔 것(둘이 합쳐 426KB).
@@ -970,6 +970,8 @@
   .lvPick .lvPN b { font-size: 18px; font-weight: 900; color: var(--pnGold); text-shadow: 0 2px 0 rgba(0,0,0,.45); }
   .lvPick .lvPN .pk { font-style: normal; font-size: 14px; font-weight: 900; color: #f1f3ff; text-shadow: 0 1px 0 rgba(0,0,0,.5); }
   .lvPick .lvPN small { font-size: 11px; font-weight: 800; color: #e2e5ff; padding: 2px 8px; border-radius: 999px; background: rgba(150,120,255,.32); }
+  .lvPick .lvPN { position: relative; }
+  .lvPick .lvPN .lvQ { position: absolute; left: 63%; top: 50%; transform: translate(-50%, -50%); font-size: 19px; font-weight: 900; color: #7d86c4; }   /* 줄마다 같은 자리 */
   .lvPick .lvPN .lk { margin-left: auto; font-size: 11.5px; font-weight: 700; color: #8189c2; }
   .lvPick.lock { background: rgba(0,0,0,.22); box-shadow: inset 0 0 0 1px rgba(150,170,255,.1); padding: 9px 10px; }
   .lvPick.lock .lvPN b { color: #626aa3; text-shadow: none; }
@@ -1846,7 +1848,7 @@
 
     <div id="startScreen" class="screen onHome">
       <div id="homeBgFade"></div>
-      <script>/* v0.9.128 첫 화면부터 고른 캐릭터의 배경 (기본 루나) */ try { var hj = localStorage.getItem("epjpddongpi_job") || "bangul"; if (["bangul","fit","powerj","levitator","powerp","fortune"].indexOf(hj) >= 0) document.getElementById("startScreen").style.setProperty("--hbg", "url(assets/bg/home_" + hj + ".webp?3)"); } catch (e) {}</script>
+      <script>/* v0.9.128 첫 화면부터 고른 캐릭터의 배경 (기본 루나) */ try { var hj = localStorage.getItem("epjpddongpi_job") || "bangul"; if (["bangul","fit","powerj","levitator","powerp","fortune"].indexOf(hj) >= 0) document.getElementById("startScreen").style.setProperty("--hbg", "url(assets/bg/home_" + hj + ".webp?4)"); } catch (e) {}</script>
       <div id="ver"></div>
       <button id="meBtn" aria-label="내 정보"><b id="meLv">Lv1</b><span id="meNm">-</span></button>
       <div id="coinBox" title="모은 코인">🪙 0</div>
@@ -2274,7 +2276,7 @@
   const elTitle = document.getElementById("overTitle");
   const coinNote = document.getElementById("coinNote");
 
-  const GAME_VERSION = "v0.9.163";
+  const GAME_VERSION = "v0.9.164";
   /* 제작사 스플래시(bamhobak friends 로고) — 2026-09-20 끔. 다시 켜려면 true */
   const SPLASH_USE = false;   // 코드를 고칠 때마다 뒤 두 자리를 올린다
   document.getElementById("ver").textContent = GAME_VERSION;
@@ -8214,12 +8216,12 @@
   let hbgCur = getComputedStyle(document.getElementById("startScreen")).getPropertyValue("--hbg").trim();
   function homeBgSet() {
     const ss = document.getElementById("startScreen"), fd = document.getElementById("homeBgFade");
-    const u = HOME_BG.includes(job) ? "url(assets/bg/home_" + job + ".webp?3)" : "url(assets/bg/title.webp)";
+    const u = HOME_BG.includes(job) ? "url(assets/bg/home_" + job + ".webp?4)" : "url(assets/bg/title.webp)";
     if (u === hbgCur) return;
     if (hbgCur && fd) { fd.style.setProperty("--hbgPrev", hbgCur); fd.classList.remove("on"); void fd.offsetWidth; fd.classList.add("on"); }
     ss.style.setProperty("--hbg", u); hbgCur = u;
   }
-  window.addEventListener("load", () => { for (const k of HOME_BG) { const im = new Image(); im.src = "assets/bg/home_" + k + ".webp?3"; } });   // 넘길 때 깜빡이지 않게 미리 받아 둔다
+  window.addEventListener("load", () => { for (const k of HOME_BG) { const im = new Image(); im.src = "assets/bg/home_" + k + ".webp?4"; } });   // 넘길 때 깜빡이지 않게 미리 받아 둔다
   function carSet(id) {                      // 고른 캐릭터를 바꾼다(다시 그리지 않는다)
     if (id === job || !JOBS[id]) return;
     idleStop();
@@ -8850,6 +8852,7 @@
         row.appendChild(u); c.appendChild(row); continue;
       }
       if (cl < l) {
+        const q = document.createElement("span"); q.className = "lvQ"; q.textContent = "?"; h.appendChild(q);   // v0.9.164 숨긴 능력 자리 — 비워 두지 않고 ?
         const n = document.createElement("span"); n.className = "lk";
         n.textContent = "🔒 " + "경험치 " + Math.max(0, CHR_XP[l - 1] - xp).toLocaleString() + " 더";
         h.appendChild(n); c.appendChild(row); continue;   // v0.9.125 레벨이 닿기 전엔 무슨 능력인지 안 보여 준다
