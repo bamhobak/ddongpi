@@ -2394,7 +2394,7 @@
   const elTitle = document.getElementById("overTitle");
   const coinNote = document.getElementById("coinNote");
 
-  const GAME_VERSION = "v0.9.188";
+  const GAME_VERSION = "v0.9.189";
   /* 제작사 스플래시(bamhobak friends 로고) — 2026-09-20 끔. 다시 켜려면 true */
   const SPLASH_USE = false;   // 코드를 고칠 때마다 뒤 두 자리를 올린다
   document.getElementById("ver").textContent = GAME_VERSION;
@@ -4627,7 +4627,7 @@
     if (invUntil  > 0) invUntil  += paused;
     if (hurtUntil > 0) hurtUntil += paused;
     // 멈춰 있던 똥이 코앞에 있을 수 있으니 0.5초 무적으로 빠져나갈 틈을 준다
-    invUntil = Math.max(invUntil, performance.now() + 500);
+    invUntil = Math.max(invUntil, performance.now() + 500); invQuietUntil = invUntil;   // v0.9.189 증강 고른 뒤 무적은 둘레 빛 없이
     /* '준비' 한 박자 — 카드를 누르던 손가락을 옮길 틈. 일시정지를 풀 때의 3-2-1 과 같은 장치를 짧게(0.6초) 쓴다.
        멈춘 동안의 시간은 finishResume 이 무적·간식 마감에서 빼 준다 */
     state = STATE.PAUSE;
@@ -8195,6 +8195,7 @@
     }
     readyBeat = false;
     const paused = now - pauseAt;
+    if (invQuietUntil >= invUntil && invUntil > 0) invQuietUntil = invUntil + paused;   // v0.9.189 미뤄진 증강 무적도 계속 조용히
     if (powerUntil > 0) powerUntil += paused;
     if (invUntil  > 0) invUntil  += paused;
     if (hurtUntil > 0) hurtUntil += paused;
@@ -17758,7 +17759,9 @@
 
   /* 무적인 동안 캐릭터 둘레에 옅은 빛 테두리 — 소리를 끄고 해도 무적인 줄 알 수 있게.
      간식 뒤 1.5초, 증강 고른 뒤 0.5초, 맞은 뒤 1초 모두 같은 표시 */
+  let invQuietUntil = 0;
   function drawInvGlow(now) {
+    if (invUntil <= invQuietUntil) return;   // v0.9.189 증강 고른 뒤 0.5초 무적은 동그라미 없이
     if (now >= invUntil || dying > 0 || fever || clearT >= 0) return;   // v0.9.98 클리어 연출 중엔 무적 테두리 없음
     const g = bubbleGeom(now);
     const a = Math.min(1, (invUntil - now) / 250) * (0.6 + 0.25 * Math.sin(now / 80));
