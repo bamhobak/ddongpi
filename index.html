@@ -10,7 +10,7 @@
 <link rel="apple-touch-icon" href="icon-192.png">
 <title>이피저피똥피</title>
 <link rel="preload" as="image" href="assets/logo.webp">
-<link rel="preload" as="image" href="assets/bg/home_fortune.webp?2">
+<link rel="preload" as="image" href="assets/bg/home_fortune.webp?3">
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ctext x='50' y='52' font-size='84' text-anchor='middle' dominant-baseline='central'%3E%F0%9F%92%A9%3C/text%3E%3C/svg%3E">
 <style>
   /* 나눔바른고딕 — 흔히 쓰는 한글 5,362자만 남겨 받아 둔 것(둘이 합쳐 426KB).
@@ -1818,7 +1818,7 @@
 
     <div id="startScreen" class="screen onHome">
       <div id="homeBgFade"></div>
-      <script>/* v0.9.128 첫 화면부터 고른 캐릭터의 배경 (기본 루나) */ try { var hj = localStorage.getItem("epjpddongpi_job") || "bangul"; if (["bangul","fit","powerj","levitator","powerp","fortune"].indexOf(hj) >= 0) document.getElementById("startScreen").style.setProperty("--hbg", "url(assets/bg/home_" + hj + ".webp?2)"); } catch (e) {}</script>
+      <script>/* v0.9.128 첫 화면부터 고른 캐릭터의 배경 (기본 루나) */ try { var hj = localStorage.getItem("epjpddongpi_job") || "bangul"; if (["bangul","fit","powerj","levitator","powerp","fortune"].indexOf(hj) >= 0) document.getElementById("startScreen").style.setProperty("--hbg", "url(assets/bg/home_" + hj + ".webp?3)"); } catch (e) {}</script>
       <div id="ver"></div>
       <button id="meBtn" aria-label="내 정보"><b id="meLv">Lv1</b><span id="meNm">-</span></button>
       <div id="coinBox" title="모은 코인">🪙 0</div>
@@ -2237,7 +2237,7 @@
   const elTitle = document.getElementById("overTitle");
   const coinNote = document.getElementById("coinNote");
 
-  const GAME_VERSION = "v0.9.155";
+  const GAME_VERSION = "v0.9.156";
   /* 제작사 스플래시(bamhobak friends 로고) — 2026-09-20 끔. 다시 켜려면 true */
   const SPLASH_USE = false;   // 코드를 고칠 때마다 뒤 두 자리를 올린다
   document.getElementById("ver").textContent = GAME_VERSION;
@@ -8177,12 +8177,12 @@
   let hbgCur = getComputedStyle(document.getElementById("startScreen")).getPropertyValue("--hbg").trim();
   function homeBgSet() {
     const ss = document.getElementById("startScreen"), fd = document.getElementById("homeBgFade");
-    const u = HOME_BG.includes(job) ? "url(assets/bg/home_" + job + ".webp?2)" : "url(assets/bg/title.webp)";
+    const u = HOME_BG.includes(job) ? "url(assets/bg/home_" + job + ".webp?3)" : "url(assets/bg/title.webp)";
     if (u === hbgCur) return;
     if (hbgCur && fd) { fd.style.setProperty("--hbgPrev", hbgCur); fd.classList.remove("on"); void fd.offsetWidth; fd.classList.add("on"); }
     ss.style.setProperty("--hbg", u); hbgCur = u;
   }
-  window.addEventListener("load", () => { for (const k of HOME_BG) { const im = new Image(); im.src = "assets/bg/home_" + k + ".webp?2"; } });   // 넘길 때 깜빡이지 않게 미리 받아 둔다
+  window.addEventListener("load", () => { for (const k of HOME_BG) { const im = new Image(); im.src = "assets/bg/home_" + k + ".webp?3"; } });   // 넘길 때 깜빡이지 않게 미리 받아 둔다
   function carSet(id) {                      // 고른 캐릭터를 바꾼다(다시 그리지 않는다)
     if (id === job || !JOBS[id]) return;
     idleStop();
@@ -8203,19 +8203,44 @@
     fit: { n: 49, sw: 340, sh: 400, l: 15, t: 0, cw: 355, ch: 400 },
     powerp: { n: 49, sw: 340, sh: 400, l: 0, t: 0, cw: 340, ch: 400 }         // 그림 이름은 monk (JOB_IMG)
   };
+  /* v0.9.156 한 번 움직인 뒤 가만히 있을 때 — 몇 초마다 눈만 깜빡 (Ludo, 시트 칸 규격은 위 idle 시트와 같다 · 한 줄 n칸) */
+  const JOB_BLINK = { bangul: 12, fit: 8, levitator: 14, powerj: 8, fortune: 6, powerp: 6 };   // 무무 그림 이름은 monk (JOB_IMG)
+  const blinkImg = {};
+  function blinkSched(run) {
+    clearTimeout(run.blinkT);
+    const n = JOB_BLINK[run.job]; if (!n) return;
+    const src = "assets/" + JOB_IMG[run.job] + "_blink_sheet.webp?" + n;
+    if (!blinkImg[src]) { blinkImg[src] = new Image(); blinkImg[src].src = src; }
+    run.blinkT = setTimeout(() => {
+      if (idleRun !== run || !run.el || run.timer) return;
+      const im = blinkImg[src];
+      if (!im.complete || !im.naturalWidth) { blinkSched(run); return; }
+      const el = run.el, keepImg = run.mainBg, keepPos = el.style.backgroundPosition;
+      el.style.backgroundImage = "url(" + src + ")"; el.style.backgroundSize = (n * 100) + "% 100%";
+      let f = 0;
+      const step = () => {
+        if (idleRun !== run) { clearInterval(run.blinkI); return; }
+        if (f >= n) { clearInterval(run.blinkI); run.blinkI = 0; el.style.backgroundImage = keepImg; el.style.backgroundSize = ""; el.style.backgroundPosition = keepPos; blinkSched(run); return; }
+        el.style.backgroundPosition = (f / (n - 1) * 100) + "% 0%"; f++;
+      };
+      step(); run.blinkI = setInterval(step, 55);
+    }, 2600 + Math.random() * 3200);
+  }
   let idleRun = null;
   function idleStop() {
     if (!idleRun) return;
+    clearTimeout(idleRun.blinkT); clearInterval(idleRun.blinkI);
     clearInterval(idleRun.timer);
     if (idleRun.el) idleRun.el.remove();
     idleRun.pic.style.visibility = "";
     idleRun = null;
   }
   function idleRestart(run, d) {             // 처음 장부터 다시 돌린다 — 끝나면 마지막 장(= 첫 장)에 그대로 멈춰 있고, 카드 그림으로 돌아가지 않는다
-    clearInterval(run.timer);
+    clearInterval(run.timer); clearTimeout(run.blinkT);
+    if (run.el) { clearInterval(run.blinkI); run.blinkI = 0; run.el.style.backgroundSize = ""; if (run.mainBg) run.el.style.backgroundImage = run.mainBg; }
     let f = 0;
     const step = () => {
-      if (f >= d.n) { clearInterval(run.timer); run.timer = 0; return; }
+      if (f >= d.n) { clearInterval(run.timer); run.timer = 0; blinkSched(run); return; }   // v0.9.156 다 움직이면 가끔 눈 깜빡
       run.el.style.backgroundPosition = ((f % 7) / 6 * 100) + "% " + (Math.floor(f / 7) / 6 * 100) + "%";
       f++;
     };
@@ -8228,7 +8253,7 @@
     if (!pic) { idleStop(); return; }
     if (idleRun && idleRun.pic === pic && idleRun.el) { idleRestart(idleRun, d); return; }   // 이미 겹쳐 둔 그림이 있으면 바꿔 끼우지 않고 다시 돌리기만
     idleStop();
-    const run = idleRun = { pic: pic, el: null, timer: 0 };
+    const run = idleRun = { pic: pic, el: null, timer: 0, job: job, blinkT: 0, blinkI: 0 };
     const sheet = new Image();
     sheet.onload = () => {
       if (idleRun !== run || !pic.offsetHeight) return;
@@ -8240,7 +8265,7 @@
       el.style.left = (px + (pw - d.sw * k) / 2 - d.l * k) + "px";
       el.style.top = (py - d.t * k) + "px";
       el.style.width = (d.cw * k) + "px"; el.style.height = (d.ch * k) + "px";
-      el.style.backgroundImage = "url(" + sheet.src + ")";
+      el.style.backgroundImage = run.mainBg = "url(" + sheet.src + ")";
       card.appendChild(el); run.el = el;
       pic.style.visibility = "hidden";
       idleRestart(run, d);
