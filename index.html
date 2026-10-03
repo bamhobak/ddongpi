@@ -2358,7 +2358,7 @@
   const elTitle = document.getElementById("overTitle");
   const coinNote = document.getElementById("coinNote");
 
-  const GAME_VERSION = "v0.9.173";
+  const GAME_VERSION = "v0.9.174";
   /* 제작사 스플래시(bamhobak friends 로고) — 2026-09-20 끔. 다시 켜려면 true */
   const SPLASH_USE = false;   // 코드를 고칠 때마다 뒤 두 자리를 올린다
   document.getElementById("ver").textContent = GAME_VERSION;
@@ -16682,7 +16682,7 @@
         /* v0.9.173 머리를 가운데로 감싼다 — 좌우를 바꿔도 방울 자리·크기는 그대로(뒤집지도 않는다). 반지름은 좌우 어느 쪽이든 그림이 다 들어가게 */
         const cx3 = 0, cy3 = player.hy;
         const ex = sw * Math.max(spr.cx, 1 - spr.cx), up = player.hy - (FOOT - sh), dn = FOOT - player.hy;
-        const rr = Math.max(br * 1.06, Math.hypot(ex, Math.max(up, dn)) * 0.77);
+        const rr = Math.max(br * 1.06, Math.hypot(ex, Math.max(up, dn)) * 0.68);
         drawBubbleImg(cx3, cy3, rr, now, 0.92);
         if (bubLayers > 1) drawBubbleImg(cx3, cy3, rr + 9, now + 1500, 0.55);   // 두 겹 — 바깥에 한 겹 더
       } else if (bubbleOn) {                       // 비누방울 보호막 — 몸에 딱 맞춘다
