@@ -2409,7 +2409,7 @@
   const elTitle = document.getElementById("overTitle");
   const coinNote = document.getElementById("coinNote");
 
-  const GAME_VERSION = "v0.9.197";
+  const GAME_VERSION = "v0.9.198";
   /* 제작사 스플래시(bamhobak friends 로고) — 2026-09-20 끔. 다시 켜려면 true */
   const SPLASH_USE = false;   // 코드를 고칠 때마다 뒤 두 자리를 올린다
   document.getElementById("ver").textContent = GAME_VERSION;
@@ -9201,11 +9201,18 @@
   /* v0.9.158 처음 시작 — 첫 판을 마치기 전에는 시작하기만 눌린다 (탭·옵션·이름·캐릭터 넘기기·상세는 흐리게 막는다).
      예전부터 하던 사람(경험치·코인·최고 기록이 있으면)은 막지 않는다 */
   const LS_PLAYED = "epjpddongpi_played";
+  /* v0.9.198 '예전부터 하던 사람'은 처음 한 번만 본다 — 그 뒤로는 첫 판을 마쳤다는 표시(LS_PLAYED)만 본다.
+     (예전엔 볼 때마다 경험치·코인을 봐서, 초기화 뒤 테스트 모드2로 레벨만 올려도 한 판 한 사람이 됐다) */
+  try {
+    if (!localStorage.getItem("epjpddongpi_played_chk")) {
+      let old = (lvData.xp || 0) > 0 || coins > 0;
+      for (let i = 0; i < localStorage.length && !old; i++) { const k = localStorage.key(i); if (k && k.startsWith("epjpddongpi_best_")) old = true; }
+      if (old) localStorage.setItem(LS_PLAYED, "1");
+      localStorage.setItem("epjpddongpi_played_chk", "1");
+    }
+  } catch (e) {}
   function firstRunOn() {
-    try { if (localStorage.getItem(LS_PLAYED)) return false; } catch (e) { return false; }
-    if ((lvData.xp || 0) > 0 || coins > 0) return false;
-    try { for (let i = 0; i < localStorage.length; i++) { const k = localStorage.key(i); if (k && k.startsWith("epjpddongpi_best_")) return false; } } catch (e) {}
-    return true;
+    try { return !localStorage.getItem(LS_PLAYED); } catch (e) { return false; }
   }
   function firstRunDone() {
     try { localStorage.setItem(LS_PLAYED, "1"); } catch (e) {}
