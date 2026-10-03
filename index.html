@@ -2414,7 +2414,7 @@
   const elTitle = document.getElementById("overTitle");
   const coinNote = document.getElementById("coinNote");
 
-  const GAME_VERSION = "v0.9.214";
+  const GAME_VERSION = "v0.9.215";
   /* 제작사 스플래시(bamhobak friends 로고) — 2026-09-20 끔. 다시 켜려면 true */
   const SPLASH_USE = false;   // 코드를 고칠 때마다 뒤 두 자리를 올린다
   document.getElementById("ver").textContent = GAME_VERSION;
@@ -3905,7 +3905,7 @@
   /* 루도 소리는 파일마다 녹음 크기가 달라서, 최대치를 재어 비슷한 체감이 되게 맞춘 값 */
   const SFX_GAIN = { star: 3.4,
                      // v0.9.107 펫 효과음(Ludo) — 펫마다 둘, 무작위. 예전 소리와 같은 크기로
-                     pet_dove_2: 0.2,
+                     pet_dove_2: 0.13,
                      pet_gift_1: 0.27, pet_gift_2: 0.47, pet_cat_1: 0.35, pet_cat_2: 0.4, pet_eel_1: 0.36, pet_eel_2: 0.27, zap: 0.25, pet_angel_1: 0.89, pet_angel_2: 0.62, aug: 0.9, fever: 0.8, hurt: 0.8,
                      // v0.8.73 캐릭터마다 아픈 소리 (Ludo) — 옛 hurt 와 같은 크기로 들리게 맞췄다
                      // v0.9.82 강아지 소리로 다시(Ludo) — 캐릭터마다 둘, 맞을 때마다 무작위. 옛 캐릭터 소리와 같은 크기로 맞췄다
@@ -3928,7 +3928,7 @@
     if (sfxAsked || !ac) return;
     sfxAsked = true;
     for (const k in SFX_GAIN) {
-      fetch("assets/sfx/" + k + ".mp3" + (k.startsWith("pet_") ? "?v3" : ""))
+      fetch("assets/sfx/" + k + ".mp3" + (k.startsWith("pet_") ? "?v4" : "")   /* v0.9.215 둘기 소리 새로(진짜 비둘기 구구) */)
         .then(r => r.arrayBuffer())
         .then(b => ac.decodeAudioData(b))
         .then(buf => { sfxBuf[k] = buf; })
