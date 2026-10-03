@@ -2409,7 +2409,7 @@
   const elTitle = document.getElementById("overTitle");
   const coinNote = document.getElementById("coinNote");
 
-  const GAME_VERSION = "v0.9.196";
+  const GAME_VERSION = "v0.9.197";
   /* 제작사 스플래시(bamhobak friends 로고) — 2026-09-20 끔. 다시 켜려면 true */
   const SPLASH_USE = false;   // 코드를 고칠 때마다 뒤 두 자리를 올린다
   document.getElementById("ver").textContent = GAME_VERSION;
@@ -3911,7 +3911,8 @@
                      galaga: 0.35, dove: 0.3, clone: 1.6, burst: 0.8,
                      angry: 0.8, laser: 0.9, fpick: 3.4, giant: 2.4, magnet: 0.55,
                      dodge: 0.9, boing: 0.9, wakboom: 0.9, reroll: 0.7,
-                     coin: 1.8 };
+                     coin: 1.8,
+                     vo_ready: 3.2, vo_go: 1.8 };   // v0.9.197 판 시작 READY·GO! 꼬마 목소리(Ludo)
   /* 꼬리가 긴 녹음을 짧게 잘라 쓴다 (초 단위). 간식 줍는 소리는 초당 여러 번
      겹쳐 울리므로, 1초를 다 울리게 두면 소리가 뭉개진다. 끝에서 부드럽게 잦아든다. */
   const SFX_CUT = { fpick: 0.30 };
@@ -8207,7 +8208,7 @@
     if (startBeat) {                     // 판 시작 — GO! 와 함께 출발
       startBeat = false;
       goBanner = GO_SEC;
-      beep(1240, .16, "square", .05);
+      if (!sfx("vo_go")) beep(1240, .16, "square", .05);   // v0.9.197 "Go!"
     }
     readyBeat = false;
     const paused = now - pauseAt;
@@ -9684,7 +9685,7 @@
     pauseAt = performance.now();
     resumeCountEnd = pauseAt + START_READY_MS;
     startBeat = true;
-    beep(620, .12, "triangle", .05);
+    if (!sfx("vo_ready")) beep(620, .12, "triangle", .05);   // v0.9.197 "Ready?"
   }
 
   /* 구름 하나하나의 생김새를 따로 만든다. 같은 덩이 세 개를 겹쳐 놓으면
