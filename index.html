@@ -1181,6 +1181,10 @@
     font-size: 17px; font-weight: 900; line-height: 20px; color: #ffd23f; animation: lvDot 1s ease-in-out infinite;
     text-shadow: 0 1.5px 0 #7a4508, 1px 0 0 #7a4508, -1px 0 0 #7a4508, 0 -1px 0 #7a4508, 0 0 6px rgba(255,200,60,.8); }   /* v0.9.130 해금할 게 있으면 오른쪽에 작은 노란 느낌표 */
   @keyframes lvDot { 50% { transform: translateY(-2px); } }
+  /* v0.9.211 해금할 게 있다는 느낌표 — Codex 그림 + Ludo 반짝 움직임(49장 한 줄 시트), 크게 */
+  #homeJobs #jobList.car .lvDet.new::after { content: ""; right: -30px; top: 50%; width: 24px; height: 38px; margin-top: -21px; text-shadow: none;
+    background: url(assets/ui/bang_sheet.webp) 0 0 / 1176px 38px no-repeat; animation: bangPlay 1.8s steps(49) infinite; filter: drop-shadow(0 0 5px rgba(255,200,60,.75)); }
+  @keyframes bangPlay { to { background-position: -1176px 0; } }
   #homeJobs .carDots { display: flex; gap: 7px; justify-content: center; }
   #homeJobs .carDots i { width: 8px; height: 8px; border-radius: 50%; background: rgba(255,255,255,.35); }
   #homeJobs .carDots i.on { background: #ffd23f; box-shadow: 0 0 6px rgba(255,210,63,.8); }
@@ -2410,7 +2414,7 @@
   const elTitle = document.getElementById("overTitle");
   const coinNote = document.getElementById("coinNote");
 
-  const GAME_VERSION = "v0.9.210";
+  const GAME_VERSION = "v0.9.211";
   /* 제작사 스플래시(bamhobak friends 로고) — 2026-09-20 끔. 다시 켜려면 true */
   const SPLASH_USE = false;   // 코드를 고칠 때마다 뒤 두 자리를 올린다
   document.getElementById("ver").textContent = GAME_VERSION;
