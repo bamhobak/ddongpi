@@ -1120,6 +1120,7 @@
   #guideBook .gbTip b { color: #ffd86b; font-size: 17px; }
   #guideBook .gbArrow { position: fixed; font-size: 34px; pointer-events: none; animation: gbBob .7s ease-in-out infinite; }
   @keyframes gbBob { 50% { transform: translateY(8px); } }
+  #btnRhythm { display: none !important; }   /* v0.9.201 테스트 모드 '리듬 OFF' 버튼 숨김 (리듬 실험은 꺼진 채) */
   #startScreen #meBtn { position: absolute; top: max(8px, env(safe-area-inset-top)); left: 12px; z-index: 6; display: flex; align-items: center; gap: 6px;
     max-width: 150px; padding: 4px 12px 4px 5px; border-radius: 999px; box-shadow: none; background: rgba(8,9,16,.55); border: 1px solid rgba(255,210,63,.35);
     color: #fff; font-size: 14px; font-weight: 800; text-shadow: 0 1px 2px rgba(0,0,0,.6); }
@@ -2409,7 +2410,7 @@
   const elTitle = document.getElementById("overTitle");
   const coinNote = document.getElementById("coinNote");
 
-  const GAME_VERSION = "v0.9.200";
+  const GAME_VERSION = "v0.9.201";
   /* 제작사 스플래시(bamhobak friends 로고) — 2026-09-20 끔. 다시 켜려면 true */
   const SPLASH_USE = false;   // 코드를 고칠 때마다 뒤 두 자리를 올린다
   document.getElementById("ver").textContent = GAME_VERSION;
