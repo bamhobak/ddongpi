@@ -2205,7 +2205,7 @@
   const elTitle = document.getElementById("overTitle");
   const coinNote = document.getElementById("coinNote");
 
-  const GAME_VERSION = "v0.9.151";
+  const GAME_VERSION = "v0.9.152";
   /* 제작사 스플래시(bamhobak friends 로고) — 2026-09-20 끔. 다시 켜려면 true */
   const SPLASH_USE = false;   // 코드를 고칠 때마다 뒤 두 자리를 올린다
   document.getElementById("ver").textContent = GAME_VERSION;
@@ -3585,7 +3585,7 @@
   const ACC_REW = {
     2: "🎲 증강 다시 뽑기(판마다 1회)",
     3: "☁️ 구름 상점 — 게임 중 가끔 내려온다. 증강 2개·하트를 코인으로",
-    4: "🎁 시작 증강 고르기(3장 중 1장) · ⚡ 하이퍼 모드",
+    4: "🎁 시작 증강 고르기(3장 중 1장) · ⚡ 하이퍼 모드 — 게임 속도 2배",
     5: "👑 (준비 중)"
   };
   const CHR_PERKS = {
@@ -8517,12 +8517,12 @@
   function syncHyper() {
     btnHyper.style.display = accLv() >= 4 ? "" : "none";
     btnHyper.classList.toggle("on", !!lvData.hyper);
-    btnHyper.title = lvData.hyper ? "하이퍼 모드 켜짐 — 똥 1.5배, 점수 2배" : "하이퍼 모드 꺼짐";
+    btnHyper.title = lvData.hyper ? "하이퍼 모드 켜짐 — 게임 속도 2배" : "하이퍼 모드 꺼짐";
   }
   btnHyper.addEventListener("click", () => {
     lvData.hyper = !lvData.hyper; lvSave(); syncHyper();
     beep(lvData.hyper ? 1100 : 600, .07, "square", .045);
-    popHint(lvData.hyper ? "⚡ 하이퍼 모드 ON — 똥 1.5배 · 점수 2배" : "하이퍼 모드 OFF");
+    popHint(lvData.hyper ? "⚡ 하이퍼 모드 ON — 게임 속도 2배" : "하이퍼 모드 OFF");
   });
   function popHint(t) {
     let e = document.getElementById("hintToast");
@@ -8783,10 +8783,12 @@
      처음 열 때 지금 상태를 LS_T2BAK 에 한 번 떠 둔다 → '처음 상태로 되돌리기'.
      고친 값은 기기에 저장하고 페이지를 다시 불러온다 (게임 곳곳이 들고 있는 값을 한 번에 맞추려고). */
   const LS_T2BAK = "epjpddongpi_t2bak";
-  const T2_KEYS = [LS_COINS, LS_LV, LS_ACH, LS_PET_OWN];
+  /* v0.9.152 백업·초기화는 이 게임의 저장값 전부(기기 식별자와 백업 자신만 빼고) — 기기 식별자를 지우면 랭킹에서 다른 사람이 된다 */
+  const T2_KEEP = ["epjpddongpi_device", "epjpddongpi_t2bak"];
+  function t2Keys() { const ks = []; try { for (let i = 0; i < localStorage.length; i++) { const k = localStorage.key(i); if (k && k.startsWith("epjpddongpi_") && !T2_KEEP.includes(k)) ks.push(k); } } catch (e) {} return ks; }
   let t2 = null;
   function openT2() {
-    try { if (!localStorage.getItem(LS_T2BAK)) { const b = {}; for (const k of T2_KEYS) b[k] = localStorage.getItem(k); localStorage.setItem(LS_T2BAK, JSON.stringify(b)); } } catch (e) {}
+    try { if (!localStorage.getItem(LS_T2BAK)) { const b = {}; for (const k of t2Keys()) b[k] = localStorage.getItem(k); localStorage.setItem(LS_T2BAK, JSON.stringify(b)); } } catch (e) {}
     t2 = { coins, acc: accLv(), cl: {}, owned: jobUnlocked.has("powerp"), pets: new Set(petOwned), augs: "keep", perks: false };
     for (const j in JOBS) if (!JOBS[j].gone) t2.cl[j] = lvOf(lvData.cx[j] || 0, CHR_XP);
     renderT2(); lvPopOpen("t2Pop");
@@ -8833,14 +8835,19 @@
     seg(row(u, "펫"), [["all", "모두 보유"], ["none", "모두 없음"]], allPet ? "all" : noPet ? "none" : "", v => { t2.pets = new Set(v === "all" ? pets : []); });
     // 되돌리기
     const r = sec("↩️ 되돌리기");
-    const rn = document.createElement("div"); rn.className = "t2Note"; rn.textContent = "테스트 모드2를 처음 열기 전 상태(코인·레벨·업적·펫)로 되돌립니다.";
+    const rn = document.createElement("div"); rn.className = "t2Note"; rn.textContent = "처음 상태로 되돌리기 — 테스트 모드2를 처음 열기 전 상태로. 게임 초기상태로 — 처음 접속한 사람처럼 모두 지운다(이름·코인·레벨·해금·설정, 랭킹 기록은 그대로).";
     r.appendChild(rn);
     const rb = document.createElement("button"); rb.className = "t2Mini"; rb.textContent = "처음 상태로 되돌리기";
     rb.addEventListener("click", () => askYesNo("테스트 전 상태로 되돌릴까요?", () => {
-      try { const b = JSON.parse(localStorage.getItem(LS_T2BAK) || "null"); if (b) { for (const k of T2_KEYS) { if (b[k] == null) localStorage.removeItem(k); else localStorage.setItem(k, b[k]); } localStorage.removeItem(LS_T2BAK); } } catch (e) {}
+      try { const b = JSON.parse(localStorage.getItem(LS_T2BAK) || "null"); if (b) { for (const k of t2Keys()) localStorage.removeItem(k); for (const k in b) if (b[k] != null) localStorage.setItem(k, b[k]); localStorage.removeItem(LS_T2BAK); } } catch (e) {}
       location.reload();
     }));
-    r.appendChild(rb);
+    const zb = document.createElement("button"); zb.className = "t2Mini"; zb.textContent = "🆕 게임 초기상태로";
+    zb.addEventListener("click", () => askYesNo("처음 접속한 상태로 모두 지울까요?\n(되돌리기 백업은 남겨 둡니다)", () => {
+      try { for (const k of t2Keys()) localStorage.removeItem(k); } catch (e) {}
+      location.reload();
+    }));
+    const rr = document.createElement("div"); rr.className = "t2Row"; rr.append(rb, zb); r.appendChild(rr);
   }
   document.querySelector("#t2Pop .t2Save").addEventListener("click", () => {
     if (!t2) return;
@@ -9481,7 +9488,7 @@
     /* 간식 낙하물은 언제나 같은 속도로 떨어진다 — 레벨·지대·증강(느린 하늘·도파민)
        어느 것에도 영향받지 않는다. 화면 높이 보정(m)만 그대로 둔다. */
     let vy = inFever ? baseVy * m
-                     : baseVy * m * DIFF_F * spaceF() * bhDiff() * aug.fallMul * lateMul() * (hyperOn() ? 1.5 : 1) * (prophIs("fast") ? 1.3 : prophIs("slow") ? 0.7 : 1);
+                     : baseVy * m * DIFF_F * spaceF() * bhDiff() * aug.fallMul * lateMul() * (prophIs("fast") ? 1.3 : prophIs("slow") ? 0.7 : 1);
     if (special === "huge") vy *= 0.55;   // 덩치값 — 느릿느릿 굴러떨어진다
     let px = r + Math.random() * (W - r * 2);
     let pvx = (Math.random() - Math.random()) * vy * SPREAD_POOP;
@@ -10533,7 +10540,7 @@
             spawnPoop(1, kind);
           }
         }
-        spawnTimer = spawnGap() / DIFF_F / spaceF() / bhDiff() / (hyperOn() ? 1.5 : 1) * widthFactor * (0.7 + Math.random() * 0.6)
+        spawnTimer = spawnGap() / DIFF_F / spaceF() / bhDiff() * widthFactor * (0.7 + Math.random() * 0.6)
                    / (prophIs("dice") ? 1.5 : 1)         // 운명의 주사위 — 똥 1.5배
                    / (ruleOn("poop2x") ? 2 : 1);         // 대전 규칙 — 똥 두 배
       }
@@ -15332,8 +15339,8 @@
      한 번만 먹는 증강이고, 빗방울로 씻으면 배율도 같이 내려간다.
      (100% 는 곧 끝이라, 실제로 누리는 최대는 75% = 1.75배다) */
   function dungyMul() { return aug.dungy ? 1 + 1 / Math.max(1, lives) : 1; }   // 하트 1개 2배 · 2개 1.5배 · 3개 1.33배 …
-  function hyperOn() { return accOn(4) && lvData.hyper && !testMode; }   // v0.9.84 하이퍼 모드 — 똥 1.5배 빠르고 많게, 점수 2배
-  function scoreMul() { return SCORE_SCALE * gScore() * (hyperOn() ? 2 : 1) * aug.scoreMul * bhMul() * levMul() * monkMul() * dungyMul() * lvScoreMul() * (prophIs("double") ? 2 : prophIs("dice") ? 3 : 1); }
+  function hyperOn() { return accOn(4) && lvData.hyper && !testMode; }   // v0.9.84 하이퍼 모드 · v0.9.152 똥 1.5배·점수 2배 대신 게임 전체가 2배 빠르게 (한 그림에 두 번 돌린다)
+  function scoreMul() { return SCORE_SCALE * gScore() * aug.scoreMul * bhMul() * levMul() * monkMul() * dungyMul() * lvScoreMul() * (prophIs("double") ? 2 : prophIs("dice") ? 3 : 1); }
 
   function zoneIdx() { return clearHome ? 0 : Math.min(LAST_Z, level - 1); }   // v0.9.87 클리어 — 지상(잔디밭)으로 (v0.9.92 그 전엔 레벨 시계를 되감아 거꾸로 내려온다)
   // 지금 단계와 다음 단계 사이의 진행도 — 색이 뚝 끊기지 않고 이어지도록
@@ -17596,6 +17603,7 @@
       if (dying <= 0 && state === STATE.PLAY) endDeath();
     } else {
       update(dt, now);
+      if (state === STATE.PLAY && hyperOn() && hitStop <= 0 && dying <= 0 && !vsLike() && !partyOn()) update(dt, now);   // v0.9.152 하이퍼 — 두 배 속도
     }
     syncPadShown();            // 여럿이 — 오른쪽 아래 조작판
     netTick(dt, now);          // 두 폰 대전 — 주고받기·끊김 감시
