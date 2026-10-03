@@ -1723,6 +1723,14 @@
     top: calc(-62px * var(--bf) - 17px); right: calc(-80px * var(--bf) + 4px); z-index: 2;
   }
   .vsb .vsbTabs { display: flex; justify-content: center; gap: 6px; margin: 0 0 5px; }
+  /* v0.9.153 이번 주 기간 + 초기화까지 — 제목 바로 아래 한 줄 (판 아래에 겹쳐 있던 하늘색 딱지 대신) */
+  #pgRank .board.withTabs { grid-template-areas: "h h" "per per" "tabs list"; }
+  #pgRank #weekPeriod { grid-area: per; display: flex; align-items: center; justify-content: center; gap: 8px; margin: -2px 0 7px; }
+  #pgRank #weekPeriod b { font-size: 15px; font-weight: 800; color: #e6e9ff; text-shadow: 0 1px 2px rgba(0,0,0,.6); }
+  #pgRank #weekPeriod i { font-style: normal; font-size: 11.5px; font-weight: 800; color: #ffd86b; padding: 2px 9px; border-radius: 999px;
+    background: rgba(8,10,34,.6); box-shadow: inset 0 0 0 1px rgba(255,216,107,.45); }
+  #pgRank .board.withTabs > .note { display: none !important; }
+  #weekPeriod:empty { display: none; }
   /* v0.9.148 지난 명예의 전당 — 주 넘기기 줄 */
   #lastJobs { display: flex; gap: 4px; justify-content: center; margin: 0 0 6px; }
   #lastJobs button { height: 30px; min-width: 30px; padding: 0 6px; border-radius: 8px; border: 1.5px solid rgba(130,155,255,.45); box-shadow: none;
@@ -1814,6 +1822,7 @@
       <div id="boardSlot">
       <div class="board withTabs">
         <h3 class="boardTitle">🏆 이번 주 TOP 10</h3>
+        <div id="weekPeriod"></div>
         <div class="jobTabs" id="jobTabsStart"></div>
         <ol id="boardStart"><li class="empty">불러오는 중…</li></ol>
         <div class="note" id="noteStart"></div>
@@ -2205,7 +2214,7 @@
   const elTitle = document.getElementById("overTitle");
   const coinNote = document.getElementById("coinNote");
 
-  const GAME_VERSION = "v0.9.152";
+  const GAME_VERSION = "v0.9.153";
   /* 제작사 스플래시(bamhobak friends 로고) — 2026-09-20 끔. 다시 켜려면 true */
   const SPLASH_USE = false;   // 코드를 고칠 때마다 뒤 두 자리를 올린다
   document.getElementById("ver").textContent = GAME_VERSION;
@@ -14504,6 +14513,9 @@
     const note = resetNote();
     noteStart.textContent = note;
     noteOver.textContent = note;
+    const f = d => (d.getUTCMonth() + 1) + "." + d.getUTCDate();      // v0.9.153 이번 주 기간 — 제목 바로 아래 (지난 명예의 전당처럼)
+    const pd = document.getElementById("weekPeriod");
+    if (pd) pd.innerHTML = "<b>이번 주 · " + f(new Date(weekStartMs(0) + KST)) + "~" + f(new Date(weekStartMs(-1) + KST - 86400000)) + "</b><i>" + note + "</i>";
     if (!SB_ON) {
       els.forEach(el => renderBoard(el, null, "전체 랭킹 준비 중입니다"));
       return;
