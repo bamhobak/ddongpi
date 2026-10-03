@@ -2388,7 +2388,7 @@
   const elTitle = document.getElementById("overTitle");
   const coinNote = document.getElementById("coinNote");
 
-  const GAME_VERSION = "v0.9.184";
+  const GAME_VERSION = "v0.9.185";
   /* 제작사 스플래시(bamhobak friends 로고) — 2026-09-20 끔. 다시 켜려면 true */
   const SPLASH_USE = false;   // 코드를 고칠 때마다 뒤 두 자리를 올린다
   document.getElementById("ver").textContent = GAME_VERSION;
@@ -3313,17 +3313,18 @@
 
   // 간식 타임에는 똥 이모지 대신 이 이미지가 떨어진다
   /* v0.9.35 간식(Codex) · v0.9.183 사람 간식으로 — 막대사탕·딸기 도넛·줄무늬 사탕이 섞여 쏟아지고, 대왕은 왕관 딸기 케이크 (파일 이름은 옛 그대로) */
-  const SNACK_IMG = [], SNACK_FILES = ["snack_bone", "snack_chew", "snack_jerky"];
-  let snackKing = null;
-  for (const f of SNACK_FILES) { const im = new Image(); im.onload = () => SNACK_IMG.push(im); im.src = "assets/" + f + ".png?3"; }   // v0.9.144 두툼한 간식(Codex)
-  { const im = new Image(); im.onload = () => { snackKing = im; }; im.src = "assets/snack_king.png?3"; }
+  /* v0.9.185 간식 종류를 잔뜩 — 옛 세 개(파일 이름은 옛 그대로) + 새 간식 12가지(assets/snacks/). 대왕 간식은 이 중 아무거나 크게(왕관 케이크 포함) */
+  const SNACK_IMG = [], SNACK_FILES = ["snack_bone", "snack_chew", "snack_jerky", "snack_king",
+    "snacks/macaron", "snacks/gummy", "snacks/cotton", "snacks/cone", "snacks/cupcake", "snacks/cherry",
+    "snacks/konpeito", "snacks/pudding", "snacks/strawberry", "snacks/mochi", "snacks/jelly", "snacks/cookie"];
+  for (const f of SNACK_FILES) { const im = new Image(); im.onload = () => SNACK_IMG.push(im); im.src = "assets/" + f + ".png?4"; }
   function snackPic(it) {
-    if (it && it.giant && snackKing) return snackKing;
     if (!SNACK_IMG.length) return null;
     if (!it) return SNACK_IMG[0];
-    if (it.snk === undefined) it.snk = Math.floor(Math.random() * 3);
+    if (it.snk === undefined) it.snk = Math.floor(Math.random() * 1e6);
     return SNACK_IMG[it.snk % SNACK_IMG.length];
   }
+
 
   /* ---------- 시작 화면 인트로 ----------
      게임 플레이가 아니라 '여정'을 보여주는 연출.
