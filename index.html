@@ -2414,7 +2414,7 @@
   const elTitle = document.getElementById("overTitle");
   const coinNote = document.getElementById("coinNote");
 
-  const GAME_VERSION = "v0.9.215";
+  const GAME_VERSION = "v0.9.216";
   /* 제작사 스플래시(bamhobak friends 로고) — 2026-09-20 끔. 다시 켜려면 true */
   const SPLASH_USE = false;   // 코드를 고칠 때마다 뒤 두 자리를 올린다
   document.getElementById("ver").textContent = GAME_VERSION;
@@ -3829,7 +3829,7 @@
     },
     levitator: {
       2: { A: "부적 — 판마다 한 번 똥 하나를 대신 막음", B: "높이 수련 — 높이 점수 상한 +20%" },
-      3: { A: "가벼운 기운 — 아이템이 15% 천천히 떨어짐", B: "가벼운 발걸음 — 이동 속도 +3%" },
+      3: { A: "가벼운 기운 — 아이템이 15% 빨리 떨어짐", B: "가벼운 발걸음 — 이동 속도 +3%" },
       4: { A: "부적 두 장 — 판마다 2장, 타면서 주변 똥도 태움 (2레벨 선택과 무관)", B: "구름 방패 — 하늘 꼭대기에 2초 머물면 우산 1개" },
       5: { A: "축지법 — 화면 좌우 끝이 이어짐", B: "상투 회오리 — 위로 치솟을 때 머리 위 똥을 날려 버림" }
     },
@@ -9019,7 +9019,7 @@
       if (lvJustOpen === j + ":" + l) { row.classList.add("pop"); lvJustOpen = ""; }
       const h = document.createElement("div"); h.className = "lvPN";            // v0.9.126 Lv 숫자 · 꼬리표 · (잠김이면) 남은 경험치
       const hb = document.createElement("b"); hb.textContent = "Lv" + l + (l === 3 ? " ⭐" : "");   // v0.9.165 별은 모든 캐릭터에 적용되는 Lv3 에 h.appendChild(hb);
-      if (cl >= l && open) { const t = document.createElement("i"); t.className = "pk"; t.textContent = "능력 선택"; h.appendChild(t); }
+      if (cl >= l && open) { const t = document.createElement("i"); t.className = "pk"; t.textContent = "Lv" + l + " 능력 선택";   /* v0.9.216 앞에 레벨 */ h.appendChild(t); }
       if (l === 3) { const t = document.createElement("small"); t.textContent = "모든 캐릭터에 적용"; h.appendChild(t); }
       row.appendChild(h);
       if (cl >= l && !open) {                    // 레벨은 됐다 — 해금 버튼
@@ -10149,7 +10149,7 @@
     // 0.945 배 — 10% 줄였다가 다시 5% 키운 값 (빗방울은 원래 조금 크다)
     const r = (asDrop ? 24 : 20) * 0.945 * ITEM_SCALE * (pick.type === "fullmoon" ? 1.07 : 1);   // v0.9.108 보름달 7% 크게
     // 낙하 속도에 변화를 주되, 너무 빠르면 못 먹고 지나가버려서 위쪽을 눌러 잡았다
-    const vy = (110 + level * 6) * (H / BASE_H) * (0.6 + Math.random() * 0.5) * (allPerk("levitator", "A") ? 0.85 : 1);   // v0.9.85 가벼운 기운
+    const vy = (110 + level * 6) * (H / BASE_H) * (0.6 + Math.random() * 0.5) * (allPerk("levitator", "A") ? 1.15 : 1);   // v0.9.85 가벼운 기운 · v0.9.216 15% 느리게 → 15% 빠르게
     items.push({
       type: asDrop ? "droplet" : pick.type, emoji: asDrop ? "💧" : pick.emoji,
       x: r + Math.random() * (W - r * 2), y: -r - 10,
