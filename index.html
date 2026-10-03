@@ -10,7 +10,7 @@
 <link rel="apple-touch-icon" href="icon-192.png">
 <title>이피저피똥피</title>
 <link rel="preload" as="image" href="assets/logo.webp">
-<link rel="preload" as="image" href="assets/bg/home_fortune.webp?4">
+<link rel="preload" as="image" href="assets/bg/home_fortune.webp?5">
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ctext x='50' y='52' font-size='84' text-anchor='middle' dominant-baseline='central'%3E%F0%9F%92%A9%3C/text%3E%3C/svg%3E">
 <style>
   /* 나눔바른고딕 — 흔히 쓰는 한글 5,362자만 남겨 받아 둔 것(둘이 합쳐 426KB).
@@ -1252,6 +1252,10 @@
   .shopItem.owned img.si { background: radial-gradient(circle, rgba(255,215,110,.45), transparent 70%); }
   /* ── v0.9.130 메인 로고 없앰 — 숨은 통계·테스트 터치 자리는 위 가운데에 투명하게 남기고, 나머지를 위로 올려 배경 아래 집이 보이게 ── */
   #startScreen #pgHome > h1 { display: none !important; }   /* 통계·테스트 모드 들어가는 곳은 옵션 탭 버튼으로 옮겼다 */
+  #pgOpt #btnReset { order: 5; } #pgOpt #btnOptBack { order: 6; }   /* 초기화는 돌아가기 바로 위 */
+  #btnReset { --bh: 44px; height: var(--bh); box-sizing: border-box; min-width: 170px; margin-top: 18px; border-style: solid; border-color: transparent; border-radius: 0; box-shadow: none; background: none;
+    border-width: 0 calc(var(--bh) / 2); border-image: url(assets/ui/btn_gray.webp) 0 60 fill / 0 calc(var(--bh) / 2) / 0 stretch;
+    padding: 0 4px calc(var(--bh) * .08); font-size: 15px; font-weight: 800; color: #3f3560; text-shadow: 0 1px 0 rgba(255,255,255,.6); }
   #optDev { display: flex; flex-wrap: wrap; gap: 10px; justify-content: center; margin-top: 18px; max-width: 330px; }
   #optDev button { --bh: 38px; height: var(--bh); box-sizing: border-box; min-width: 120px; border-style: solid; border-color: transparent; border-radius: 0; box-shadow: none; background: none;
     border-width: 0 calc(var(--bh) / 2); border-image: url(assets/ui/btn_blue.webp) 0 60 fill / 0 calc(var(--bh) / 2) / 0 stretch;
@@ -1848,7 +1852,7 @@
 
     <div id="startScreen" class="screen onHome">
       <div id="homeBgFade"></div>
-      <script>/* v0.9.128 첫 화면부터 고른 캐릭터의 배경 (기본 루나) */ try { var hj = localStorage.getItem("epjpddongpi_job") || "bangul"; if (["bangul","fit","powerj","levitator","powerp","fortune"].indexOf(hj) >= 0) document.getElementById("startScreen").style.setProperty("--hbg", "url(assets/bg/home_" + hj + ".webp?4)"); } catch (e) {}</script>
+      <script>/* v0.9.128 첫 화면부터 고른 캐릭터의 배경 (기본 루나) */ try { var hj = localStorage.getItem("epjpddongpi_job") || "bangul"; if (["bangul","fit","powerj","levitator","powerp","fortune"].indexOf(hj) >= 0) document.getElementById("startScreen").style.setProperty("--hbg", "url(assets/bg/home_" + hj + ".webp?5)"); } catch (e) {}</script>
       <div id="ver"></div>
       <button id="meBtn" aria-label="내 정보"><b id="meLv">Lv1</b><span id="meNm">-</span></button>
       <div id="coinBox" title="모은 코인">🪙 0</div>
@@ -2276,7 +2280,7 @@
   const elTitle = document.getElementById("overTitle");
   const coinNote = document.getElementById("coinNote");
 
-  const GAME_VERSION = "v0.9.164";
+  const GAME_VERSION = "v0.9.165";
   /* 제작사 스플래시(bamhobak friends 로고) — 2026-09-20 끔. 다시 켜려면 true */
   const SPLASH_USE = false;   // 코드를 고칠 때마다 뒤 두 자리를 올린다
   document.getElementById("ver").textContent = GAME_VERSION;
@@ -2305,17 +2309,17 @@
                ds: "힘들때마다 차려지는 엄마의 따뜻한 밥상 · 코인이 2배로 나온다" },
     /* 점술가 — 도박사 자리를 이어받았다. 가끔 떨어지는 수정 구슬(옛 포춘쿠키)을 먹으면 10초 동안 예언 하나가 이뤄진다.
        (옛 도박사 기록은 순위표에 도박사로 그대로 남는다 — JOB_NAMES·JOB_IMG 에만 남겨 두었다) */
-    fortune: { nm: "루나 · 점술가", ic: "🔮", needUnlock: "별 30개 먹으면 해금", ds: "10초마다 예언이 저절로 바뀐다 · 좋은 예언 넷, 나쁜 예언 하나" },
-    levitator: { nm: "도도 · 부양사", ic: "☁️", needUnlock: "한 판에 7스테이지까지 가면 해금", ds: "하늘 어디든 날 수 있다 · 높이 있을수록 점수 UP" },
-    fit: { nm: "버피 · 헬스견", ic: "💪", needUnlock: "한 판에 60초 이상 버티면 해금", ds: "목숨 5개로 시작 · 우산이 안 나온다 · 하트가 어마무시하게 잘 나온다 · 벌크업 좀 된 상태" },
-    powerj: { nm: "제이 · 계획러", ic: "📋", needUnlock: "달 15개 먹으면 해금", ds: "달이 잘 나온다 · 대신 증강은 계획대로 1개만" },
+    fortune: { nm: "루나 · 점술가", ic: "🔮", needUnlock: "별 30개 먹으면 해금", ds: "10초마다 예언이 바뀌어요 · 좋은 예언이 넷, 나쁜 예언이 하나" },
+    levitator: { nm: "도도 · 부양사", ic: "☁️", needUnlock: "한 판에 7스테이지까지 가면 해금", ds: "하늘 어디든 둥실 날 수 있어요 · 높이 날수록 점수가 올라요" },
+    fit: { nm: "버피 · 헬스견", ic: "💪", needUnlock: "한 판에 60초 이상 버티면 해금", ds: "하트 5개로 시작해요 · 우산은 안 나와요 · 하트가 아주 잘 나와요 · 근육이 빵빵해요" },
+    powerj: { nm: "제이 · 계획러", ic: "📋", needUnlock: "달 15개 먹으면 해금", ds: "달이 잘 나와요 · 대신 증강은 계획대로 1개만 받아요" },
     /* 파워P — 파워J 의 거울. 달은 남들만큼 오는데, 올 때마다 네 장을 펼쳐 놓고 고른다.
        아이디가 powerp2 인 것은, powerp 는 무소유가 예전에 파워P 였을 때 쓰던 이름이라
        이미 차 있기 때문이다 (옛 기록과 순위표가 그 이름을 쓴다). */
     powerp2: { nm: "파워P", ic: "🎯", gone: true, ds: "증강을 4개 중에서 고른다" },
     powerp: { nm: "무무 · 무소유", ic: "🙏", needUnlock: "코인 하나도 안 먹고 100초 버티면 해금",   // v0.9.62 잠긴 캐릭터
-              ds: "달이 아예 안 나온다 · 별이 조금 잘 나온다 · 안 맞을수록 점수가 치솟는다" },
-    bangul: { nm: "방울이 · 집순이", ic: "🫧", ds: "비누방울이 한 대를 대신 맞고 터진다 · 잠시 뒤 다시 맺힌다" }
+              ds: "달이 아예 안 나와요 · 별이 조금 잘 나와요 · 안 맞을수록 점수가 쑥쑥 올라요" },
+    bangul: { nm: "방울이 · 집순이", ic: "🫧", ds: "비누방울이 똥을 한 번 대신 막아 줘요 · 조금 있으면 다시 생겨요" }
   };
   // v0.8.77 고르는 화면·순위 탭 순서 (두 줄씩: 방울이 버피 / 제이 소라 / 무무 루나) — 키를 다시 넣어 순서를 바꾼다
   for (const k of ["bangul", "fit", "powerj", "levitator", "powerp", "fortune"]) { const v = JOBS[k]; delete JOBS[k]; JOBS[k] = v; }
@@ -2551,21 +2555,21 @@
      직업과 별개로 하나를 데리고 나간다. 전에는 증강(뿌잉·갤러그)이거나 직업 능력(도박사의 비둘기)
      이었던 것들 — 판 내내 따라다니며 제 몫을 한다. 펫에서 이어지는 히든 증강은 그 펫이 있을 때만 나온다. */
   const PETS = {
-    none:   { nm: "없음",   ic: "🚫", ds: "펫 없이 혼자 뛴다" },
+    none:   { nm: "없음",   ic: "🚫", ds: "펫 없이 혼자 뛰어요" },
     helper: { nm: "뿌잉", ic: "🐹", img: "assets/hamster.png",
-              ds: "때때로 날아올라 지나간 자리의 똥을 부순다" },
+              ds: "가끔 슝 날아올라 지나간 자리의 똥을 부숴요" },
     galaga: { nm: "갤러그", ic: "🚀", img: "assets/pet_galaga.png",
-              ds: "우주선이 땅에서 총알을 쏘아 올린다" },
+              ds: "우주선이 땅에서 총알을 쏘아 올려요" },
     dove:   { nm: "비둘기", ic: "🕊️", img: "assets/dove.png",
-              ds: "110m 움직일 때마다 날아올라 똥을 터뜨린다 (똥점수 5배)" },
+              ds: "많이 움직이면 날아올라 똥을 터뜨려요 (똥 점수 5배)" },
     angel:  { nm: "수호천사", ic: "👼", img: "assets/pet_angel.png",
-              ds: "쓰러지면 한 번 되살려 주고, 잠깐 다가오는 똥을 밀어낸다" },
+              ds: "쓰러지면 한 번 다시 일으켜 주고, 다가오는 똥을 밀어내요" },
     gift:   { nm: "선물 요정", ic: "🧚", img: "assets/pet_fairy.png",
-              ds: "때때로 날아가 떨어지는 똥을 펑! 하트·우산·별·달로 바꾼다" },
+              ds: "가끔 날아가서 똥을 펑! 하트·우산·별·달로 바꿔요" },
     coincat: { nm: "코인 고양이", ic: "🐈", img: "assets/pet_cat.png",
-              ds: "때때로 코인을 물어다 떨어뜨린다 · 세 번째마다 5코인" },
+              ds: "가끔 코인을 물어다 줘요 · 세 번째엔 5코인" },
     eel:    { nm: "백만볼트 뱀장어", ic: "⚡", img: "assets/pet_eel.png",
-              ds: "때때로 가까운 똥에 번개를 쏘고, 번개가 옆 똥으로 옮겨붙는다" }
+              ds: "가끔 가까운 똥에 찌릿! 번개를 쏘고, 옆 똥까지 번져요" }
   };
   // 게임 화면에 그릴 펫 그림 (카드 그림과 같은 파일)
   const PET_IMG = {};
@@ -8216,12 +8220,12 @@
   let hbgCur = getComputedStyle(document.getElementById("startScreen")).getPropertyValue("--hbg").trim();
   function homeBgSet() {
     const ss = document.getElementById("startScreen"), fd = document.getElementById("homeBgFade");
-    const u = HOME_BG.includes(job) ? "url(assets/bg/home_" + job + ".webp?4)" : "url(assets/bg/title.webp)";
+    const u = HOME_BG.includes(job) ? "url(assets/bg/home_" + job + ".webp?5)" : "url(assets/bg/title.webp)";
     if (u === hbgCur) return;
     if (hbgCur && fd) { fd.style.setProperty("--hbgPrev", hbgCur); fd.classList.remove("on"); void fd.offsetWidth; fd.classList.add("on"); }
     ss.style.setProperty("--hbg", u); hbgCur = u;
   }
-  window.addEventListener("load", () => { for (const k of HOME_BG) { const im = new Image(); im.src = "assets/bg/home_" + k + ".webp?4"; } });   // 넘길 때 깜빡이지 않게 미리 받아 둔다
+  window.addEventListener("load", () => { for (const k of HOME_BG) { const im = new Image(); im.src = "assets/bg/home_" + k + ".webp?5"; } });   // 넘길 때 깜빡이지 않게 미리 받아 둔다
   function carSet(id) {                      // 고른 캐릭터를 바꾼다(다시 그리지 않는다)
     if (id === job || !JOBS[id]) return;
     idleStop();
@@ -8243,24 +8247,32 @@
     powerp: { n: 49, sw: 340, sh: 400, l: 0, t: 0, cw: 340, ch: 400 }         // 그림 이름은 monk (JOB_IMG)
   };
   /* v0.9.156 한 번 움직인 뒤 가만히 있을 때 — 몇 초마다 눈만 깜빡 (Ludo, 시트 칸 규격은 위 idle 시트와 같다 · 한 줄 n칸) */
-  const JOB_BLINK = { bangul: 12, fit: 8, levitator: 14, powerj: 8, fortune: 6, powerp: 6 };   // 무무 그림 이름은 monk (JOB_IMG)
+  const JOB_BLINK = { bangul: 12, fit: 11, levitator: 14, powerj: 8, fortune: 10, powerp: 6 };   // 무무 그림 이름은 monk (JOB_IMG) · v0.9.165 루나·버피는 눈만 얹은 새 시트
+  /* v0.9.165 한 프레임 사라짐 고침 — 예전엔 같은 칸의 그림을 깜빡임 시트로 바꿔 끼웠다가 되돌려서, 바꿀 때마다 브라우저가 그림을 새로 풀며 한 장면이 비었다.
+     이제 깜빡임 칸(bel)을 따로 겹쳐 두고 미리 풀어(decode) 둔 뒤, 보이기/숨기기만 한다 */
   const blinkImg = {};
+  function blinkSrc(j) { const n = JOB_BLINK[j]; return n ? "assets/" + JOB_IMG[j] + "_blink_sheet.webp?v165" + n : null; }
+  function blinkPrep(j) {
+    const src = blinkSrc(j); if (!src) return null;
+    if (!blinkImg[src]) { const im = new Image(); im.src = src; blinkImg[src] = { im, ok: false }; im.decode().then(() => { blinkImg[src].ok = true; }, () => { if (im.naturalWidth) blinkImg[src].ok = true; }); }
+    return blinkImg[src];
+  }
   function blinkSched(run) {
     clearTimeout(run.blinkT);
-    const n = JOB_BLINK[run.job]; if (!n) return;
-    const src = "assets/" + JOB_IMG[run.job] + "_blink_sheet.webp?" + n;
-    if (!blinkImg[src]) { blinkImg[src] = new Image(); blinkImg[src].src = src; }
+    const n = JOB_BLINK[run.job]; if (!n || !run.bel) return;
+    const b = blinkPrep(run.job);
     run.blinkT = setTimeout(() => {
       if (idleRun !== run || !run.el || run.timer) return;
-      const im = blinkImg[src];
-      if (!im.complete || !im.naturalWidth) { blinkSched(run); return; }
-      const el = run.el, keepImg = run.mainBg, keepPos = el.style.backgroundPosition;
-      el.style.backgroundImage = "url(" + src + ")"; el.style.backgroundSize = (n * 100) + "% 100%";
+      if (!b.ok) { blinkSched(run); return; }
+      const el = run.el, bel = run.bel;
       let f = 0;
+      bel.style.backgroundPosition = "0% 0%";
       const step = () => {
         if (idleRun !== run) { clearInterval(run.blinkI); return; }
-        if (f >= n) { clearInterval(run.blinkI); run.blinkI = 0; el.style.backgroundImage = keepImg; el.style.backgroundSize = ""; el.style.backgroundPosition = keepPos; blinkSched(run); return; }
-        el.style.backgroundPosition = (f / (n - 1) * 100) + "% 0%"; f++;
+        if (f >= n) { clearInterval(run.blinkI); run.blinkI = 0; el.style.visibility = ""; bel.style.visibility = "hidden"; blinkSched(run); return; }
+        bel.style.backgroundPosition = (f / (n - 1) * 100) + "% 0%";
+        if (f === 0) { bel.style.visibility = ""; el.style.visibility = "hidden"; }
+        f++;
       };
       step(); run.blinkI = setInterval(step, 55);
     }, 2600 + Math.random() * 3200);
@@ -8271,12 +8283,15 @@
     clearTimeout(idleRun.blinkT); clearInterval(idleRun.blinkI);
     clearInterval(idleRun.timer);
     if (idleRun.el) idleRun.el.remove();
+    if (idleRun.bel) idleRun.bel.remove();
     idleRun.pic.style.visibility = "";
     idleRun = null;
   }
   function idleRestart(run, d) {             // 처음 장부터 다시 돌린다 — 끝나면 마지막 장(= 첫 장)에 그대로 멈춰 있고, 카드 그림으로 돌아가지 않는다
     clearInterval(run.timer); clearTimeout(run.blinkT);
-    if (run.el) { clearInterval(run.blinkI); run.blinkI = 0; run.el.style.backgroundSize = ""; if (run.mainBg) run.el.style.backgroundImage = run.mainBg; }
+    clearInterval(run.blinkI); run.blinkI = 0;
+    if (run.el) run.el.style.visibility = "";
+    if (run.bel) run.bel.style.visibility = "hidden";
     let f = 0;
     const step = () => {
       if (f >= d.n) { clearInterval(run.timer); run.timer = 0; blinkSched(run); return; }   // v0.9.156 다 움직이면 가끔 눈 깜빡
@@ -8294,7 +8309,8 @@
     idleStop();
     const run = idleRun = { pic: pic, el: null, timer: 0, job: job, blinkT: 0, blinkI: 0 };
     const sheet = new Image();
-    sheet.onload = () => {
+    blinkPrep(job);
+    sheet.onload = () => sheet.decode().catch(() => {}).then(() => {   // v0.9.165 다 풀린 뒤에 카드 그림과 바꿔 낀다 (빈 장면 없이)
       if (idleRun !== run || !pic.offsetHeight) return;
       /* v0.9.69 자리는 소수점까지 — offsetLeft 같은 정수 값으로 재면 끝나고 카드 그림으로 돌아올 때 1px 튀었다 */
       const cr = card.getBoundingClientRect(), pr = pic.getBoundingClientRect(), z = (cr.width / card.offsetWidth) || 1;
@@ -8306,9 +8322,14 @@
       el.style.width = (d.cw * k) + "px"; el.style.height = (d.ch * k) + "px";
       el.style.backgroundImage = run.mainBg = "url(" + sheet.src + ")";
       card.appendChild(el); run.el = el;
+      const bsrc = blinkSrc(job);
+      if (bsrc) {                                // 깜빡임 칸 — 같은 자리·크기, 평소엔 숨김
+        const bel = el.cloneNode(); bel.style.backgroundImage = "url(" + bsrc + ")"; bel.style.backgroundSize = (JOB_BLINK[job] * 100) + "% 100%";
+        bel.style.visibility = "hidden"; card.appendChild(bel); run.bel = bel;
+      }
       pic.style.visibility = "hidden";
       idleRestart(run, d);
-    };
+    });
     sheet.src = "assets/" + JOB_IMG[job] + "_idle_sheet.webp";
   }
   function carDraw() {                       // 둥근 고리 위에 늘어놓는다 — carPos 번째가 앞 가운데
@@ -8659,6 +8680,14 @@
   document.getElementById("pgOpt").appendChild(document.getElementById("optRow"));
   {                                            // v0.9.130 개발자 통계 · 테스트 모드 — 메인 로고 속 숨은 버튼에서 옵션 탭으로
     const d = document.createElement("div"); d.id = "optDev";
+    {                                          // v0.9.165 초기화 — 비밀번호 없이, 처음 접속한 상태로
+      const r = document.createElement("button"); r.id = "btnReset"; r.textContent = "🔄 초기화";
+      r.addEventListener("click", () => { beep(700, .04, "triangle", .04); askYesNo("정말 초기화 하겠습니까?", () => {
+        try { for (const k of t2Keys()) localStorage.removeItem(k); localStorage.removeItem(LS_T2BAK); } catch (e) {}
+        location.reload();
+      }); });
+      document.getElementById("pgOpt").appendChild(r);
+    }
     for (const [t, id] of [["📊 개발자 통계", "devDot"], ["🧪 테스트 모드", "testDot"], ["🛠 테스트 모드2", "test2"]]) {
       const b = document.createElement("button"); b.textContent = t;
       b.addEventListener("click", () => { beep(800, .04, "triangle", .04); if (id === "test2") openPwScreen("test2"); else document.getElementById(id).click(); });
@@ -8838,7 +8867,7 @@
       const row = document.createElement("div"); row.className = "lvPick" + (cl >= l ? (open ? "" : " ready") : " lock");
       if (lvJustOpen === j + ":" + l) { row.classList.add("pop"); lvJustOpen = ""; }
       const h = document.createElement("div"); h.className = "lvPN";            // v0.9.126 Lv 숫자 · 꼬리표 · (잠김이면) 남은 경험치
-      const hb = document.createElement("b"); hb.textContent = "Lv" + l + (l === 5 ? " ⭐" : ""); h.appendChild(hb);
+      const hb = document.createElement("b"); hb.textContent = "Lv" + l + (l === 3 ? " ⭐" : "");   // v0.9.165 별은 모든 캐릭터에 적용되는 Lv3 에 h.appendChild(hb);
       if (cl >= l && open) { const t = document.createElement("i"); t.className = "pk"; t.textContent = "능력 선택"; h.appendChild(t); }
       if (l === 3) { const t = document.createElement("small"); t.textContent = "모든 캐릭터에 적용"; h.appendChild(t); }
       row.appendChild(h);
@@ -14401,7 +14430,7 @@
   function lastWkLabel(n) {
     const a = new Date(weekStartMs(n) + KST), b = new Date(weekStartMs(n - 1) + KST - 86400000);
     const f = d => (d.getUTCMonth() + 1) + "." + d.getUTCDate();
-    return (n === 1 ? "지난주" : n + "주 전") + " · " + f(a) + "~" + f(b);
+    return f(a) + "~" + f(b);   // v0.9.165 '지난주·n주 전' 글자는 뺐다
   }
   async function lastProbe(n, jb) {              // 한 주 더 옛날 기록을 미리 받아 둔다 (왼쪽 화살표를 켤지 정하려고)
     if (n > LAST_MAX) return;
@@ -14700,7 +14729,7 @@
     noteOver.textContent = note;
     const f = d => (d.getUTCMonth() + 1) + "." + d.getUTCDate();      // v0.9.153 이번 주 기간 — 제목 바로 아래 (지난 명예의 전당처럼)
     const pd = document.getElementById("weekPeriod");
-    if (pd) pd.innerHTML = "<b>이번 주 · " + f(new Date(weekStartMs(0) + KST)) + "~" + f(new Date(weekStartMs(-1) + KST - 86400000)) + "</b><i>" + note + "</i>";
+    if (pd) pd.innerHTML = "<b>" + f(new Date(weekStartMs(0) + KST)) + "~" + f(new Date(weekStartMs(-1) + KST - 86400000)) + "</b><i>" + note + "</i>";
     if (!SB_ON) {
       els.forEach(el => renderBoard(el, null, "전체 랭킹 준비 중입니다"));
       return;
