@@ -2358,7 +2358,7 @@
   const elTitle = document.getElementById("overTitle");
   const coinNote = document.getElementById("coinNote");
 
-  const GAME_VERSION = "v0.9.171";
+  const GAME_VERSION = "v0.9.172";
   /* 제작사 스플래시(bamhobak friends 로고) — 2026-09-20 끔. 다시 켜려면 true */
   const SPLASH_USE = false;   // 코드를 고칠 때마다 뒤 두 자리를 올린다
   document.getElementById("ver").textContent = GAME_VERSION;
@@ -2768,9 +2768,9 @@
      왼쪽을 볼 때는 그림을 뒤집으므로 가로 치우침도 함께 뒤집는다. */
   /* v0.9.171 방울 그림 시트 — 7x7 칸(256px), 3초에 한 바퀴 */
   let bubbleSheet = null;
-  { const im = new Image(); im.onload = () => { bubbleSheet = im; }; im.src = "assets/bubble_sheet.webp?1"; }
+  { const im = new Image(); im.onload = () => { bubbleSheet = im; }; im.src = "assets/bubble_sheet.webp?2"; }
   function drawBubbleImg(x, y, r, now, alpha) {
-    const f = Math.floor((now / 3000 % 1) * 49), C = 256, d = r * 2 * 256 / 236;
+    const f = Math.floor((now / 3000 % 1) * 49), C = 256, d = r * 2 * 256 / 240;
     ctx.save(); ctx.globalAlpha *= alpha;
     ctx.drawImage(bubbleSheet, (f % 7) * C, Math.floor(f / 7) * C, C, C, x - d / 2, y - d / 2, d, d);
     ctx.restore();
@@ -16678,8 +16678,11 @@
         const br = hasB ? sh * spr.brr : player.r * hitMul() + 20;
         const bcx2 = hasB ? sw * (spr.bcx - spr.cx) * (flip ? -1 : 1) : 0;
         const bcy2 = hasB ? (FOOT - sh + sh * spr.bcy) : player.hy;
-        drawBubbleImg(bcx2, bcy2, br * 1.06, now, 0.92);
-        if (bubLayers > 1) drawBubbleImg(bcx2, bcy2, br * 1.06 + 9, now + 1500, 0.55);   // 두 겹 — 바깥에 한 겹 더
+        /* v0.9.172 방울이 그림이 통째로 들어가는 크기 — 그림 크기(sw·sh, 커지면 같이 커진다)에서 정한다. 가운데는 그림 한가운데 */
+        const cx3 = sw * (0.5 - spr.cx) * (flip ? -1 : 1), cy3 = FOOT - sh * 0.5;
+        const rr = Math.max(br * 1.06, Math.hypot(sw, sh) * 0.46);
+        drawBubbleImg(cx3, cy3, rr, now, 0.92);
+        if (bubLayers > 1) drawBubbleImg(cx3, cy3, rr + 9, now + 1500, 0.55);   // 두 겹 — 바깥에 한 겹 더
       } else if (bubbleOn) {                       // 비누방울 보호막 — 몸에 딱 맞춘다
         const hasB = spr.brr !== undefined;
         const br = hasB ? sh * spr.brr : player.r * hitMul() + 20;
