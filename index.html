@@ -2290,7 +2290,7 @@
        밀어 숨길 뿐 남겨 두어 textContent 가 그대로다(글자를 읽는 코드가 안 깨진다). 나중에 붙는 글자는 MutationObserver 가 잡는다.
      · 캔버스 글자: fillText/strokeText 를 감싸 이모지 자리에 그림을 그린다 — 자리 폭은 원래 이모지 폭 그대로라 배치가 안 바뀐다.
      그림이 아직 안 왔거나 목록에 없는 이모지는 원래 이모지로 나온다. */
-  /*ICONS-BEGIN*/ const ICON_KEYS = ["🪙", "⭐", "🌙", "🌕", "☂", "❤", "💧", "🧻", "🔮", "💩", "🚀", "🕊", "👼", "🧚", "🐈", "🦴", "🍗", "⏸", "🏆", "👑", "✏", "🎵", "🔔", "🎉", "🥊", "🗼", "🔄", "🏠", "🔒", "🔓", "🔁", "🥇", "🥈", "🥉", "✨", "⚠", "⏱", "🏃", "🎈", "💪", "📋", "🎯", "🙏", "🫧", "🧘", "🚫", "🦸", "⚡", "🔥", "🐢", "🐦", "📯", "💥", "😋", "💉", "☔", "🌠", "🕳", "🌝", "🧲", "💨", "🍀", "🌧", "💢", "🌈", "📱", "🥕", "🦄", "🕰", "🎲", "👻", "👊", "👯", "🍷", "☝", "🍚", "🌀", "🐕", "🎰", "🪜", "🎼", "✂", "🌱", "⛰", "☁", "🌤", "🧊", "❄", "🛰", "🌍", "☄", "🌌", "🌑", "🌒", "⚫", "🍌", "😵", "🤢", "😜", "😭", "👍", "⚔", "🪐", "🌬", "🌫", "🏋", "🔩", "🧑‍🚀"]; const ICON_COLS = 10, ICON_ROWS = 11, ICON_CELL = 96; /*ICONS-END*/
+  /*ICONS-BEGIN*/ const ICON_KEYS = ["🐍", "🪙", "⭐", "🌙", "🌕", "☂", "❤", "💧", "🧻", "🔮", "💩", "🚀", "🕊", "👼", "🧚", "🐈", "🦴", "🍗", "⏸", "🏆", "👑", "✏", "🎵", "🔔", "🎉", "🥊", "🗼", "🔄", "🏠", "🔒", "🔓", "🔁", "🥇", "🥈", "🥉", "✨", "⚠", "⏱", "🏃", "🎈", "💪", "📋", "🎯", "🙏", "🫧", "🧘", "🚫", "🦸", "⚡", "🔥", "🐢", "🐦", "📯", "💥", "😋", "💉", "☔", "🌠", "🕳", "🌝", "🧲", "💨", "🍀", "🌧", "💢", "🌈", "📱", "🥕", "🦄", "🕰", "🎲", "👻", "👊", "👯", "🍷", "☝", "🍚", "🌀", "🐕", "🎰", "🪜", "🎼", "✂", "🌱", "⛰", "☁", "🌤", "🧊", "❄", "🛰", "🌍", "☄", "🌌", "🌑", "🌒", "⚫", "🍌", "😵", "🤢", "😜", "😭", "👍", "⚔", "🪐", "🌬", "🌫", "🏋", "🔩", "🍪", "🤏", "🟤", "🪺", "🦢", "📦", "🌂", "💞", "⏩", "🫙", "🪀", "🧑‍🚀"]; const ICON_COLS = 10, ICON_ROWS = 12, ICON_CELL = 96; /*ICONS-END*/
   const ICON_IDX = new Map(ICON_KEYS.map((k, i) => [k, i]));
   const ICON_RE = ICON_KEYS.length ? new RegExp("(" + ICON_KEYS.slice().sort((a, b) => b.length - a.length)
     .map(k => k.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")).join("|") + ")\\uFE0F?", "gu") : null;
@@ -2410,7 +2410,7 @@
   const elTitle = document.getElementById("overTitle");
   const coinNote = document.getElementById("coinNote");
 
-  const GAME_VERSION = "v0.9.208";
+  const GAME_VERSION = "v0.9.209";
   /* 제작사 스플래시(bamhobak friends 로고) — 2026-09-20 끔. 다시 켜려면 true */
   const SPLASH_USE = false;   // 코드를 고칠 때마다 뒤 두 자리를 올린다
   document.getElementById("ver").textContent = GAME_VERSION;
@@ -4405,15 +4405,15 @@
       go: () => { aug.starMul += 0.25 * dim("star50"); } },
     { id: "time2x",     ic: "⏱️", nm: "오래오래 버티기",   ds: "오래 버틸수록 점수가 더 빨리 쌓여요",
       go: () => { aug.timeMul *= 1 + 0.5 * dim("time2x"); } },
-    { id: "fever50",    ic: "🌙", nm: "간식 냠냠 대박", ds: "간식 타임에 먹는 간식 점수가 올라요",
+    { id: "fever50",    ic: "🍪", nm: "간식 냠냠 대박", ds: "간식 타임에 먹는 간식 점수가 올라요",
       go: () => { aug.feverScoreMul += 0.20; } },   // 먹을 때마다 +20%, 감쇠 없음
     { id: "slow",       ic: "🐢", nm: "느릿느릿 하늘",   ds: "똥이 느릿느릿 떨어져요",
       go: () => { aug.fallMul *= 1 - 0.12 * dim("slow"); } },
-    { id: "small",      ic: "🎯", nm: "쏙 작아지기", ds: "몸이 작아져서 똥을 피하기 쉬워요",
+    { id: "small",      ic: "🤏", nm: "쏙 작아지기", ds: "몸이 작아져서 똥을 피하기 쉬워요",
       cond: () => job !== "fit",   // 헬스걸은 벌크업이 정체성 — 마운자로를 맞지 않는다
       nmFn: () => "쏙 작아지기 " + ((augCount["small"] || 0) + 1) + "단계",
       go: () => { aug.hitboxMul *= 1 - 0.12 * dim("small"); } },
-    { id: "tinypoop",   ic: "🫧", nm: "꼬마 똥",   ds: "떨어지는 똥이 작아져요",
+    { id: "tinypoop",   ic: "🟤", nm: "꼬마 똥",   ds: "떨어지는 똥이 작아져요",
       go: () => { aug.poopMul *= 1 - 0.12 * dim("tinypoop"); } },
     { id: "umbrella3",  ic: "☂️", nm: "우산 세 개", ds: "우산을 3개 받아요. 우산이 똥을 막아 줘요",
       max: 99,                    // 조건이 막아주므로 보유 상한은 사실상 없음
@@ -4444,10 +4444,10 @@
       go: () => { petOn.gift = true; giftT = GIFT_EVERY * 0.5; } },
     { id: "pet:coincat", ic: "🐈", nm: "펫 야옹이", ds: "가끔 코인을 물어다 줘요", once: true, w: 0.7, cond: () => hasPet("coincat"),
       go: () => { petOn.coincat = true; catT = CAT_EVERY * 0.5; } },
-    { id: "pet:eel",     ic: "⚡", nm: "펫 찌릿 장어", ds: "가끔 가까운 똥에 찌릿! 번개를 쏘고, 옆 똥까지 번져요", once: true, w: 0.7, cond: () => hasPet("eel"),
+    { id: "pet:eel",     ic: "🐍", nm: "펫 찌릿 장어", ds: "가끔 가까운 똥에 찌릿! 번개를 쏘고, 옆 똥까지 번져요", once: true, w: 0.7, cond: () => hasPet("eel"),
       go: () => { petOn.eel = true; eelT = EEL_EVERY * 0.5; } },
     /* ── 펫 전용 증강 — 그 펫을 데리고 있을 때만 후보에 나온다 ── */
-    { id: "doveHome",   ic: "📯", nm: "둘기 집", ds: "둘기가 더 자주 날아와요",
+    { id: "doveHome",   ic: "🪺", nm: "둘기 집", ds: "둘기가 더 자주 날아와요",
       max: 3, cond: () => petOn.dove,
       go: () => { aug.doveFreq *= 1 - 0.2 * dim("doveHome"); } },   // 80m → 64m → 53m …
     { id: "hungry",     ic: "😋", nm: "먹보 뿌잉", ds: "뿌잉이 아이템을 대신 먹어 줘요",
@@ -4456,11 +4456,11 @@
     { id: "roid",       ic: "💪", nm: "근육 빵빵", ds: "6초 동안 몸이 2배로 커지고, 닿는 똥을 모두 튕겨 내요",   // v0.9.40 옛 이름 '스테로이드 과다 복용' 
       max: 99, noCount: true, cond: () => job === "fit" && level >= 7,   // 헬스걸 전용 — 우산 세 개 자리
       go: () => { roidT = 6; } },   // v0.9.31 7 → 6초
-    { id: "doveWhat",   ic: "🕊️", nm: "왕 둘기", ds: "둘기가 더 크고 빨라지고, 더 자주 날아와요",
+    { id: "doveWhat",   ic: "🦢", nm: "왕 둘기", ds: "둘기가 더 크고 빨라지고, 더 자주 날아와요",
       hidden: true, once: true,
       cond: () => petOn.dove && Math.max(0, (augCount["pet:dove"] || 0) - 1) + (augCount["doveHome"] || 0) >= 2,   // 비둘기 강화 2개 이상 (펫 둘기 2단계부터 + 비둘기 집)
       go: () => { aug.doveWhat = true; } },
-    { id: "steelUmb",   ic: "☔", nm: "우산 택배", ds: "우산이 없으면 저절로 배달돼요",
+    { id: "steelUmb",   ic: "📦", nm: "우산 택배", ds: "우산이 없으면 저절로 배달돼요",
       hidden: true, once: true,
       cond: () => augCount["umbrella3"] > 0 && job !== "fit",   // 헬스걸은 하트 자동재생이 돼버려 제외
       go: () => { aug.steelUmb = true; shieldTimer = UMB_SEC; } },
@@ -4487,16 +4487,16 @@
       once: true, go: () => { aug.giant = 1; } },
     { id: "downpour",   ic: "🌧️", nm: "간식 비", ds: "간식이 비처럼 더 많이 쏟아져요",
       go: () => { aug.feverRateMul = 1 / (1 / aug.feverRateMul + 0.20); } },   // 먹을 때마다 양 +20%, 감쇠 없음
-    { id: "angryUmb",   ic: "💢", nm: "화난 우산",   ds: "우산이 깨질 때 펑! 터져서 주변 똥을 멀리 날려요",
+    { id: "angryUmb",   ic: "🌂", nm: "화난 우산",   ds: "우산이 깨질 때 펑! 터져서 주변 똥을 멀리 날려요",
       hidden: true, once: true,
       cond: () => job !== "fit" && shields >= 5,   // 헬스걸은 방패가 없어 의미가 없다
       go: () => { aug.angryUmb = true; } },
     { id: "gold",       ic: "🌈", nm: "무지개 똥", ds: "똥이 가끔 무지개 똥으로 바뀌어요. 먹으면 점수!",
       // 1개째는 8%, 그 뒤로는 7%p 씩 (감쇠 없음) — 쌓을수록 값을 한다
       go: () => { aug.goldChance += augCount["gold"] ? 0.07 : 0.08; } },
-    { id: "dopa",       ic: "📱", nm: "빨리빨리",  ds: "똥이 빨라지는 대신, 버티는 점수가 많이 올라요",
+    { id: "dopa",       ic: "⏩", nm: "빨리빨리",  ds: "똥이 빨라지는 대신, 버티는 점수가 많이 올라요",
       go: () => { aug.fallMul *= 1 + 0.10 * dim("dopa"); aug.timeMul *= 1 + 0.5 * dim("dopa"); } },
-    { id: "carrot",     ic: "🥕", nm: "하트 바꾸기", ds: "하트 1개를 주고, 앞으로 받는 점수가 20% 늘어나요",
+    { id: "carrot",     ic: "💞", nm: "하트 바꾸기", ds: "하트 1개를 주고, 앞으로 받는 점수가 20% 늘어나요",
       // 목숨을 파는 증강이라, 목숨 대신 오염도로 버티는 방울이에게는 나오지 않는다
       max: 5, cond: () => !dirtJob() && lives >= 2,
       go: () => { lives = Math.max(1, lives - 1); aug.scoreMul *= 1.2; } },
@@ -4530,7 +4530,7 @@
       cond: () => level >= 7 && (dirtJob() ? dirt >= DIRT_HIT * 2 : lives <= 2),
       go: () => { aug.clone = true; cloneTimer = 1.5; } },
     /* ── v0.8.49 새 증강 셋 ── */
-    { id: "glass",      ic: "🍷", nm: "아슬아슬", ds: "점수가 25% 올라요. 대신 몸이 조금 커져요",
+    { id: "glass",      ic: "🫙", nm: "아슬아슬", ds: "점수가 25% 올라요. 대신 몸이 조금 커져요",
       max: 3, go: () => { aug.scoreMul *= 1.25; aug.hitboxMul *= 1.15; } },
     /* (☝️ 외줄 타기는 v0.8.58 에 뺐다 — 방어 증강까지 두 배가 되어 우산·잔상·작은 몸으로 사실상 안 죽었다) */
     /* ── v0.9.61 새 증강 ── */
@@ -4539,9 +4539,9 @@
       go: () => { aug.pierce = true; } },
     { id: "fly",        ic: "🪰", nm: "똥파리", ds: "맞을 때마다 똥파리가 나와서 5초 동안 똥을 부숴요",
       once: true, go: () => { aug.fly = true; } },
-    { id: "stone",      ic: "🗿", nm: "얼음 땡", ds: "2초 가만히 있으면 돌이 돼서 안 맞아요(최대 5초) · 그동안 점수랑 아이템은 없어요",
+    { id: "stone",      ic: "🧊", nm: "얼음 땡", ds: "2초 가만히 있으면 돌이 돼서 안 맞아요(최대 5초) · 그동안 점수랑 아이템은 없어요",
       once: true, go: () => { aug.stone = true; stoneT = 0; } },
-    { id: "gacha",      ic: "🎰", nm: "뽑기", ds: "증강이 물음표로 나와요 · 그중 절반은 비밀 증강",
+    { id: "gacha",      ic: "🪀", nm: "뽑기", ds: "증강이 물음표로 나와요 · 그중 절반은 비밀 증강",
       once: true, go: () => { aug.gacha = true; } },
     { id: "snackBig",   ic: "🍩", nm: "배불뚝이", ds: "간식 타임에 몸이 커져서 간식을 더 많이 받아먹어요",
       hidden: true, once: true,
@@ -4551,7 +4551,7 @@
       hidden: true, once: true,
       cond: () => !dirtJob() && lives >= 3 && level <= 7,   // 하트 3개 이상 + 레벨 7 이하 (방울이는 하트가 없어 제외)
       go: () => { aug.toilet = true; } },
-    { id: "twoRand",    ic: "🌀", nm: "아무거나 두 개", ds: "증강 두 개를 아무거나 받아요",
+    { id: "twoRand",    ic: "🎲", nm: "아무거나 두 개", ds: "증강 두 개를 아무거나 받아요",
       go: () => {
         const got = [];
         for (let k = 0; k < 2; k++) {

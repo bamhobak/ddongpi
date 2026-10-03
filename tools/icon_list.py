@@ -106,10 +106,22 @@ NEW = [
     ("🌫", "rule_fog", "a thick lavender-grey fog cloud"),
     ("🏋", "rule_heavy", "a chubby pink dumbbell"),
     ("🔩", "pierce", "a glowing golden-yellow bullet-shaped laser bolt with a speed trail flying straight THROUGH a small chubby brown soft-serve poop blob (no face), bursting out the other side with a little star-shaped pop, diagonal from lower-left to upper-right"),   # v0.9.207 뚫는 총알
+    # v0.9.209 증강 이름과 안 맞던 아이콘 바꾸기
+    ("🍪", "aug_snackjackpot", "a big chocolate-chip cookie and a wrapped candy with a burst of golden sparkles and two tiny gold coins popping out (snack jackpot)"),
+    ("🤏", "aug_shrink", "four chubby curved arrows pointing inward toward a tiny glowing round ball in the center (shrink symbol), mint green and white"),
+    ("🟤", "aug_tinypoop", "a tiny cute baby poop (brown soft-serve swirl with two little dot eyes and pink blush) sitting in front of a faint dashed outline of a much bigger poop shape"),
+    ("🪺", "aug_dovehome", "a cute wooden birdhouse on a short pole with a red roof and a round entrance hole, a small white dove peeking its head out of the hole"),
+    ("🦢", "aug_kingdove", "a chubby white dove with wings spread wide wearing a small shiny golden crown on its head"),
+    ("📦", "aug_umbdelivery", "an open cardboard delivery box with a closed blue umbrella sticking out of it, little speed lines behind the box (umbrella delivery)"),
+    ("🌂", "aug_angryumb", "an open red umbrella whose canopy has angry slanted eyebrows and angry eyes, with a bursting POW-shaped spark around it (no letters)"),
+    ("💞", "aug_hearttrade", "a red heart on the left, a chubby curved arrow in the middle, and a shiny gold star on the right (trading a heart for points)"),
+    ("⏩", "aug_fast", "a chubby orange fast-forward double triangle arrow with white speed lines behind it"),
+    ("🫙", "aug_fragile", "a glossy see-through glass heart with a small crack, tilted and teetering, with tiny wobble lines (fragile, risky)"),
+    ("🪀", "aug_gacha", "a cute capsule toy gacha machine: a round glass dome full of colorful capsules on a red base with a big turn knob"),
     ("🧑‍🚀", "astronaut", "a white astronaut helmet with a big glossy blue visor (helmet only, nobody inside)"),
 ]
 
-REUSE = {"🪙": "item_coin", "⭐": "item_star", "🌙": "item_crescent_moon", "🌕": "item_full_moon",
+REUSE = {"🐍": "pet_eel", "🪙": "item_coin", "⭐": "item_star", "🌙": "item_crescent_moon", "🌕": "item_full_moon",
          "☂": "item_umbrella", "❤": "item_red_heart", "💧": "item_droplet", "🧻": "item_roll_of_paper",
          "🔮": "item_crystal_ball", "💩": "item_poop", "🚀": "pet_galaga", "🕊": "dove",
          "👼": "pet_angel", "🧚": "pet_fairy", "🐈": "pet_cat",
