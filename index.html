@@ -2410,7 +2410,7 @@
   const elTitle = document.getElementById("overTitle");
   const coinNote = document.getElementById("coinNote");
 
-  const GAME_VERSION = "v0.9.204";
+  const GAME_VERSION = "v0.9.205";
   /* 제작사 스플래시(bamhobak friends 로고) — 2026-09-20 끔. 다시 켜려면 true */
   const SPLASH_USE = false;   // 코드를 고칠 때마다 뒤 두 자리를 올린다
   document.getElementById("ver").textContent = GAME_VERSION;
@@ -10344,7 +10344,7 @@
     noHitSec += dt;                          // 안 맞고 버틴 시간 (피격 시 절반 감소)
     /* 레벨 시계는 간식 타임 동안 멈춘다. 무적으로 낙하물을 줍는 시간까지
        레벨에 포함되면, 정작 실력으로 버틴 시간이 아닌데도 난이도가 올라간다. */
-    if (!fever && !stoneOn) levelTime += dt;   // 얼음 땡 — 돌인 동안은 레벨 시계도 멈춘다 (점수 없이 레벨만 올려 두지 못하게)
+    if (!fever) levelTime += dt;   // v0.9.205 얼음 땡(돌)인 동안에도 스테이지는 흐른다 (예전엔 멈췄다)
     /* 스테이지는 자리가 고정이다 — 한 판 내내 같은 하늘에서 이어진다.
        판마다 다른 자리라 스테이지가 올라갈수록 풍경도 올라간다. */
     level = 1 + Math.floor(levelTime / lvSec());
@@ -15468,7 +15468,7 @@
     glass: "모든 점수 ×1.25, 몸(판정) ×1.15 (최대 3번)",
     pierce: "우주선 총알이 똥 하나를 뚫고 계속 날아감",
     fly: "맞을 때마다 똥파리 1마리, 5초 동안 400px/s 로 가까운 똥을 쫓아 반경 18px 부숨",
-    stone: "2초 가만히 있으면 돌(무적, 최대 5초) · 풀린 뒤 1초는 다시 안 굳음 · 돌인 동안 점수·아이템·레벨 시계 멈춤",
+    stone: "2초 가만히 있으면 돌(무적, 최대 5초) · 풀린 뒤 1초는 다시 안 굳음 · 돌인 동안 점수·아이템 없음 (스테이지는 흐름)",
     gacha: "이후 증강 카드가 물음표로 · 칸마다 50% 확률로 히든 증강에서 뽑음",
     snackBig: "간식 타임 동안 몸(판정) 1.5배 · 간식 증강(간식 시간 더!·간식 냠냠 대박·간식 비·대왕 간식·군단) 4개 이상",
     toilet: "달마다 증강 선택 2배(보름달 6번) · 하트로 맞으면 50% 확률로 즉사 · 하트 3개 이상 · 레벨 7 이하",
