@@ -1779,6 +1779,23 @@
     background: rgba(8,10,34,.6); box-shadow: inset 0 0 0 1px rgba(255,216,107,.45); }
   #pgRank .board.withTabs > .note { display: none !important; }
   #weekPeriod:empty { display: none; }
+
+  /* ── v0.9.166 나의 순위 ── */
+  #pgRank #myBoard { border-width: 22px 14px 14px !important; border-image: url(assets/ui/panel_navy.webp) 66 fill / 30px / 0 stretch !important; margin-top: 30px; }
+  #pgRank #myBoard > h3 { height: 38px; line-height: 30px; font-size: 13.5px; font-weight: 900; border-width: 0 38px; border-image-width: 0 38px; margin-top: -42px; }
+  #myRank { display: flex; flex-direction: column; gap: 5px; padding: 0 4px; }
+  #myRank .mrHead, #myRank .mrRow { display: grid; grid-template-columns: 1.15fr 1fr 1fr; align-items: center; gap: 6px; }
+  #myRank .mrHead { font-size: 12px; font-weight: 800; color: #a9b1e4; text-align: center; padding: 0 6px; }
+  #myRank .mrRow { min-height: 42px; padding: 3px 8px; border-radius: 10px; border: 1px solid rgba(150,170,255,.28);
+    background: linear-gradient(180deg, rgba(120,140,255,.16), rgba(120,140,255,.05)); }
+  #myRank .mrRow.all { border-color: rgba(255,216,107,.7); background: linear-gradient(90deg, rgba(255,200,60,.22), rgba(255,200,60,.05)); }
+  #myRank .mrJob { display: flex; align-items: center; gap: 5px; font-size: 13.5px; font-weight: 900; color: #fff; min-width: 0; }
+  #myRank .mrJob img { width: 30px; height: 30px; object-fit: contain; flex-shrink: 0; }
+  #myRank .mrCell { display: flex; flex-direction: column; align-items: center; line-height: 1.2; }
+  #myRank .mrCell b { font-size: 16px; font-weight: 900; color: #ffd86b; }
+  #myRank .mrCell small { font-size: 10.5px; font-weight: 700; color: #c2c8f0; font-variant-numeric: tabular-nums; }
+  #myRank .mrCell.no b { font-size: 12.5px; color: #7d86bd; }
+  #myRank .mrNone { font-size: 13px; color: #a9b1e4; text-align: center; padding: 10px 0; }
   /* v0.9.148 지난 명예의 전당 — 주 넘기기 줄 */
   #lastJobs { display: flex; gap: 4px; justify-content: center; margin: 0 0 6px; }
   #lastJobs button { height: 30px; min-width: 30px; padding: 0 6px; border-radius: 8px; border: 1.5px solid rgba(130,155,255,.45); box-shadow: none;
@@ -1880,6 +1897,10 @@
         <div id="lastNav"><button class="lnBtn l" aria-label="더 지난주">‹</button><span id="lastWk">지난주</span><button class="lnBtn r" aria-label="최근 주">›</button></div>
         <div id="lastJobs"></div>
         <div id="boardLast" class="lastRow"><span class="lpNone">불러오는 중…</span></div>
+      </div>
+      <div class="board" id="myBoard">
+        <h3>🐾 나의 순위</h3>
+        <div id="myRank"><div class="mrNone">불러오는 중…</div></div>
       </div>
       <div class="board vsb" data-k="wins">
         <h3>⚔️ 대전 랭킹</h3>
@@ -2280,7 +2301,7 @@
   const elTitle = document.getElementById("overTitle");
   const coinNote = document.getElementById("coinNote");
 
-  const GAME_VERSION = "v0.9.165";
+  const GAME_VERSION = "v0.9.166";
   /* 제작사 스플래시(bamhobak friends 로고) — 2026-09-20 끔. 다시 켜려면 true */
   const SPLASH_USE = false;   // 코드를 고칠 때마다 뒤 두 자리를 올린다
   document.getElementById("ver").textContent = GAME_VERSION;
@@ -8642,6 +8663,7 @@
     if (pg === "shop") renderShop();
     if (pg === "grow") renderGrow();
     if (pg === "home") syncHyper();
+    if (pg === "rank") refreshMyRank();          // v0.9.166 나의 순위
     if (pg === "opt" && !document.getElementById("btnOptBack")) {       // 옵션 — 탭이 아니라 톱니로 여니 돌아가는 버튼을 둔다
       const b = document.createElement("button"); b.id = "btnOptBack"; b.textContent = "돌아가기";
       b.addEventListener("click", () => { beep(700, .04, "triangle", .04); setPage("home"); });
@@ -14224,6 +14246,7 @@
     if (vsOn()) return vsOver();
     if (partyOn()) return partyOver();
     firstRunDone();                          // v0.9.158 첫 판을 마쳤다 — 다른 버튼도 풀린다
+    myRankAt = 0;                            // v0.9.166 다음에 랭킹 탭을 열면 내 순위를 새로
     state = STATE.OVER;
     dying = 0; hitStop = 0;
     btnPause.classList.remove("on");
@@ -14459,6 +14482,56 @@
   }
   document.querySelector("#lastNav .lnBtn.l").addEventListener("click", () => { if (lastAgo < LAST_MAX) { lastAgo++; beep(760, .04, "triangle", .04); refreshLastWeek(); } });
   document.querySelector("#lastNav .lnBtn.r").addEventListener("click", () => { if (lastAgo > 1) { lastAgo--; beep(760, .04, "triangle", .04); refreshLastWeek(); } });
+
+  /* v0.9.166 나의 순위 — 이 기기의 기록 중 캐릭터별 최고(이번 주 · 역대)를, 기기마다 한 줄인 TOP 1000 에 견줘 몇 위인지.
+     1000위 밖이면 '1000위 밖', 기록이 없으면 '-'. 랭킹 탭을 열 때 한 번 받고, 판이 끝나면 다시 받는다 */
+  let myRankAt = 0;
+  async function refreshMyRank(force) {
+    const box = document.getElementById("myRank"); if (!box) return;
+    if (!SB_ON || gameMode === "vs") { document.getElementById("myBoard").hidden = true; return; }
+    document.getElementById("myBoard").hidden = false;
+    if (!force && Date.now() - myRankAt < 60000) return;
+    myRankAt = Date.now();
+    try {
+      const url = SB_URL + "/rest/v1/" + SB_TABLE + "?select=score,job,mode,created_at&device=eq." + encodeURIComponent(deviceId) + "&order=score.desc&limit=2000";
+      const r = await fetch(url, { headers: sbHeaders() });
+      if (!r.ok) throw new Error("HTTP " + r.status);
+      const mine = (await r.json()).filter(x => (x.mode || "item") === (gameMode || "item"));
+      const wk = weekStartMs(0), EPOCH = Date.UTC(2020, 0, 1);
+      const jobs = ["all"].concat(Object.keys(JOBS).filter(j => !JOBS[j].gone));
+      const best = (jb, since) => { let b = 0; for (const x of mine) if ((jb === "all" || x.job === jb) && Date.parse(x.created_at) >= since && Number(x.score) > b) b = Number(x.score); return b; };
+      const rankOf = async (jb, since, sc) => {
+        if (!sc) return null;
+        const list = await fetchRange(since, null, 1000, jb === "all" ? null : jb);
+        const above = list.filter(x => Number(x.score) > sc).length;
+        if (list.length >= 1000 && sc < Number(list[list.length - 1].score)) return { out: true, sc };
+        return { rk: above + 1, sc };
+      };
+      const rows = await Promise.all(jobs.map(async jb => {
+        const w = best(jb, wk), a = best(jb, EPOCH);
+        const [rw, ra] = await Promise.all([rankOf(jb, wk, w), rankOf(jb, EPOCH, a)]);
+        return { jb, rw, ra };
+      }));
+      box.innerHTML = "";
+      const hd = document.createElement("div"); hd.className = "mrHead"; hd.innerHTML = "<span></span><span>이번 주</span><span>역대</span>"; box.appendChild(hd);
+      const cell = v => {
+        const c = document.createElement("div"); c.className = "mrCell" + (!v || v.out ? " no" : "");
+        const b = document.createElement("b"); b.textContent = !v ? "-" : v.out ? "1000위 밖" : v.rk + "위";
+        c.appendChild(b);
+        if (v) { const sm = document.createElement("small"); sm.textContent = v.sc.toLocaleString(); c.appendChild(sm); }
+        return c;
+      };
+      for (const r2 of rows) {
+        const row = document.createElement("div"); row.className = "mrRow" + (r2.jb === "all" ? " all" : "");
+        const j = document.createElement("div"); j.className = "mrJob";
+        if (r2.jb === "all") j.textContent = "전체";
+        else { const im = document.createElement("img"); im.src = "assets/" + JOB_IMG[r2.jb] + "_right.png"; im.alt = ""; j.append(im, document.createTextNode(jobShort(r2.jb))); }
+        row.append(j, cell(r2.rw), cell(r2.ra)); box.appendChild(row);
+      }
+    } catch (e) {
+      box.innerHTML = '<div class="mrNone">내 순위를 불러오지 못했어요</div>'; myRankAt = 0;
+    }
+  }
   async function refreshLastWeek() {
     const lastBoard = document.getElementById("lastBoard");
     lastNavSync();
