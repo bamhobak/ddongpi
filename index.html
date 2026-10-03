@@ -10,7 +10,7 @@
 <link rel="apple-touch-icon" href="icon-192.png">
 <title>이피저피똥피</title>
 <link rel="preload" as="image" href="assets/logo.webp">
-<link rel="preload" as="image" href="assets/bg/home_fortune.webp?6">
+<link rel="preload" as="image" href="assets/bg/home_fortune.webp?7">
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ctext x='50' y='52' font-size='84' text-anchor='middle' dominant-baseline='central'%3E%F0%9F%92%A9%3C/text%3E%3C/svg%3E">
 <style>
   /* 나눔바른고딕 — 흔히 쓰는 한글 5,362자만 남겨 받아 둔 것(둘이 합쳐 426KB).
@@ -1803,25 +1803,25 @@
   #lastJobs button img { height: 26px; width: 26px; object-fit: contain; }
   #lastJobs button.on { border-color: #ffd86b; background: linear-gradient(180deg, #6a4c12, #33240c); color: #ffd86b; box-shadow: 0 0 8px rgba(255,200,60,.55); }
   /* v0.9.149 지난 순위 크게 — 칩 대신 한 줄씩 (메달 · 이름 · 점수) */
-  #pgRank #boardLast { flex-direction: column; flex-wrap: nowrap; gap: 5px; padding: 0 4px; }
-  #pgRank #boardLast .lp { display: flex; align-items: center; gap: 8px; width: 100%; box-sizing: border-box; height: 38px; padding: 0 12px;
+  #boardLast { flex-direction: column; flex-wrap: nowrap; gap: 5px; padding: 0 4px; }
+  #boardLast .lp { display: flex; align-items: center; gap: 8px; width: 100%; box-sizing: border-box; height: 38px; padding: 0 12px;
     font-size: 15px; font-weight: 800; border-radius: 10px; border: 1px solid rgba(150,170,255,.28);
     background: linear-gradient(180deg, rgba(120,140,255,.16), rgba(120,140,255,.05)); color: #eef0ff; }
-  #pgRank #boardLast .lp .rk { font-style: normal; width: 24px; text-align: center; font-size: 17px; font-weight: 900; color: #a9b1e4; }
-  #pgRank #boardLast .lp .nm { flex: 1; overflow: hidden; text-overflow: ellipsis; }
-  #pgRank #boardLast .lp b { font-size: 16px; font-weight: 900; color: #ffd86b; font-variant-numeric: tabular-nums; }
-  #pgRank #boardLast .lp.p1 { height: 44px; font-size: 16.5px; border-color: rgba(255,216,107,.8); background: linear-gradient(90deg, rgba(255,200,60,.32), rgba(255,200,60,.06)); box-shadow: 0 0 10px rgba(255,200,60,.3); }
-  #pgRank #boardLast .lp.p1 b { font-size: 18px; color: #ffe27a; text-shadow: 0 0 8px rgba(255,210,63,.6); }
-  #pgRank #boardLast .lp.p2 { border-color: rgba(220,230,245,.6); background: linear-gradient(90deg, rgba(220,230,245,.22), rgba(220,230,245,.04)); }
-  #pgRank #boardLast .lp.p2 b { color: #eef3fb; }
-  #pgRank #boardLast .lp.p3 { border-color: rgba(230,160,100,.6); background: linear-gradient(90deg, rgba(220,140,80,.24), rgba(220,140,80,.04)); }
-  #pgRank #boardLast .lp.p3 b { color: #f0b47a; }
-  #pgRank #lastNav #lastWk { font-size: 15px; min-width: 180px; }
-  #pgRank #lastNav .lnBtn { width: 28px; height: 36px; }
-  #pgRank #lastJobs { gap: 5px; margin-bottom: 8px; }
-  #pgRank #lastJobs button { height: 38px; min-width: 38px; font-size: 13px; border-radius: 10px; }
-  #pgRank #lastJobs button img { width: 32px; height: 32px; }
-  #pgRank #boardLast .lpNone { font-size: 13px; padding: 10px 0; text-align: center; }
+  #boardLast .lp .rk { font-style: normal; width: 24px; text-align: center; font-size: 17px; font-weight: 900; color: #a9b1e4; }
+  #boardLast .lp .nm { flex: 1; overflow: hidden; text-overflow: ellipsis; }
+  #boardLast .lp b { font-size: 16px; font-weight: 900; color: #ffd86b; font-variant-numeric: tabular-nums; }
+  #boardLast .lp.p1 { height: 44px; font-size: 16.5px; border-color: rgba(255,216,107,.8); background: linear-gradient(90deg, rgba(255,200,60,.32), rgba(255,200,60,.06)); box-shadow: 0 0 10px rgba(255,200,60,.3); }
+  #boardLast .lp.p1 b { font-size: 18px; color: #ffe27a; text-shadow: 0 0 8px rgba(255,210,63,.6); }
+  #boardLast .lp.p2 { border-color: rgba(220,230,245,.6); background: linear-gradient(90deg, rgba(220,230,245,.22), rgba(220,230,245,.04)); }
+  #boardLast .lp.p2 b { color: #eef3fb; }
+  #boardLast .lp.p3 { border-color: rgba(230,160,100,.6); background: linear-gradient(90deg, rgba(220,140,80,.24), rgba(220,140,80,.04)); }
+  #boardLast .lp.p3 b { color: #f0b47a; }
+  #lastNav #lastWk { font-size: 15px; min-width: 180px; }
+  #lastNav .lnBtn { width: 28px; height: 36px; }
+  #lastJobs { gap: 5px; margin-bottom: 8px; }
+  #lastJobs button { height: 38px; min-width: 38px; font-size: 13px; border-radius: 10px; }
+  #lastJobs button img { width: 32px; height: 32px; }
+  #boardLast .lpNone { font-size: 13px; padding: 10px 0; text-align: center; }
   #lastNav { display: flex; align-items: center; justify-content: center; gap: 10px; margin: 0 0 5px; }
   #lastNav #lastWk { min-width: 150px; text-align: center; font-size: 12.5px; font-weight: 800; color: #e6e9ff; text-shadow: 0 1px 2px rgba(0,0,0,.6); }
   #lastNav .lnBtn { width: 22px; height: 30px; padding: 0; border: 0; border-radius: 0; box-shadow: none; color: transparent; font-size: 0;
@@ -1844,6 +1844,29 @@
   #pgRank .board .mini { border-radius: 10px; background: linear-gradient(180deg, rgba(120,140,255,.16), rgba(120,140,255,.05)); border: 1px solid rgba(150,170,255,.28); }
   #pgRank .board li.five .mini { background: linear-gradient(180deg, rgba(120,140,255,.12), rgba(120,140,255,.03)); }
   #pgRank .vsb .vsbTabs button { border-radius: 9px; }
+
+  /* ── v0.9.169 랭킹 한 화면 — 지난 명예의 전당은 버튼 → 창, 나의 순위는 촘촘하게 ── */
+  #hallPop #lastBoard { border: 0 !important; border-image: none !important; background: none !important; box-shadow: none !important; margin: 0 !important; padding: 0 !important; }
+  #hallPop #lastBoard > h3 { display: none; }
+  #hallPop #lastNav #lastWk { font-size: 14px; color: #e6e9ff; min-width: 150px; }
+  #hallPop #boardLast .lp, #hallPop #boardLast .lp.p1 { height: 36px; font-size: 14.5px; }
+  #hallPop #boardLast .lp b, #hallPop #boardLast .lp.p1 b { font-size: 15px; }
+  #pgRank #btnHall { --bh: 36px; height: var(--bh); box-sizing: border-box; flex-shrink: 0; min-width: 210px; margin: 2px auto 0; border-style: solid; border-color: transparent; border-radius: 0; box-shadow: none; background: none;
+    border-width: 0 calc(var(--bh) / 2); border-image: url(assets/ui/btn_blue.webp) 0 60 fill / 0 calc(var(--bh) / 2) / 0 stretch;
+    padding: 0 6px calc(var(--bh) * .08); font-size: 14.5px; font-weight: 800; color: #fff; text-shadow: 0 1px 2px rgba(0,50,110,.65); display: block; margin-top: 0 !important; }
+  #pgRank #myBoard { margin-top: 16px; padding-bottom: 0; }
+  #startScreen > #pgRank { gap: 8px !important; padding-bottom: 6px !important; }
+  #pgRank #boardSlot { gap: 8px !important; }
+  #pgRank .board.withTabs { margin-bottom: 0 !important; }
+  #myRank .mrHead { margin-top: -4px; }
+  #myRank { gap: 3px; }
+  #myRank .mrRow { min-height: 26px; padding: 0 8px; border-radius: 8px; }
+  #myRank .mrHead { font-size: 11px; }
+  #myRank .mrJob { font-size: 12.5px; }
+  #myRank .mrJob img { width: 22px; height: 22px; }
+  #myRank .mrCell { flex-direction: row; align-items: baseline; justify-content: center; gap: 4px; }
+  #myRank .mrCell b { font-size: 14px; }
+  #myRank .mrCell small { font-size: 9.5px; }
   /* ── v0.9.168 크기 위계 — 이번 주 TOP 10 이 주인공, 지난 명예의 전당은 한 단계 작게 (Design 시안대로) ── */
   #pgRank #boardStart li.p1, #pgRank #boardStart li.p2, #pgRank #boardStart li.p3 { min-height: 42px; font-size: 16px !important; border-radius: 10px; }
   #pgRank #boardStart li.p1 { min-height: 48px; font-size: 17px !important; box-shadow: inset 0 0 0 1.5px rgba(255,216,107,.85); }
@@ -1859,18 +1882,18 @@
   #pgRank .board.withTabs > h3 { height: 46px; line-height: 38px; font-size: 18px; border-width: 0 46px; border-image-width: 0 46px; margin-top: -50px; }
   #pgRank #lastBoard { border-width: 18px 12px 12px !important; border-image-width: 26px !important; }
   #pgRank #lastBoard > h3 { height: 32px; line-height: 25px; font-size: 13px; border-width: 0 32px; border-image-width: 0 32px; margin-top: -34px; }
-  #pgRank #boardLast { gap: 4px; }
-  #pgRank #boardLast .lp, #pgRank #boardLast .lp.p1 { height: 28px; font-size: 12.5px; font-weight: 700; border-radius: 8px; box-shadow: none;
+  #boardLast { gap: 4px; }
+  #boardLast .lp, #boardLast .lp.p1 { height: 28px; font-size: 12.5px; font-weight: 700; border-radius: 8px; box-shadow: none;
     border-color: rgba(150,170,255,.18); background: rgba(120,140,255,.1); }
-  #pgRank #boardLast .lp.p1 { height: 30px; font-size: 13px; background: rgba(255,200,60,.14); border-color: rgba(255,216,107,.4); }
-  #pgRank #boardLast .lp.p2, #pgRank #boardLast .lp.p3 { border-color: rgba(150,170,255,.18); background: rgba(120,140,255,.1); }
-  #pgRank #boardLast .lp b, #pgRank #boardLast .lp.p1 b, #pgRank #boardLast .lp.p2 b, #pgRank #boardLast .lp.p3 b { font-size: 13px; font-weight: 800; color: #e6e9ff; text-shadow: none; }
-  #pgRank #boardLast .lp.p1 b { font-size: 13.5px; color: #ffd86b; }
-  #pgRank #boardLast .lp .rk { font-size: 13px; width: 20px; }
-  #pgRank #lastNav #lastWk { font-size: 12px; color: #c2c8f0; min-width: 120px; }
-  #pgRank #lastNav .lnBtn { width: 22px; height: 28px; }
-  #pgRank #lastJobs button { height: 32px; min-width: 32px; font-size: 11.5px; }
-  #pgRank #lastJobs button img { width: 26px; height: 26px; }
+  #boardLast .lp.p1 { height: 30px; font-size: 13px; background: rgba(255,200,60,.14); border-color: rgba(255,216,107,.4); }
+  #boardLast .lp.p2, #boardLast .lp.p3 { border-color: rgba(150,170,255,.18); background: rgba(120,140,255,.1); }
+  #boardLast .lp b, #boardLast .lp.p1 b, #boardLast .lp.p2 b, #boardLast .lp.p3 b { font-size: 13px; font-weight: 800; color: #e6e9ff; text-shadow: none; }
+  #boardLast .lp.p1 b { font-size: 13.5px; color: #ffd86b; }
+  #boardLast .lp .rk { font-size: 13px; width: 20px; }
+  #lastNav #lastWk { font-size: 12px; color: #c2c8f0; min-width: 120px; }
+  #lastNav .lnBtn { width: 22px; height: 28px; }
+  #lastJobs button { height: 32px; min-width: 32px; font-size: 11.5px; }
+  #lastJobs button img { width: 26px; height: 26px; }
 </style>
 </head>
 <body>
@@ -1896,7 +1919,7 @@
 
     <div id="startScreen" class="screen onHome">
       <div id="homeBgFade"></div>
-      <script>/* v0.9.128 첫 화면부터 고른 캐릭터의 배경 (기본 루나) */ try { var hj = localStorage.getItem("epjpddongpi_job") || "bangul"; if (["bangul","fit","powerj","levitator","powerp","fortune"].indexOf(hj) >= 0) document.getElementById("startScreen").style.setProperty("--hbg", "url(assets/bg/home_" + hj + ".webp?6)"); } catch (e) {}</script>
+      <script>/* v0.9.128 첫 화면부터 고른 캐릭터의 배경 (기본 루나) */ try { var hj = localStorage.getItem("epjpddongpi_job") || "bangul"; if (["bangul","fit","powerj","levitator","powerp","fortune"].indexOf(hj) >= 0) document.getElementById("startScreen").style.setProperty("--hbg", "url(assets/bg/home_" + hj + ".webp?7)"); } catch (e) {}</script>
       <div id="ver"></div>
       <button id="meBtn" aria-label="내 정보"><b id="meLv">Lv1</b><span id="meNm">-</span></button>
       <div id="coinBox" title="모은 코인">🪙 0</div>
@@ -1925,6 +1948,7 @@
         <div id="lastJobs"></div>
         <div id="boardLast" class="lastRow"><span class="lpNone">불러오는 중…</span></div>
       </div>
+      <button id="btnHall">👑 지난 명예의 전당</button>
       <div class="board" id="myBoard">
         <h3>🐾 나의 순위</h3>
         <div id="myRank"><div class="mrNone">불러오는 중…</div></div>
@@ -2034,6 +2058,12 @@
       <input id="hiName" type="text" maxlength="5" placeholder="이름 (5자까지)" autocomplete="off" autocorrect="off" spellcheck="false">
       <div id="hiErr"></div>
       <button id="hiGo">좋아요!</button>
+    </div></div>
+    <!-- v0.9.169 지난 명예의 전당 — 랭킹 탭 버튼으로 연다 -->
+    <div id="hallPop" class="lvPop"><div class="lpIn">
+      <div class="lpTtl">지난 명예의 전당</div>
+      <div class="lpBody" id="hallBody"></div>
+      <button class="lpClose">닫기</button>
     </div></div>
     <!-- v0.9.162 해금 알림 — 하나씩 -->
     <div id="ulPop" class="lvPop"><div class="lpIn">
@@ -2328,7 +2358,7 @@
   const elTitle = document.getElementById("overTitle");
   const coinNote = document.getElementById("coinNote");
 
-  const GAME_VERSION = "v0.9.168";
+  const GAME_VERSION = "v0.9.169";
   /* 제작사 스플래시(bamhobak friends 로고) — 2026-09-20 끔. 다시 켜려면 true */
   const SPLASH_USE = false;   // 코드를 고칠 때마다 뒤 두 자리를 올린다
   document.getElementById("ver").textContent = GAME_VERSION;
@@ -8268,12 +8298,12 @@
   let hbgCur = getComputedStyle(document.getElementById("startScreen")).getPropertyValue("--hbg").trim();
   function homeBgSet() {
     const ss = document.getElementById("startScreen"), fd = document.getElementById("homeBgFade");
-    const u = HOME_BG.includes(job) ? "url(assets/bg/home_" + job + ".webp?6)" : "url(assets/bg/title.webp)";
+    const u = HOME_BG.includes(job) ? "url(assets/bg/home_" + job + ".webp?7)" : "url(assets/bg/title.webp)";
     if (u === hbgCur) return;
     if (hbgCur && fd) { fd.style.setProperty("--hbgPrev", hbgCur); fd.classList.remove("on"); void fd.offsetWidth; fd.classList.add("on"); }
     ss.style.setProperty("--hbg", u); hbgCur = u;
   }
-  window.addEventListener("load", () => { for (const k of HOME_BG) { const im = new Image(); im.src = "assets/bg/home_" + k + ".webp?6"; } });   // 넘길 때 깜빡이지 않게 미리 받아 둔다
+  window.addEventListener("load", () => { for (const k of HOME_BG) { const im = new Image(); im.src = "assets/bg/home_" + k + ".webp?7"; } });   // 넘길 때 깜빡이지 않게 미리 받아 둔다
   function carSet(id) {                      // 고른 캐릭터를 바꾼다(다시 그리지 않는다)
     if (id === job || !JOBS[id]) return;
     idleStop();
@@ -9141,6 +9171,15 @@
   /* 펫을 사서 찌릿찌릿 번개가 열렸는지 */
   function zapUnlockCheck(before) {
     if (before < 3 && zapOwnN() >= 3) { unlockQ.push({ k: "증강", t: "⚡ 찌릿찌릿 번개", how: "똥을 부수는 펫 3마리를 모았어요! 이제 게임 중에 비밀 증강으로 나와요" }); unlockShow(); }
+  }
+
+  /* v0.9.169 지난 명예의 전당은 창으로 — 랭킹 탭은 이번 주 TOP 10 과 나의 순위가 한 화면에 */
+  {
+    const hp = document.getElementById("hallPop");
+    document.getElementById("hallBody").appendChild(document.getElementById("lastBoard"));
+    document.getElementById("btnHall").addEventListener("click", () => { beep(800, .04, "triangle", .04); lvPopOpen("hallPop"); refreshLastWeek(); });
+    hp.querySelector(".lpClose").addEventListener("click", () => { beep(700, .04, "triangle", .04); hp.classList.remove("on"); });
+    hp.addEventListener("click", e => { if (e.target === hp) hp.classList.remove("on"); });
   }
   /* v0.9.124 두 창 — 내 정보(이름 · 공통 레벨) / 캐릭터 레벨 상세 */
   function lvPopOpen(id) { document.getElementById(id).classList.add("on"); }
