@@ -1053,6 +1053,20 @@
   .t2Btns .t2Save { --bh: 44px; height: var(--bh); box-sizing: border-box; min-width: 220px; border-style: solid; border-color: transparent; border-radius: 0; box-shadow: none; background: none;
     border-width: 0 calc(var(--bh) / 2); border-image: url(assets/ui/btn_yellow.webp) 0 60 fill / 0 calc(var(--bh) / 2) / 0 stretch;
     padding: 0 4px calc(var(--bh) * .08); font-size: 15px; font-weight: 900; color: #6b3300; text-shadow: 0 1px 0 rgba(255,255,255,.55); }
+
+  /* ── v0.9.155 처음 접속 환영 창 ── */
+  #hiPop .lpIn { align-items: center; text-align: center; gap: 12px; padding-top: 40px; }
+  #hiPop .hiDog { width: 110px; height: 110px; object-fit: contain; margin-top: -4px; filter: drop-shadow(0 4px 6px rgba(0,0,0,.45)); animation: hiBob 1.6s ease-in-out infinite; }
+  @keyframes hiBob { 50% { transform: translateY(-6px); } }
+  #hiPop .hiMsg { font-size: 15.5px; font-weight: 800; line-height: 1.6; color: #eef0ff; text-shadow: 0 1px 2px rgba(0,0,0,.5); }
+  #hiPop .hiMsg b { color: #ffd86b; }
+  #hiPop #hiName { width: 200px; height: 46px; box-sizing: border-box; padding: 0 12px; border-radius: 12px; border: 2px solid rgba(255,216,107,.75);
+    background: #0d1036; color: #fff; font-size: 18px; font-weight: 800; text-align: center; outline: none; }
+  #hiPop #hiName:focus { border-color: #ffd86b; box-shadow: 0 0 10px rgba(255,210,63,.5); }
+  #hiPop #hiErr { min-height: 16px; font-size: 12.5px; font-weight: 800; color: #ff9aa8; margin-top: -6px; }
+  #hiPop #hiGo { --bh: 50px; height: var(--bh); box-sizing: border-box; min-width: 200px; border-style: solid; border-color: transparent; border-radius: 0; box-shadow: none; background: none;
+    border-width: 0 calc(var(--bh) / 2); border-image: url(assets/ui/btn_yellow.webp) 0 60 fill / 0 calc(var(--bh) / 2) / 0 stretch;
+    padding: 0 4px calc(var(--bh) * .08); font-size: 18px; font-weight: 900; color: #6b3300; text-shadow: 0 1px 0 rgba(255,255,255,.55); }
   #startScreen #meBtn { position: absolute; top: max(8px, env(safe-area-inset-top)); left: 12px; z-index: 6; display: flex; align-items: center; gap: 6px;
     max-width: 150px; padding: 4px 12px 4px 5px; border-radius: 999px; box-shadow: none; background: rgba(8,9,16,.55); border: 1px solid rgba(255,210,63,.35);
     color: #fff; font-size: 14px; font-weight: 800; text-shadow: 0 1px 2px rgba(0,0,0,.6); }
@@ -1930,6 +1944,15 @@
       </div>
       <button class="lpClose">닫기</button>
     </div></div>
+    <!-- v0.9.155 처음 접속 — 환영 인사 + 이름 정하기 -->
+    <div id="hiPop" class="lvPop"><div class="lpIn">
+      <div class="lpTtl">환영해요!</div>
+      <img class="hiDog" src="assets/bangul_right.png" alt="">
+      <div class="hiMsg">안녕하세요!<br><b>이피저피똥피</b>에 오신 걸 환영해요!<br>사용자님의 이름을 알려주세요.</div>
+      <input id="hiName" type="text" maxlength="5" placeholder="이름 (5자까지)" autocomplete="off" autocorrect="off" spellcheck="false">
+      <div id="hiErr"></div>
+      <button id="hiGo">좋아요!</button>
+    </div></div>
     <!-- v0.9.151 테스트 모드2 — 계정·캐릭터 레벨, 코인, 해금 상태 고치기 -->
     <div id="t2Pop" class="lvPop"><div class="lpIn">
       <div class="lpTtl">테스트 모드2</div>
@@ -2214,7 +2237,7 @@
   const elTitle = document.getElementById("overTitle");
   const coinNote = document.getElementById("coinNote");
 
-  const GAME_VERSION = "v0.9.154";
+  const GAME_VERSION = "v0.9.155";
   /* 제작사 스플래시(bamhobak friends 로고) — 2026-09-20 끔. 다시 켜려면 true */
   const SPLASH_USE = false;   // 코드를 고칠 때마다 뒤 두 자리를 올린다
   document.getElementById("ver").textContent = GAME_VERSION;
@@ -8898,6 +8921,27 @@
     p.querySelector(".lpClose").addEventListener("click", () => { beep(700, .04, "triangle", .04); p.classList.remove("on"); });
     p.addEventListener("click", e => { if (e.target === p) p.classList.remove("on"); });
   }
+
+  /* v0.9.155 처음 접속 — 이름이 없으면 환영 인사와 함께 바로 이름을 정한다 (바깥을 눌러도 안 닫힌다) */
+  function hiOpen() {
+    if (savedName() || splashOn) return;
+    const p = document.getElementById("hiPop"); if (p.classList.contains("on")) return;
+    document.getElementById("hiErr").textContent = "";
+    lvPopOpen("hiPop");
+    setTimeout(() => { try { document.getElementById("hiName").focus(); } catch (e) {} }, 250);
+  }
+  function hiSave() {
+    const inp = document.getElementById("hiName"), n = inp.value.trim().slice(0, 5);
+    if (!n) { document.getElementById("hiErr").textContent = "이름을 적어 주세요!"; inp.focus(); return; }
+    try { localStorage.setItem(LS_NAME, n); } catch (e) {}
+    showNameView();
+    document.getElementById("hiPop").classList.remove("on");
+    beep(880, .06, "triangle", .05); setTimeout(() => beep(1320, .09, "triangle", .05), 80);
+    popHint("반가워요, " + n + "님! 🐶");
+  }
+  document.getElementById("hiGo").addEventListener("click", hiSave);
+  document.getElementById("hiName").addEventListener("keydown", e => { e.stopPropagation(); if (e.key === "Enter") { e.preventDefault(); hiSave(); } });
+  setTimeout(hiOpen, 600);
   /* v0.9.124 두 창 — 내 정보(이름 · 공통 레벨) / 캐릭터 레벨 상세 */
   function lvPopOpen(id) { document.getElementById(id).classList.add("on"); }
   function openMe() {
@@ -9108,7 +9152,7 @@
   document.getElementById("btnStart").addEventListener("click", () => {
     if (!jobOwned(job)) { beep(220, .12, "square", .05); return; }      // 잠긴 캐릭터로는 못 시작한다
     dogMode = false; partyWant = false;                                 // 시작하기 — 고른 캐릭터로 바로
-    if (!savedName()) { startEditName(); return; }   // 이름부터 정하고 시작
+    if (!savedName()) { hiOpen(); return; }   // 이름부터 정하고 시작 (v0.9.155 환영 창)
     startScreen.classList.add("hidden");
     overScreen.classList.add("hidden");
     jobScreen.classList.add("hidden");
@@ -15478,6 +15522,7 @@
     splashOn = false;
     try { introSnd.pause(); } catch (e) {}   // 건너뛰면 소리도 함께 멈춘다
     startScreen.style.visibility = "";
+    setTimeout(() => { if (typeof hiOpen === "function") hiOpen(); }, 300);   // v0.9.155 처음 접속이면 이름부터
   }
   const SPLASH_FALL = 0.40;                 // 떨어지는 데 걸리는 시간
   const SPLASH_SHINE = SPLASH_FALL + 0.34;  // 빛줄기가 지나가기 시작하는 때
