@@ -2077,7 +2077,7 @@
         <button id="btnEditName" title="이름 수정" aria-label="이름 수정">✏️ 이름 바꾸기</button>
       </div>
       <div id="nameEdit">
-        <input id="startName" type="text" maxlength="5" placeholder="이름 (5자)"
+        <input id="startName" type="text" maxlength="6" placeholder="이름 (3~6자)"
                autocomplete="off" autocorrect="off" spellcheck="false">
         <button id="btnSaveName">저장</button>
       </div>
@@ -2090,7 +2090,7 @@
       <div class="lpTtl">환영해요!</div>
       <span class="hiDog" aria-hidden="true"></span>
       <div class="hiMsg">안녕하세요!<br><b>이피저피똥피</b>에 오신 걸 환영해요!<br>사용자님의 이름을 알려주세요.</div>
-      <input id="hiName" type="text" maxlength="5" placeholder="이름 (5자까지)" autocomplete="off" autocorrect="off" spellcheck="false">
+      <input id="hiName" type="text" maxlength="6" placeholder="이름 (3~6자)" autocomplete="off" autocorrect="off" spellcheck="false">
       <div id="hiErr"></div>
       <button id="hiGo">좋아요!</button>
     </div></div>
@@ -2231,7 +2231,7 @@
       <div id="nameRow">
         <div class="tag" id="nameTag">🎉 TOP 10 진입! 이름을 남기세요</div>
         <div id="nameForm">
-          <input id="nameInput" type="text" maxlength="5" placeholder="이름 (최대 5자)"
+          <input id="nameInput" type="text" maxlength="6" placeholder="이름 (3~6자)"
                  autocomplete="off" autocorrect="off" spellcheck="false">
           <button id="btnSave">등록</button>
         </div>
@@ -2414,7 +2414,7 @@
   const elTitle = document.getElementById("overTitle");
   const coinNote = document.getElementById("coinNote");
 
-  const GAME_VERSION = "v0.9.217";
+  const GAME_VERSION = "v0.9.218";
   /* 제작사 스플래시(bamhobak friends 로고) — 2026-09-20 끔. 다시 켜려면 true */
   const SPLASH_USE = false;   // 코드를 고칠 때마다 뒤 두 자리를 올린다
   document.getElementById("ver").textContent = GAME_VERSION;
@@ -8066,6 +8066,31 @@
   const myNameEl  = document.getElementById("myName");
   const startName = document.getElementById("startName");
 
+  /* v0.9.218 닉네임 — 3~6자, 한글(완성형)·영어·숫자만. 다른 사람이 쓰는 이름은 못 쓴다(sql/supabase_nameClaim.sql).
+     서버 함수가 아직 없거나 인터넷이 안 되면 중복 검사만 건너뛴다. 결과: 문제 없으면 "", 있으면 알려 줄 말 */
+  function nameRuleErr(n) {
+    const len = [...n].length;
+    if (len < 3) return "이름은 3글자 이상이에요";
+    if (len > 6) return "이름은 6글자까지예요";
+    if (!/^[가-힣A-Za-z0-9]+$/.test(n)) return "한글·영어·숫자만 쓸 수 있어요 (띄어쓰기 X)";
+    return "";
+  }
+  async function claimName(n) {
+    const bad = nameRuleErr(n);
+    if (bad) return bad;
+    if (n === savedName() || !SB_ON) return "";
+    try {
+      const res = await fetch(SB_URL + "/rest/v1/rpc/ddongpi_claim_name", {
+        method: "POST", headers: sbHeaders({ "Content-Type": "application/json" }),
+        body: JSON.stringify({ nm: n, dev: deviceId })
+      });
+      if (!res.ok) return "";                  // 함수가 아직 없다 — 건너뛴다
+      const r = await res.json();
+      if (r === "taken") return "다른 친구가 이미 쓰고 있는 이름이에요";
+      if (r === "bad") return "한글·영어·숫자로 3~6글자만 돼요";
+    } catch (e) {}
+    return "";
+  }
   function savedName() {
     try { return (localStorage.getItem(LS_NAME) || "").trim(); } catch (e) { return ""; }
   }
@@ -8084,9 +8109,11 @@
     nameEdit.classList.add("on");
     startName.focus();
   }
-  function saveName() {
-    const n = startName.value.trim().slice(0, 5);
+  async function saveName() {
+    const n = startName.value.trim();
     if (!n) { startName.focus(); return; }
+    const err = await claimName(n);
+    if (err) { popHint("⚠️ " + err); beep(220, .08, "square", .04); startName.focus(); return; }
     try { localStorage.setItem(LS_NAME, n); } catch (e) {}
     showNameView();
   }
@@ -9196,9 +9223,13 @@
       const t = setInterval(() => { el.style.backgroundPosition = (f / 11 * 100) + "% 0"; if (++f > 11) { clearInterval(t); el.style.backgroundPosition = "0 0"; hiBlink(); } }, 55);
     }, 2500 + Math.random() * 2500);
   }
-  function hiSave() {
-    const inp = document.getElementById("hiName"), n = inp.value.trim().slice(0, 5);
+  let hiBusy = false;
+  async function hiSave() {
+    const inp = document.getElementById("hiName"), n = inp.value.trim();
     if (!n) { document.getElementById("hiErr").textContent = "이름을 적어 주세요!"; inp.focus(); return; }
+    if (hiBusy) return;
+    hiBusy = true; const err = await claimName(n); hiBusy = false;   // v0.9.218
+    if (err) { document.getElementById("hiErr").textContent = err; inp.focus(); return; }
     try { localStorage.setItem(LS_NAME, n); } catch (e) {}
     showNameView();
     document.getElementById("hiPop").classList.remove("on");
@@ -9208,6 +9239,12 @@
   document.getElementById("hiGo").addEventListener("click", hiSave);
   document.getElementById("hiName").addEventListener("keydown", e => { e.stopPropagation(); if (e.key === "Enter") { e.preventDefault(); hiSave(); } });
   setTimeout(hiOpen, 600);
+  setTimeout(() => {   // v0.9.218 원래 쓰던 이름도 장부에 올려 둔다 (이미 다른 사람이 올렸으면 그대로 두고 쓰던 이름은 계속 쓴다)
+    const n = savedName();
+    if (!n || nameRuleErr(n) || !SB_ON) return;
+    fetch(SB_URL + "/rest/v1/rpc/ddongpi_claim_name", { method: "POST", headers: sbHeaders({ "Content-Type": "application/json" }),
+      body: JSON.stringify({ nm: n, dev: deviceId }) }).catch(() => {});
+  }, 4000);
 
   /* v0.9.158 처음 시작 — 첫 판을 마치기 전에는 시작하기만 눌린다 (탭·옵션·이름·캐릭터 넘기기·상세는 흐리게 막는다).
      예전부터 하던 사람(경험치·코인·최고 기록이 있으면)은 막지 않는다 */
@@ -15773,8 +15810,10 @@
   }
 
   async function saveMyScore() {
-    const name = nameInput.value.trim().slice(0, 5);
+    const name = nameInput.value.trim();
     if (!name) { nameInput.focus(); return; }
+    const err = await claimName(name);   // v0.9.218
+    if (err) { nameTag.textContent = "⚠️ " + err; nameInput.focus(); return; }
     btnSave.disabled = true;
     btnSave.textContent = "등록 중…";
     try {
