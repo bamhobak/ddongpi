@@ -2417,7 +2417,7 @@
   const elTitle = document.getElementById("overTitle");
   const coinNote = document.getElementById("coinNote");
 
-  const GAME_VERSION = "v0.9.220";
+  const GAME_VERSION = "v0.9.221";
   /* 제작사 스플래시(bamhobak friends 로고) — 2026-09-20 끔. 다시 켜려면 true */
   const SPLASH_USE = false;   // 코드를 고칠 때마다 뒤 두 자리를 올린다
   document.getElementById("ver").textContent = GAME_VERSION;
@@ -8855,7 +8855,7 @@
     beep(700, .04, "triangle", .04); setPage("opt");
   });
   for (const b of document.querySelectorAll("#tabBar button")) b.addEventListener("click", () => {
-    if (!tabOpen(b.dataset.pg)) { beep(220, .08, "square", .04); popHint(b.dataset.pg === "shop" ? "🔒 첫 판을 마치면 열려요" : "🔒 공통 레벨 " + (b.dataset.pg === "rank" ? 3 : 2) + "가 되면 열려요"); return; }   // v0.9.178 · v0.9.193
+    if (!tabOpen(b.dataset.pg)) { beep(220, .08, "square", .04); popHint(b.dataset.pg === "shop" ? "🔒 첫 판을 마치면 열려요" : b.dataset.pg === "rank" ? "🔒 " + RANK_OPEN_GAMES + "판을 마치면 열려요 (" + Math.min(gamesDone(), RANK_OPEN_GAMES) + "/" + RANK_OPEN_GAMES + ")" : "🔒 공통 레벨 2가 되면 열려요"); return; }   // v0.9.178 · v0.9.193
     if (b.dataset.pg === curPage) return;
     beep(700, .04, "triangle", .04);
     setPage(b.dataset.pg);
@@ -9265,8 +9265,11 @@
   function firstRunOn() {
     try { return !localStorage.getItem(LS_PLAYED); } catch (e) { return false; }
   }
+  /* v0.9.221 판 수 — 랭킹 탭은 5판을 마치면 열린다 (예전엔 공통 Lv3) */
+  const LS_GAMES = "epjpddongpi_games", RANK_OPEN_GAMES = 5;
+  function gamesDone() { try { return +localStorage.getItem(LS_GAMES) || 0; } catch (e) { return 0; } }
   function firstRunDone() {
-    try { localStorage.setItem(LS_PLAYED, "1"); } catch (e) {}
+    try { localStorage.setItem(LS_PLAYED, "1"); localStorage.setItem(LS_GAMES, String(gamesDone() + 1)); } catch (e) {}
     document.getElementById("startScreen").classList.remove("firstRun");
   }
   document.getElementById("startScreen").classList.toggle("firstRun", firstRunOn());
@@ -9306,13 +9309,14 @@
     hp.addEventListener("click", e => { if (e.target === hp) hp.classList.remove("on"); });
   }
 
-  /* v0.9.178 도감 탭(공통 Lv2) · v0.9.193 상점 탭(첫 판 뒤)·랭킹 탭(공통 Lv3) — 열리는 순간 한 번, 화면을 덮고 그 탭만 눌리게 */
+  /* v0.9.178 도감 탭(공통 Lv2) · v0.9.193 상점 탭(첫 판 뒤)·랭킹 탭(공통 Lv3 → v0.9.221 5판) — 열리는 순간 한 번, 화면을 덮고 그 탭만 눌리게 */
   const LS_GUIDE_BOOK = "epjpddongpi_guide_book";
   const TAB_OPEN = [
     { pg: "shop", key: "epjpddongpi_guide_shop", ok: () => !firstRunOn(), tip: "🏪 상점이 열렸어요!", after: () => setTimeout(guideShopPet, 400) },
     { pg: "book", key: LS_GUIDE_BOOK, ok: () => accLv() >= 2, tip: "📖 도감이 열렸어요!", after: () => setTimeout(() => lvPopOpen("bookHelp"), 350) },
-    { pg: "rank", key: "epjpddongpi_guide_rank", ok: () => accLv() >= 3, tip: "🏆 랭킹이 열렸어요!" }
+    { pg: "rank", key: "epjpddongpi_guide_rank", ok: () => gamesDone() >= RANK_OPEN_GAMES || rankSeen(), tip: "🏆 랭킹이 열렸어요!" }   // v0.9.221 5판 (이미 열어 본 사람은 그대로)
   ];
+  function rankSeen() { try { return !!localStorage.getItem("epjpddongpi_guide_rank"); } catch (e) { return false; } }
   function tabOpen(pg) { const t = TAB_OPEN.find(x => x.pg === pg); return !t || t.ok(); }
   function bookLockSync() {
     const ss = document.getElementById("startScreen");
