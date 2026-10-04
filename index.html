@@ -958,6 +958,7 @@
   .lvBar i { position: absolute; left: 0; top: 0; bottom: 0; border-radius: 9px; background: linear-gradient(180deg, #9af5ff, #33b8ff 55%, #1c7ee2);
     box-shadow: inset 0 1px 0 rgba(255,255,255,.65), 0 0 8px rgba(80,200,255,.6); }
   .lvBar span { position: relative; display: block; text-align: center; font-size: 11.5px; font-weight: 900; line-height: 18px; color: #fff; text-shadow: 0 1px 2px rgba(0,0,0,.85); }
+  .lvPick .lvPN .lvNoteR { margin-left: auto; font-size: 12px; font-weight: 800; color: #ffe08a; white-space: nowrap; text-shadow: 0 1px 0 rgba(0,0,0,.5); }
   .lvNote { font-size: 11.5px; font-weight: 700; color: var(--pnSub); text-align: center; }
   .lvRow { display: flex; gap: 8px; align-items: center; font-size: 12.5px; font-weight: 700; line-height: 1.4; padding: 7px 10px; border-radius: 10px;
     background: rgba(0,0,0,.2); box-shadow: inset 0 0 0 1px rgba(150,170,255,.12); color: #7d86bd; }
@@ -2414,7 +2415,7 @@
   const elTitle = document.getElementById("overTitle");
   const coinNote = document.getElementById("coinNote");
 
-  const GAME_VERSION = "v0.9.218";
+  const GAME_VERSION = "v0.9.219";
   /* 제작사 스플래시(bamhobak friends 로고) — 2026-09-20 끔. 다시 켜려면 true */
   const SPLASH_USE = false;   // 코드를 고칠 때마다 뒤 두 자리를 올린다
   document.getElementById("ver").textContent = GAME_VERSION;
@@ -9103,7 +9104,7 @@
         row.appendChild(sel);
       }
       if (j === "fortune" && l === 3 && cur === "A") {
-        const n = document.createElement("div"); n.className = "lvNote"; n.textContent = "오늘의 운세: " + DAILY[dailyIdx()]; row.appendChild(n);
+        const n = document.createElement("span"); n.className = "lvNoteR"; n.textContent = "🍀 " + DAILY[dailyIdx()]; h.appendChild(n);   // v0.9.219 '모든 캐릭터에 적용' 오른쪽에
       }
       c.appendChild(row);
     }
