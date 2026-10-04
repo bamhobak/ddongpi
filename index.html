@@ -979,6 +979,8 @@
   .lvPick.lock { background: rgba(0,0,0,.22); box-shadow: inset 0 0 0 1px rgba(150,170,255,.1); padding: 9px 10px; }
   .lvPick.lock .lvPN b { color: #626aa3; text-shadow: none; }
   .lvPick.lock .lvPN small { background: rgba(150,120,255,.14); color: #7d86bd; }
+  .lvPick.ready { position: relative; min-height: 96px; box-sizing: border-box; justify-content: center; }   /* v0.9.222 해금하기 줄은 모두 같은 높이 · 버튼은 가운데 */
+  .lvPick.ready .lvPN { position: absolute; left: 10px; top: 8px; }                                           /* '모든 캐릭터에 적용' 꼬리표는 높이를 늘리지 않게 왼쪽 위에 */
   .lvPick.ready { box-shadow: inset 0 0 0 1.5px rgba(255,216,107,.75), 0 0 14px rgba(255,200,60,.3); animation: lvReady 1.6s ease-in-out infinite; }
   @keyframes lvReady { 50% { box-shadow: inset 0 0 0 1.5px #ffe48a, 0 0 22px rgba(255,200,60,.6); } }
   .lvPick.pop { animation: lvPopIn .55s ease-out; }
@@ -2417,7 +2419,7 @@
   const elTitle = document.getElementById("overTitle");
   const coinNote = document.getElementById("coinNote");
 
-  const GAME_VERSION = "v0.9.221";
+  const GAME_VERSION = "v0.9.222";
   /* 제작사 스플래시(bamhobak friends 로고) — 2026-09-20 끔. 다시 켜려면 true */
   const SPLASH_USE = false;   // 코드를 고칠 때마다 뒤 두 자리를 올린다
   document.getElementById("ver").textContent = GAME_VERSION;
