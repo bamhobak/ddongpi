@@ -1961,7 +1961,7 @@
       <div id="homeBgFade"></div>
       <script>/* v0.9.128 첫 화면부터 고른 캐릭터의 배경 (기본 루나) */ try { var hj = localStorage.getItem("epjpddongpi_job") || "bangul"; if (["bangul","fit","powerj","levitator","powerp","fortune"].indexOf(hj) >= 0) document.getElementById("startScreen").style.setProperty("--hbg", "url(assets/bg/home_" + hj + ".webp?8)"); } catch (e) {}</script>
       <div id="ver"></div>
-      <button id="meBtn" aria-label="내 정보"><b id="meLv">Lv1</b><span id="meNm">-</span></button>
+      <button id="meBtn" aria-label="내 정보"><b id="meLv">똥피력 1</b><span id="meNm">-</span></button>
       <div id="coinBox" title="모은 코인">🪙 0</div>
       <button id="btnOpt" aria-label="옵션"><img src="assets/ui/tab_opt.webp" alt=""></button>
       <section class="page on" id="pgHome">
@@ -2419,7 +2419,7 @@
   const elTitle = document.getElementById("overTitle");
   const coinNote = document.getElementById("coinNote");
 
-  const GAME_VERSION = "v0.9.222";
+  const GAME_VERSION = "v0.9.223";
   /* 제작사 스플래시(bamhobak friends 로고) — 2026-09-20 끔. 다시 켜려면 true */
   const SPLASH_USE = false;   // 코드를 고칠 때마다 뒤 두 자리를 올린다
   document.getElementById("ver").textContent = GAME_VERSION;
@@ -3788,7 +3788,7 @@
      캐릭터 레벨마다 둘 중 하나를 고른다(언제든 바꿀 수 있다). Lv3 은 고르면 모든 캐릭터에 적용된다.
      v0.9.124 레벨이 되면 상세 창에서 '해금'하고 둘 중 하나를 골라야 켜진다(예전처럼 저절로 A 가 아니다). */
   const LS_LV = "epjpddongpi_lv";
-  const ACC_XP = [0, 1000, 5000, 11000, 22000];
+  const ACC_XP = [0, 1000, 5000, 11000, 22000, 38000, 60000];   // v0.9.223 똥피력 7단계 (6·7단계 추가)
   const CHR_XP = [0, 600, 2000, 4500, 9000];
   let lvData = { xp: 0, cx: {}, pick: {}, un: {}, hyper: false };
   try { const d = JSON.parse(localStorage.getItem(LS_LV) || "null"); if (d && typeof d.xp === "number") lvData = Object.assign(lvData, d); } catch (e) {}
@@ -3811,7 +3811,9 @@
     2: "🎲 증강 다시 뽑기(판마다 1회)",
     3: "☁️ 구름 상점 — 게임 중 가끔 내려온다. 증강 2개·하트를 코인으로",
     4: "🎁 시작 증강 고르기(3장 중 1장) · ⚡ 스피드 모드 — 게임 속도 2배",
-    5: "👑 (준비 중)"
+    5: "👑 (준비 중)",
+    6: "👑 (준비 중)",
+    7: "👑 (준비 중)"
   };
   const CHR_PERKS = {
     bangul: {
@@ -8103,7 +8105,7 @@
     const n = savedName();
     myNameEl.textContent = n || "-";
     document.getElementById("meNm").textContent = n || "이름 정하기";   // v0.9.124 왼쪽 위 칩
-    document.getElementById("meLv").textContent = "Lv" + accLv();
+    document.getElementById("meLv").textContent = "똥피력 " + accLv();
     if (n) { nameBox.classList.remove("off"); nameEdit.classList.remove("on"); }
     else   { nameBox.classList.add("off");    nameEdit.classList.add("on"); }
   }
@@ -8598,7 +8600,7 @@
   }).observe(document.getElementById("homeJobs"));   // 가려져 있다 보일 때·화면 돌릴 때
   function renderPick() {
     homeBgSet();
-    document.getElementById("meLv").textContent = "Lv" + accLv();   // v0.9.124 왼쪽 위 칩 — 판이 끝나 레벨이 올랐을 수 있다
+    document.getElementById("meLv").textContent = "똥피력 " + accLv();   // v0.9.124 왼쪽 위 칩 — 판이 끝나 레벨이 올랐을 수 있다
     if (jobLocked()) job = "bangul";          // 맨몸대결·똥탑등반 — 탭 글자부터 방울이로
     if (petLocked()) { pet = "none"; petView = "none"; }
     tabJob.classList.toggle("on", pickTab === "job");
@@ -8857,7 +8859,7 @@
     beep(700, .04, "triangle", .04); setPage("opt");
   });
   for (const b of document.querySelectorAll("#tabBar button")) b.addEventListener("click", () => {
-    if (!tabOpen(b.dataset.pg)) { beep(220, .08, "square", .04); popHint(b.dataset.pg === "shop" ? "🔒 첫 판을 마치면 열려요" : b.dataset.pg === "rank" ? "🔒 " + RANK_OPEN_GAMES + "판을 마치면 열려요 (" + Math.min(gamesDone(), RANK_OPEN_GAMES) + "/" + RANK_OPEN_GAMES + ")" : "🔒 공통 레벨 2가 되면 열려요"); return; }   // v0.9.178 · v0.9.193
+    if (!tabOpen(b.dataset.pg)) { beep(220, .08, "square", .04); popHint(b.dataset.pg === "shop" ? "🔒 첫 판을 마치면 열려요" : b.dataset.pg === "rank" ? "🔒 " + RANK_OPEN_GAMES + "판을 마치면 열려요 (" + Math.min(gamesDone(), RANK_OPEN_GAMES) + "/" + RANK_OPEN_GAMES + ")" : "🔒 똥피력 2단계가 되면 열려요"); return; }   // v0.9.178 · v0.9.193
     if (b.dataset.pg === curPage) return;
     beep(700, .04, "triangle", .04);
     setPage(b.dataset.pg);
@@ -9004,11 +9006,11 @@
       growLv = {}; showCoins();
     }
   }
-  function lvBar(xp, T) {
+  function lvBar(xp, T, maxTxt) {
     const l = lvOf(xp, T), lo = T[l - 1], hi = T[l];
     const w = document.createElement("div"); w.className = "lvBar";
     const f = document.createElement("i"); f.style.width = (hi ? Math.min(100, (xp - lo) / (hi - lo) * 100) : 100) + "%";
-    const t = document.createElement("span"); t.textContent = hi ? (Math.round(xp - lo).toLocaleString() + " / " + (hi - lo).toLocaleString()) : "최대 레벨";
+    const t = document.createElement("span"); t.textContent = hi ? (Math.round(xp - lo).toLocaleString() + " / " + (hi - lo).toLocaleString()) : (maxTxt || "최대 레벨");
     w.append(f, t); return w;
   }
   /* v0.9.135 혜택 글을 줄로 나눈다 — " · " 는 다른 혜택(새 줄), " — " 뒤는 그 혜택의 설명(작은 글씨 새 줄) */
@@ -9023,11 +9025,11 @@
   function accCard() {
     const al = accLv();
     const a = document.createElement("div"); a.className = "lvCard";
-    a.innerHTML = '<div class="lvHead"><b>공통 레벨</b><em>Lv ' + al + '</em></div>';
-    a.appendChild(lvBar(lvData.xp, ACC_XP));
-    for (let l = 2; l <= 5; l++) {
+    a.innerHTML = '<div class="lvHead"><b>똥피력</b><em>' + al + '단계</em></div>';   // v0.9.223 공통 레벨 → 똥피력
+    a.appendChild(lvBar(lvData.xp, ACC_XP, "최대 단계"));
+    for (let l = 2; l <= ACC_XP.length; l++) {
       const r = document.createElement("div"); r.className = "lvRow" + (al >= l ? " on" : "");
-      r.innerHTML = '<span class="lvN">Lv' + l + '</span><span class="lvT"></span>' + (al >= l ? "" : '<span class="lk">🔒</span>');   // v0.9.126
+      r.innerHTML = '<span class="lvN">' + l + '단계</span><span class="lvT"></span>' + (al >= l ? "" : '<span class="lk">🔒</span>');   // v0.9.126
       lvLines(r.querySelector(".lvT"), ACC_REW[l]); a.appendChild(r);   // v0.9.135 혜택이 여럿이면 줄을 나눈다
     }
     return a;
@@ -9152,9 +9154,9 @@
       b.addEventListener("click", () => { t2.coins = f(t2.coins); renderT2(); }); cq.appendChild(b);
     }
     // 계정 레벨
-    const a = sec("⭐ 공통(계정) 레벨");
-    seg(row(a, "레벨"), lv5, t2.acc, v => { t2.acc = v; });
-    const an = document.createElement("div"); an.className = "t2Note"; an.textContent = "Lv2 다시 뽑기 · Lv3 구름 상점 · Lv4 시작 증강 고르기·스피드 모드"; a.appendChild(an);
+    const a = sec("💩 똥피력");
+    seg(row(a, "단계"), [[1, "1"], [2, "2"], [3, "3"], [4, "4"], [5, "5"], [6, "6"], [7, "7"]], t2.acc, v => { t2.acc = v; });
+    const an = document.createElement("div"); an.className = "t2Note"; an.textContent = "2단계 다시 뽑기 · 3단계 구름 상점 · 4단계 시작 증강 고르기·스피드 모드"; a.appendChild(an);
     // 캐릭터 레벨
     const ch = sec("🐶 캐릭터 레벨");
     for (const j in t2.cl) seg(row(ch, jobShort(j), jobPic(j)), lv5, t2.cl[j], v => { t2.cl[j] = v; });
@@ -9412,7 +9414,7 @@
     lvData.cx[job] = (lvData.cx[job] || 0) + g;   // v0.9.127 공통 레벨과 상관없이 처음부터
     lvSave();
     const a1 = accLv(), c1 = chrLv(job);
-    for (let l = a0 + 1; l <= a1; l++) achNew.push({ k: "공통 레벨", t: "Lv " + l, how: ACC_REW[l] });
+    for (let l = a0 + 1; l <= a1; l++) achNew.push({ k: "똥피력", t: l + "단계", how: ACC_REW[l] });
     if (CHR_PERKS[job]) for (let l = c0 + 1; l <= c1; l++)
       achNew.push({ k: "캐릭터 레벨", t: ((JOBS[job] && JOBS[job].nm) || job) + " Lv " + l, how: "캐릭터 카드의 '상세'에서 해금하고 둘 중 하나를 골라요" });
   }
@@ -15601,9 +15603,9 @@
     lvSec2.innerHTML = "<h4>레벨 공통</h4>";
     const lvs = document.createElement("div"); lvs.className = "spec";
     lvs.innerHTML = '<div class="sd"></div>';
-    lvs.querySelector(".sd").textContent = "공통 레벨 경험치(버틴 초): " + ACC_XP.slice(1).map((x, k) => "Lv" + (k + 2) + " " + x.toLocaleString()).join(" · ") +
-      "\n캐릭터 레벨(공통 Lv2부터 그 캐릭터로 버틴 초): " + CHR_XP.slice(1).map((x, k) => "Lv" + (k + 2) + " " + x.toLocaleString()).join(" · ") +
-      "\n" + Object.entries(ACC_REW).map(([l, t]) => "공통 Lv" + l + ": " + t).join("\n") +
+    lvs.querySelector(".sd").textContent = "똥피력 경험치(버틴 초): " + ACC_XP.slice(1).map((x, k) => (k + 2) + "단계 " + x.toLocaleString()).join(" · ") +
+      "\n캐릭터 레벨(그 캐릭터로 버틴 초): " + CHR_XP.slice(1).map((x, k) => "Lv" + (k + 2) + " " + x.toLocaleString()).join(" · ") +
+      "\n" + Object.entries(ACC_REW).map(([l, t]) => "똥피력 " + l + "단계: " + t).join("\n") +
       "\n스테이지 " + LEVEL_SEC + "초 · 끝판왕 " + FB_LV + "레벨부터 " + FB_LEN + "스테이지";
     lvs.querySelector(".sd").style.whiteSpace = "pre-line";
     lvSec2.appendChild(lvs); pj.appendChild(lvSec2);
