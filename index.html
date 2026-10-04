@@ -2419,7 +2419,7 @@
   const elTitle = document.getElementById("overTitle");
   const coinNote = document.getElementById("coinNote");
 
-  const GAME_VERSION = "v0.9.223";
+  const GAME_VERSION = "v0.9.224";
   /* 제작사 스플래시(bamhobak friends 로고) — 2026-09-20 끔. 다시 켜려면 true */
   const SPLASH_USE = false;   // 코드를 고칠 때마다 뒤 두 자리를 올린다
   document.getElementById("ver").textContent = GAME_VERSION;
@@ -3788,7 +3788,7 @@
      캐릭터 레벨마다 둘 중 하나를 고른다(언제든 바꿀 수 있다). Lv3 은 고르면 모든 캐릭터에 적용된다.
      v0.9.124 레벨이 되면 상세 창에서 '해금'하고 둘 중 하나를 골라야 켜진다(예전처럼 저절로 A 가 아니다). */
   const LS_LV = "epjpddongpi_lv";
-  const ACC_XP = [0, 1000, 5000, 11000, 22000, 38000, 60000];   // v0.9.223 똥피력 7단계 (6·7단계 추가)
+  const ACC_XP = [0, 1000, 4000, 9000, 16000, 25000, 36000];   // v0.9.223 똥피력 7단계 · v0.9.224 7단계 = 캐릭터 4명 Lv5(9,000초×4) — 1·4·9·16·25·36 천 초
   const CHR_XP = [0, 600, 2000, 4500, 9000];
   let lvData = { xp: 0, cx: {}, pick: {}, un: {}, hyper: false };
   try { const d = JSON.parse(localStorage.getItem(LS_LV) || "null"); if (d && typeof d.xp === "number") lvData = Object.assign(lvData, d); } catch (e) {}
