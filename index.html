@@ -1242,11 +1242,11 @@
   /* 느낌표는 버튼이 아니라 두 글자 사이 틈(.dg)을 기준으로 — 글자가 어디에 서든 정확히 상·세 가운데 */
   #homeJobs #jobList.car .lvDet.new::after { content: none !important; }
   /* v0.9.296 느낌표 뒤 무지개 오라 — 상세 글자가 살짝 가려질 만큼 (글자 위·느낌표 아래 층) */
-  #homeJobs #jobList.car .lvDet.new span.dg::before { content: ""; position: absolute; left: 50%; top: 50%; width: 40px; height: 40px; margin: -20px 0 0 -20px; z-index: 1;
-    border-radius: 50%; pointer-events: none; opacity: .95; filter: blur(3px) saturate(1.4) brightness(1.25);   /* v0.9.305 더 크고 환하게 */
-    background: radial-gradient(circle, rgba(255,255,240,.95) 0 18%, rgba(255,255,255,.4) 34%, transparent 60%),
+  #homeJobs #jobList.car .lvDet.new span.dg::before { content: ""; position: absolute; left: 50%; top: 50%; width: 30px; height: 30px; margin: -15px 0 0 -15px; z-index: 1;
+    border-radius: 50%; pointer-events: none; opacity: .5; filter: blur(3px) saturate(1.4) brightness(1.2);   /* v0.9.307 한 단계 줄임 — 글자가 보이게 */
+    background: radial-gradient(circle, rgba(255,255,240,.45) 0 10%, transparent 50%),
                 conic-gradient(#ff5d5d, #ffb13d, #fff04a, #5dff8a, #4ad8ff, #7a6bff, #ff6bd6, #ff5d5d);
-    -webkit-mask: radial-gradient(circle, #000 46%, transparent 72%); mask: radial-gradient(circle, #000 46%, transparent 72%);
+    -webkit-mask: radial-gradient(circle, #000 40%, transparent 70%); mask: radial-gradient(circle, #000 40%, transparent 70%);
     animation: bangAura 2.4s linear infinite; }
   @keyframes bangAura { 0% { transform: rotate(0) scale(.92); } 50% { transform: rotate(180deg) scale(1.08); } 100% { transform: rotate(360deg) scale(.92); } }
   #homeJobs #jobList.car .lvDet.new span.dg::after { content: ""; position: absolute; left: 50%; top: 50%; width: 18px; height: 29px; margin: -15px 0 0 -9px; z-index: 2;
@@ -2621,7 +2621,7 @@
   const elTitle = document.getElementById("overTitle");
   const coinNote = document.getElementById("coinNote");
 
-  const GAME_VERSION = "v0.9.306";
+  const GAME_VERSION = "v0.9.307";
   /* 제작사 스플래시(bamhobak friends 로고) — 2026-09-20 끔. 다시 켜려면 true */
   const SPLASH_USE = false;   // 코드를 고칠 때마다 뒤 두 자리를 올린다
   document.getElementById("ver").textContent = GAME_VERSION;
