@@ -1233,6 +1233,14 @@
   #homeJobs #jobList.car .lvDet.new span.dg { width: 0; height: 1em; vertical-align: middle; position: relative; }
   /* 느낌표는 버튼이 아니라 두 글자 사이 틈(.dg)을 기준으로 — 글자가 어디에 서든 정확히 상·세 가운데 */
   #homeJobs #jobList.car .lvDet.new::after { content: none !important; }
+  /* v0.9.296 느낌표 뒤 무지개 오라 — 상세 글자가 살짝 가려질 만큼 (글자 위·느낌표 아래 층) */
+  #homeJobs #jobList.car .lvDet.new span.dg::before { content: ""; position: absolute; left: 50%; top: 50%; width: 26px; height: 26px; margin: -13px 0 0 -13px; z-index: 1;
+    border-radius: 50%; pointer-events: none; opacity: .62; filter: blur(2.5px);
+    background: radial-gradient(circle, rgba(255,255,255,.6) 0 12%, transparent 55%),
+                conic-gradient(#ff5d5d, #ffb13d, #fff04a, #5dff8a, #4ad8ff, #7a6bff, #ff6bd6, #ff5d5d);
+    -webkit-mask: radial-gradient(circle, #000 38%, transparent 70%); mask: radial-gradient(circle, #000 38%, transparent 70%);
+    animation: bangAura 2.4s linear infinite; }
+  @keyframes bangAura { 0% { transform: rotate(0) scale(.92); } 50% { transform: rotate(180deg) scale(1.08); } 100% { transform: rotate(360deg) scale(.92); } }
   #homeJobs #jobList.car .lvDet.new span.dg::after { content: ""; position: absolute; left: 50%; top: 50%; width: 18px; height: 29px; margin: -15px 0 0 -9px; z-index: 2;
     background: url(assets/ui/bang_sheet.webp) 0 0 / 882px 29px no-repeat; animation: bangPlaySm 1.8s steps(49) infinite; filter: drop-shadow(0 0 3px rgba(255,200,60,.8)); }
   #homeJobs .carDots { display: flex; gap: 7px; justify-content: center; }
@@ -2560,7 +2568,7 @@
   const elTitle = document.getElementById("overTitle");
   const coinNote = document.getElementById("coinNote");
 
-  const GAME_VERSION = "v0.9.295";
+  const GAME_VERSION = "v0.9.296";
   /* 제작사 스플래시(bamhobak friends 로고) — 2026-09-20 끔. 다시 켜려면 true */
   const SPLASH_USE = false;   // 코드를 고칠 때마다 뒤 두 자리를 올린다
   document.getElementById("ver").textContent = GAME_VERSION;
