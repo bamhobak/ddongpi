@@ -1157,7 +1157,7 @@
   #startScreen #meBtn { background: none; border: 0; padding: 0; }   /* v0.9.293 어두운 반투명 바탕 없이 노란 똥피력 칩만 */
   /* v0.9.297 똥피력 칩 — 왼쪽 금테 메달 안 무지개(단계마다 한 줄씩 채움) + 오른쪽 리본 이름표(Codex, 제비꼬리 끝) — 게이지가 아니라 칭호처럼 */
   #startScreen #meBtn { gap: 0; }
-  #startScreen #meRb { position: relative; z-index: 2; flex: none; width: 46px; height: 30px; margin: -4px -12px 0 -4px; display: block; }   /* v0.9.298 메달 없이 무지개만 */
+  #startScreen #meRb { position: relative; z-index: 2; flex: none; width: 52px; height: 37px; margin: 0 -14px 0 -7px; display: block; }   /* v0.9.303 구름 안 잘리게 칸 넓힘 (무지개 크기는 그대로) */   /* v0.9.298 메달 없이 무지개만 */
   #startScreen #meRb svg { width: 100%; height: 100%; overflow: visible; filter: drop-shadow(0 2px 2px rgba(0,0,0,.4)); }
   #startScreen #meRb .spk { animation: rbSpk 1.6s ease-in-out infinite; transform-box: fill-box; transform-origin: center; }
   #startScreen #meRb .spk.b { animation-delay: .8s; }
@@ -1165,7 +1165,9 @@
   #startScreen #meBtn b { height: 30px; box-sizing: border-box; display: block; padding: 0 2px 0 13px; border-radius: 0; background: none; box-shadow: none;
     border-style: solid; border-color: transparent; border-width: 0 11px 0 3px;
     border-image: url(assets/ui/rank_ribbon.webp) 0 34 0 8 fill / 0 11px 0 3px / 0 stretch;   /* v0.9.299 접힌 조각 없이 깔끔한 끝 */
-    line-height: 30px; font-size: 12.5px; font-weight: 900; color: #5a2a00; text-shadow: 0 1px 0 rgba(255,240,190,.7); white-space: nowrap;
+    line-height: 30px; font-size: 16.5px; font-weight: 900; color: #fff; letter-spacing: .3px; white-space: nowrap; overflow: visible;
+    -webkit-text-stroke: 4px #5a2a00; paint-order: stroke fill;   /* v0.9.303 글자를 띠보다 크게 — 굵은 갈색 테두리로 띠 밖까지 튀어나오게 */
+    text-shadow: 0 2px 0 #5a2a00, 0 3px 3px rgba(0,0,0,.35);
     filter: drop-shadow(0 2px 3px rgba(0,0,0,.45)); }
   #startScreen #coinBox { top: calc(max(8px, env(safe-area-inset-top)) + 36px) !important; }   /* v0.9.133 이름 칩은 코인처럼 모든 탭에 */
   #homeJobs #jobList.car .lvDet { --bh: 26px; position: relative; display: block; height: var(--bh); box-sizing: border-box; min-width: 66px; margin: -2px auto 0;
@@ -1941,7 +1943,7 @@
   #myRank { gap: 8px; padding: 2px 4px 4px; }
   /* v0.9.295 이번 주 TOP 10 아래 '내 기록' 한 줄 */
   #pgRank #myWeekLine { display: flex; align-items: center; justify-content: center; gap: 10px; width: calc(100% - 16px); max-width: 372px; box-sizing: border-box;
-    margin: -2px auto 0; padding: 7px 16px; border-radius: 999px; background: rgba(8,10,34,.72); box-shadow: inset 0 0 0 1.5px rgba(255,216,107,.55), 0 2px 6px rgba(0,0,0,.35); }
+    margin: -2px auto 0; padding: 0 16px; height: 40px; flex-shrink: 0; line-height: 1; border-radius: 999px;   /* v0.9.303 기록 있든 없든 같은 높이 */ background: rgba(8,10,34,.72); box-shadow: inset 0 0 0 1.5px rgba(255,216,107,.55), 0 2px 6px rgba(0,0,0,.35); }
   #pgRank #myWeekLine[hidden] { display: none; }
   #pgRank #myWeekLine .mwL { font-size: 13px; font-weight: 800; color: #c9d0ff; }
   #pgRank #myWeekLine .mwR { font-size: 19px; font-weight: 900; color: #ffd86b; }
@@ -2579,7 +2581,7 @@
   const elTitle = document.getElementById("overTitle");
   const coinNote = document.getElementById("coinNote");
 
-  const GAME_VERSION = "v0.9.302";
+  const GAME_VERSION = "v0.9.303";
   /* 제작사 스플래시(bamhobak friends 로고) — 2026-09-20 끔. 다시 켜려면 true */
   const SPLASH_USE = false;   // 코드를 고칠 때마다 뒤 두 자리를 올린다
   document.getElementById("ver").textContent = GAME_VERSION;
@@ -3980,7 +3982,7 @@
       const st = (x, y, r, c) => '<path class="spk' + c + '" d="M' + x + " " + (y - r) + "Q" + x + " " + y + " " + (x + r) + " " + y + "Q" + x + " " + y + " " + x + " " + (y + r) + "Q" + x + " " + y + " " + (x - r) + " " + y + "Q" + x + " " + y + " " + x + " " + (y - r) + 'z" fill="#fff6b0" stroke="#3a1d4a" stroke-width=".7"/>';
       p += st(8, 7, 3.6, "") + st(43, 4, 2.8, " b");
     }
-    return '<svg viewBox="0 0 50 32" aria-hidden="true"><g transform="rotate(-7 25 18)">' + p + "</g></svg>";
+    return '<svg viewBox="-3 -2 56 40" aria-hidden="true"><g transform="rotate(-7 25 18)">' + p + "</g></svg>";
   }
   function setMeChip() {
     const l = accLv();
