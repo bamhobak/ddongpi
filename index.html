@@ -2094,7 +2094,7 @@
         <button id="devHome">메인으로</button>
       </div>
       <div id="devPwRow">
-        <input id="devPw" type="password" inputmode="numeric" maxlength="16" autocomplete="off">
+        <input id="devPw" type="password" maxlength="40" autocomplete="off">
         <button id="devGo">확인</button>
       </div>
       <div id="devMsg"></div>
@@ -2241,7 +2241,7 @@
       <h2 id="testTitle">테스트 모드</h2>
       <div class="sub" id="testSub">목숨 무한 · 기록은 남지 않습니다</div>
       <div id="testRow">
-        <input id="testPw" type="password" inputmode="numeric" maxlength="16" autocomplete="off">
+        <input id="testPw" type="password" maxlength="40" autocomplete="off">
         <button id="testGo">확인</button>
       </div>
       <div id="testMsg"></div>
@@ -2468,7 +2468,7 @@
   const elTitle = document.getElementById("overTitle");
   const coinNote = document.getElementById("coinNote");
 
-  const GAME_VERSION = "v0.9.281";
+  const GAME_VERSION = "v0.9.282";
   /* 제작사 스플래시(bamhobak friends 로고) — 2026-09-20 끔. 다시 켜려면 true */
   const SPLASH_USE = false;   // 코드를 고칠 때마다 뒤 두 자리를 올린다
   document.getElementById("ver").textContent = GAME_VERSION;
