@@ -1159,10 +1159,12 @@
   #startScreen #meBtn { gap: 0; }
   #startScreen #meRb { position: relative; z-index: 2; flex: none; width: 46px; height: 30px; margin: -4px -12px 0 -4px; display: block; }   /* v0.9.298 메달 없이 무지개만 */
   #startScreen #meRb svg { width: 100%; height: 100%; overflow: visible; filter: drop-shadow(0 2px 2px rgba(0,0,0,.4)); }
-  #startScreen #meRb.max svg { filter: drop-shadow(0 2px 2px rgba(0,0,0,.4)) drop-shadow(0 0 4px rgba(255,240,150,.9)); }
+  #startScreen #meRb .spk { animation: rbSpk 1.6s ease-in-out infinite; transform-box: fill-box; transform-origin: center; }
+  #startScreen #meRb .spk.b { animation-delay: .8s; }
+  @keyframes rbSpk { 0%, 100% { opacity: .2; transform: scale(.6); } 50% { opacity: 1; transform: scale(1.1); } }
   #startScreen #meBtn b { height: 30px; box-sizing: border-box; display: block; padding: 0 2px 0 13px; border-radius: 0; background: none; box-shadow: none;
-    border-style: solid; border-color: transparent; border-width: 0 11px 0 6px;
-    border-image: url(assets/ui/rank_ribbon.webp) 0 34 0 20 fill / 0 11px 0 6px / 0 stretch;
+    border-style: solid; border-color: transparent; border-width: 0 11px 0 3px;
+    border-image: url(assets/ui/rank_ribbon.webp) 0 34 0 8 fill / 0 11px 0 3px / 0 stretch;   /* v0.9.299 접힌 조각 없이 깔끔한 끝 */
     line-height: 30px; font-size: 12.5px; font-weight: 900; color: #5a2a00; text-shadow: 0 1px 0 rgba(255,240,190,.7); white-space: nowrap;
     filter: drop-shadow(0 2px 3px rgba(0,0,0,.45)); }
   #startScreen #coinBox { top: calc(max(8px, env(safe-area-inset-top)) + 36px) !important; }   /* v0.9.133 이름 칩은 코인처럼 모든 탭에 */
@@ -2572,7 +2574,7 @@
   const elTitle = document.getElementById("overTitle");
   const coinNote = document.getElementById("coinNote");
 
-  const GAME_VERSION = "v0.9.298";
+  const GAME_VERSION = "v0.9.299";
   /* 제작사 스플래시(bamhobak friends 로고) — 2026-09-20 끔. 다시 켜려면 true */
   const SPLASH_USE = false;   // 코드를 고칠 때마다 뒤 두 자리를 올린다
   document.getElementById("ver").textContent = GAME_VERSION;
@@ -3962,9 +3964,16 @@
       p += '<path d="' + arc(r) + '" stroke="' + (i < n ? RB7[i] : "#e9e4ff") + '" stroke-opacity="' + (i < n ? 1 : .3) + '" stroke-width="' + (W + .35) + '" fill="none"/>';
     }
     p += '<path d="' + arc(R0 - W * .6) + '" stroke="rgba(255,255,255,.55)" stroke-width=".8" fill="none" stroke-dasharray="7 30" stroke-linecap="round"/>';   // 반짝 하이라이트
-    const cloud = (x, y, k) => '<g transform="translate(' + x + " " + y + ") scale(" + k + ')">'
-      + '<path d="M-7 3a4 4 0 0 1 1-7a5 5 0 0 1 9-1a4 4 0 0 1 5 5a3 3 0 0 1-1 6h-12a3 3 0 0 1-2-3z" fill="#fff" stroke="#3a1d4a" stroke-width="1.6" stroke-linejoin="round"/></g>';
-    p += cloud(cx - R0 + W * 3.2, cy + 1.5, .95) + cloud(cx + R0 - W * 3.4, cy + 2, 1.05);
+    const cloud = (x, y, k, d) => '<g transform="translate(' + x + " " + y + ") scale(" + k + ')">'
+      + '<path d="' + d + '" fill="#fff" stroke="#3a1d4a" stroke-width="1.6" stroke-linejoin="round"/></g>';
+    // v0.9.299 두 구름 모양을 다르게 — 왼쪽은 낮고 넓은 세 덩이, 오른쪽은 높이 솟은 두 덩이
+    const CL = "M-9 4a3 3 0 0 1 0-6a3.5 3.5 0 0 1 5.5-2.5a4 4 0 0 1 7 .5a3 3 0 0 1 5 2.5a2.5 2.5 0 0 1-.5 5.5h-15a2.5 2.5 0 0 1-2-0z";
+    const CR = "M-6 4a3.5 3.5 0 0 1-1-6.5a5.5 5.5 0 0 1 10-3a4.5 4.5 0 0 1 4.5 6a3 3 0 0 1-.5 3.5z";
+    p += cloud(cx - R0 + W * 3.2, cy + 1.8, .92, CL) + cloud(cx + R0 - W * 3.2, cy + 1.6, 1.08, CR);
+    if (n >= 7) {                                // MAX — 반짝이 별 둘 (빛 번짐 대신)
+      const st = (x, y, r, c) => '<path class="spk' + c + '" d="M' + x + " " + (y - r) + "Q" + x + " " + y + " " + (x + r) + " " + y + "Q" + x + " " + y + " " + x + " " + (y + r) + "Q" + x + " " + y + " " + (x - r) + " " + y + "Q" + x + " " + y + " " + x + " " + (y - r) + 'z" fill="#fff6b0" stroke="#3a1d4a" stroke-width=".7"/>';
+      p += st(8, 7, 3.6, "") + st(43, 4, 2.8, " b");
+    }
     return '<svg viewBox="0 0 50 32" aria-hidden="true"><g transform="rotate(-7 25 18)">' + p + "</g></svg>";
   }
   function setMeChip() {
