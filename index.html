@@ -23,7 +23,8 @@
   @font-face { font-family: "GameFont"; src: url("assets/fonts/pretendard-Regular.woff2") format("woff2"); font-weight: 100 500; font-display: swap; }
   @font-face { font-family: "GameFont"; src: url("assets/fonts/pretendard-SemiBold.woff2") format("woff2"); font-weight: 600; font-display: swap; }
   @font-face { font-family: "GameFont"; src: url("assets/fonts/pretendard-Bold.woff2") format("woff2"); font-weight: 700; font-display: swap; }
-  @font-face { font-family: "GameFont"; src: url("assets/fonts/ssurround.woff2") format("woff2"); font-weight: 800 900; font-display: swap; }
+  @font-face { font-family: "GameFont"; src: url("assets/fonts/ssurround.woff2") format("woff2"); font-weight: 800 900; font-display: swap;
+    ascent-override: 87%; descent-override: 31%; }   /* v0.9.294 써라운드는 위·아래 여백이 80:38 이라 한글이 6.5% 떠 보인다 — 줄 높이(118%)는 그대로, 글자가 줄 가운데에 오게 */
   @font-face { font-family: "Pretendard"; src: url("assets/fonts/pretendard-Regular.woff2") format("woff2"); font-weight: 100 500; font-display: swap; }
   @font-face { font-family: "Pretendard"; src: url("assets/fonts/pretendard-SemiBold.woff2") format("woff2"); font-weight: 600; font-display: swap; }
   @font-face { font-family: "Pretendard"; src: url("assets/fonts/pretendard-Bold.woff2") format("woff2"); font-weight: 700 900; font-display: swap; }
@@ -1154,11 +1155,11 @@
   #startScreen #meBtn b { padding: 1px 6px; border-radius: 999px; background: #ffd23f; color: #5a3000; font-size: 11.5px; font-weight: 900; text-shadow: none; }
   #startScreen #meBtn span { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
   #startScreen #meBtn { background: none; border: 0; padding: 0; }   /* v0.9.293 어두운 반투명 바탕 없이 노란 똥피력 칩만 */
-  /* v0.9.293 똥피력 칩 — Codex 캐러멜 알약 + 왼쪽 반짝 똥 (9칸 자르기: 똥·둥근 끝은 그대로, 가운데만 늘어난다) */
+  /* v0.9.293 똥피력 칩 — Codex 캐러멜 알약 (9칸 자르기: 왼쪽 그림·둥근 끝은 그대로, 가운데만 늘어난다) · v0.9.294 왼쪽 그림을 똥 → 피하는 지그재그 화살표 */
   #startScreen #meBtn b { height: 30px; box-sizing: border-box; display: block; padding: 0 3px 0 1px; border-radius: 0; background: none; box-shadow: none;
-    border-style: solid; border-color: transparent; border-width: 0 12px 0 26px;
-    border-image: url(assets/ui/ddong_badge.webp) 0 50 0 112 fill / 0 12px 0 26px / 0 stretch;
-    line-height: 27px; font-size: 12.5px; font-weight: 900; color: #5a2a00; text-shadow: 0 1px 0 rgba(255,240,190,.7); white-space: nowrap;
+    border-style: solid; border-color: transparent; border-width: 0 12px 0 29px;
+    border-image: url(assets/ui/dodge_badge.webp) 0 50 0 124 fill / 0 12px 0 29px / 0 stretch;
+    line-height: 30px; font-size: 12.5px; font-weight: 900; color: #5a2a00; text-shadow: 0 1px 0 rgba(255,240,190,.7); white-space: nowrap;
     filter: drop-shadow(0 2px 3px rgba(0,0,0,.45)); }
   #startScreen #coinBox { top: calc(max(8px, env(safe-area-inset-top)) + 36px) !important; }   /* v0.9.133 이름 칩은 코인처럼 모든 탭에 */
   #homeJobs #jobList.car .lvDet { --bh: 26px; position: relative; display: block; height: var(--bh); box-sizing: border-box; min-width: 66px; margin: -2px auto 0;
@@ -1192,7 +1193,7 @@
   #homeJobs #jobList.car .augCard .nm2, #homeJobs #jobList.car .augCard.sel .nm2 {
     height: 34px; box-sizing: border-box; width: max-content; white-space: nowrap; margin: 3px auto 0;   /* v0.9.255 발끝과 겹치지 않게 · v0.9.256 3px */
     border-style: solid; border-color: transparent; border-width: 0 33px; border-image: url(assets/ui/ribbon.webp) 0 125 fill / 0 33px / 0 stretch;
-    padding: 0 1px 0 3px; line-height: 32px; font-size: 16px; font-weight: 900; letter-spacing: .5px; color: #6b3300;   /* v0.9.289 써라운드 글자 가운데로 */
+    padding: 0 1px 0 3px; line-height: 26.5px; font-size: 16px; font-weight: 900; letter-spacing: .5px; color: #6b3300;   /* v0.9.294 리본 앞면(아래 접힌 턱 빼고) 가운데에 글자 — 실측 */
     text-shadow: 0 1px 0 rgba(255,255,255,.65); filter: drop-shadow(0 3px 3px rgba(20,10,0,.35)); }
   #homeJobs #jobList.car .augCard.sil .nm2 { filter: grayscale(.85) brightness(.8) drop-shadow(0 3px 3px rgba(20,10,0,.35)); }
   #homeJobs #jobList.car .lvMini { position: relative; display: flex; align-items: center; justify-content: center; gap: 0; margin-top: -4px; height: 28px; }
@@ -1210,8 +1211,7 @@
   #homeJobs #jobList.car .lvMini .lvMax { position: relative; display: block; height: 18px; line-height: 18px; margin-left: -9px; padding: 0 12px 0 16px; border-radius: 0 9px 9px 0;
     font-size: 12px; font-weight: 900; letter-spacing: 1.5px; color: #fff; text-shadow: 0 1px 2px rgba(120,40,0,.8);
     background: linear-gradient(180deg, #ffd86b, #ff9b1f); border: 1.5px solid #7a4508; border-left: 0; box-shadow: inset 0 1px 0 rgba(255,255,255,.6), 0 0 8px rgba(255,190,60,.6); }
-  #homeJobs #jobList.car .lvMini .lvMax { line-height: 16px; }   /* v0.9.293 MAX 글자 1px 위로 */
-  #homeJobs #jobList.car .augCard .lvDet { padding-top: 1px; }   /* v0.9.293 상세 글자 1px 아래로 */
+  #homeJobs #jobList.car .lvMini .lvMax { line-height: 14.5px; }   /* v0.9.293 MAX 글자 1px 위로 (v0.9.294 글꼴 기준 보정만큼 더) */
   #homeJobs #jobList.car .lvDet { --bh: 24px; min-width: 0; padding: 0 2px calc(var(--bh) * .08); margin: 0 6px 0 6px; flex-shrink: 0; font-size: 12px; letter-spacing: .5px; }
   #homeJobs #jobList.car .lvDet.new::after { content: "!"; right: -22px; top: 50%; width: auto; height: auto; margin-top: -10px; border: 0; border-radius: 0; background: none; box-shadow: none;
     font-size: 17px; font-weight: 900; line-height: 20px; color: #ffd23f; animation: lvDot 1s ease-in-out infinite;
@@ -1918,32 +1918,33 @@
   #pgRank #myBoard { border-width: 22px 14px 14px !important; border-image: url(assets/ui/panel_navy.webp) 66 fill / 30px / 0 stretch !important; margin-top: 30px; }
   #pgRank #myBoard > h3 { height: 38px; line-height: 30px; font-size: 13.5px; font-weight: 900; border-width: 0 38px; border-image-width: 0 38px; margin-top: -42px; }
   #myRank { display: flex; flex-direction: column; gap: 5px; padding: 0 4px; }
-  /* v0.9.292 나의 순위 새 모양 — 전체 + 최고 캐릭터 두 줄 카드 */
+  /* v0.9.294 나의 순위 — 이번 주 최고(캐릭터·전체 순위·캐릭터 순위) / 역대 최고(캐릭터·전체 순위) 두 장 */
   #myRank { gap: 8px; padding: 2px 4px 4px; }
-  #myRank .mrTile { display: grid; grid-template-columns: 44px minmax(0, 1fr) minmax(64px, 76px) minmax(64px, 76px); align-items: center; gap: 5px; padding: 8px 7px;
+  #myRank .mrTile { display: grid; grid-template-columns: 50px minmax(0, 1fr) auto; align-items: center; gap: 8px; padding: 8px 8px 8px 8px;
     border-radius: 14px; background: linear-gradient(180deg, rgba(110,130,255,.24), rgba(40,50,150,.22)); border: 1.5px solid rgba(160,180,255,.4);
     box-shadow: inset 0 1px 0 rgba(255,255,255,.12), 0 2px 0 rgba(10,12,40,.6); }
-  #myRank .mrTile.all { background: linear-gradient(180deg, rgba(255,214,90,.28), rgba(170,110,20,.2)); border-color: rgba(255,216,107,.75); }
-  #myRank .mrIc { width: 44px; height: 44px; border-radius: 50%; display: grid; place-items: center; overflow: hidden; font-size: 24px;
+  #myRank .mrTile.wk { background: linear-gradient(180deg, rgba(255,214,90,.28), rgba(170,110,20,.2)); border-color: rgba(255,216,107,.75); }
+  #myRank .mrIc { width: 50px; height: 50px; border-radius: 50%; display: grid; place-items: center; overflow: hidden; font-size: 24px;
     background: radial-gradient(circle at 50% 35%, rgba(255,255,255,.18), rgba(8,10,34,.75)); box-shadow: inset 0 0 0 2px rgba(255,216,107,.55); }
   #myRank .mrIc img { width: 92%; height: 92%; object-fit: contain; }
-  #myRank .mrLb { display: flex; flex-direction: column; min-width: 0; }
-  #myRank .mrLb b { font-size: 16px; font-weight: 900; color: #fff; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-  #myRank .mrLb small { font-size: 11px; font-weight: 700; color: #b9c1ef; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-  #myRank .mrTile.all .mrLb small { color: #ffe2a0; }
-  #myRank .mrSt { display: flex; flex-direction: column; align-items: center; padding: 4px 2px; border-radius: 10px; background: rgba(6,8,28,.45); }
-  #myRank .mrSt i { font-style: normal; font-size: 10.5px; font-weight: 700; color: #a9b1e4; }
-  #myRank .mrSt b { font-size: 19px; font-weight: 900; color: #ffd86b; line-height: 1.15; white-space: nowrap; }
-  #myRank .mrSt small { font-size: 9.5px; font-weight: 600; color: #cfd6ff; white-space: nowrap; letter-spacing: -.2px; }
-  #myRank .mrSt.no b { color: #7d84b8; font-size: 15px; }
-  @media (max-width: 400px) {   /* 작은 폰 — 이름 칸이 눌리지 않게 아이콘·숫자 칸을 줄인다 */
-    #myRank .mrTile { grid-template-columns: 34px minmax(0, 1fr) 60px 60px; gap: 4px; padding: 7px 5px; }
-    #myRank .mrIc { width: 34px; height: 34px; font-size: 18px; }
-    #myRank .mrLb b { font-size: 14px; }
-    #myRank .mrLb small { font-size: 10px; }
+  #myRank .mrLb { display: flex; flex-direction: column; min-width: 0; line-height: 1.2; text-align: left; }
+  #myRank .mrLb i { font-style: normal; font-size: 11px; font-weight: 800; color: #ffe2a0; }
+  #myRank .mrTile.al .mrLb i { color: #b9c6ff; }
+  #myRank .mrLb b { font-size: 17px; font-weight: 900; color: #fff; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  #myRank .mrLb small { font-size: 11.5px; font-weight: 700; color: #dfe4ff; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  #myRank .mrSts { display: flex; gap: 5px; }
+  #myRank .mrSt { display: flex; flex-direction: column; align-items: center; justify-content: center; min-width: 62px; height: 50px; padding: 0 6px; box-sizing: border-box;
+    border-radius: 10px; background: rgba(6,8,28,.5); }
+  #myRank .mrSt i { font-style: normal; font-size: 10.5px; font-weight: 700; color: #a9b1e4; white-space: nowrap; }
+  #myRank .mrSt b { font-size: 19px; font-weight: 900; color: #ffd86b; line-height: 1.2; white-space: nowrap; }
+  #myRank .mrSt.no b { color: #7d84b8; font-size: 14px; }
+  @media (max-width: 400px) {
+    #myRank .mrTile { grid-template-columns: 40px minmax(0, 1fr) auto; gap: 6px; padding: 7px 6px; }
+    #myRank .mrIc { width: 40px; height: 40px; font-size: 20px; }
+    #myRank .mrLb b { font-size: 15px; }
+    #myRank .mrLb small { font-size: 10.5px; }
+    #myRank .mrSt { min-width: 54px; height: 46px; padding: 0 4px; }
     #myRank .mrSt b { font-size: 16px; }
-    #myRank .mrSt small { font-size: 8.5px; letter-spacing: -.3px; }
-    #myRank .mrSt i { font-size: 9.5px; }
   }
   #myRank .mrHead, #myRank .mrRow { display: grid; grid-template-columns: 1.15fr 1fr 1fr; align-items: center; gap: 6px; }
   #myRank .mrHead { font-size: 12px; font-weight: 800; color: #a9b1e4; text-align: center; padding: 0 6px; }
@@ -2550,7 +2551,7 @@
   const elTitle = document.getElementById("overTitle");
   const coinNote = document.getElementById("coinNote");
 
-  const GAME_VERSION = "v0.9.293";
+  const GAME_VERSION = "v0.9.294";
   /* 제작사 스플래시(bamhobak friends 로고) — 2026-09-20 끔. 다시 켜려면 true */
   const SPLASH_USE = false;   // 코드를 고칠 때마다 뒤 두 자리를 올린다
   document.getElementById("ver").textContent = GAME_VERSION;
@@ -15499,8 +15500,6 @@
       if (!r.ok) throw new Error("HTTP " + r.status);
       const mine = (await r.json()).filter(x => (x.mode || "item") === (gameMode || "item"));
       const wk = weekStartMs(0), EPOCH = Date.UTC(2020, 0, 1);
-      const jobs = ["all"].concat(Object.keys(JOBS).filter(j => !JOBS[j].gone));
-      const best = (jb, since) => { let b = 0; for (const x of mine) if ((jb === "all" || x.job === jb) && Date.parse(x.created_at) >= since && Number(x.score) > b) b = Number(x.score); return b; };
       const rankOf = async (jb, since, sc) => {
         if (!sc) return null;
         const list = await fetchRange(since, null, 1000, jb === "all" ? null : jb);
@@ -15508,37 +15507,37 @@
         if (list.length >= 1000 && sc < Number(list[list.length - 1].score)) return { out: true, sc };
         return { rk: above + 1, sc };
       };
-      const rows = await Promise.all(jobs.map(async jb => {
-        const w = best(jb, wk), a = best(jb, EPOCH);
-        const [rw, ra] = await Promise.all([rankOf(jb, wk, w), rankOf(jb, EPOCH, a)]);
-        return { jb, rw, ra };
-      }));
-      /* v0.9.292 나의 순위 — 전체 한 줄 + 캐릭터 중 가장 순위가 높은 하나만 (역대 순위가 먼저, 없으면 이번 주) */
+      /* v0.9.294 나의 순위 — 이번 주 최고 기록(캐릭터 · 전체 몇 위 · 그 캐릭터 몇 위) / 역대 최고 기록(캐릭터 · 전체 몇 위) */
+      const top = since => { let b = null; for (const x of mine) if (Date.parse(x.created_at) >= since && (!b || Number(x.score) > Number(b.score))) b = x; return b; };
+      const wTop = top(wk), aTop = top(EPOCH);
+      const [wAll, wJob, aAll] = await Promise.all([
+        wTop ? rankOf("all", wk, Number(wTop.score)) : null,
+        wTop && wTop.job && JOBS[wTop.job] ? rankOf(wTop.job, wk, Number(wTop.score)) : null,
+        aTop ? rankOf("all", EPOCH, Number(aTop.score)) : null]);
       box.innerHTML = "";
-      const rkv = v => v && !v.out ? v.rk : Infinity;
-      const chars = rows.filter(r2 => r2.jb !== "all" && (r2.ra || r2.rw));
-      chars.sort((x, y) => rkv(x.ra) - rkv(y.ra) || rkv(x.rw) - rkv(y.rw) || ((y.ra && y.ra.sc) || 0) - ((x.ra && x.ra.sc) || 0));
-      const all = rows.find(r2 => r2.jb === "all");
-      if (!all || (!all.ra && !all.rw)) { box.innerHTML = '<div class="mrNone">아직 기록이 없어요 · 한 판 해 보세요!</div>'; return; }
+      if (!aTop) { box.innerHTML = '<div class="mrNone">아직 기록이 없어요 · 한 판 해 보세요!</div>'; return; }
+      const rkTxt = v => !v ? "-" : v.out ? "1000위 밖" : v.rk + "위";
       const stat = (lb, v) => {
         const c = document.createElement("div"); c.className = "mrSt" + (!v || v.out ? " no" : "");
         const i = document.createElement("i"); i.textContent = lb;
-        const b = document.createElement("b"); b.textContent = !v ? "-" : v.out ? "1000위 밖" : v.rk + "위";
-        const sm = document.createElement("small"); sm.textContent = v ? v.sc.toLocaleString() : "기록 없음";
-        c.append(i, b, sm); return c;
+        const b = document.createElement("b"); b.textContent = rkTxt(v);
+        c.append(i, b); return c;
       };
-      const tile = (r2, label, sub) => {
-        const t = document.createElement("div"); t.className = "mrTile" + (r2.jb === "all" ? " all" : "");
+      const card = (kind, title, rec, stats) => {
+        const t = document.createElement("div"); t.className = "mrTile " + kind;
         const ic = document.createElement("div"); ic.className = "mrIc";
-        if (r2.jb === "all") ic.textContent = "🏆";
-        else { const im = document.createElement("img"); im.src = "assets/" + JOB_IMG[r2.jb] + "_right.png"; im.alt = ""; ic.appendChild(im); }
+        if (rec && rec.job && JOB_IMG[rec.job]) { const im = document.createElement("img"); im.src = "assets/" + JOB_IMG[rec.job] + "_right.png"; im.alt = ""; ic.appendChild(im); }
+        else ic.textContent = "🐾";
         const lb = document.createElement("div"); lb.className = "mrLb";
-        const nm = document.createElement("b"); nm.textContent = label; const sb = document.createElement("small"); sb.textContent = sub;
-        lb.append(nm, sb);
-        t.append(ic, lb, stat("이번 주", r2.rw), stat("역대", r2.ra)); box.appendChild(t);
+        const tt = document.createElement("i"); tt.textContent = title;
+        const nm = document.createElement("b"); nm.textContent = rec ? (rec.job && JOBS[rec.job] ? jobShort(rec.job) : "?") : "기록 없음";
+        const sc = document.createElement("small"); sc.textContent = rec ? Number(rec.score).toLocaleString() + "점" : "이번 주에 한 판 해 보세요";
+        lb.append(tt, nm, sc);
+        const ss = document.createElement("div"); ss.className = "mrSts"; ss.append(...stats);
+        t.append(ic, lb, ss); box.appendChild(t);
       };
-      tile(all, "전체", "모든 캐릭터");
-      if (chars.length) tile(chars[0], jobShort(chars[0].jb), "내 최고 캐릭터");
+      card("wk", "이번 주 최고", wTop, wTop ? [stat("전체", wAll), stat(wTop.job && JOBS[wTop.job] ? jobShort(wTop.job) : "캐릭터", wJob)] : []);
+      card("al", "역대 최고", aTop, [stat("전체", aAll)]);
     } catch (e) {
       box.innerHTML = '<div class="mrNone">내 순위를 불러오지 못했어요</div>'; myRankAt = 0;
     }
