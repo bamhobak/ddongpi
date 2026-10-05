@@ -1102,7 +1102,8 @@
   #startScreen.firstRun #tabBar button:not(.home) { background: linear-gradient(180deg, #4a4a55, #34343d) !important; }
   #startScreen.firstRun #tabBar button:not(.home) img { filter: grayscale(1) brightness(.62) !important; }
   #startScreen.firstRun #meBtn, #startScreen.firstRun #coinBox { visibility: hidden; }   /* v0.9.286 첫 판 전에는 아예 숨긴다 */
-  #startScreen #coinBox { display: none !important; }   /* v0.9.289 왼쪽 위 코인 수는 안 보여 준다 (상점·성장 탭에 따로 있다) */
+  #startScreen #coinBox { display: none !important; }
+  #startScreen #meBtn #meNm { display: none; }   /* v0.9.292 왼쪽 위는 똥피력만 (이름은 칩을 누르면 내 정보 창에서) */   /* v0.9.289 왼쪽 위 코인 수는 안 보여 준다 (상점·성장 탭에 따로 있다) */
   #startScreen.firstRun .carArrow, #startScreen.firstRun .lvDet { opacity: .38; filter: grayscale(.6); }
   #startScreen.firstRun #btnStart { pointer-events: auto !important; animation: frPulse 1.3s ease-in-out infinite !important; }
   @keyframes frPulse { 50% { transform: scale(1.06); filter: drop-shadow(0 0 12px rgba(255,210,63,.9)); } }
@@ -1375,15 +1376,17 @@
     -webkit-mask-image: linear-gradient(180deg, transparent 0, #000 10px, #000 calc(100% - 14px), transparent 100%);
             mask-image: linear-gradient(180deg, transparent 0, #000 10px, #000 calc(100% - 14px), transparent 100%); }
   #pgBook #bookList::-webkit-scrollbar { display: none; }
-  #pgBook #bookDesc { position: relative; flex-shrink: 0; width: calc(100% - 16px); max-width: 356px; min-height: 84px; margin: 12px auto 2px;
-    padding: 12px 16px 12px; border: 3px solid #6b3300 !important; border-image: none; border-radius: 22px;
-    background: linear-gradient(180deg, #fffdf4, #fff1c9); color: #4a2a10; text-shadow: none; font-size: 13.5px; line-height: 1.45;
-    box-shadow: 0 4px 0 #6b3300, 0 8px 14px rgba(0,0,0,.35); filter: none;
+  #pgBook #bookDesc { position: relative; flex-shrink: 0; width: calc(100% - 8px); max-width: 364px; height: 132px; min-height: 0; margin: 6px auto 0;
+    padding: 34px 30px 16px; box-sizing: border-box; overflow: visible; border: 0 !important; border-image: none; border-radius: 0; box-shadow: none;
+    background: url(assets/ui/bubble_cloud.webp) center / 100% 100% no-repeat;   /* v0.9.292 Codex 흰 구름 말풍선 (꼬리 포함 한 장, 칸 크기 고정) */
+    filter: drop-shadow(0 6px 10px rgba(0,0,0,.35));
+    color: #3d2a1a; text-shadow: none; font-size: 13px; line-height: 1.4;
     display: flex; flex-direction: column; justify-content: center; }
-  #pgBook #bookDesc::before, #pgBook #bookDesc::after { content: ""; position: absolute; left: 50%; width: 0; height: 0; border-style: solid; }
-  #pgBook #bookDesc::before { top: -16px; margin-left: -13px; border-width: 0 13px 16px; border-color: transparent transparent #6b3300; }   /* 말풍선 꼬리 — 위(도감판)를 가리킨다 */
-  #pgBook #bookDesc::after { top: -11px; margin-left: -9px; border-width: 0 9px 12px; border-color: transparent transparent #fffdf4; }
-  #pgBook #bookDesc b { color: #8a3d00; font-size: 15.5px; }
+  #pgBook #bookDesc b { color: #8a3d00; font-size: 1.18em; }
+  /* v0.9.292 설명 줄 수와 상관없이 판·말풍선 크기 고정 — 제목과 설명 사이 빈 줄(br)도 없앤다 */
+  #pgBook #bookDesc br { display: none; }
+  #pgBook #bookDesc b { display: block; line-height: 1.25; }
+  #pgBook #bookDesc .how, #pgBook #bookDesc .how.top { margin-top: 2px; line-height: 1.35; font-size: .95em; }
   #pgBook #bookDesc .how { color: #6a5a8e; }
   #pgBook #bookDesc .how.lockHow { color: #c0561a; }
   /* 옵션 — 예전 설정 창의 내용 */
@@ -1906,6 +1909,33 @@
   #pgRank #myBoard { border-width: 22px 14px 14px !important; border-image: url(assets/ui/panel_navy.webp) 66 fill / 30px / 0 stretch !important; margin-top: 30px; }
   #pgRank #myBoard > h3 { height: 38px; line-height: 30px; font-size: 13.5px; font-weight: 900; border-width: 0 38px; border-image-width: 0 38px; margin-top: -42px; }
   #myRank { display: flex; flex-direction: column; gap: 5px; padding: 0 4px; }
+  /* v0.9.292 나의 순위 새 모양 — 전체 + 최고 캐릭터 두 줄 카드 */
+  #myRank { gap: 8px; padding: 2px 4px 4px; }
+  #myRank .mrTile { display: grid; grid-template-columns: 44px minmax(0, 1fr) minmax(64px, 76px) minmax(64px, 76px); align-items: center; gap: 5px; padding: 8px 7px;
+    border-radius: 14px; background: linear-gradient(180deg, rgba(110,130,255,.24), rgba(40,50,150,.22)); border: 1.5px solid rgba(160,180,255,.4);
+    box-shadow: inset 0 1px 0 rgba(255,255,255,.12), 0 2px 0 rgba(10,12,40,.6); }
+  #myRank .mrTile.all { background: linear-gradient(180deg, rgba(255,214,90,.28), rgba(170,110,20,.2)); border-color: rgba(255,216,107,.75); }
+  #myRank .mrIc { width: 44px; height: 44px; border-radius: 50%; display: grid; place-items: center; overflow: hidden; font-size: 24px;
+    background: radial-gradient(circle at 50% 35%, rgba(255,255,255,.18), rgba(8,10,34,.75)); box-shadow: inset 0 0 0 2px rgba(255,216,107,.55); }
+  #myRank .mrIc img { width: 92%; height: 92%; object-fit: contain; }
+  #myRank .mrLb { display: flex; flex-direction: column; min-width: 0; }
+  #myRank .mrLb b { font-size: 16px; font-weight: 900; color: #fff; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  #myRank .mrLb small { font-size: 11px; font-weight: 700; color: #b9c1ef; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  #myRank .mrTile.all .mrLb small { color: #ffe2a0; }
+  #myRank .mrSt { display: flex; flex-direction: column; align-items: center; padding: 4px 2px; border-radius: 10px; background: rgba(6,8,28,.45); }
+  #myRank .mrSt i { font-style: normal; font-size: 10.5px; font-weight: 700; color: #a9b1e4; }
+  #myRank .mrSt b { font-size: 19px; font-weight: 900; color: #ffd86b; line-height: 1.15; white-space: nowrap; }
+  #myRank .mrSt small { font-size: 9.5px; font-weight: 600; color: #cfd6ff; white-space: nowrap; letter-spacing: -.2px; }
+  #myRank .mrSt.no b { color: #7d84b8; font-size: 15px; }
+  @media (max-width: 400px) {   /* 작은 폰 — 이름 칸이 눌리지 않게 아이콘·숫자 칸을 줄인다 */
+    #myRank .mrTile { grid-template-columns: 34px minmax(0, 1fr) 60px 60px; gap: 4px; padding: 7px 5px; }
+    #myRank .mrIc { width: 34px; height: 34px; font-size: 18px; }
+    #myRank .mrLb b { font-size: 14px; }
+    #myRank .mrLb small { font-size: 10px; }
+    #myRank .mrSt b { font-size: 16px; }
+    #myRank .mrSt small { font-size: 8.5px; letter-spacing: -.3px; }
+    #myRank .mrSt i { font-size: 9.5px; }
+  }
   #myRank .mrHead, #myRank .mrRow { display: grid; grid-template-columns: 1.15fr 1fr 1fr; align-items: center; gap: 6px; }
   #myRank .mrHead { font-size: 12px; font-weight: 800; color: #a9b1e4; text-align: center; padding: 0 6px; }
   #myRank .mrRow { min-height: 42px; padding: 3px 8px; border-radius: 10px; border: 1px solid rgba(150,170,255,.28);
@@ -1982,6 +2012,7 @@
     padding: 0 6px calc(var(--bh) * .08); font-size: 14.5px; font-weight: 800; color: #fff; text-shadow: 0 1px 2px rgba(0,50,110,.65); display: block; margin-top: 0 !important; }
   #pgRank #myBoard { margin-top: 16px; padding-bottom: 0; }
   #startScreen > #pgRank { gap: 8px !important; padding-bottom: 6px !important; }
+  #startScreen > #pgRank { justify-content: flex-start !important; }   /* v0.9.292 제목 위치를 도감·상점·성장과 같게(가운데 정렬이면 화면마다 달라진다) */
   #pgRank #boardSlot { gap: 8px !important; }
   #pgRank .board.withTabs { margin-bottom: 0 !important; }
   #myRank .mrHead { margin-top: -4px; }
@@ -2510,7 +2541,7 @@
   const elTitle = document.getElementById("overTitle");
   const coinNote = document.getElementById("coinNote");
 
-  const GAME_VERSION = "v0.9.291";
+  const GAME_VERSION = "v0.9.292";
   /* 제작사 스플래시(bamhobak friends 로고) — 2026-09-20 끔. 다시 켜려면 true */
   const SPLASH_USE = false;   // 코드를 고칠 때마다 뒤 두 자리를 올린다
   document.getElementById("ver").textContent = GAME_VERSION;
@@ -9210,6 +9241,8 @@
       how.textContent = !ok ? "" : BOOK_COND[a.id] ? (a.hidden ? "✨ 비밀 증강 · " : "나오는 조건 · ") + BOOK_COND[a.id]
         : a.hidden ? "✨ 비밀 증강" : "";
       if (how.textContent) desc.appendChild(how);
+      desc.style.fontSize = "";                    // v0.9.292 말풍선은 크기 고정 — 넘치면 글자를 조금씩 줄인다
+      for (let f = 12.5; desc.scrollHeight > desc.clientHeight + 1 && f >= 10; f -= .5) desc.style.fontSize = f + "px";
     };
     for (const a of all) {
       const ok = bookOpen(a); if (ok) open++;
@@ -15471,22 +15504,32 @@
         const [rw, ra] = await Promise.all([rankOf(jb, wk, w), rankOf(jb, EPOCH, a)]);
         return { jb, rw, ra };
       }));
+      /* v0.9.292 나의 순위 — 전체 한 줄 + 캐릭터 중 가장 순위가 높은 하나만 (역대 순위가 먼저, 없으면 이번 주) */
       box.innerHTML = "";
-      const hd = document.createElement("div"); hd.className = "mrHead"; hd.innerHTML = "<span></span><span>이번 주</span><span>역대</span>"; box.appendChild(hd);
-      const cell = v => {
-        const c = document.createElement("div"); c.className = "mrCell" + (!v || v.out ? " no" : "");
+      const rkv = v => v && !v.out ? v.rk : Infinity;
+      const chars = rows.filter(r2 => r2.jb !== "all" && (r2.ra || r2.rw));
+      chars.sort((x, y) => rkv(x.ra) - rkv(y.ra) || rkv(x.rw) - rkv(y.rw) || ((y.ra && y.ra.sc) || 0) - ((x.ra && x.ra.sc) || 0));
+      const all = rows.find(r2 => r2.jb === "all");
+      if (!all || (!all.ra && !all.rw)) { box.innerHTML = '<div class="mrNone">아직 기록이 없어요 · 한 판 해 보세요!</div>'; return; }
+      const stat = (lb, v) => {
+        const c = document.createElement("div"); c.className = "mrSt" + (!v || v.out ? " no" : "");
+        const i = document.createElement("i"); i.textContent = lb;
         const b = document.createElement("b"); b.textContent = !v ? "-" : v.out ? "1000위 밖" : v.rk + "위";
-        c.appendChild(b);
-        if (v) { const sm = document.createElement("small"); sm.textContent = v.sc.toLocaleString(); c.appendChild(sm); }
-        return c;
+        const sm = document.createElement("small"); sm.textContent = v ? v.sc.toLocaleString() : "기록 없음";
+        c.append(i, b, sm); return c;
       };
-      for (const r2 of rows) {
-        const row = document.createElement("div"); row.className = "mrRow" + (r2.jb === "all" ? " all" : "");
-        const j = document.createElement("div"); j.className = "mrJob";
-        if (r2.jb === "all") j.textContent = "전체";
-        else { const im = document.createElement("img"); im.src = "assets/" + JOB_IMG[r2.jb] + "_right.png"; im.alt = ""; j.append(im, document.createTextNode(jobShort(r2.jb))); }
-        row.append(j, cell(r2.rw), cell(r2.ra)); box.appendChild(row);
-      }
+      const tile = (r2, label, sub) => {
+        const t = document.createElement("div"); t.className = "mrTile" + (r2.jb === "all" ? " all" : "");
+        const ic = document.createElement("div"); ic.className = "mrIc";
+        if (r2.jb === "all") ic.textContent = "🏆";
+        else { const im = document.createElement("img"); im.src = "assets/" + JOB_IMG[r2.jb] + "_right.png"; im.alt = ""; ic.appendChild(im); }
+        const lb = document.createElement("div"); lb.className = "mrLb";
+        const nm = document.createElement("b"); nm.textContent = label; const sb = document.createElement("small"); sb.textContent = sub;
+        lb.append(nm, sb);
+        t.append(ic, lb, stat("이번 주", r2.rw), stat("역대", r2.ra)); box.appendChild(t);
+      };
+      tile(all, "전체", "모든 캐릭터");
+      if (chars.length) tile(chars[0], jobShort(chars[0].jb), "내 최고 캐릭터");
     } catch (e) {
       box.innerHTML = '<div class="mrNone">내 순위를 불러오지 못했어요</div>'; myRankAt = 0;
     }
