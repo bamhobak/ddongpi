@@ -1157,11 +1157,9 @@
   #startScreen #meBtn { background: none; border: 0; padding: 0; }   /* v0.9.293 어두운 반투명 바탕 없이 노란 똥피력 칩만 */
   /* v0.9.297 똥피력 칩 — 왼쪽 금테 메달 안 무지개(단계마다 한 줄씩 채움) + 오른쪽 리본 이름표(Codex, 제비꼬리 끝) — 게이지가 아니라 칭호처럼 */
   #startScreen #meBtn { gap: 0; }
-  #startScreen #meRb { position: relative; z-index: 2; flex: none; width: 36px; height: 36px; margin-right: -9px; border-radius: 50%; box-sizing: border-box;
-    display: grid; place-items: center; background: radial-gradient(circle at 50% 30%, #3b3f8f, #15173f 70%);
-    border: 2.5px solid #ffc93c; box-shadow: 0 0 0 1.5px #4a2408, 0 2px 4px rgba(0,0,0,.45), inset 0 2px 3px rgba(255,255,255,.18); }
-  #startScreen #meRb svg { width: 27px; height: 17px; margin-top: 3px; overflow: visible; }
-  #startScreen #meRb.max { box-shadow: 0 0 0 1.5px #4a2408, 0 0 9px rgba(255,230,120,.85), inset 0 2px 3px rgba(255,255,255,.18); }
+  #startScreen #meRb { position: relative; z-index: 2; flex: none; width: 46px; height: 30px; margin: -4px -12px 0 -4px; display: block; }   /* v0.9.298 메달 없이 무지개만 */
+  #startScreen #meRb svg { width: 100%; height: 100%; overflow: visible; filter: drop-shadow(0 2px 2px rgba(0,0,0,.4)); }
+  #startScreen #meRb.max svg { filter: drop-shadow(0 2px 2px rgba(0,0,0,.4)) drop-shadow(0 0 4px rgba(255,240,150,.9)); }
   #startScreen #meBtn b { height: 30px; box-sizing: border-box; display: block; padding: 0 2px 0 13px; border-radius: 0; background: none; box-shadow: none;
     border-style: solid; border-color: transparent; border-width: 0 11px 0 6px;
     border-image: url(assets/ui/rank_ribbon.webp) 0 34 0 20 fill / 0 11px 0 6px / 0 stretch;
@@ -2574,7 +2572,7 @@
   const elTitle = document.getElementById("overTitle");
   const coinNote = document.getElementById("coinNote");
 
-  const GAME_VERSION = "v0.9.297";
+  const GAME_VERSION = "v0.9.298";
   /* 제작사 스플래시(bamhobak friends 로고) — 2026-09-20 끔. 다시 켜려면 true */
   const SPLASH_USE = false;   // 코드를 고칠 때마다 뒤 두 자리를 올린다
   document.getElementById("ver").textContent = GAME_VERSION;
@@ -3954,14 +3952,20 @@
   function accLv() { return lvOf(lvData.xp, ACC_XP); }
   /* v0.9.297 똥피력 무지개 — 7단계 = 빨주노초파남보. 단계마다 바깥(빨강)부터 한 줄씩 채운다 */
   const RB7 = ["#ff4b4b", "#ff9a2e", "#ffe03a", "#46d66a", "#3aa8ff", "#3b5bdb", "#9b5bff"];
-  function rainbowSvg(n) {
-    let p = "";
+  function rainbowSvg(n) {                     // v0.9.298 메달 없이 — 구름 두 덩이에 걸린 통통한 만화 무지개, 살짝 기울임
+    const cx = 25, cy = 25, R0 = 19, W = 2.05;   // 바깥 반지름 · 띠 두께
+    const arc = r => "M" + (cx - r).toFixed(2) + " " + cy + "A" + r.toFixed(2) + " " + (r * .92).toFixed(2) + " 0 0 1 " + (cx + r).toFixed(2) + " " + cy;
+    const mid = R0 - W * 3.5, thick = W * 7;
+    let p = '<path d="' + arc(mid) + '" stroke="#3a1d4a" stroke-width="' + (thick + 2.4) + '" fill="none" stroke-linecap="round"/>';   // 무지개 전체 테두리
     for (let i = 0; i < 7; i++) {
-      const r = 15 - i * 2.05, on = i < n, d = "M" + (18 - r).toFixed(2) + " 19A" + r.toFixed(2) + " " + r.toFixed(2) + " 0 0 1 " + (18 + r).toFixed(2) + " 19";
-      p += '<path d="' + d + '" stroke="#2a1640" stroke-width="2.9" fill="none"/>'
-         + '<path d="' + d + '" stroke="' + (on ? RB7[i] : "rgba(255,255,255,.16)") + '" stroke-width="1.8" fill="none" stroke-linecap="round"/>';
+      const r = R0 - W * (i + .5);
+      p += '<path d="' + arc(r) + '" stroke="' + (i < n ? RB7[i] : "#e9e4ff") + '" stroke-opacity="' + (i < n ? 1 : .3) + '" stroke-width="' + (W + .35) + '" fill="none"/>';
     }
-    return '<svg viewBox="0 0 36 22" aria-hidden="true">' + p + "</svg>";
+    p += '<path d="' + arc(R0 - W * .6) + '" stroke="rgba(255,255,255,.55)" stroke-width=".8" fill="none" stroke-dasharray="7 30" stroke-linecap="round"/>';   // 반짝 하이라이트
+    const cloud = (x, y, k) => '<g transform="translate(' + x + " " + y + ") scale(" + k + ')">'
+      + '<path d="M-7 3a4 4 0 0 1 1-7a5 5 0 0 1 9-1a4 4 0 0 1 5 5a3 3 0 0 1-1 6h-12a3 3 0 0 1-2-3z" fill="#fff" stroke="#3a1d4a" stroke-width="1.6" stroke-linejoin="round"/></g>';
+    p += cloud(cx - R0 + W * 3.2, cy + 1.5, .95) + cloud(cx + R0 - W * 3.4, cy + 2, 1.05);
+    return '<svg viewBox="0 0 50 32" aria-hidden="true"><g transform="rotate(-7 25 18)">' + p + "</g></svg>";
   }
   function setMeChip() {
     const l = accLv();
