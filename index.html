@@ -1155,10 +1155,16 @@
   #startScreen #meBtn b { padding: 1px 6px; border-radius: 999px; background: #ffd23f; color: #5a3000; font-size: 11.5px; font-weight: 900; text-shadow: none; }
   #startScreen #meBtn span { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
   #startScreen #meBtn { background: none; border: 0; padding: 0; }   /* v0.9.293 어두운 반투명 바탕 없이 노란 똥피력 칩만 */
-  /* v0.9.293 똥피력 칩 — Codex 캐러멜 알약 (9칸 자르기: 왼쪽 그림·둥근 끝은 그대로, 가운데만 늘어난다) · v0.9.294 왼쪽 그림을 똥 → 피하는 지그재그 화살표 */
-  #startScreen #meBtn b { height: 30px; box-sizing: border-box; display: block; padding: 0 3px 0 1px; border-radius: 0; background: none; box-shadow: none;
-    border-style: solid; border-color: transparent; border-width: 0 12px 0 29px;
-    border-image: url(assets/ui/dodge_badge.webp) 0 50 0 124 fill / 0 12px 0 29px / 0 stretch;
+  /* v0.9.297 똥피력 칩 — 왼쪽 금테 메달 안 무지개(단계마다 한 줄씩 채움) + 오른쪽 리본 이름표(Codex, 제비꼬리 끝) — 게이지가 아니라 칭호처럼 */
+  #startScreen #meBtn { gap: 0; }
+  #startScreen #meRb { position: relative; z-index: 2; flex: none; width: 36px; height: 36px; margin-right: -9px; border-radius: 50%; box-sizing: border-box;
+    display: grid; place-items: center; background: radial-gradient(circle at 50% 30%, #3b3f8f, #15173f 70%);
+    border: 2.5px solid #ffc93c; box-shadow: 0 0 0 1.5px #4a2408, 0 2px 4px rgba(0,0,0,.45), inset 0 2px 3px rgba(255,255,255,.18); }
+  #startScreen #meRb svg { width: 27px; height: 17px; margin-top: 3px; overflow: visible; }
+  #startScreen #meRb.max { box-shadow: 0 0 0 1.5px #4a2408, 0 0 9px rgba(255,230,120,.85), inset 0 2px 3px rgba(255,255,255,.18); }
+  #startScreen #meBtn b { height: 30px; box-sizing: border-box; display: block; padding: 0 2px 0 13px; border-radius: 0; background: none; box-shadow: none;
+    border-style: solid; border-color: transparent; border-width: 0 11px 0 6px;
+    border-image: url(assets/ui/rank_ribbon.webp) 0 34 0 20 fill / 0 11px 0 6px / 0 stretch;
     line-height: 30px; font-size: 12.5px; font-weight: 900; color: #5a2a00; text-shadow: 0 1px 0 rgba(255,240,190,.7); white-space: nowrap;
     filter: drop-shadow(0 2px 3px rgba(0,0,0,.45)); }
   #startScreen #coinBox { top: calc(max(8px, env(safe-area-inset-top)) + 36px) !important; }   /* v0.9.133 이름 칩은 코인처럼 모든 탭에 */
@@ -1364,7 +1370,7 @@
     display: inline-flex; align-items: center; justify-content: center; gap: 3px; padding: 0 0 calc(var(--bh) * .08); font-size: 14px; line-height: 1; }
   #shopPets .shopItem button .emj { vertical-align: 0; width: 1.05em; height: 1.05em; }
   #shopPets .shopItem button.own { width: 76px; }
-  #startScreen > .page:not(#pgHome) { padding-top: calc(72px + env(safe-area-inset-top)); }   /* v0.9.134 이름·코인 칩이 모든 탭에 — 제목 리본을 그 아래로 */
+  #startScreen > .page:not(#pgHome) { padding-top: calc(46px + env(safe-area-inset-top)); }   /* v0.9.297 칩이 한 줄이 되어 72 → 46 */   /* v0.9.134 이름·코인 칩이 모든 탭에 — 제목 리본을 그 아래로 */
   .lvRow .lvT { display: flex; flex-direction: column; gap: 1px; }
   .lvRow .lvLs { font-size: 11px; font-weight: 700; color: #a9b1e4; }
   .lvRow:not(.on) .lvLs { color: #6d76ad; }
@@ -1393,7 +1399,7 @@
     -webkit-mask-image: linear-gradient(180deg, transparent 0, #000 10px, #000 calc(100% - 14px), transparent 100%);
             mask-image: linear-gradient(180deg, transparent 0, #000 10px, #000 calc(100% - 14px), transparent 100%); }
   #pgBook #bookList::-webkit-scrollbar { display: none; }
-  #pgBook #bookDesc { position: relative; flex-shrink: 0; width: calc(100% - 8px); max-width: 364px; height: 118px; min-height: 0; margin: 10px auto 0;
+  #pgBook #bookDesc { position: relative; flex-shrink: 0; width: calc(100% - 8px); max-width: 364px; height: 118px; min-height: 0; margin: -8px auto 0;   /* v0.9.297 판과 설명 사이 좁게 — 판이 그만큼 길어진다 */
     padding: 18px 26px 16px; box-sizing: border-box; overflow: visible; border: 0 !important; border-image: none; border-radius: 0; box-shadow: none;
     background: url(assets/ui/cloud_panel.webp) center / 100% 100% no-repeat;   /* v0.9.293 Codex 네모 구름판 (꼬리 없음, 칸 크기 고정) */
     filter: drop-shadow(0 6px 10px rgba(0,0,0,.35));
@@ -2108,7 +2114,7 @@
       <div id="homeBgFade"></div>
       <script>/* v0.9.128 첫 화면부터 고른 캐릭터의 배경 (기본 루나) */ try { var hj = localStorage.getItem("epjpddongpi_job") || "bangul"; if (["bangul","fit","powerj","levitator","powerp","fortune"].indexOf(hj) >= 0) document.getElementById("startScreen").style.setProperty("--hbg", "url(assets/bg/home_" + hj + ".webp?8)"); } catch (e) {}</script>
       <div id="ver"></div>
-      <button id="meBtn" aria-label="내 정보"><b id="meLv">똥피력 1</b><span id="meNm">-</span></button>
+      <button id="meBtn" aria-label="내 정보"><span id="meRb"></span><b id="meLv">똥피력 1</b><span id="meNm">-</span></button>
       <div id="coinBox" title="모은 코인">🪙 0</div>
       <button id="btnOpt" aria-label="옵션"><img src="assets/ui/tab_opt.webp" alt=""></button>
       <section class="page on" id="pgHome">
@@ -2568,7 +2574,7 @@
   const elTitle = document.getElementById("overTitle");
   const coinNote = document.getElementById("coinNote");
 
-  const GAME_VERSION = "v0.9.296";
+  const GAME_VERSION = "v0.9.297";
   /* 제작사 스플래시(bamhobak friends 로고) — 2026-09-20 끔. 다시 켜려면 true */
   const SPLASH_USE = false;   // 코드를 고칠 때마다 뒤 두 자리를 올린다
   document.getElementById("ver").textContent = GAME_VERSION;
@@ -3946,6 +3952,23 @@
   function lvSave() { try { localStorage.setItem(LS_LV, JSON.stringify(lvData)); } catch (e) {} }
   function lvOf(xp, T) { let l = 1; for (let i = 1; i < T.length; i++) if (xp >= T[i]) l = i + 1; return l; }
   function accLv() { return lvOf(lvData.xp, ACC_XP); }
+  /* v0.9.297 똥피력 무지개 — 7단계 = 빨주노초파남보. 단계마다 바깥(빨강)부터 한 줄씩 채운다 */
+  const RB7 = ["#ff4b4b", "#ff9a2e", "#ffe03a", "#46d66a", "#3aa8ff", "#3b5bdb", "#9b5bff"];
+  function rainbowSvg(n) {
+    let p = "";
+    for (let i = 0; i < 7; i++) {
+      const r = 15 - i * 2.05, on = i < n, d = "M" + (18 - r).toFixed(2) + " 19A" + r.toFixed(2) + " " + r.toFixed(2) + " 0 0 1 " + (18 + r).toFixed(2) + " 19";
+      p += '<path d="' + d + '" stroke="#2a1640" stroke-width="2.9" fill="none"/>'
+         + '<path d="' + d + '" stroke="' + (on ? RB7[i] : "rgba(255,255,255,.16)") + '" stroke-width="1.8" fill="none" stroke-linecap="round"/>';
+    }
+    return '<svg viewBox="0 0 36 22" aria-hidden="true">' + p + "</svg>";
+  }
+  function setMeChip() {
+    const l = accLv();
+    document.getElementById("meLv").textContent = accChip();
+    const rb = document.getElementById("meRb");
+    if (rb) { rb.innerHTML = rainbowSvg(Math.min(l, 7)); rb.classList.toggle("max", l >= ACC_XP.length); rb.title = "똥피력 " + l + "/7"; }
+  }
   function accChip() { const l = accLv(); return "똥피력 " + (l >= ACC_XP.length ? "MAX" : l); }   // v0.9.281 마지막 단계는 MAX
   function chrLv(j) { return lvOf(lvData.cx[j] || 0, CHR_XP); }   // v0.9.127 공통 Lv 2 문턱 없앰 — 처음부터 쌓인다
   function lvSingle() { return typeof runMode === "undefined" || runMode === "item"; }    // 레벨 보상은 싱글플레이에서만
@@ -8319,7 +8342,7 @@
     const n = savedName();
     myNameEl.textContent = n || "-";
     document.getElementById("meNm").textContent = n || "이름 정하기";   // v0.9.124 왼쪽 위 칩
-    document.getElementById("meLv").textContent = accChip();
+    setMeChip();
     if (n) { nameBox.classList.remove("off"); nameEdit.classList.remove("on"); }
     else   { nameBox.classList.add("off");    nameEdit.classList.add("on"); }
   }
@@ -8933,7 +8956,7 @@
   }).observe(document.getElementById("homeJobs"));   // 가려져 있다 보일 때·화면 돌릴 때
   function renderPick() {
     homeBgSet();
-    document.getElementById("meLv").textContent = accChip();   // v0.9.124 왼쪽 위 칩 — 판이 끝나 레벨이 올랐을 수 있다
+    setMeChip();   // v0.9.124 왼쪽 위 칩 — 판이 끝나 레벨이 올랐을 수 있다
     if (jobLocked()) job = "bangul";          // 맨몸대결·똥탑등반 — 탭 글자부터 방울이로
     if (petLocked()) { pet = "none"; petView = "none"; }
     tabJob.classList.toggle("on", pickTab === "job");
