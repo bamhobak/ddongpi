@@ -2468,7 +2468,7 @@
   const elTitle = document.getElementById("overTitle");
   const coinNote = document.getElementById("coinNote");
 
-  const GAME_VERSION = "v0.9.284";
+  const GAME_VERSION = "v0.9.285";
   /* 제작사 스플래시(bamhobak friends 로고) — 2026-09-20 끔. 다시 켜려면 true */
   const SPLASH_USE = false;   // 코드를 고칠 때마다 뒤 두 자리를 올린다
   document.getElementById("ver").textContent = GAME_VERSION;
@@ -9832,7 +9832,7 @@
     if (!overScreen.classList.contains("hidden")) { document.getElementById("btnHome").click(); return; }
     if (!jobScreen.classList.contains("hidden")) { jobScreen.classList.add("hidden"); return; }
     if (typeof curPage !== "undefined" && curPage !== "home") { setPage("home"); return; }
-    askYesNo("게임을 그만할까요?", appClose);
+    askYesNo("똥을 그만 피할까요?", appClose);
   }
   function saveSnapshot() {
     const o = {};
