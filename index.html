@@ -2468,7 +2468,7 @@
   const elTitle = document.getElementById("overTitle");
   const coinNote = document.getElementById("coinNote");
 
-  const GAME_VERSION = "v0.9.283";
+  const GAME_VERSION = "v0.9.284";
   /* 제작사 스플래시(bamhobak friends 로고) — 2026-09-20 끔. 다시 켜려면 true */
   const SPLASH_USE = false;   // 코드를 고칠 때마다 뒤 두 자리를 올린다
   document.getElementById("ver").textContent = GAME_VERSION;
@@ -9832,7 +9832,7 @@
     if (!overScreen.classList.contains("hidden")) { document.getElementById("btnHome").click(); return; }
     if (!jobScreen.classList.contains("hidden")) { jobScreen.classList.add("hidden"); return; }
     if (typeof curPage !== "undefined" && curPage !== "home") { setPage("home"); return; }
-    askYesNo("게임을 그만할까요?", () => { try { window.AIT.close(); } catch (e) {} });
+    askYesNo("게임을 그만할까요?", appClose);
   }
   function saveSnapshot() {
     const o = {};
@@ -9893,6 +9893,13 @@
     try { window.AIT.onBack(aitBack); } catch (e) {}
     cloudInit();
   }
+  /* v0.9.284 플레이 스토어 앱(Capacitor) — 앱 안에서는 window.Capacitor 가 있다(웹·토스에는 없음).
+     기기 뒤로가기를 토스와 똑같이 aitBack 으로 받고, "그만할까요?" 예 → 앱 종료 */
+  const CAP = (window.Capacitor && window.Capacitor.isNativePlatform && window.Capacitor.isNativePlatform()) ? window.Capacitor : null;
+  function appClose() {
+    try { if (window.AIT) window.AIT.close(); else if (CAP) CAP.nativeCallback("App", "exitApp", {}); } catch (e) {}
+  }
+  if (CAP) { try { CAP.addListener("App", "backButton", aitBack); } catch (e) {} }
   setTimeout(aitHook, 0);                                       // 아래쪽 상수(SB_URL 등)가 다 만들어진 뒤에
   window.addEventListener("ait-ready", aitHook);                // 포장 쪽 스크립트가 늦게 붙어도
   document.addEventListener("visibilitychange", () => { if (document.hidden) cloudPush(); });
