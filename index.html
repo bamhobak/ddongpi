@@ -1219,7 +1219,7 @@
   #homeJobs #jobList.car .lvMini .lvMax { position: relative; display: block; height: 18px; line-height: 18px; margin-left: -9px; padding: 0 12px 0 16px; border-radius: 0 9px 9px 0;
     font-size: 12px; font-weight: 900; letter-spacing: 1.5px; color: #fff; text-shadow: 0 1px 2px rgba(120,40,0,.8);
     background: linear-gradient(180deg, #ffd86b, #ff9b1f); border: 1.5px solid #7a4508; border-left: 0; box-shadow: inset 0 1px 0 rgba(255,255,255,.6), 0 0 8px rgba(255,190,60,.6); }
-  #homeJobs #jobList.car .lvMini .lvMax { line-height: 14.5px; }   /* v0.9.293 MAX 글자 1px 위로 (v0.9.294 글꼴 기준 보정만큼 더) */
+  #homeJobs #jobList.car .lvMini .lvMax { line-height: 16.5px; }   /* v0.9.307 1px 아래로 */   /* v0.9.293 MAX 글자 1px 위로 (v0.9.294 글꼴 기준 보정만큼 더) */
   #homeJobs #jobList.car .lvDet { --bh: 24px; min-width: 0; padding: 0 2px calc(var(--bh) * .08); margin: 0 6px 0 6px; flex-shrink: 0; font-size: 12px; letter-spacing: .5px; }
   #homeJobs #jobList.car .lvDet.new::after { content: "!"; right: -22px; top: 50%; width: auto; height: auto; margin-top: -10px; border: 0; border-radius: 0; background: none; box-shadow: none;
     font-size: 17px; font-weight: 900; line-height: 20px; color: #ffd23f; animation: lvDot 1s ease-in-out infinite;
@@ -1400,7 +1400,7 @@
   #pgBook #bookFrame::before, #pgBook #bookFrame::after { content: ""; position: absolute; inset: 0; pointer-events: none;
     border-style: solid; border-width: 0; border-color: transparent; }
   #pgBook #bookFrame::before { z-index: -1; border-image: url(assets/ui/panel_navy.webp) 66 fill / 30px / 0 stretch; }
-  #pgBook #bookFrame::after { z-index: 2; border-image: url(assets/ui/panel_navy.webp) 66 / 30px / 0 stretch; }
+  #pgBook #bookFrame::after { z-index: 2; border-image: url(assets/ui/panel_navy_frame.webp) 66 fill / 30px / 0 stretch; }   /* v0.9.308 남색을 뺀 금테만 — 아이콘을 덮지 않게 */
   #pgBook #bookList { flex: 1 1 auto; min-height: 0; max-width: none; overflow-y: auto; overscroll-behavior: contain; touch-action: pan-y;
     border-image: none; padding: 6px 8px 10px; align-content: start; scrollbar-width: none;
     -webkit-mask-image: linear-gradient(180deg, transparent 0, #000 10px, #000 calc(100% - 14px), transparent 100%);
@@ -1947,12 +1947,13 @@
   #pgRank #myWeekLine[hidden] { display: none; }
   #pgRank #myBoard { display: none !important; }
   /* v0.9.305 이번 주 판 — 남는 세로를 다 쓰고, 캐릭터 탭은 정사각형 한 줄, 오른쪽 목록만 스크롤(11~100위) */
-  #startScreen > #pgRank { overflow: hidden; }
+  #startScreen > #pgRank { overflow: hidden; padding-bottom: 14px !important; }   /* v0.9.308 명예의 전당 버튼과 아래 탭 사이 띄움 */
   #pgRank #boardSlot { flex: 1 1 0; min-height: 0; }
   #pgRank #boardSlot > .board.withTabs { flex: 1 1 0; min-height: 0; grid-template-columns: 50px minmax(0, 1fr); grid-template-rows: auto auto minmax(0, 1fr); column-gap: 7px; }
   #pgRank .board.withTabs .jobTabs { grid-template-columns: 1fr; grid-template-rows: none; grid-auto-rows: 50px; align-content: start; gap: 6px; min-height: 0; }
   #pgRank .board.withTabs .jobTab, #pgRank .board.withTabs .jobTab:not([data-job="all"]) { width: 50px; height: 50px; max-height: 50px; grid-column: auto; }
-  #pgRank .board.withTabs .jobTab:not([data-job="all"]) img { width: 86%; height: 86%; }
+  #pgRank .board.withTabs .jobTab:not([data-job="all"]) { position: relative; overflow: hidden; }
+  #pgRank .board.withTabs .jobTab img.fitIc { position: absolute; max-width: none; max-height: none; object-fit: fill; }
   #pgRank .board.withTabs .jobTab[data-job="all"] { font-size: 12.5px; letter-spacing: -.5px; }
   #pgRank #boardStart { min-height: 0; overflow-y: auto; overscroll-behavior: contain; touch-action: pan-y; scrollbar-width: none; align-content: start; }
   #pgRank #boardStart::-webkit-scrollbar { display: none; }
@@ -2621,7 +2622,7 @@
   const elTitle = document.getElementById("overTitle");
   const coinNote = document.getElementById("coinNote");
 
-  const GAME_VERSION = "v0.9.307";
+  const GAME_VERSION = "v0.9.308";
   /* 제작사 스플래시(bamhobak friends 로고) — 2026-09-20 끔. 다시 켜려면 true */
   const SPLASH_USE = false;   // 코드를 고칠 때마다 뒤 두 자리를 올린다
   document.getElementById("ver").textContent = GAME_VERSION;
@@ -2666,6 +2667,9 @@
   for (const k of ["bangul", "fit", "powerj", "levitator", "powerp", "fortune"]) { const v = JOBS[k]; delete JOBS[k]; JOBS[k] = v; }
   // 직업별 캐릭터 그림(오른쪽 이동 모습) — 직업 카드와 순위표에서 함께 쓴다
   // (방울이의 bangul_right.png 만은 얌전히 앉은 정면 소개 그림이다 — 게임 안에서는 헤엄 16장을 쓰므로 소개 전용)
+  const JOB_BOX = {   // v0.9.307 캐릭터 그림(_right.png)의 [폭, 높이, 보이는 칸 x0, y0, x1, y1] — 탭에서 크기·가운데 맞춤
+    fortune: [340, 400, 23, 61, 280, 395], levitator: [340, 400, 39, 36, 304, 395], fit: [340, 400, 3, 28, 313, 396],
+    powerj: [340, 400, 15, 38, 273, 396], monk: [340, 400, 15, 80, 282, 396], bangul: [340, 400, 27, 46, 274, 396] };
   const JOB_IMG = { none: "player", fortune: "fortune", gambler: "gambler", levitator: "levitator",
                     fit: "fit", powerj: "powerj", powerp: "monk", powerp2: "powerp2",
                     bangul: "bangul" };
@@ -15924,6 +15928,13 @@
         if (img) {
           const im = document.createElement("img");
           im.src = "assets/" + img + "_right.png"; im.alt = title || "";
+          const bx = id === "jobTabsStart" && JOB_BOX[img];
+          if (bx) {   // v0.9.307 랭킹 탭 캐릭터 — 그림마다 빈 여백이 달라 보이는 크기를 맞추고 칸 정가운데에
+            const [W, H, x0, y0, x1, y1] = bx, w = x1 - x0, h = y1 - y0, k = .8 / Math.max(w, h);
+            im.className = "fitIc";
+            Object.assign(im.style, { width: W * k * 100 + "%", height: H * k * 100 + "%",
+              left: ((1 - w * k) / 2 - x0 * k) * 100 + "%", top: ((1 - h * k) / 2 - y0 * k) * 100 + "%" });
+          }
           b.appendChild(im);
         }
         if (label) b.appendChild(document.createTextNode(label));
