@@ -1393,7 +1393,12 @@
   /* v0.9.290 도감 — 페이지는 안 움직이고(제목 고정) 금테 판 안의 아이콘만 스크롤. 설명은 판 아래 말풍선 */
   #startScreen > #pgBook { overflow: hidden; }
   #pgBook #bookFrame { flex: 1 1 0; min-height: 0; width: 100%; max-width: 372px; display: flex; box-sizing: border-box; padding: 14px 8px;
-    border-style: solid; border-width: 0; border-color: transparent; border-image: url(assets/ui/panel_navy.webp) 66 fill / 30px / 0 stretch; }
+    position: relative; isolation: isolate; }
+  /* v0.9.302 판 바탕은 아이콘 아래(::before), 금테·귀퉁이 발바닥은 아이콘 위(::after) — 스크롤해도 귀퉁이가 안 가려진다 */
+  #pgBook #bookFrame::before, #pgBook #bookFrame::after { content: ""; position: absolute; inset: 0; pointer-events: none;
+    border-style: solid; border-width: 0; border-color: transparent; }
+  #pgBook #bookFrame::before { z-index: -1; border-image: url(assets/ui/panel_navy.webp) 66 fill / 30px / 0 stretch; }
+  #pgBook #bookFrame::after { z-index: 2; border-image: url(assets/ui/panel_navy.webp) 66 / 30px / 0 stretch; }
   #pgBook #bookList { flex: 1 1 auto; min-height: 0; max-width: none; overflow-y: auto; overscroll-behavior: contain; touch-action: pan-y;
     border-image: none; padding: 6px 8px 10px; align-content: start; scrollbar-width: none;
     -webkit-mask-image: linear-gradient(180deg, transparent 0, #000 10px, #000 calc(100% - 14px), transparent 100%);
@@ -2574,7 +2579,7 @@
   const elTitle = document.getElementById("overTitle");
   const coinNote = document.getElementById("coinNote");
 
-  const GAME_VERSION = "v0.9.301";
+  const GAME_VERSION = "v0.9.302";
   /* 제작사 스플래시(bamhobak friends 로고) — 2026-09-20 끔. 다시 켜려면 true */
   const SPLASH_USE = false;   // 코드를 고칠 때마다 뒤 두 자리를 올린다
   document.getElementById("ver").textContent = GAME_VERSION;
