@@ -1242,11 +1242,11 @@
   /* 느낌표는 버튼이 아니라 두 글자 사이 틈(.dg)을 기준으로 — 글자가 어디에 서든 정확히 상·세 가운데 */
   #homeJobs #jobList.car .lvDet.new::after { content: none !important; }
   /* v0.9.296 느낌표 뒤 무지개 오라 — 상세 글자가 살짝 가려질 만큼 (글자 위·느낌표 아래 층) */
-  #homeJobs #jobList.car .lvDet.new span.dg::before { content: ""; position: absolute; left: 50%; top: 50%; width: 26px; height: 26px; margin: -13px 0 0 -13px; z-index: 1;
-    border-radius: 50%; pointer-events: none; opacity: .62; filter: blur(2.5px);
-    background: radial-gradient(circle, rgba(255,255,255,.6) 0 12%, transparent 55%),
+  #homeJobs #jobList.car .lvDet.new span.dg::before { content: ""; position: absolute; left: 50%; top: 50%; width: 40px; height: 40px; margin: -20px 0 0 -20px; z-index: 1;
+    border-radius: 50%; pointer-events: none; opacity: .95; filter: blur(3px) saturate(1.4) brightness(1.25);   /* v0.9.305 더 크고 환하게 */
+    background: radial-gradient(circle, rgba(255,255,240,.95) 0 18%, rgba(255,255,255,.4) 34%, transparent 60%),
                 conic-gradient(#ff5d5d, #ffb13d, #fff04a, #5dff8a, #4ad8ff, #7a6bff, #ff6bd6, #ff5d5d);
-    -webkit-mask: radial-gradient(circle, #000 38%, transparent 70%); mask: radial-gradient(circle, #000 38%, transparent 70%);
+    -webkit-mask: radial-gradient(circle, #000 46%, transparent 72%); mask: radial-gradient(circle, #000 46%, transparent 72%);
     animation: bangAura 2.4s linear infinite; }
   @keyframes bangAura { 0% { transform: rotate(0) scale(.92); } 50% { transform: rotate(180deg) scale(1.08); } 100% { transform: rotate(360deg) scale(.92); } }
   #homeJobs #jobList.car .lvDet.new span.dg::after { content: ""; position: absolute; left: 50%; top: 50%; width: 18px; height: 29px; margin: -15px 0 0 -9px; z-index: 2;
@@ -1945,7 +1945,36 @@
   #pgRank #myWeekLine { display: flex; align-items: center; justify-content: center; gap: 10px; width: calc(100% - 16px); max-width: 372px; box-sizing: border-box;
     margin: -2px auto 0; padding: 0 16px; height: 40px; flex-shrink: 0; line-height: 1; border-radius: 999px;   /* v0.9.303 기록 있든 없든 같은 높이 */ background: rgba(8,10,34,.72); box-shadow: inset 0 0 0 1.5px rgba(255,216,107,.55), 0 2px 6px rgba(0,0,0,.35); }
   #pgRank #myWeekLine[hidden] { display: none; }
-  #pgRank #myBoard { display: none !important; }   /* v0.9.304 나의 순위 판은 뺐다 — 내 기록은 TOP 10 아래 줄과 명예의 전당 창에서 */
+  #pgRank #myBoard { display: none !important; }
+  /* v0.9.305 이번 주 판 — 남는 세로를 다 쓰고, 캐릭터 탭은 정사각형 한 줄, 오른쪽 목록만 스크롤(11~100위) */
+  #startScreen > #pgRank { overflow: hidden; }
+  #pgRank #boardSlot { flex: 1 1 0; min-height: 0; }
+  #pgRank #boardSlot > .board.withTabs { flex: 1 1 0; min-height: 0; grid-template-columns: 50px minmax(0, 1fr); grid-template-rows: auto auto minmax(0, 1fr); column-gap: 7px; }
+  #pgRank .board.withTabs .jobTabs { grid-template-columns: 1fr; grid-template-rows: none; grid-auto-rows: 50px; align-content: start; gap: 6px; min-height: 0; }
+  #pgRank .board.withTabs .jobTab, #pgRank .board.withTabs .jobTab:not([data-job="all"]) { width: 50px; height: 50px; max-height: 50px; grid-column: auto; }
+  #pgRank .board.withTabs .jobTab:not([data-job="all"]) img { width: 86%; height: 86%; }
+  #pgRank .board.withTabs .jobTab[data-job="all"] { font-size: 12.5px; letter-spacing: -.5px; }
+  #pgRank #boardStart { min-height: 0; overflow-y: auto; overscroll-behavior: contain; touch-action: pan-y; scrollbar-width: none; align-content: start; }
+  #pgRank #boardStart::-webkit-scrollbar { display: none; }
+  #pgRank #boardStart > li { flex-shrink: 0; }
+  #pgRank #boardStart li.more { display: flex; align-items: center; gap: 6px; height: 34px; min-height: 34px; padding: 0 10px; margin-top: 4px; box-sizing: border-box;
+    border-radius: 9px; background: rgba(110,130,255,.12); border: 1px solid rgba(150,170,255,.22); font-size: 13.5px; font-weight: 700; color: #e6e9ff; }
+  #pgRank #boardStart li.more.me { background: rgba(255,210,63,.18); border-color: rgba(255,216,107,.6); }
+  #pgRank #boardStart li.more .rk { width: 26px; flex: none; text-align: center; font-size: 12.5px; font-weight: 900; color: #a9b1e4; }
+  #pgRank #boardStart li.more .nm { flex: 1 1 auto; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  #pgRank #boardStart li.more .jic2 { width: 24px; height: 24px; object-fit: contain; flex: none; }
+  #pgRank #boardStart li.more .sc { flex: none; font-weight: 800; color: #ffe9a8; }
+  @media (max-width: 400px) {   /* 작은 폰 — 이름이 너무 잘리지 않게 */
+    #pgRank #boardSlot > .board.withTabs { grid-template-columns: 44px minmax(0, 1fr); column-gap: 5px; }
+    #pgRank .board.withTabs .jobTabs { grid-auto-rows: 44px; gap: 5px; }
+    #pgRank .board.withTabs .jobTab, #pgRank .board.withTabs .jobTab:not([data-job="all"]) { width: 44px; height: 44px; max-height: 44px; }
+    #pgRank .board.withTabs .jobTab[data-job="all"] { font-size: 11px; }
+    #pgRank #boardStart li.p1 .sc { font-size: 14.5px !important; }
+    #pgRank #boardStart li.p2 .sc, #pgRank #boardStart li.p3 .sc { font-size: 13.5px !important; }
+    #pgRank #boardStart li.p1, #pgRank #boardStart li.p2, #pgRank #boardStart li.p3 { font-size: 14px !important; }
+    #pgRank #boardStart li.more { font-size: 12.5px; padding: 0 7px; gap: 4px; }
+    #pgRank #boardStart li.more .rk { width: 22px; }
+  }   /* v0.9.304 나의 순위 판은 뺐다 — 내 기록은 TOP 10 아래 줄과 명예의 전당 창에서 */
   #hallMine { display: flex; align-items: center; justify-content: center; gap: 10px; height: 38px; flex-shrink: 0; margin: 0 0 8px; padding: 0 14px; line-height: 1;
     border-radius: 999px; background: rgba(8,10,34,.72); box-shadow: inset 0 0 0 1.5px rgba(255,216,107,.55); }
   #hallMine:empty { display: none; }
@@ -2590,7 +2619,7 @@
   const elTitle = document.getElementById("overTitle");
   const coinNote = document.getElementById("coinNote");
 
-  const GAME_VERSION = "v0.9.304";
+  const GAME_VERSION = "v0.9.305";
   /* 제작사 스플래시(bamhobak friends 로고) — 2026-09-20 끔. 다시 켜려면 true */
   const SPLASH_USE = false;   // 코드를 고칠 때마다 뒤 두 자리를 올린다
   document.getElementById("ver").textContent = GAME_VERSION;
@@ -15850,6 +15879,27 @@
       ov.textContent = note;
       el.appendChild(ov);
     }
+    if (el === boardStart && list && list.length >= 10) renderMore(el);   // v0.9.305 랭킹 탭은 11~100위까지 아래로 이어 붙인다
+  }
+  /* v0.9.305 랭킹 탭 이번 주 판 — 10위 아래로 100위까지(목록만 스크롤, 왼쪽 캐릭터 탭은 그대로) */
+  let moreCache = {}, moreSeq = 0;
+  async function renderMore(el) {
+    if (!SB_ON || gameMode === "vs") return;
+    const jb = boardJob, k = gameMode + ":" + jb, seq = ++moreSeq;
+    let list = moreCache[k];
+    if (!list) { try { list = moreCache[k] = await fetchRange(weekStartMs(0), null, 100, jb === "all" ? null : jb); } catch (e) { return; } }
+    if (seq !== moreSeq || jb !== boardJob) return;
+    el.querySelectorAll("li.more").forEach(x => x.remove());
+    list.slice(10, 100).forEach((row, i) => {
+      const li = document.createElement("li");
+      li.className = "more" + (myRowKey && row.name + "|" + row.score === myRowKey ? " me" : "");
+      const rk = document.createElement("span"); rk.className = "rk"; rk.textContent = i + 11;
+      const nm = document.createElement("span"); nm.className = "nm"; nm.textContent = row.name;
+      const im = document.createElement("img"); im.className = "jic2"; im.src = "assets/" + boardImg(row) + "_right.png"; im.alt = "";
+      const sc = document.createElement("span"); sc.className = "sc";
+      sc.textContent = gameMode === "noitem" ? Number(row.score).toLocaleString() + "m" : (Number(row.score) || 0).toLocaleString();
+      li.append(rk, nm, im, sc); el.appendChild(li);
+    });
   }
 
   const noteStart = document.getElementById("noteStart");
@@ -15938,7 +15988,7 @@
     }
     try {
       topList = await fetchTop();
-      jobLists = {};                       // 새 기록이 있을 수 있으니 직업별 캐시도 비운다
+      jobLists = {}; moreCache = {};                       // 새 기록이 있을 수 있으니 직업별 캐시도 비운다
       await showBoards(els);
     } catch (e) {
       els.forEach(el => renderBoard(el, null, gameMode !== "item"
