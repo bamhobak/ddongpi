@@ -915,6 +915,12 @@
   #growList .pips { display: inline-flex; gap: 3px; font-style: normal; }
   #growList .pips em { width: 8px; height: 8px; border-radius: 2px; background: #d9c9a3; border: 1px solid #8a5a2b; }
   #growList .pips em.on { background: #ffc42e; }
+  /* v0.9.291 찬 칸·빈 칸 구분 — 찬 칸은 빛나는 금색, 빈 칸은 판 색에 묻힌 어두운 홈 */
+  #growList .pips { gap: 4px; align-items: center; }
+  #growList .pips em { width: 10px; height: 10px; border-radius: 3px; box-sizing: border-box;
+    background: rgba(5,8,30,.55); border: 1.5px solid rgba(140,155,230,.45); box-shadow: inset 0 1px 2px rgba(0,0,0,.6); }
+  #growList .pips em.on { background: linear-gradient(180deg, #fff3a8, #ffc42e 55%, #f29a0c); border-color: #fff0a0;
+    box-shadow: 0 0 6px rgba(255,200,60,.85), inset 0 -1px 0 rgba(150,70,0,.45); }
   #btnGrowReset { --bh: 44px; height: var(--bh); box-sizing: border-box; align-self: center; min-width: 220px; margin: 8px 0 4px;
     border-style: solid; border-color: transparent; border-radius: 0; box-shadow: none; background: none; border-width: 0 calc(var(--bh) / 2);
     border-image: url(assets/ui/btn_gray.webp) 0 60 fill / 0 calc(var(--bh) / 2) / 0 stretch;
@@ -2504,7 +2510,7 @@
   const elTitle = document.getElementById("overTitle");
   const coinNote = document.getElementById("coinNote");
 
-  const GAME_VERSION = "v0.9.290";
+  const GAME_VERSION = "v0.9.291";
   /* 제작사 스플래시(bamhobak friends 로고) — 2026-09-20 끔. 다시 켜려면 true */
   const SPLASH_USE = false;   // 코드를 고칠 때마다 뒤 두 자리를 올린다
   document.getElementById("ver").textContent = GAME_VERSION;
