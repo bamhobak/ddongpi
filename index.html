@@ -1920,6 +1920,14 @@
   #myRank { display: flex; flex-direction: column; gap: 5px; padding: 0 4px; }
   /* v0.9.294 나의 순위 — 이번 주 최고(캐릭터·전체 순위·캐릭터 순위) / 역대 최고(캐릭터·전체 순위) 두 장 */
   #myRank { gap: 8px; padding: 2px 4px 4px; }
+  /* v0.9.295 이번 주 TOP 10 아래 '내 기록' 한 줄 */
+  #pgRank #myWeekLine { display: flex; align-items: center; justify-content: center; gap: 10px; width: calc(100% - 16px); max-width: 372px; box-sizing: border-box;
+    margin: -2px auto 0; padding: 7px 16px; border-radius: 999px; background: rgba(8,10,34,.72); box-shadow: inset 0 0 0 1.5px rgba(255,216,107,.55), 0 2px 6px rgba(0,0,0,.35); }
+  #pgRank #myWeekLine[hidden] { display: none; }
+  #pgRank #myWeekLine .mwL { font-size: 13px; font-weight: 800; color: #c9d0ff; }
+  #pgRank #myWeekLine .mwR { font-size: 19px; font-weight: 900; color: #ffd86b; }
+  #pgRank #myWeekLine .mwS { font-size: 14px; font-weight: 800; color: #fff; }
+  #pgRank #myWeekLine .mwN { font-size: 13px; font-weight: 700; color: #8f97c8; }
   #myRank .mrTile { display: grid; grid-template-columns: 50px minmax(0, 1fr) auto; align-items: center; gap: 8px; padding: 8px 8px 8px 8px;
     border-radius: 14px; background: linear-gradient(180deg, rgba(110,130,255,.24), rgba(40,50,150,.22)); border: 1.5px solid rgba(160,180,255,.4);
     box-shadow: inset 0 1px 0 rgba(255,255,255,.12), 0 2px 0 rgba(10,12,40,.6); }
@@ -2119,6 +2127,7 @@
         <div id="lastJobs"></div>
         <div id="boardLast" class="lastRow"><span class="lpNone">불러오는 중…</span></div>
       </div>
+      <div id="myWeekLine" hidden></div>
       <button id="btnHall">👑 지난 명예의 전당</button>
       <div class="board" id="myBoard">
         <h3>🐾 나의 순위</h3>
@@ -2551,7 +2560,7 @@
   const elTitle = document.getElementById("overTitle");
   const coinNote = document.getElementById("coinNote");
 
-  const GAME_VERSION = "v0.9.294";
+  const GAME_VERSION = "v0.9.295";
   /* 제작사 스플래시(bamhobak friends 로고) — 2026-09-20 끔. 다시 켜려면 true */
   const SPLASH_USE = false;   // 코드를 고칠 때마다 뒤 두 자리를 올린다
   document.getElementById("ver").textContent = GAME_VERSION;
@@ -15488,6 +15497,31 @@
   /* v0.9.166 나의 순위 — 이 기기의 기록 중 캐릭터별 최고(이번 주 · 역대)를, 기기마다 한 줄인 TOP 1000 에 견줘 몇 위인지.
      1000위 밖이면 '1000위 밖', 기록이 없으면 '-'. 랭킹 탭을 열 때 한 번 받고, 판이 끝나면 다시 받는다 */
   let myRankAt = 0;
+  /* v0.9.295 이번 주 TOP 10 바로 아래 한 줄 — 지금 보는 탭(전체/캐릭터)에서 내 이번 주 최고 기록이 몇 위 · 몇 점인지 */
+  let myMine = null, myMineMode = null, myLineSeq = 0;
+  const myLineCache = {};
+  async function updateMyLine() {
+    const el = document.getElementById("myWeekLine"); if (!el) return;
+    if (!SB_ON || gameMode === "vs" || !myMine || myMineMode !== gameMode) { el.hidden = true; return; }
+    const jb = boardJob, wk = weekStartMs(0), seq = ++myLineSeq;
+    let best = null;
+    for (const x of myMine) if ((jb === "all" || x.job === jb) && Date.parse(x.created_at) >= wk && (!best || Number(x.score) > Number(best.score))) best = x;
+    el.hidden = false;
+    const who = jb === "all" ? "전체" : (JOBS[jb] ? jobShort(jb) : "");
+    if (!best) { el.innerHTML = '<span class="mwL">' + who + ' 내 기록</span><span class="mwN">이번 주 기록이 없어요</span>'; return; }
+    const sc = Number(best.score);
+    el.innerHTML = '<span class="mwL">' + who + ' 내 기록</span><b class="mwR">…</b><span class="mwS">' + sc.toLocaleString() + '점</span>';
+    try {
+      const ck = gameMode + ":" + jb + ":" + wk;
+      if (!myLineCache[ck] || Date.now() - myLineCache[ck].at > 60000)
+        myLineCache[ck] = { at: Date.now(), list: await fetchRange(wk, null, 1000, jb === "all" ? null : jb) };
+      if (seq !== myLineSeq) return;                 // 그 사이 다른 탭을 눌렀다
+      const list = myLineCache[ck].list;
+      const out = list.length >= 1000 && sc < Number(list[list.length - 1].score);
+      const rk = list.filter(x => Number(x.score) > sc).length + 1;
+      el.querySelector(".mwR").textContent = out ? "1000위 밖" : rk + "위";
+    } catch (e) { if (seq === myLineSeq) el.querySelector(".mwR").textContent = "-"; }
+  }
   async function refreshMyRank(force) {
     const box = document.getElementById("myRank"); if (!box) return;
     if (!SB_ON || gameMode === "vs") { document.getElementById("myBoard").hidden = true; return; }
@@ -15499,6 +15533,7 @@
       const r = await fetch(url, { headers: sbHeaders() });
       if (!r.ok) throw new Error("HTTP " + r.status);
       const mine = (await r.json()).filter(x => (x.mode || "item") === (gameMode || "item"));
+      myMine = mine; myMineMode = gameMode; updateMyLine();
       const wk = weekStartMs(0), EPOCH = Date.UTC(2020, 0, 1);
       const rankOf = async (jb, since, sc) => {
         if (!sc) return null;
@@ -15784,6 +15819,7 @@
     for (const t of document.querySelectorAll(".jobTab"))
       t.classList.toggle("on", t.dataset.job === key);
     syncBoardTitle();
+    try { updateMyLine(); } catch (e) {}
     return showBoards(els);
   }
 
