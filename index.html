@@ -2468,7 +2468,7 @@
   const elTitle = document.getElementById("overTitle");
   const coinNote = document.getElementById("coinNote");
 
-  const GAME_VERSION = "v0.9.282";
+  const GAME_VERSION = "v0.9.283";
   /* 제작사 스플래시(bamhobak friends 로고) — 2026-09-20 끔. 다시 켜려면 true */
   const SPLASH_USE = false;   // 코드를 고칠 때마다 뒤 두 자리를 올린다
   document.getElementById("ver").textContent = GAME_VERSION;
@@ -9555,7 +9555,7 @@
     { pg: "shop", key: "epjpddongpi_guide_shop", ok: () => !firstRunOn(), tip: "🏪 상점이 열렸어요!", after: () => setTimeout(guideShopPet, 400) },
     { pg: "book", key: LS_GUIDE_BOOK, ok: () => accLv() >= 2, tip: "📖 도감이 열렸어요!", after: () => setTimeout(() => lvPopOpen("bookHelp"), 350) },
     { pg: "grow", key: "epjpddongpi_guide_grow", ok: () => accLv() >= 4, tip: "🌱 성장이 열렸어요!" },   // v0.9.225 똥피력 4단계
-    { pg: "rank", key: "epjpddongpi_guide_rank", ok: () => gamesDone() >= RANK_OPEN_GAMES || rankSeen(), tip: "🏆 랭킹이 열렸어요!" }   // v0.9.221 5판 (이미 열어 본 사람은 그대로)
+    { pg: "rank", key: "epjpddongpi_guide_rank", ok: () => gamesDone() >= RANK_OPEN_GAMES || rankSeen() || accLv() >= ACC_XP.length, tip: "🏆 랭킹이 열렸어요!" }   // v0.9.283 똥피력 MAX 면 판 수와 상관없이   // v0.9.221 5판 (이미 열어 본 사람은 그대로)
   ];
   function rankSeen() { try { return !!localStorage.getItem("epjpddongpi_guide_rank"); } catch (e) { return false; } }
   function tabOpen(pg) { const t = TAB_OPEN.find(x => x.pg === pg); return !t || t.ok(); }
