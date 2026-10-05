@@ -1372,7 +1372,8 @@
     display: inline-flex; align-items: center; justify-content: center; gap: 3px; padding: 0 0 calc(var(--bh) * .08); font-size: 14px; line-height: 1; }
   #shopPets .shopItem button .emj { vertical-align: 0; width: 1.05em; height: 1.05em; }
   #shopPets .shopItem button.own { width: 76px; }
-  #startScreen > .page:not(#pgHome) { padding-top: calc(46px + env(safe-area-inset-top)); }   /* v0.9.297 칩이 한 줄이 되어 72 → 46 */   /* v0.9.134 이름·코인 칩이 모든 탭에 — 제목 리본을 그 아래로 */
+  #startScreen > .page:not(#pgHome) { padding-top: calc(56px + env(safe-area-inset-top)); }   /* v0.9.297 칩이 한 줄이 되어 72 → 46 · v0.9.309 똥피력 칩과 조금 더 띄움 56 */
+  #startScreen > .page:not(#pgHome) > .pgTitle { margin-bottom: -6px; }   /* v0.9.309 제목과 판은 조금 더 붙인다 */   /* v0.9.134 이름·코인 칩이 모든 탭에 — 제목 리본을 그 아래로 */
   .lvRow .lvT { display: flex; flex-direction: column; gap: 1px; }
   .lvRow .lvLs { font-size: 11px; font-weight: 700; color: #a9b1e4; }
   .lvRow:not(.on) .lvLs { color: #6d76ad; }
@@ -2116,8 +2117,8 @@
   #pgRank #boardStart li.five .mini .ms { font-size: 12.5px; }   /* 4칸 줄(7~10위)은 한 줄에 들어가게 */
   #pgRank #boardStart li.five .mini .mn { font-size: 11px; }
   #pgRank .board.withTabs > h3 { height: 46px; line-height: 38px; font-size: 18px; border-width: 0 46px; border-image-width: 0 46px; margin-top: -50px; }
-  #pgRank #boardSlot > .board.withTabs { margin-top: 64px; }   /* v0.9.306 제목 리본을 판 위로 띄운다(도감처럼) */
-  #pgRank #boardSlot > .board.withTabs > h3 { margin-top: -90px; margin-bottom: 4px; }
+  #pgRank #boardSlot > .board.withTabs { margin-top: 54px; }   /* v0.9.306 제목 리본을 판 위로 띄운다(도감처럼) */
+  #pgRank #boardSlot > .board.withTabs > h3 { margin-top: -80px; margin-bottom: 4px; }   /* v0.9.309 다른 탭과 같은 간격 */
   #pgRank #lastBoard { border-width: 18px 12px 12px !important; border-image-width: 26px !important; }
   #pgRank #lastBoard > h3 { height: 32px; line-height: 25px; font-size: 13px; border-width: 0 32px; border-image-width: 0 32px; margin-top: -34px; }
   #boardLast { gap: 4px; }
@@ -2622,7 +2623,7 @@
   const elTitle = document.getElementById("overTitle");
   const coinNote = document.getElementById("coinNote");
 
-  const GAME_VERSION = "v0.9.308";
+  const GAME_VERSION = "v0.9.309";
   /* 제작사 스플래시(bamhobak friends 로고) — 2026-09-20 끔. 다시 켜려면 true */
   const SPLASH_USE = false;   // 코드를 고칠 때마다 뒤 두 자리를 올린다
   document.getElementById("ver").textContent = GAME_VERSION;
