@@ -1815,6 +1815,10 @@
   #startScreen .board.withTabs, #overScreen .board.withTabs { padding-left: 0; padding-right: 0; }
   #startScreen .board.withTabs .jobTabs, #overScreen .board.withTabs .jobTabs { margin-left: -6px; }
   #startScreen .board.withTabs ol, #overScreen .board.withTabs ol { margin-right: -6px; }
+  /* v0.9.288 랭킹 탭 이번 주 TOP 10 — 금테에 딱 붙어 보여서 좌우를 띄운다 */
+  #pgRank .board.withTabs { padding-left: 7px; padding-right: 7px; }
+  #pgRank .board.withTabs .jobTabs { margin-left: 0; }
+  #pgRank .board.withTabs ol { margin-right: 0; }
   /* 메달 좌우 여백 줄이기 */
   #startScreen .board li.p1, #startScreen .board li.p2, #startScreen .board li.p3,
   #overScreen .board li.p1, #overScreen .board li.p2, #overScreen .board li.p3 { padding-left: 4px; gap: 5px; }
@@ -2460,7 +2464,7 @@
   const elTitle = document.getElementById("overTitle");
   const coinNote = document.getElementById("coinNote");
 
-  const GAME_VERSION = "v0.9.287";
+  const GAME_VERSION = "v0.9.288";
   /* 제작사 스플래시(bamhobak friends 로고) — 2026-09-20 끔. 다시 켜려면 true */
   const SPLASH_USE = false;   // 코드를 고칠 때마다 뒤 두 자리를 올린다
   document.getElementById("ver").textContent = GAME_VERSION;
