@@ -2603,12 +2603,12 @@
        밀어 숨길 뿐 남겨 두어 textContent 가 그대로다(글자를 읽는 코드가 안 깨진다). 나중에 붙는 글자는 MutationObserver 가 잡는다.
      · 캔버스 글자: fillText/strokeText 를 감싸 이모지 자리에 그림을 그린다 — 자리 폭은 원래 이모지 폭 그대로라 배치가 안 바뀐다.
      그림이 아직 안 왔거나 목록에 없는 이모지는 원래 이모지로 나온다. */
-  /*ICONS-BEGIN*/ const ICON_KEYS = ["🏪", "🐍", "🪙", "⭐", "🌙", "🌕", "☂", "❤", "💧", "🧻", "🔮", "💩", "🚀", "🕊", "👼", "🧚", "🐈", "🦴", "🍗", "⏸", "🏆", "👑", "✏", "🎵", "🔔", "🎉", "🥊", "🗼", "🔄", "🏠", "🔒", "🔓", "🔁", "🥇", "🥈", "🥉", "✨", "⚠", "⏱", "🏃", "🎈", "💪", "📋", "🎯", "🙏", "🫧", "🧘", "🚫", "🦸", "⚡", "🔥", "🐢", "🐦", "📯", "💥", "😋", "💉", "☔", "🌠", "🕳", "🌝", "🧲", "💨", "🍀", "🌧", "💢", "🌈", "📱", "🥕", "🦄", "🕰", "🎲", "👻", "👊", "👯", "🍷", "☝", "🍚", "🌀", "🐕", "🎰", "🪜", "🎼", "✂", "🌱", "⛰", "☁", "🌤", "🧊", "❄", "🛰", "🌍", "☄", "🌌", "🌑", "🌒", "⚫", "🍌", "😵", "🤢", "😜", "😭", "👍", "⚔", "🪐", "🌬", "🌫", "🏋", "🔩", "🍪", "🤏", "🟤", "🪺", "🦢", "📦", "🌂", "💞", "⏩", "🫙", "🪀", "🗿", "🐹", "🍰", "🎂", "🪰", "🍩", "🚽", "👟", "💰", "🍖", "💖", "🎾", "⭕", "🦍", "🪨", "🎁", "🙅", "🤹", "🧹", "😅", "🛡", "📝", "💣", "🧨", "🕺", "🏵", "🧑‍🚀"]; const ICON_COLS = 10, ICON_ROWS = 15, ICON_CELL = 96; /*ICONS-END*/
+  /*ICONS-BEGIN*/ const ICON_KEYS = ["🏪", "🐍", "🪙", "⭐", "🌙", "🌕", "☂", "❤", "💧", "🧻", "🔮", "💩", "🚀", "🕊", "👼", "🧚", "🐈", "🦆", "🦴", "🍗", "⏸", "🏆", "👑", "✏", "🎵", "🔔", "🎉", "🥊", "🗼", "🔄", "🏠", "🔒", "🔓", "🔁", "🥇", "🥈", "🥉", "✨", "⚠", "⏱", "🏃", "🎈", "💪", "📋", "🎯", "🙏", "🫧", "🧘", "🚫", "🦸", "⚡", "🔥", "🐢", "🐦", "📯", "💥", "😋", "💉", "☔", "🌠", "🕳", "🌝", "🧲", "💨", "🍀", "🌧", "💢", "🌈", "📱", "🥕", "🦄", "🕰", "🎲", "👻", "👊", "👯", "🍷", "☝", "🍚", "🌀", "🐕", "🎰", "🪜", "🎼", "✂", "🌱", "⛰", "☁", "🌤", "🧊", "❄", "🛰", "🌍", "☄", "🌌", "🌑", "🌒", "⚫", "🍌", "😵", "🤢", "😜", "😭", "👍", "⚔", "🪐", "🌬", "🌫", "🏋", "🔩", "🍪", "🤏", "🟤", "🪺", "🦢", "📦", "🌂", "💞", "⏩", "🫙", "🪀", "🗿", "🐹", "🍰", "🎂", "🪰", "🍩", "🚽", "👟", "💰", "🍖", "💖", "🎾", "⭕", "🦍", "🪨", "🎁", "🙅", "🤹", "🧹", "😅", "🛡", "📝", "💣", "🧨", "🕺", "🏵", "🧑‍🚀"]; const ICON_COLS = 10, ICON_ROWS = 15, ICON_CELL = 96; /*ICONS-END*/
   const ICON_IDX = new Map(ICON_KEYS.map((k, i) => [k, i]));
   const ICON_RE = ICON_KEYS.length ? new RegExp("(" + ICON_KEYS.slice().sort((a, b) => b.length - a.length)
     .map(k => k.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")).join("|") + ")\\uFE0F?", "gu") : null;
   let iconSheet = null;
-  const ICON_V = 2;   // v0.9.341 그림만 바뀌어도 새로 받게 — 아이콘을 다시 그리면 1 올린다
+  const ICON_V = 3;   // v0.9.341 그림만 바뀌어도 새로 받게 — 아이콘을 다시 그리면 1 올린다
   const ICON_URL = "assets/icons.webp?k=" + ICON_KEYS.length + "-" + ICON_KEYS.join("").length + "-" + ICON_V;   // v0.9.78 칸 순서가 바뀌면 옛 그림을 쓰지 않게
   if (ICON_RE) {
     const im = new Image();
@@ -2724,7 +2724,7 @@
   const elTitle = document.getElementById("overTitle");
   const coinNote = document.getElementById("coinNote");
 
-  const GAME_VERSION = "v0.9.342";
+  const GAME_VERSION = "v0.9.343";
   /* 제작사 스플래시(bamhobak friends 로고) — 2026-09-20 끔. 다시 켜려면 true */
   const SPLASH_USE = false;   // 코드를 고칠 때마다 뒤 두 자리를 올린다
   document.getElementById("ver").textContent = GAME_VERSION;
@@ -3019,11 +3019,13 @@
     coincat: { nm: "코인냥이", ic: "🐈", img: "assets/pet_cat.png",
               ds: "가끔 코인을 물어다 줘요" },
     eel:    { nm: "찌릿 장어", ic: "⚡", img: "assets/pet_eel.png",
-              ds: "가끔 가까운 똥에 찌릿! 번개를 쏘고, 옆 똥까지 번져요" }
+              ds: "가끔 가까운 똥에 찌릿! 번개를 쏘고, 옆 똥까지 번져요" },
+    duck:   { nm: "방귀 부릉 오리", ic: "🦆", img: "assets/pet_duck.png",   // v0.9.343
+              ds: "가끔 방귀로 부릉! 화면 가운데를 가로질러 날아가며 닿는 똥을 부숴요" }
   };
   // 게임 화면에 그릴 펫 그림 (카드 그림과 같은 파일)
   const PET_IMG = {};
-  for (const id of ["angel", "gift", "coincat", "eel"]) {
+  for (const id of ["angel", "gift", "coincat", "eel", "duck"]) {
     const im = new Image();
     im.onload = () => { PET_IMG[id] = im; };
     im.src = PETS[id].img;
@@ -4812,6 +4814,8 @@
       go: () => { petOn.gift = true; giftT = GIFT_EVERY * 0.5; } },
     { id: "pet:coincat", ic: "🐈", nm: "펫 코인냥이", ds: "가끔 코인을 물어다 줘요", once: true, w: 0.7, cond: () => hasPet("coincat"),
       go: () => { petOn.coincat = true; catT = CAT_EVERY * 0.5; } },
+    { id: "pet:duck",    ic: "🦆", nm: "펫 방귀 부릉 오리", ds: "가끔 방귀로 부릉! 화면 가운데를 가로질러 날아가며 닿는 똥을 부숴요", once: true, w: 0.7, cond: () => hasPet("duck"),
+      go: () => { petOn.duck = true; duckT = DUCK_EVERY * 0.5; } },
     { id: "pet:eel",     ic: "🐍", nm: "펫 찌릿 장어", ds: "가끔 가까운 똥에 찌릿! 번개를 쏘고, 옆 똥까지 번져요", once: true, w: 0.7, cond: () => hasPet("eel"),
       go: () => { petOn.eel = true; eelT = EEL_EVERY * 0.5; } },
     /* ── 펫 전용 증강 — 그 펫을 데리고 있을 때만 후보에 나온다 ── */
@@ -4888,7 +4892,7 @@
         : "맞을 때 가끔 그림자만 남기고 쏙 피해요",
       go: () => { aug.dodge += augCount["afterimage"] ? 0.05 : 0.10; } },
     { id: "chainZap",   ic: "⚡", nm: "찌릿찌릿 번개", ds: "펫이 똥을 부술 때 번개가 튀어서 옆 똥 두 개도 터져요",
-      hidden: true, once: true, cond: () => zapOwnN() >= 3 && (petOn.galaga || petOn.helper || petOn.dove || petOn.eel || petOn.gift),   // v0.9.61 똥을 부수는 펫이면 누구든 · v0.9.161 그 펫 3마리 이상 사 둬야
+      hidden: true, once: true, cond: () => zapOwnN() >= 3 && (petOn.galaga || petOn.helper || petOn.dove || petOn.eel || petOn.gift || petOn.duck),   // v0.9.61 똥을 부수는 펫이면 누구든 · v0.9.161 그 펫 3마리 이상 사 둬야
       go: () => { aug.chainZap = true; } },
     { id: "wak",        ic: "👊", nm: "주먹 총알", ds: "총알이 주먹으로 바뀌어요. 맞은 똥이 날아가 다른 똥이랑 같이 펑!",
       hidden: true, once: true, cond: () => petOn.galaga && aug.galaga >= 2,   // 우주선 2대 이상
@@ -5303,6 +5307,9 @@
   let fairies = [], giftT = 0;
   let cats = [], catT = 0, catN = 0;
   let eelT = 0, bolts = [];
+  /* v0.9.343 방귀 부릉 오리 — DUCK_EVERY 초마다 화면 높이 45~55% 한 줄을 가로로 1.2초에 날아가며 닿는 똥을 부순다(다크똥 제외) */
+  const DUCK_EVERY = 8, DUCK_SEC = 1.2, DUCK_R = 34;
+  let duckT = 0, ducks = [], duckSide = 1;
   /* ── 점술가 ── 수정 구슬(옛 포춘쿠키)은 평균 14초마다, 예언은 PROPH_SEC 동안 */
   const FORTUNE_FIRST = 2, PROPH_SEC = 10;   // 판 시작 2초 뒤 첫 예언, 그다음부터 10초마다 바뀐다
   /* 예언 — 10초마다 하나씩 저절로 바뀐다. good 좋은 것 · bad 나쁜 것 · both 양면.
@@ -9460,7 +9467,7 @@
   const BOOK_PET = { "pet:helper": "helper", hungry: "helper",
                      "pet:galaga": "galaga", wak: "galaga", pierce: "galaga",
                      "pet:dove": "dove", doveHome: "dove", doveWhat: "dove",
-                     "pet:angel": "angel", "pet:gift": "gift", "pet:coincat": "coincat", "pet:eel": "eel" };
+                     "pet:angel": "angel", "pet:gift": "gift", "pet:coincat": "coincat", "pet:eel": "eel", "pet:duck": "duck" };
   const BOOK_COND = {   // v0.9.163 꼬마·강아지 눈높이 말투
     small: "버피는 못 먹어요", umbrella3: "버피는 못 먹어요", dash: "도도는 못 먹어요",
     "pet:angel": "레벨 4부터 나와요",
@@ -9479,7 +9486,7 @@
     clone: "레벨 7부터 · 하트가 2개 아래일 때 나와요"
   };
   /* v0.9.161 찌릿찌릿 번개 — 똥을 부수는 펫 다섯 중 3마리 이상 사 두면 열린다 */
-  const ZAP_PETS = ["helper", "galaga", "dove", "gift", "eel"];
+  const ZAP_PETS = ["helper", "galaga", "dove", "gift", "eel", "duck"];
   function zapOwnN() { return ZAP_PETS.filter(p => hasPet(p)).length; }
   function bookOpen(a) { const p = BOOK_PET[a.id]; if (a.id === "chainZap" && zapOwnN() < 3) return false; return (!p || hasPet(p)) && (!ACH[a.id] || achU.has(a.id)); }   // v0.9.61 업적으로 여는 증강도 잠긴 채 보인다
   let bookSel = null;
@@ -10402,7 +10409,7 @@
     angelUsed = false; angelAura = 0; angelFx = 0; petFon = false; reviveUsed = false;
     fairies = []; giftT = GIFT_EVERY * 0.6;
     cats = []; catT = CAT_EVERY * 0.7; catN = 0;
-    eelT = EEL_EVERY * 0.6; bolts = [];
+    eelT = EEL_EVERY * 0.6; bolts = []; duckT = DUCK_EVERY * 0.5; ducks = [];
     bullets = []; shipClock = 0; aug.galaga = 0;
     coinRun = 0; coinDebt = 0; coinSeen = 0; coinGot = 0; coinSeenV = 0; coinGotV = 0;
     monkStreak = 0; fullOwn = false; fullBanner = 0; fullFx = 0;
@@ -11633,6 +11640,27 @@
         const n = zapChain(ex, ey, EEL_CHAIN + (aug.chainZap ? 2 : 0), 9999, true);
         eelT = n ? EEL_EVERY : 0.5;          // 똥이 없으면 잠깐 뒤 다시
       }
+    }
+    // ---- 방귀 부릉 오리 — 가로로 휭 지나가며 똥을 부순다 ----
+    if (petOn.duck && state === STATE.PLAY) {
+      duckT -= dt * tsc * gPet();
+      if (duckT <= 0) {
+        duckT = DUCK_EVERY;
+        duckSide = -duckSide;                 // 왼쪽에서, 다음엔 오른쪽에서
+        ducks.push({ t: 0, dir: duckSide, y: H * (0.45 + Math.random() * 0.1) });
+        if (!sfx("dash", 0.7)) { beep(140, .18, "sawtooth", .05); beep(90, .22, "square", .03); }   // 방귀 대시 소리 재사용
+      }
+    }
+    for (let k = ducks.length - 1; k >= 0; k--) {
+      const d = ducks[k];
+      d.t += dt * tsc;
+      const f = d.t / DUCK_SEC;
+      d.x = d.dir > 0 ? -60 + (W + 120) * f : W + 60 - (W + 120) * f;
+      if (f >= 1) { ducks.splice(k, 1); continue; }
+      if (Math.random() < dt * 40) burst(d.x - d.dir * 26, d.y + 6, "#cfe2a8", 1);   // 방귀 자국
+      const before = items.length;
+      smashPoopsAround(d.x, d.y, DUCK_R, false);
+      if (items.length < before) { burst(d.x, d.y, "#ffd23f", 8); shake = Math.max(shake, 4); }
     }
     for (let k = bolts.length - 1; k >= 0; k--) {
       bolts[k].t += dt;
@@ -16563,6 +16591,7 @@
     "pet:angel": "쓰러지면 한 번 하트 1개로 되살림 + 2초 무적, 되살아난 뒤 6초 동안 반경 92px 똥을 밀어냄 · 레벨 4부터 · 상점 구매 필요",
     "pet:gift": "18초마다 떨어지는 똥 하나를 아이템으로(하트 25% · 우산 25% · 별 30% · 달 20%, 무무는 달 대신 별, 버피는 우산 대신 하트, 하트가 가득이면 별) · 처음은 9초 뒤 · 상점 구매 필요",
     "pet:coincat": "9초마다 코인을 물어다 떨어뜨림 · 세 번째마다 5코인 · 처음은 4.5초 뒤 · 상점 구매 필요",
+    "pet:duck": "8초마다 화면 높이 45~55% 한 줄을 1.2초에 가로질러 날며 반지름 34px 안 똥을 부숨(다크똥 제외, 좌우 번갈아) · 상점 구매 필요",
     "pet:eel": "7초마다 가장 가까운 똥에 번개, 옆 똥으로 2개까지 옮겨붙음(건너뛰는 거리 110px) · 상점 구매 필요",
     doveHome: "비둘기 출격 거리 -20% (겹칠수록 덜, 최대 3번: 110m → 88m → 73m → 62m)",
     hungry: "뿌잉이 아이템이 뜨고 3초 뒤 대신 먹으러 감(한 번에 한 마리, 다녀오면 2초 쉼, 속도 500px/s)",
@@ -18275,6 +18304,15 @@
   }
   /* 앞쪽 — 날아다니는 선물 요정, 고개 내민 야옹이, 번개 */
   function drawPetsFront(now) {
+    for (const d of ducks) {                 // v0.9.343 방귀 부릉 오리
+      if (!PET_IMG.duck || d.x === undefined) continue;
+      const im = PET_IMG.duck, h = 54, w = h * im.width / im.height, bob = Math.sin(d.t * 18) * 3;
+      ctx.save(); ctx.translate(d.x, d.y + bob);
+      if (d.dir < 0) ctx.scale(-1, 1);       // 그림은 오른쪽을 본다
+      ctx.rotate(-0.06);
+      ctx.drawImage(im, -w / 2, -h / 2, w, h);
+      ctx.restore();
+    }
     for (const b of bolts) {                 // 번개 — 지그재그 두 겹(굵은 빛 + 가는 심)
       const k = b.t / b.life;
       ctx.save();
