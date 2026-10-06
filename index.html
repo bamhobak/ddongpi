@@ -2724,7 +2724,7 @@
   const elTitle = document.getElementById("overTitle");
   const coinNote = document.getElementById("coinNote");
 
-  const GAME_VERSION = "v0.9.350";
+  const GAME_VERSION = "v0.9.351";
   /* 제작사 스플래시(bamhobak friends 로고) — 2026-09-20 끔. 다시 켜려면 true */
   const SPLASH_USE = false;   // 코드를 고칠 때마다 뒤 두 자리를 올린다
   document.getElementById("ver").textContent = GAME_VERSION;
@@ -7900,7 +7900,7 @@
     const pt = patOf(lv);
     bossPhase = -1; bossRoar = 0; bossHp = 1;
     if (pt.boss) {
-      popText(W / 2, H * 0.48, "👑 보스 등장 · " + pt.boss.nm, "#ffb3c4", 26);
+      // v0.9.351 보스 등장 글자 뺌
       shake = Math.max(shake, 20); feverFlash = Math.max(feverFlash, 0.45);
       if (!sfx("angry")) beep(160, .35, "sawtooth", .07);
       if (navigator.vibrate) navigator.vibrate([40, 50, 90]);
@@ -7952,7 +7952,7 @@
       fbStarted = true; fbIn = 0; fbShotT = 1.6; fbStep = 0; fbPhase = -1;
       powerUntil = 0;                          // 간식 타임도 끝
       shake = Math.max(shake, 26); feverFlash = Math.max(feverFlash, 0.6);
-      popText(W / 2, H * 0.40, "👑 끝판왕 등장!", "#ff9ad8", 30, 2.4);
+      // v0.9.351 끝판왕 등장 글자 뺌
       popText(W / 2, H * 0.47, "다크똥만 뿌린다 — 4스테이지만 버텨라!", "#ffe9a8", 17, 2.6);
       if (!sfx("angry")) beep(120, .5, "sawtooth", .07);
       if (navigator.vibrate) navigator.vibrate([60, 60, 120]);
@@ -12317,7 +12317,7 @@
               shake = 22; flash = 1;
               hitStop = Math.max(hitStop, HITSTOP_SEC);   // 아주 잠깐 멈췄다가 흔들린다 (타격감)
               burst(it.x, it.y, "#8a5a2b", 22);
-              popText(player.x, player.y - 60, "으악!", "#ff5d5d");
+              hitBurst(player.x, player.y + (player.hy || 0));   // v0.9.351 으악! 글자 → Codex 맞음 이펙트
               if (!hurtSfx(job)) beep(140, .25, "sawtooth", .07);
               if (navigator.vibrate) navigator.vibrate(70);
               if (dirtJob() ? dirt >= DIRT_MAX : lives <= 0) {
@@ -13233,7 +13233,7 @@
       shake = 22; flash = 1;
       hitStop = Math.max(hitStop, HITSTOP_SEC);
       burst(it.x, it.y, "#8a5a2b", 22);
-      popText(rival.x, rival.y - 60, "으악!", "#ff5d5d");
+      hitBurst(rival.x, rival.y + (rival.hy || 0));   // v0.9.351 으악! 글자 → Codex 맞음 이펙트
       if (!hurtSfx(rivalJob)) beep(140, .25, "sawtooth", .07);
       if (navigator.vibrate) navigator.vibrate(70);
       if (rival.lives <= 0) { vsLoser = 2; startDeath(); }
@@ -14196,7 +14196,7 @@
         if (k >= 0) { burst(items[k].x, items[k].y, "#8a5a2b", 22); items.splice(k, 1); }
         rival.lives--;
         shake = Math.max(shake, 14);
-        popText(rival.x, rival.y - 60, "으악!", "#ff5d5d");
+        hitBurst(rival.x, rival.y + (rival.hy || 0));   // v0.9.351 으악! 글자 → Codex 맞음 이펙트
         if (!hurtSfx(rivalJob)) beep(140, .2, "sawtooth", .05);
         if (rival.lives <= 0) { vsLoser = 2; startDeath(); }
       } else if (ev === "again") {
@@ -14348,7 +14348,7 @@
       netSend("hit", { id: it.nid });
       shake = 22; flash = 1;
       burst(it.x, it.y, "#8a5a2b", 22);
-      popText(player.x, player.y - 60, "으악!", "#ff5d5d");
+      hitBurst(player.x, player.y + (player.hy || 0));   // v0.9.351 으악! 글자 → Codex 맞음 이펙트
       if (!hurtSfx(job)) beep(140, .25, "sawtooth", .07);
       if (navigator.vibrate) navigator.vibrate(70);
       break;
@@ -14598,7 +14598,7 @@
       shake = 18; flash = 0.7;
       hitStop = Math.max(hitStop, HITSTOP_SEC * 0.6);
       burst(it.x, it.y, "#8a5a2b", 22);
-      popText(player.x, player.y - 60, "으악! " + player.hits, "#ff5d5d");
+      hitBurst(player.x, player.y + (player.hy || 0));   // v0.9.351 으악! 글자 → Codex 맞음 이펙트
       if (!hurtSfx(job)) beep(140, .25, "sawtooth", .07);
       if (navigator.vibrate) navigator.vibrate(60);
     } else {
@@ -19248,6 +19248,23 @@
     ctx.fillText("💨", cx, cy + 1);
     ctx.restore();
   }
+  /* v0.9.351 맞음 이펙트 — Codex 쾅! 터짐 그림이 통 커졌다가 흐려진다 */
+  const hitImg = new Image(); hitImg.src = "assets/fx_hit.webp";
+  let hitFx = [];
+  function hitBurst(x, y) { hitFx.push({ x, y, t: 0, rot: (Math.random() - 0.5) * 0.6 }); if (hitFx.length > 6) hitFx.shift(); }
+  function drawHitFx(dt) {
+    for (let k = hitFx.length - 1; k >= 0; k--) {
+      const f = hitFx[k]; f.t += dt;
+      const L = 0.5; if (f.t >= L) { hitFx.splice(k, 1); continue; }
+      if (!hudOk(hitImg)) continue;
+      const u = f.t / L, sc = u < 0.25 ? 0.4 + 2.6 * u : 1.05 - 0.1 * (u - 0.25);
+      const d = 86 * sc;
+      ctx.save(); ctx.globalAlpha = (u < 0.45 ? 0.92 : 0.92 * (1 - (u - 0.45) / 0.55));
+      ctx.translate(f.x, f.y); ctx.rotate(f.rot);
+      ctx.drawImage(hitImg, -d / 2, -d / 2 * hitImg.height / hitImg.width, d, d * hitImg.height / hitImg.width);
+      ctx.restore();
+    }
+  }
   function drawEffects() {
     // 화난 우산 폭발 — 퍼져 나가는 파동
     if (umbBlast) {
@@ -19590,6 +19607,7 @@
       // v0.9.190 무적 둘레 동그라미는 없앴다 (증강 뒤·맞은 뒤 모두) — drawInvGlow 는 안 부른다
     }
     drawEffects();
+    { const nt = performance.now(); drawHitFx(Math.min(0.05, (nt - (window.__hitLast || nt)) / 1000)); window.__hitLast = nt; }   // v0.9.351 맞음 이펙트
     if (partyNow) { drawPartyTags(now); ctx.restore(); W = VW; }
     if (state === STATE.PLAY || state === STATE.PAUSE) { drawPetsFront(now); drawProphecy(); }
     ctx.restore();
