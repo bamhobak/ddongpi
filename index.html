@@ -2724,7 +2724,7 @@
   const elTitle = document.getElementById("overTitle");
   const coinNote = document.getElementById("coinNote");
 
-  const GAME_VERSION = "v0.9.348";
+  const GAME_VERSION = "v0.9.349";
   /* 제작사 스플래시(bamhobak friends 로고) — 2026-09-20 끔. 다시 켜려면 true */
   const SPLASH_USE = false;   // 코드를 고칠 때마다 뒤 두 자리를 올린다
   document.getElementById("ver").textContent = GAME_VERSION;
@@ -4819,7 +4819,7 @@
       ds: "가끔 조그만 오리 떼가 방귀로 부릉! 화면 가운데를 가로지르며 한 마리가 똥 하나씩 부숴요",
       dsFn: () => augCount["pet:duck"] ? "오리가 한 마리 더 날아가요" : "가끔 조그만 오리 떼가 방귀로 부릉! 화면 가운데를 가로지르며 한 마리가 똥 하나씩 부숴요",
       go: () => { if (petOn.duck) aug.duck++; else { petOn.duck = true; aug.duck = 2; duckT = DUCK_EVERY * 0.5; } } },
-    { id: "duckFat",    ic: "🐥", nm: "통통 오리", ds: "오리가 1.25배 통통해져서 똥을 더 잘 부숴요",   // v0.9.348
+    { id: "duckFat",    ic: "🐥", nm: "통통 오리", ds: "오리가 1.25배 통통해지고, 똥을 부수는 범위는 1.5배 넓어져요",   // v0.9.348
       once: true, cond: () => petOn.duck, go: () => { aug.duckFat = true; } },
     { id: "duckMarch",  ic: "🎺", nm: "오리 행진곡", ds: "방귀 대시를 쓰면 그 자리에서 오리 떼가 대각선 위로 출동해요",   // v0.9.348
       hidden: true, once: true, cond: () => petOn.duck && aug.dash, go: () => { aug.duckMarch = true; } },
@@ -11684,7 +11684,7 @@
         if (mx < -40 || mx > W + 40 || my < -40 || my > H + 40) continue;
         if (Math.random() < dt * 10) burst(mx - d.ux * 14, my - d.uy * 14 + 4, "#cfe2a8", 1);   // 방귀 자국
         /* v0.9.347 한 마리당 똥 하나 — 부수면 그 오리는 뿅 사라진다 */
-        const rr = DUCK_R * (aug.duckFat ? 1.25 : 1);
+        const rr = DUCK_R * (aug.duckFat ? 1.5 : 1);   // v0.9.349 통통 오리 — 크기 1.25배, 부수는 범위 1.5배
         const q = items.find(it => it.type === "poop" && !it.dark && !it.special && Math.hypot(it.x - mx, it.y - my) < rr + it.r);
         if (q) {
           const before = items.length;
@@ -16640,7 +16640,7 @@
     "pet:gift": "18초마다 떨어지는 똥 하나를 아이템으로(하트 25% · 우산 25% · 별 30% · 달 20%, 무무는 달 대신 별, 버피는 우산 대신 하트, 하트가 가득이면 별) · 처음은 9초 뒤 · 상점 구매 필요",
     "pet:coincat": "9초마다 코인을 물어다 떨어뜨림 · 세 번째마다 5코인 · 처음은 4.5초 뒤 · 상점 구매 필요",
     "pet:duck": "3초마다 오리 떼(1단계 2마리, 단계마다 +1, 최대 6마리)가 화면 가운데 언저리를 약 1.8초에 가로지름 · 마리당 똥 1개 부수고 사라짐(다크똥 제외, 좌우 번갈아) · 상점 구매 필요",
-    duckFat: "오리 크기·부수는 범위 1.25배",
+    duckFat: "오리 크기 1.25배 · 부수는 범위 1.5배",
     duckMarch: "방귀 대시 때 출발 자리에서 대각선 위(대시한 쪽)로 오리 떼 출동 (마리 수는 단계 그대로)",
     duckEgg: "오리가 똥을 부술 때 30% 확률로 1코인",
     "pet:eel": "7초마다 가장 가까운 똥에 번개, 옆 똥으로 2개까지 옮겨붙음(건너뛰는 거리 110px) · 상점 구매 필요",
