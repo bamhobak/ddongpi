@@ -2724,7 +2724,7 @@
   const elTitle = document.getElementById("overTitle");
   const coinNote = document.getElementById("coinNote");
 
-  const GAME_VERSION = "v0.9.341";
+  const GAME_VERSION = "v0.9.342";
   /* 제작사 스플래시(bamhobak friends 로고) — 2026-09-20 끔. 다시 켜려면 true */
   const SPLASH_USE = false;   // 코드를 고칠 때마다 뒤 두 자리를 올린다
   document.getElementById("ver").textContent = GAME_VERSION;
@@ -4734,6 +4734,7 @@
     if (achU.has(id) || !ACH[id] || !achLive()) return;
     achU.add(id); achSave();
     const a = AUGMENTS.find(x => x.id === id);
+    if (a && a.gone) return;                    // v0.9.342 뺀 증강은 해금 알림도 없다
     achNew.push({ k: "증강", t: a ? a.ic + " " + a.nm : id, how: ACH[id].t });   // v0.9.63 바로 알리지 않고 게임 오버 화면에서 보여 준다
   }
   function achBump(key, n) {
@@ -4926,7 +4927,7 @@
     { id: "juggle",     ic: "🤹", nm: "초승달 쓸기", ds: "똥이 머리에 닿기 직전에 버튼을 톡! 하얀 초승달로 쓸어 올려 똥을 튕겨 내요. 튕긴 똥은 다른 똥이랑 같이 펑 (3초마다)",
       once: true, cond: () => actOk(), go: () => { aug.juggle = true; jugCd = 0; for (const k in UPPER_PAD) if (k.startsWith(upperKey().split("_")[0])) { const im = new Image(); im.src = "assets/upper_" + k + ".webp"; UPPER_IMG[k] = im; } } },   // 어퍼컷 그림 미리 불러 둔다
     { id: "vacuum",     ic: "🧹", nm: "똥 청소기", ds: "버튼을 누르면 머리 위 똥이랑 아이템을 쓰읍 빨아들여요 (15초마다)",
-      once: true, cond: () => actOk(), go: () => { aug.vacuum = true; vacCd = 0; } },
+      gone: true, once: true, cond: () => false, go: () => { aug.vacuum = true; vacCd = 0; } },   // v0.9.342 뺐다 — 증강·도감·테스트 목록에 안 나온다
     { id: "closeCall",  ic: "😅", nm: "아슬아슬", ds: "똥을 아슬하게 피할수록 점수가 점점 커져요. 한 대 맞으면 처음부터!",
       once: true, go: () => { aug.closeCall = true; closeN = 0; } },
     { id: "coinArmor",  ic: "🛡", nm: "동전 갑옷", ds: "맞을 때 이번 판 코인이 대신 막아 줘요 (5개부터, 막을 때마다 1개씩 더)",
