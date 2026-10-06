@@ -2085,6 +2085,17 @@
   #hallPop #lastNav #lastWk { font-size: 14px; color: #e6e9ff; min-width: 150px; }
   #hallPop #boardLast .lp, #hallPop #boardLast .lp.p1 { height: 36px; font-size: 14.5px; }
   #hallPop #boardLast .lp b, #hallPop #boardLast .lp.p1 b { font-size: 15px; }
+  /* v0.9.310 창 높이 고정(10위까지 보이는 높이) — 기록 수에 따라 들쑥날쑥하지 않게, 더 많으면 안에서 스크롤 */
+  #hallPop #hallBody { height: min(476px, calc(86vh - 130px)); max-height: none; flex-shrink: 0; }
+  /* v0.9.310 1~3위 더 잘 보이게 — 금·은·동 판 */
+  #hallPop #boardLast .lp.p1, #hallPop #boardLast .lp.p2, #hallPop #boardLast .lp.p3 { height: 44px; font-size: 16px; font-weight: 800; border-width: 2px; border-style: solid; }
+  #hallPop #boardLast .lp.p1 { background: linear-gradient(180deg, rgba(255,214,90,.42), rgba(170,110,20,.3)); border-color: #ffd86b; box-shadow: 0 0 10px rgba(255,200,60,.45); }
+  #hallPop #boardLast .lp.p2 { background: linear-gradient(180deg, rgba(220,230,250,.32), rgba(120,135,170,.25)); border-color: #dfe6f5; }
+  #hallPop #boardLast .lp.p3 { background: linear-gradient(180deg, rgba(240,160,100,.34), rgba(140,80,40,.26)); border-color: #e9a06a; }
+  #hallPop #boardLast .lp.p1 b { font-size: 17px; color: #ffd86b; }
+  #hallPop #boardLast .lp.p2 b { font-size: 16.5px; color: #f2f5ff; }
+  #hallPop #boardLast .lp.p3 b { font-size: 16.5px; color: #ffcf9e; }
+  #hallPop #boardLast .lp.p1 .rk, #hallPop #boardLast .lp.p2 .rk, #hallPop #boardLast .lp.p3 .rk { font-size: 19px; }
   #pgRank #btnHall { --bh: 36px; height: var(--bh); box-sizing: border-box; flex-shrink: 0; min-width: 210px; margin: 2px auto 0; border-style: solid; border-color: transparent; border-radius: 0; box-shadow: none; background: none;
     border-width: 0 calc(var(--bh) / 2); border-image: url(assets/ui/btn_blue.webp) 0 60 fill / 0 calc(var(--bh) / 2) / 0 stretch;
     padding: 0 6px calc(var(--bh) * .08); font-size: 14.5px; font-weight: 800; color: #fff; text-shadow: 0 1px 2px rgba(0,50,110,.65); display: block; margin-top: 0 !important; }
@@ -2623,7 +2634,7 @@
   const elTitle = document.getElementById("overTitle");
   const coinNote = document.getElementById("coinNote");
 
-  const GAME_VERSION = "v0.9.309";
+  const GAME_VERSION = "v0.9.310";
   /* 제작사 스플래시(bamhobak friends 로고) — 2026-09-20 끔. 다시 켜려면 true */
   const SPLASH_USE = false;   // 코드를 고칠 때마다 뒤 두 자리를 올린다
   document.getElementById("ver").textContent = GAME_VERSION;
