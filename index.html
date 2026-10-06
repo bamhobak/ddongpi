@@ -2703,7 +2703,7 @@
   const elTitle = document.getElementById("overTitle");
   const coinNote = document.getElementById("coinNote");
 
-  const GAME_VERSION = "v0.9.327";
+  const GAME_VERSION = "v0.9.328";
   /* 제작사 스플래시(bamhobak friends 로고) — 2026-09-20 끔. 다시 켜려면 true */
   const SPLASH_USE = false;   // 코드를 고칠 때마다 뒤 두 자리를 올린다
   document.getElementById("ver").textContent = GAME_VERSION;
@@ -4905,7 +4905,7 @@
       once: true, cond: () => actOk(), go: () => { aug.vacuum = true; vacCd = 0; } },
     { id: "closeCall",  ic: "😅", nm: "아슬아슬", ds: "똥을 아슬하게 피할수록 점수가 점점 커져요. 한 대 맞으면 처음부터!",
       once: true, go: () => { aug.closeCall = true; closeN = 0; } },
-    { id: "coinArmor",  ic: "🛡", nm: "동전 갑옷", ds: "맞을 때 이번 판 코인 5개가 대신 막아 줘요",
+    { id: "coinArmor",  ic: "🛡", nm: "동전 갑옷", ds: "맞을 때 이번 판 코인이 대신 막아 줘요 (5개부터, 막을 때마다 5개씩 더)",
       once: true, cond: () => job !== "powerp", go: () => { aug.coinArmor = true; } },
     { id: "credit",     ic: "📝", nm: "외상 장부", ds: "구름 상점에서 모아 둔 코인도 쓸 수 있어요",
       once: true, cond: () => accOn(5) && !testMode, go: () => { aug.credit = true; } },
@@ -10329,7 +10329,7 @@
     grazeFxCd = 0; grazeCount = 0;
     noHitSec = 0;
     clones = []; cloneTimer = 0;
-    aug.cloudVip = false; aug.juggle = false; aug.vacuum = false; aug.closeCall = false; aug.coinArmor = false; aug.credit = false; aug.bombPoop = false;
+    aug.cloudVip = false; aug.juggle = false; aug.vacuum = false; aug.closeCall = false; aug.coinArmor = false; coinArmorN = 0; aug.credit = false; aug.bombPoop = false;
     aug.fartRocket = false; aug.zapDance = false; aug.goldArmor = false; jugCd = 0; vacCd = 0; vacT = 0; vacHeld = 0; closeN = 0; jugSlash = null; jugFreeze = 0; rocketTrails = []; goldFetch = null;
     aug.pierce = false; aug.fly = false; aug.stone = false; aug.gacha = false; aug.snackBig = false; aug.toilet = false;
     flies = []; stoneT = 0; stoneOn = false; mvPX = W / 2; mvPY = 0;
@@ -12143,14 +12143,15 @@
               }
             } else {
               if (partyOn()) { if (paOnHit(player, it, now)) items.splice(i, 1); continue; }   // 여럿이 — 목숨 대신 맞은 횟수 (근육 폭발·책임 전가 포함)
-              if (aug.coinArmor && coinRun >= 5 && coins >= 5 && !fbHard(it)) {   // v0.9.249 동전 갑옷 — 이번 판 코인 5개로 대신
-                coinRun -= 5; coins -= 5;
+              const caCost = 5 * (1 + coinArmorN);   // v0.9.328 쓸 때마다 5개씩 비싸진다 — 코인이 계속 떨어져 판이 안 끝나던 것 막기
+              if (aug.coinArmor && coinRun >= caCost && coins >= caCost && !fbHard(it)) {   // v0.9.249 동전 갑옷 — 이번 판 코인으로 대신
+                coinRun -= caCost; coins -= caCost; coinArmorN++;
                 try { localStorage.setItem(LS_COINS, String(coins)); } catch (e) {}
                 showCoins(); achBump("carmor");
                 invUntil = now + 1000;
                 shake = Math.max(shake, 12);
                 burst(it.x, it.y, "#ffd23f", 22);
-                popText(player.x, player.y - 60, "🛡 동전 갑옷!", "#ffd23f", 20);
+                popText(player.x, player.y - 60, "🛡 동전 갑옷! -" + caCost, "#ffd23f", 20);
                 if (it.bomb) bombBoom(it.x, it.y);
                 if (aug.goldArmor) goldArmorFx(cy);
                 if (!sfx("coin")) beep(1200, .08, "triangle", .05);
@@ -12488,7 +12489,7 @@
   /* v0.9.249 액티브 스킬 셋(방귀 대시·초승달 쓸기·똥 청소기) 중 두 가지까지만 */
   function actOk() { return true; }   // v0.9.254 방귀 대시가 버튼에서 빠져서 세 가지 다 한 판에 나와도 된다 (예전엔 두 가지까지)
   const JUG_CD = 3, VAC_CD = 15, VAC_SEC = 1.3, VAC_R = 300, VAC_ANG = 0.75;
-  let vacHeld = 0;
+  let vacHeld = 0, coinArmorN = 0;
   let jugCd = 0, vacCd = 0, vacT = 0, closeN = 0, rocketTrails = [], goldFetch = null;
   function jugFling(q, hx) {                 // 위로 쓸어 올린다 — 날아가는 똥은 나를 안 다치고, 다른 똥에 닿으면 같이 터진다(주먹 총알과 같은 처리)
     q.vx = (q.x - hx) * 4 + (Math.random() - .5) * 160;
@@ -16536,7 +16537,7 @@
     juggle: "버튼 — 머리 둘레(몸 반경×2.4+30px) 안 위쪽 똥을 위로 튕김(곧게 위로), 튕긴 똥이 다른 똥에 닿으면 같이 터짐(반경 42) · 간식 제외(다크똥도 됨) · 쿨 3초",
     vacuum: "버튼 — 1.3초 동안 머리 위 ±43° 부채꼴 300px 안 똥(다크똥 포함)·아이템을 빨아들임, 똥은 부순 점수 · 쿨 15초",
     closeCall: "아슬! 할 때마다 연속 +1(최대 30), 똥 점수 × 0.5 × 연속 · 하트를 잃으면 0",
-    coinArmor: "하트를 잃을 일이면 이번 판 코인 5개로 대신 막음(1초 무적)",
+    coinArmor: "하트를 잃을 일이면 이번 판 코인으로 대신 막음(1초 무적) — 5·10·15… 쓸 때마다 5개씩 비싸짐",
     credit: "구름 상점에서 모아 둔 코인도 씀 (없으면 이번 판 코인만)",
     bombPoop: "보통 똥의 12%가 폭탄 똥 — 다른 똥에 닿으면 반경 80 폭발(다크 제외), 나한테 맞으면 하트 -1 + 폭발",
     fartRocket: "대시 지나간 길에 1초 바람 — 닿는 똥을 초승달 쓸기처럼 튕김",
