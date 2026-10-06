@@ -478,7 +478,7 @@
   .augCard .gCurtain { position: absolute; inset: 0; z-index: 5; display: grid; place-items: center; border-radius: inherit;
     background: repeating-linear-gradient(90deg, #6b3fc4 0 14px, #5a32ad 14px 28px); box-shadow: inset 0 -6px 0 #3b1f7a;
     animation: gCurtainUp .7s cubic-bezier(.6,0,.3,1) .15s forwards; }
-  .augCard .gCurtain b { font-size: 34px; }
+  .augCard .gCurtain .qmk, .augCard .ic .qmk { height: 40px; width: auto; display: block; filter: drop-shadow(0 2px 3px rgba(0,0,0,.4)); }
   .augCard .gCurtain::after { content: ""; position: absolute; left: 0; right: 0; bottom: -10px; height: 12px;
     background: radial-gradient(circle at 7px 0, #5a32ad 7px, transparent 7.5px) 0 0 / 14px 12px repeat-x; }
   @keyframes gCurtainUp { to { transform: translateY(-108%); } }
@@ -2712,7 +2712,7 @@
   const elTitle = document.getElementById("overTitle");
   const coinNote = document.getElementById("coinNote");
 
-  const GAME_VERSION = "v0.9.334";
+  const GAME_VERSION = "v0.9.335";
   /* 제작사 스플래시(bamhobak friends 로고) — 2026-09-20 끔. 다시 켜려면 true */
   const SPLASH_USE = false;   // 코드를 고칠 때마다 뒤 두 자리를 올린다
   document.getElementById("ver").textContent = GAME_VERSION;
@@ -5100,11 +5100,11 @@
     for (const a of picks) {
       const card = document.createElement("button");
       card.className = "augCard";
-      const ic = document.createElement("span"); ic.className = "ic"; ic.textContent = blind ? "❓" : a.ic;
+      const ic = document.createElement("span"); ic.className = "ic"; if (blind) ic.innerHTML = '<img class="qmk" src="assets/ui/qmark.webp" alt="?">'; else ic.textContent = a.ic;   // v0.9.335 Codex 물음표
       const tx = document.createElement("span"); tx.className = "tx";
       const nm = document.createElement("div");  nm.className = "nm2"; nm.textContent = blind ? "???" : nameOf(a);
-      const ds = document.createElement("div");  ds.className = "ds";  ds.textContent = blind ? "무엇이 나올까?" : a.dsFn ? a.dsFn() : a.ds;
-      tx.append(nm, ds);
+      const ds = document.createElement("div");  ds.className = "ds";  ds.textContent = blind ? "" : a.dsFn ? a.dsFn() : a.ds;
+      if (blind) tx.append(nm); else tx.append(nm, ds);   // v0.9.335 뽑기 — '무엇이 나올까?' 줄 없앰
       card.append(ic, tx);
       if (a.hidden && !blind) {
         card.classList.add("hid");
@@ -5123,12 +5123,12 @@
         if (blind && !card.dataset.shown) {   // v0.9.332 뽑기 — 고른 카드의 물음표 커튼이 위로 싹 걷히며 정체를 보여 준 뒤 넘어간다
           card.dataset.shown = "1";
           augList.style.pointerEvents = "none";
-          const cur = document.createElement("span"); cur.className = "gCurtain"; cur.innerHTML = "<b>❓</b>";
-          ic.textContent = a.ic; nm.textContent = nameOf(a); ds.textContent = a.dsFn ? a.dsFn() : a.ds;
+          const cur = document.createElement("span"); cur.className = "gCurtain"; cur.innerHTML = '<img class="qmk" src="assets/ui/qmark.webp" alt="?">';
+          ic.textContent = a.ic; nm.textContent = nameOf(a); ds.textContent = a.dsFn ? a.dsFn() : a.ds; tx.append(ds);
           if (a.hidden) { card.classList.add("hid"); const bd = document.createElement("span"); bd.className = "badge"; bd.textContent = "히든"; card.appendChild(bd); }
           card.classList.add("gReveal"); card.appendChild(cur);
           if (!sfx("aug")) beep(700, .08, "triangle", .05);
-          setTimeout(() => { augList.style.pointerEvents = ""; card.click(); }, 1500);
+          setTimeout(() => { augList.style.pointerEvents = ""; card.click(); }, 2000);   // v0.9.335 결과를 0.5초 더
           return;
         }
         const picked = nameOf(a);      // 보유 수가 오르기 전 = 카드에 적혀 있던 이름
