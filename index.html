@@ -2724,7 +2724,7 @@
   const elTitle = document.getElementById("overTitle");
   const coinNote = document.getElementById("coinNote");
 
-  const GAME_VERSION = "v0.9.349";
+  const GAME_VERSION = "v0.9.350";
   /* 제작사 스플래시(bamhobak friends 로고) — 2026-09-20 끔. 다시 켜려면 true */
   const SPLASH_USE = false;   // 코드를 고칠 때마다 뒤 두 자리를 올린다
   document.getElementById("ver").textContent = GAME_VERSION;
@@ -5186,7 +5186,7 @@
         closeAugScreen();
         const seq = augPickedSeq; augPickedSeq = [];
         const life = seq.length > 1 ? 2.5 : (twoRandGot ? 2.5 : undefined);
-        seq.forEach(([t, c], i) => popText(player.x, player.y - 70 - (seq.length - 1 - i) * 32, t, c, seq.length > 1 ? 22 : 24, life));
+        if (false) seq.forEach(([t, c], i) => popText(player.x, player.y - 70 - (seq.length - 1 - i) * 32, t, c, seq.length > 1 ? 22 : 24, life));
         };
         /* v0.9.337 아무거나 두 개 — 받은 두 증강을 카드로 펼쳐 2.2초 보여 준 뒤 넘어간다 (떠오르는 글자만으론 놓치기 쉬웠다) */
         if (a.id === "twoRand" && twoRandObjs.length) {
@@ -11026,7 +11026,14 @@
                        k: k === undefined ? -1 : k, rot: Math.random() * 6.28, vr: (Math.random() - .5) * 8 });
     }
   }
+  /* v0.9.350 떴다 흐리게 사라지는 알림 글자 중 '무엇을 먹었다·무엇이 발동했다' 류는 띄우지 않는다 (화면이 어지러워서).
+     맞았다(으악)·스테이지 이름·보스·예언·아슬 콤보처럼 알아야 하는 것은 남긴다. 되살리려면 이 목록에서 빼면 된다. */
+  const POP_MUTE = [/^🌈$/, /^🎺/, /^🦆/, /^🥚/, /^🐈 냥/, /^📦/, /^📋/, /^🕕/, /^💨/, /^🛡/, /^☂️ 방/, /^☁️ 구름 방패/, /방울 팡/,
+    /^🫧 대왕/, /^💖/, /^👼/, /^🌂/, /^💪/, /^💥 근육/, /^🙅/, /^📜/, /^🗿/, /^🕰️/, /^돌이 풀렸다/, /^잔상/, /^어퍼컷/, /^🧑‍🚀/,
+    /^❤️ \+1/, /^💧$/, /^🌙 가득/, /^🔥 간식 타임/, /^\+\d+$/, /^. \+\d+$/];
+  let popPick = false;                          // 증강을 고른 뒤 이름 띄우기도 끈다
   function popText(x, y, text, color, size, life) {   // life — 떠 있는 시간(초, 기본 1)
+    if (popPick || POP_MUTE.some(r => r.test(String(text)))) return null;
     if (floats.length >= FLOAT_MAX) floats.shift();   // 글씨도 너무 쌓이면 오래된 것부터
     floats.push({ x, y, text, color, t: 0, life: life || 1, size: size || 22 });
   }
@@ -12517,7 +12524,7 @@
         const ci = ITEM_IMG[it.img] || ITEM_IMG.coin;
         popText(it.x, it.y, ci ? "+" + v : it.emoji + " +" + v,
                 v >= 5 ? "#ff9ede" : (v >= 3 ? "#8fd8ff" : "#ffd23f"), 18 + v * 2);
-        if (ci) floats[floats.length - 1].img = ci;
+        if (ci && floats.length && floats[floats.length - 1].text === "+" + v && floats[floats.length - 1].t === 0) floats[floats.length - 1].img = ci;
         if (!sfx("coin")) { beep(1100 + v * 60, .06, "triangle", .056);
                             beep(1480 + v * 80, .09, "triangle", .05); }
       }
