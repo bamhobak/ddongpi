@@ -2712,7 +2712,7 @@
   const elTitle = document.getElementById("overTitle");
   const coinNote = document.getElementById("coinNote");
 
-  const GAME_VERSION = "v0.9.332";
+  const GAME_VERSION = "v0.9.333";
   /* 제작사 스플래시(bamhobak friends 로고) — 2026-09-20 끔. 다시 켜려면 true */
   const SPLASH_USE = false;   // 코드를 고칠 때마다 뒤 두 자리를 올린다
   document.getElementById("ver").textContent = GAME_VERSION;
@@ -2976,6 +2976,9 @@
 
   /* 우주선 우주선 자리 — 캐릭터를 한가운데 두고 좌우로 고르게 늘어선다.
      예전에는 좌우로 번갈아 놓느라 한 대뿐일 때 왼쪽으로 한 칸 비켜서 있었다. */
+  /* v0.9.333 우주선 높이 — 땅에 붙어 있지 않고 캐릭터 발밑을 따라다닌다 (부양사가 날아오르면 우주선도 함께).
+     땅에 있을 때는 예전 자리(잔디 위) 그대로 */
+  function shipY() { return H - GROUND_H * 0.55 + (player.y - groundY); }
   function shipX(k, n) {
     const gap = 40;
     const off = (k - ((n || 1) - 1) / 2) * gap;
@@ -11402,7 +11405,7 @@
       for (let k = 0; k < n; k++) {
         const ph = gap * k / n;
         if (Math.floor((shipClock - ph) / gap) === Math.floor((was - ph) / gap)) continue;
-        bullets.push({ x: shipX(k, n), y: H - GROUND_H * 0.55 - 14, vy: -760, pierce: aug.pierce ? 1 : 0, skip: null });
+        bullets.push({ x: shipX(k, n), y: shipY() - 14, vy: -760, pierce: aug.pierce ? 1 : 0, skip: null });
         // 소리는 한 바퀴에 한 번만 — 대수만큼 울리면 귀가 아프다
         if (k === 0 && !petSfx("galaga")) beep(1250, .05, "square", .03);
       }
@@ -19163,7 +19166,7 @@
     }
     ctx.globalAlpha = 1;
     if (aug.galaga > 0) {
-      const sy = H - GROUND_H * 0.55, tn = performance.now();   // drawEffects 에는 now 가 없다
+      const sy = shipY(), tn = performance.now();   // drawEffects 에는 now 가 없다
       for (let k = 0; k < aug.galaga; k++) drawShip(shipX(k, aug.galaga), sy, tn + k * 137);
     }
     // 비둘기 펫
