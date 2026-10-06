@@ -2703,7 +2703,7 @@
   const elTitle = document.getElementById("overTitle");
   const coinNote = document.getElementById("coinNote");
 
-  const GAME_VERSION = "v0.9.329";
+  const GAME_VERSION = "v0.9.330";
   /* 제작사 스플래시(bamhobak friends 로고) — 2026-09-20 끔. 다시 켜려면 true */
   const SPLASH_USE = false;   // 코드를 고칠 때마다 뒤 두 자리를 올린다
   document.getElementById("ver").textContent = GAME_VERSION;
@@ -2992,7 +2992,7 @@
               ds: "쓰러지면 한 번 다시 일으켜 주고, 다가오는 똥을 밀어내요" },
     gift:   { nm: "선물 요정", ic: "🧚", img: "assets/pet_fairy.png",
               ds: "가끔 날아가서 똥을 펑! 하트·우산·별·달로 바꿔요" },
-    coincat: { nm: "야옹이", ic: "🐈", img: "assets/pet_cat.png",
+    coincat: { nm: "코인냥이", ic: "🐈", img: "assets/pet_cat.png",
               ds: "가끔 코인을 물어다 줘요" },
     eel:    { nm: "찌릿 장어", ic: "⚡", img: "assets/pet_eel.png",
               ds: "가끔 가까운 똥에 찌릿! 번개를 쏘고, 옆 똥까지 번져요" }
@@ -4785,7 +4785,7 @@
       go: () => { petOn.angel = true; } },
     { id: "pet:gift",    ic: "🧚", nm: "펫 선물 요정", ds: "가끔 날아가서 떨어지는 똥을 선물로 바꿔요", once: true, w: 0.7, cond: () => hasPet("gift"),
       go: () => { petOn.gift = true; giftT = GIFT_EVERY * 0.5; } },
-    { id: "pet:coincat", ic: "🐈", nm: "펫 야옹이", ds: "가끔 코인을 물어다 줘요", once: true, w: 0.7, cond: () => hasPet("coincat"),
+    { id: "pet:coincat", ic: "🐈", nm: "펫 코인냥이", ds: "가끔 코인을 물어다 줘요", once: true, w: 0.7, cond: () => hasPet("coincat"),
       go: () => { petOn.coincat = true; catT = CAT_EVERY * 0.5; } },
     { id: "pet:eel",     ic: "🐍", nm: "펫 찌릿 장어", ds: "가끔 가까운 똥에 찌릿! 번개를 쏘고, 옆 똥까지 번져요", once: true, w: 0.7, cond: () => hasPet("eel"),
       go: () => { petOn.eel = true; eelT = EEL_EVERY * 0.5; } },
@@ -4905,7 +4905,7 @@
       once: true, cond: () => actOk(), go: () => { aug.vacuum = true; vacCd = 0; } },
     { id: "closeCall",  ic: "😅", nm: "아슬아슬", ds: "똥을 아슬하게 피할수록 점수가 점점 커져요. 한 대 맞으면 처음부터!",
       once: true, go: () => { aug.closeCall = true; closeN = 0; } },
-    { id: "coinArmor",  ic: "🛡", nm: "동전 갑옷", ds: "맞을 때 이번 판 코인이 대신 막아 줘요 (5개부터, 막을 때마다 3개씩 더)",
+    { id: "coinArmor",  ic: "🛡", nm: "동전 갑옷", ds: "맞을 때 이번 판 코인이 대신 막아 줘요 (5개부터, 막을 때마다 1개씩 더)",
       once: true, cond: () => job !== "powerp", go: () => { aug.coinArmor = true; } },
     { id: "credit",     ic: "📝", nm: "외상 장부", ds: "구름 상점에서 모아 둔 코인도 쓸 수 있어요",
       once: true, cond: () => accOn(5) && !testMode, go: () => { aug.credit = true; } },
@@ -4915,8 +4915,8 @@
       hidden: true, once: true, cond: () => aug.dash && aug.juggle, go: () => { aug.fartRocket = true; } },
     { id: "zapDance",   ic: "🕺", nm: "번개 춤", ds: "아슬하게 피할 때마다 몸에서 찌릿! 그 똥이랑 위쪽 똥 두 개가 번개로 터져요",
       hidden: true, once: true, cond: () => aug.closeCall && petOn.eel, go: () => { aug.zapDance = true; } },
-    { id: "goldArmor",  ic: "🏵", nm: "황금 갑옷", ds: "동전 갑옷이 막을 때 코인이 사방으로 튀고, 야옹이가 몇 개를 냉큼 물어 와요",
-      hidden: true, once: true, cond: () => aug.coinArmor && petOn.coincat, go: () => { aug.goldArmor = true; } },
+    { id: "goldArmor",  ic: "🏵", nm: "냥이의 보은", ds: "동전 갑옷이 막을 때 코인이 사방으로 튀고, 코인냥이가 1~2개를 냉큼 물어 와요",
+      once: true,   /* v0.9.330 황금 갑옷 → 냥이의 보은, 숨은 증강 → 일반 증강 */ cond: () => aug.coinArmor && petOn.coincat, go: () => { aug.goldArmor = true; } },
     { id: "twoRand",    ic: "🎲", nm: "아무거나 두 개", ds: "증강 두 개를 아무거나 받아요",
       go: () => {
         const got = [];
@@ -9413,7 +9413,7 @@
     chainZap: "똥을 부수는 펫(뿌잉·우주선·둘기·선물 요정·찌릿 장어)을 게임 중에 먹으면 나와요", pierce: "게임 중에 '펫 슝슝 우주선'를 먼저 먹으면 나와요",
     snackBig: "간식 증강을 4개 넘게 먹으면 나와요", cloudVip: "구름 상점이 오는 판에 나와요 (무무는 빼고)",
     fartRocket: "'방귀 대시'랑 '초승달 쓸기'를 같이 가지고 있으면 나와요", zapDance: "'아슬아슬'이랑 '펫 찌릿 장어'를 같이 가지고 있으면 나와요",
-    goldArmor: "'동전 갑옷'이랑 '펫 야옹이'를 같이 가지고 있으면 나와요", credit: "구름 상점이 오는 판에 나와요", coinArmor: "무무는 빼고 나와요",
+    goldArmor: "'동전 갑옷'이랑 '펫 코인냥이'를 같이 가지고 있으면 나와요", credit: "구름 상점이 오는 판에 나와요", coinArmor: "무무는 빼고 나와요",
  toilet: "하트가 3개 넘고 레벨 7 아래일 때 나와요", wak: "우주선이 2대 넘게 있으면 나와요",
     clone: "레벨 7부터 · 하트가 2개 아래일 때 나와요"
   };
@@ -12143,7 +12143,7 @@
               }
             } else {
               if (partyOn()) { if (paOnHit(player, it, now)) items.splice(i, 1); continue; }   // 여럿이 — 목숨 대신 맞은 횟수 (근육 폭발·책임 전가 포함)
-              const caCost = 5 + 3 * coinArmorN;   // v0.9.329 5·8·11·14… 쓸 때마다 3개씩 비싸진다 (v0.9.328 첫 도입) — 코인이 계속 떨어져 판이 안 끝나던 것 막기
+              const caCost = 5 + coinArmorN;   // v0.9.330 5·6·7·8… 쓸 때마다 1개씩 비싸진다 (v0.9.328 첫 도입) — 코인이 계속 떨어져 판이 안 끝나던 것 막기
               if (aug.coinArmor && coinRun >= caCost && coins >= caCost && !fbHard(it)) {   // v0.9.249 동전 갑옷 — 이번 판 코인으로 대신
                 coinRun -= caCost; coins -= caCost; coinArmorN++;
                 try { localStorage.setItem(LS_COINS, String(coins)); } catch (e) {}
@@ -12542,7 +12542,7 @@
       const c = items[items.length - 1], a = -Math.PI / 2 + (k - 2) * 0.55;
       c.vx = Math.cos(a) * 260; c.vy = Math.sin(a) * 300; c.goldFly = true;
     }
-    goldFetch = { t: 0.7, n: 1 + Math.floor(Math.random() * 3) };   // v0.9.329 1~4 → 1~3개
+    goldFetch = { t: 0.7, n: 1 + Math.floor(Math.random() * 2) };   // v0.9.330 1~2개
   }
   function actTick(dt, now) {                // 매 프레임(판 진행 중) — 쿨타임·청소기·방귀 로켓·황금 갑옷
     if (jugSlash) { jugSlash.t += dt; if (jugSlash.t > 0.36) jugSlash = null; }
@@ -16537,12 +16537,12 @@
     juggle: "버튼 — 머리 둘레(몸 반경×2.4+30px) 안 위쪽 똥을 위로 튕김(곧게 위로), 튕긴 똥이 다른 똥에 닿으면 같이 터짐(반경 42) · 간식 제외(다크똥도 됨) · 쿨 3초",
     vacuum: "버튼 — 1.3초 동안 머리 위 ±43° 부채꼴 300px 안 똥(다크똥 포함)·아이템을 빨아들임, 똥은 부순 점수 · 쿨 15초",
     closeCall: "아슬! 할 때마다 연속 +1(최대 30), 똥 점수 × 0.5 × 연속 · 하트를 잃으면 0",
-    coinArmor: "하트를 잃을 일이면 이번 판 코인으로 대신 막음(1초 무적) — 5·8·11… 쓸 때마다 3개씩 비싸짐",
+    coinArmor: "하트를 잃을 일이면 이번 판 코인으로 대신 막음(1초 무적) — 5·6·7… 쓸 때마다 1개씩 비싸짐",
     credit: "구름 상점에서 모아 둔 코인도 씀 (없으면 이번 판 코인만)",
     bombPoop: "보통 똥의 12%가 폭탄 똥 — 다른 똥에 닿으면 반경 80 폭발(다크 제외), 나한테 맞으면 하트 -1 + 폭발",
     fartRocket: "대시 지나간 길에 1초 바람 — 닿는 똥을 초승달 쓸기처럼 튕김",
     zapDance: "아슬! 마다 그 똥 + 위쪽 가까운 똥 2개 번개 연쇄",
-    goldArmor: "동전 갑옷이 막을 때 코인 5개가 사방으로 튀고, 0.7초 뒤 야옹이가 1~3개를 물어 옴",
+    goldArmor: "동전 갑옷이 막을 때 코인 5개가 사방으로 튀고, 0.7초 뒤 코인냥이가 1~2개를 물어 옴",
     toilet: "달마다 증강 선택 2배(보름달 6번) · 하트로 맞으면 50% 확률로 즉사 · 하트 3개 이상 · 레벨 7 이하",
     twoRand: "일반 증강 중 무작위 2개를 바로 받음"
   };
