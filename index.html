@@ -482,6 +482,17 @@
   .augCard .gCurtain::after { content: ""; position: absolute; left: 0; right: 0; bottom: -10px; height: 12px;
     background: radial-gradient(circle at 7px 0, #5a32ad 7px, transparent 7.5px) 0 0 / 14px 12px repeat-x; }
   @keyframes gCurtainUp { to { transform: translateY(-108%); } }
+  /* v0.9.338 아무거나 두 개 결과 — 쫀득하게: 제목이 통통 튀고, 카드가 한 장씩 뒤집히며 튀어나와 반짝 */
+  #augTitle.trTtl { animation: trTtl .5s cubic-bezier(.3,1.6,.5,1) both; }
+  @keyframes trTtl { 0% { transform: scale(.4) rotate(-8deg); opacity: 0; } 60% { transform: scale(1.18) rotate(3deg); opacity: 1; } 100% { transform: none; } }
+  .augCard.trGot { opacity: 0; animation: trPop .62s cubic-bezier(.25,1.7,.45,1) both, trGlow 1.2s ease-in-out .7s infinite alternate; transform-origin: 50% 60%; }
+  @keyframes trPop { 0% { opacity: 0; transform: perspective(500px) rotateY(95deg) scale(.5) translateY(30px); }
+                     55% { opacity: 1; transform: perspective(500px) rotateY(-12deg) scale(1.12) translateY(-6px); }
+                     78% { transform: perspective(500px) rotateY(5deg) scale(.97); }
+                     100% { opacity: 1; transform: perspective(500px) rotateY(0) scale(1.04); } }
+  @keyframes trGlow { from { box-shadow: 0 0 0 3px #ffe066, 0 0 14px rgba(255,220,80,.7); } to { box-shadow: 0 0 0 3px #fff3a8, 0 0 28px rgba(255,230,120,1); } }
+  .augCard.trGot .ic { animation: trIc .5s cubic-bezier(.3,1.8,.5,1) both; animation-delay: inherit; }
+  @keyframes trIc { 0% { transform: scale(0) rotate(-40deg); } 70% { transform: scale(1.35) rotate(8deg); } 100% { transform: none; } }
   /* ---- 🌙 증강 선택 ---- */
   #augList { display: flex; flex-direction: column; gap: 10px; width: 100%; max-width: 340px; }
   .augCard {
@@ -2712,7 +2723,7 @@
   const elTitle = document.getElementById("overTitle");
   const coinNote = document.getElementById("coinNote");
 
-  const GAME_VERSION = "v0.9.337";
+  const GAME_VERSION = "v0.9.339";
   /* 제작사 스플래시(bamhobak friends 로고) — 2026-09-20 끔. 다시 켜려면 true */
   const SPLASH_USE = false;   // 코드를 고칠 때마다 뒤 두 자리를 올린다
   document.getElementById("ver").textContent = GAME_VERSION;
@@ -5165,15 +5176,17 @@
         /* v0.9.337 아무거나 두 개 — 받은 두 증강을 카드로 펼쳐 2.2초 보여 준 뒤 넘어간다 (떠오르는 글자만으론 놓치기 쉬웠다) */
         if (a.id === "twoRand" && twoRandObjs.length) {
           augList.innerHTML = ""; augList.style.pointerEvents = "none";
-          for (const [b, nm2] of twoRandObjs) {
+          twoRandObjs.forEach(([b, nm2], ti) => {
             const c = document.createElement("div"); c.className = "augCard gReveal trGot";
+            c.style.animationDelay = (0.12 + ti * 0.42) + "s";   // v0.9.338 한 장씩 통! 하고 뒤집혀 나온다
+            setTimeout(() => { if (!sfx("aug")) { beep(880 + ti * 220, .07, "square", .05); beep(1320 + ti * 220, .1, "triangle", .04); } }, (120 + ti * 420));
             c.innerHTML = '<span class="ic"></span><span class="tx"><div class="nm2"></div><div class="ds"></div></span>';
             c.querySelector(".ic").textContent = b.ic; c.querySelector(".nm2").textContent = nm2;
             c.querySelector(".ds").textContent = b.dsFn ? b.dsFn() : b.ds;
             augList.appendChild(c);
-          }
-          const t = document.getElementById("augTitle"); if (t) t.dataset.keep = t.textContent, t.textContent = "🎲 이 두 개를 받았어요!";
-          setTimeout(() => { augList.style.pointerEvents = ""; if (t && t.dataset.keep) t.textContent = t.dataset.keep; finishPick(); }, 2200);
+          });
+          const t = document.getElementById("augTitle"); if (t) t.dataset.keep = t.textContent, t.textContent = "🎲 이 두 개를 받았어요!"; t.classList.remove("trTtl"); void t.offsetWidth; t.classList.add("trTtl");
+          setTimeout(() => { augList.style.pointerEvents = ""; if (t) { t.classList.remove("trTtl"); if (t.dataset.keep) t.textContent = t.dataset.keep; } finishPick(); }, 2700);
           return;
         }
         finishPick();
@@ -12222,7 +12235,7 @@
                   popText(player.x, player.y - 100, "🚽 쾅!", "#ffffff", 30, 1.4);
                 }
               }
-              if (aug.closeCall && closeN > 0) { popText(player.x, player.y - 95, "아슬 ×" + closeN + " 끝", "#c9c9d6", 16); closeN = 0; }   // v0.9.249
+              if (aug.closeCall && closeN > 0) { popText(player.x, player.y - 95, "아슬+" + closeN + " 끝", "#c9c9d6", 16); closeN = 0; }   // v0.9.249
               if (it.bomb) bombBoom(it.x, it.y);
               runHits++; achBump("hit");
               if (aug.fly) spawnFly(player.x, cy);
@@ -12655,7 +12668,7 @@
       closeN = Math.min(30, closeN + 1);
       score += sc("똥", poopGain() * 0.5 * closeN);
       burst(player.x, player.y + player.hy - player.r * 0.6, "#ffe08a", 4 + Math.min(8, closeN));
-      popText(player.x, player.y - 70, "아슬 ×" + closeN, closeN >= 10 ? "#ffb347" : "#ffe08a", 15 + Math.min(12, closeN), 0.8);
+      popText(player.x, player.y - 70, "아슬+" + closeN, closeN >= 10 ? "#ffb347" : "#ffe08a", 15 + Math.min(12, closeN), 0.8);
     } else {
     /* 똥이 지나간 반대쪽으로 땀이 튄다 — 스친 쪽으로 몸이 움찔한 것처럼 보인다 */
     const side = it.x > player.x ? -1 : 1;
