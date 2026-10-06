@@ -10,6 +10,7 @@
 <link rel="apple-touch-icon" href="icon-192.png">
 <title>이피저피똥피</title>
 <link rel="preload" as="image" href="assets/logo.webp">
+<link rel="preload" as="image" href="assets/ui/loading_bg.webp">
 <link rel="preload" as="image" href="assets/bg/home_fortune.webp?8">
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ctext x='50' y='52' font-size='84' text-anchor='middle' dominant-baseline='central'%3E%F0%9F%92%A9%3C/text%3E%3C/svg%3E">
 <style>
@@ -931,8 +932,8 @@
   #btnGrowReset:disabled { opacity: .5; }
   #btnOptBack { --bh: 44px; height: var(--bh); box-sizing: border-box; min-width: 170px; margin-top: 8px;
     border-style: solid; border-color: transparent; border-radius: 0; box-shadow: none; background: none;
-    border-width: 0 calc(var(--bh) / 2) 0 calc(var(--bh) * .97);
-    border-image: url(assets/ui/btn_back.webp) 0 60 0 116 fill / 0 calc(var(--bh) / 2) 0 calc(var(--bh) * .97) / 0 stretch;
+    border-width: 0 calc(var(--bh) / 2);
+    border-image: url(assets/ui/btn_gray.webp) 0 60 fill / 0 calc(var(--bh) / 2) / 0 stretch;   /* v0.9.326 뒤로 화살표 없는 회색 */
     padding: 0 4px calc(var(--bh) * .08); font-size: 15px; font-weight: 800; color: #3f3560; text-shadow: 0 1px 0 rgba(255,255,255,.6); }
   #cloudShop { z-index: 25; gap: 12px; background: rgba(8,10,26,.82); }
   #cloudShop h2 { color: #ffd23f; margin: 0; }
@@ -943,8 +944,8 @@
   #cloudShop .csTagPick { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 6px; }
   #cloudShop .csTagPick button { width: 46px; height: 46px; padding: 0; border-radius: 50%; background: rgba(20,24,70,.85) center 12% / 135% auto no-repeat; border: 2px solid #ffd86b; }
   #cloudShop .csLeave { --bh: 44px; height: var(--bh); box-sizing: border-box; min-width: 170px; border-style: solid; border-color: transparent; border-radius: 0; box-shadow: none; background: none;
-    border-width: 0 calc(var(--bh) / 2) 0 calc(var(--bh) * .97);
-    border-image: url(assets/ui/btn_back.webp) 0 60 0 116 fill / 0 calc(var(--bh) / 2) 0 calc(var(--bh) * .97) / 0 stretch;
+    border-width: 0 calc(var(--bh) / 2);
+    border-image: url(assets/ui/btn_gray.webp) 0 60 fill / 0 calc(var(--bh) / 2) / 0 stretch;   /* v0.9.326 뒤로 화살표 없는 회색 */
     padding: 0 4px calc(var(--bh) * .08); font-size: 15px; font-weight: 800; color: #3f3560; text-shadow: 0 1px 0 rgba(255,255,255,.6); }
   #btnSkill { position: absolute; z-index: 4; display: none; right: 12px; bottom: max(12px, env(safe-area-inset-bottom)); width: 64px; height: 64px; padding: 0; border-radius: 50%;
     font-size: 30px; background: conic-gradient(rgba(150,220,255,.85) var(--p, 100%), rgba(255,255,255,.18) 0); border: 2px solid rgba(255,255,255,.7); box-shadow: 0 0 12px rgba(150,220,255,.6); }
@@ -1058,8 +1059,8 @@
   .lvUnlock { --bh: 42px; font-size: 15.5px; font-weight: 900; align-self: center; min-width: 180px; filter: drop-shadow(0 0 8px rgba(255,200,60,.55)); }
   .lvPop .lpClose { --bh: 42px; height: var(--bh); box-sizing: border-box; align-self: center; min-width: 160px; margin-top: 2px;
     border-style: solid; border-color: transparent; border-radius: 0; box-shadow: none; background: none;
-    border-width: 0 calc(var(--bh) / 2) 0 calc(var(--bh) * .97);
-    border-image: url(assets/ui/btn_back.webp) 0 60 0 116 fill / 0 calc(var(--bh) / 2) 0 calc(var(--bh) * .97) / 0 stretch;
+    border-width: 0 calc(var(--bh) / 2);
+    border-image: url(assets/ui/btn_gray.webp) 0 60 fill / 0 calc(var(--bh) / 2) / 0 stretch;   /* v0.9.326 뒤로 화살표 없는 회색 */
     padding: 0 4px calc(var(--bh) * .08); font-size: 15px; font-weight: 800; color: #3f3560; text-shadow: 0 1px 0 rgba(255,255,255,.6); }
   .lvPop .chrHead { display: flex; align-items: center; gap: 12px; }
   .lvPop .chrHead .med { width: 62px; height: 62px; flex-shrink: 0; border-radius: 50%; overflow: hidden; display: flex; align-items: flex-end; justify-content: center;
@@ -1791,8 +1792,8 @@
     --bh: 40px; height: var(--bh); box-sizing: border-box; margin-top: 4px;
     padding: 0 6px calc(var(--bh) * .08) 4px; font-size: 13.5px; font-weight: 800;
     border-style: solid; border-color: transparent; border-radius: 0; box-shadow: none; background: none;
-    border-width: 0 calc(var(--bh) / 2) 0 calc(var(--bh) * .97);
-    border-image: url(assets/ui/btn_back.webp) 0 60 0 116 fill / 0 calc(var(--bh) / 2) 0 calc(var(--bh) * .97) / 0 stretch;
+    border-width: 0 calc(var(--bh) / 2);
+    border-image: url(assets/ui/btn_gray.webp) 0 60 fill / 0 calc(var(--bh) / 2) / 0 stretch;   /* v0.9.326 뒤로 화살표 없는 회색 */
     color: #4a3d6e; text-shadow: 0 1px 0 rgba(255,255,255,.6);
   }
   /* ---- v0.9.13 버튼은 둥근 알약 대신 네모난 심플한 그림(Codex rb_*) — 파일 이름은 그대로라 위 규칙들이 그대로 쓴다.
@@ -1800,8 +1801,8 @@
   #btnResume, #btnPauseRetry, #btnPauseHome, #btnHome, #vsScreen #vsBack, #btnSettingsClose, #btnJobList, #devClose, #testClose {
     --bh: 44px; height: var(--bh); box-sizing: border-box; flex-shrink: 0; min-width: 170px;
     border-style: solid; border-color: transparent; border-radius: 0; box-shadow: none; background: none; opacity: 1;
-    border-width: 0 calc(var(--bh) / 2) 0 calc(var(--bh) * .97);
-    border-image: url(assets/ui/btn_back.webp) 0 60 0 116 fill / 0 calc(var(--bh) / 2) 0 calc(var(--bh) * .97) / 0 stretch;
+    border-width: 0 calc(var(--bh) / 2);
+    border-image: url(assets/ui/btn_gray.webp) 0 60 fill / 0 calc(var(--bh) / 2) / 0 stretch;   /* v0.9.326 뒤로 화살표 없는 회색 */
     padding: 0 4px calc(var(--bh) * .08); font-size: 14px; font-weight: 800; margin-top: 0;
     color: #3f3560; text-shadow: 0 1px 0 rgba(255,255,255,.6);
   }
@@ -2170,15 +2171,17 @@
   <div id="bootTxt">불러오는 중… 0%</div>
 </div>
 <style>
-  #boot { position: fixed; inset: 0; z-index: 100000; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 22px;
-    background: radial-gradient(ellipse at 50% 40%, #2c2a6b 0%, #120f33 60%, #07070f 100%); transition: opacity .35s ease; touch-action: none; }
+  #boot { position: fixed; inset: 0; z-index: 100000; display: flex; flex-direction: column; align-items: center; justify-content: flex-start; gap: 18px;
+    padding-top: 16vh; box-sizing: border-box;
+    background: #2a1f5e url(assets/ui/loading_bg.webp) center bottom / cover no-repeat;   /* v0.9.326 Codex 로딩 그림 — 구름 위 방울이 */
+    transition: opacity .35s ease; touch-action: none; }
   #boot.done { opacity: 0; pointer-events: none; }
   #bootLogo { width: min(64vw, 260px); height: auto; filter: drop-shadow(0 6px 10px rgba(0,0,0,.5)); animation: bootBob 1.6s ease-in-out infinite; }
   @keyframes bootBob { 50% { transform: translateY(-6px); } }
   #bootBar { width: min(68vw, 280px); height: 16px; box-sizing: border-box; border-radius: 999px; padding: 3px;
     background: rgba(5,6,24,.75); box-shadow: inset 0 0 0 2px #ffd86b, 0 2px 0 #7a3b00; }
   #bootBar i { display: block; height: 100%; width: 0; border-radius: 999px; background: linear-gradient(180deg, #fff3a8, #ffc42e 55%, #f29a0c); transition: width .15s linear; }
-  #bootTxt { font: 800 14px/1 "Malgun Gothic", "Apple SD Gothic Neo", system-ui, sans-serif; color: #e6e9ff; letter-spacing: .5px; text-shadow: 0 1px 2px rgba(0,0,0,.6); }
+  #bootTxt { text-shadow: 0 1px 3px rgba(20,10,60,.9) !important; font: 800 14px/1 "Malgun Gothic", "Apple SD Gothic Neo", system-ui, sans-serif; color: #e6e9ff; letter-spacing: .5px; text-shadow: 0 1px 2px rgba(0,0,0,.6); }
 </style>
 <script>
 /* 로딩 — preload.json 목록을 6개씩 받는다. 그림은 디코딩까지(window.__preImgs 에 붙잡아 두어 다시 쓰면 바로 뜬다),
@@ -2190,18 +2193,26 @@
     setTimeout(function () { boot.classList.add("done"); window.__bootDone = true; window.dispatchEvent(new Event("boot-done"));
       setTimeout(function () { boot.remove(); }, 400); }, 180); }
   setTimeout(finish, 40000);
+  function load(u, cb) {
+    if (/\.(webp|png|jpg)(\?|$)/.test(u)) {
+      var im = new Image(); window.__preImgs.push(im);
+      im.onload = function () { (im.decode ? im.decode() : Promise.resolve()).then(cb, cb); }; im.onerror = cb; im.src = u;
+    } else fetch(u).then(function (r) { return r.arrayBuffer(); }).then(cb, cb);
+  }
+  function run(list, par, step, end) {          // list 를 par 개씩 동시에
+    var n = list.length, got = 0, i = 0;
+    if (!n) return end();
+    function next() { if (i >= n) return; load(list[i++], function () { got++; step(got, n); if (got >= n) end(); else next(); }); }
+    for (var k = 0; k < par; k++) next();
+  }
   fetch("preload.json", { cache: "no-cache" }).then(function (r) { return r.json(); }).then(function (m) {
-    var list = m.files || [], n = list.length, got = 0, i = 0;
-    if (!n) return finish();
-    function tick() { got++; var p = Math.floor(got / n * 100); bar.style.width = p + "%"; txt.textContent = "불러오는 중… " + p + "%"; if (got >= n) finish(); else next(); }
-    function next() {
-      if (i >= n) return; var u = list[i++];
-      if (/\.(webp|png|jpg)(\?|$)/.test(u)) {
-        var im = new Image(); window.__preImgs.push(im);
-        im.onload = function () { (im.decode ? im.decode() : Promise.resolve()).then(tick, tick); }; im.onerror = tick; im.src = u;
-      } else fetch(u).then(function (r) { return r.arrayBuffer(); }).then(tick, tick);
-    }
-    for (var k = 0; k < 6; k++) next();
+    /* v0.9.326 두 단계 — 첫 화면 전: 공통(now) + 고른 캐릭터 그림 / 첫 화면 뒤: 나머지(later + 다른 캐릭터)를 천천히 */
+    var IMG = { powerp: "monk" }, j = "bangul";
+    try { j = localStorage.getItem("epjpddongpi_job") || "bangul"; } catch (e) {}
+    var me = IMG[j] || j, ch = m.chars || {}, first = (m.now || m.files || []).concat(ch[me] || []), rest = (m.later || []).slice();
+    for (var c in ch) if (c !== me) rest = rest.concat(ch[c]);
+    run(first, 6, function (got, n) { var p = Math.floor(got / n * 100); bar.style.width = p + "%"; txt.textContent = "불러오는 중… " + p + "%"; },
+      function () { finish(); setTimeout(function () { run(rest, 2, function () {}, function () { window.__preAll = true; }); }, 800); });
   }).catch(finish);
 })();
 </script>
@@ -2692,7 +2703,7 @@
   const elTitle = document.getElementById("overTitle");
   const coinNote = document.getElementById("coinNote");
 
-  const GAME_VERSION = "v0.9.325";
+  const GAME_VERSION = "v0.9.326";
   /* 제작사 스플래시(bamhobak friends 로고) — 2026-09-20 끔. 다시 켜려면 true */
   const SPLASH_USE = false;   // 코드를 고칠 때마다 뒤 두 자리를 올린다
   document.getElementById("ver").textContent = GAME_VERSION;
