@@ -1385,6 +1385,7 @@
     display: inline-flex; align-items: center; justify-content: center; gap: 3px; padding: 0 0 calc(var(--bh) * .08); font-size: 14px; line-height: 1; }
   #shopPets .shopItem button .emj { vertical-align: 0; width: 1.05em; height: 1.05em; }
   #shopPets .shopItem button.own { width: 76px; }
+  #growList .shopItem button:not(.own), #shopList .shopItem button:not(.own) { width: 92px; min-width: 0; flex-shrink: 0; }   /* v0.9.323 가격 자릿수와 상관없이 같은 폭 */
   #startScreen > .page:not(#pgHome) { padding-top: calc(56px + env(safe-area-inset-top)); }   /* v0.9.297 칩이 한 줄이 되어 72 → 46 · v0.9.309 똥피력 칩과 조금 더 띄움 56 */
   #startScreen > .page:not(#pgHome) > .pgTitle { margin-bottom: -6px; }   /* v0.9.309 제목과 판은 조금 더 붙인다 */   /* v0.9.134 이름·코인 칩이 모든 탭에 — 제목 리본을 그 아래로 */
   .lvRow .lvT { display: flex; flex-direction: column; gap: 1px; }
@@ -2649,7 +2650,7 @@
   const elTitle = document.getElementById("overTitle");
   const coinNote = document.getElementById("coinNote");
 
-  const GAME_VERSION = "v0.9.322";
+  const GAME_VERSION = "v0.9.323";
   /* 제작사 스플래시(bamhobak friends 로고) — 2026-09-20 끔. 다시 켜려면 true */
   const SPLASH_USE = false;   // 코드를 고칠 때마다 뒤 두 자리를 올린다
   document.getElementById("ver").textContent = GAME_VERSION;
