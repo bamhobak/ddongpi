@@ -445,7 +445,8 @@
   #overAugDesc { min-height: 0; max-width: 340px; font-size: 13.5px; line-height: 1.45; color: #e8ecf7; text-align: center; }
   #overAugDesc b { color: #ffd23f; font-size: 14.5px; }
   #overAugDesc:empty { display: none; }
-  #nameForm { display: flex; gap: 8px; width: 100%; max-width: 380px; }
+  #nameForm { display: flex; gap: 8px; width: 100%; max-width: 380px; padding: 0 14px; box-sizing: border-box; }   /* v0.9.319 좌우 여백 */
+  #overScreen.firstName #retryRow { display: none !important; }
   #nameInput {
     flex: 1; min-width: 0;
     font: inherit; font-size: 16px;
@@ -2647,7 +2648,7 @@
   const elTitle = document.getElementById("overTitle");
   const coinNote = document.getElementById("coinNote");
 
-  const GAME_VERSION = "v0.9.318";
+  const GAME_VERSION = "v0.9.319";
   /* 제작사 스플래시(bamhobak friends 로고) — 2026-09-20 끔. 다시 켜려면 true */
   const SPLASH_USE = false;   // 코드를 고칠 때마다 뒤 두 자리를 올린다
   document.getElementById("ver").textContent = GAME_VERSION;
@@ -15383,6 +15384,8 @@
     if (partyOn()) return partyOver();
     if (tagJob0 && job !== tagJob0) job = tagJob0;   // v0.9.225 태그 교대 — 기록·순위·홈 화면은 처음 고른 캐릭터로
     tagBox.classList.remove("on", "open");
+    overFirst = firstRunOn();                // v0.9.319 첫 판인지 — 순위 숫자·다른 버튼을 감추고 이름만 받는다
+    overScreen.classList.remove("firstName");
     firstRunDone();                          // v0.9.158 첫 판을 마쳤다 — 다른 버튼도 풀린다
     myRankAt = 0;                            // v0.9.166 다음에 랭킹 탭을 열면 내 순위를 새로
     state = STATE.OVER;
@@ -15485,7 +15488,8 @@
         nameRow.classList.add("on");
         nameForm.style.display = "";
         nameInput.value = "";
-        nameTag.textContent = "🎉 " + rank + "위 진입! 이름을 남기세요";
+        nameTag.textContent = overFirst ? "🎉 랭킹 진입! 이름을 남기세요" : "🎉 " + rank + "위 진입! 이름을 남기세요";
+        if (overFirst) overScreen.classList.add("firstName");   // v0.9.319 첫 판 — 이름 등록만 (다시 하기·캐릭터 바꾸기·메인으로 숨김)
       }
     });
   }
@@ -16768,6 +16772,7 @@
       nameRow.classList.remove("on");
       await refreshBoards(boardOver);
       refreshBoards(boardStart);
+      if (overScreen.classList.contains("firstName")) { overScreen.classList.remove("firstName"); document.getElementById("btnHome").click(); }   // v0.9.319 첫 판 등록 끝 → 시작 화면
     } catch (e) {
       nameTag.textContent = "등록 실패 — 다시 시도해주세요";
       btnSave.disabled = false;
@@ -16775,6 +16780,7 @@
     btnSave.textContent = "등록";
   }
 
+  let overFirst = false;
   let pendingScore = 0, pendingLevel = 1, pendingFull = false, pendingDog = false, pendingMode = "item";
   btnSave.addEventListener("click", saveMyScore);
   nameInput.addEventListener("keydown", e => {
