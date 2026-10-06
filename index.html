@@ -2703,7 +2703,7 @@
   const elTitle = document.getElementById("overTitle");
   const coinNote = document.getElementById("coinNote");
 
-  const GAME_VERSION = "v0.9.330";
+  const GAME_VERSION = "v0.9.331";
   /* 제작사 스플래시(bamhobak friends 로고) — 2026-09-20 끔. 다시 켜려면 true */
   const SPLASH_USE = false;   // 코드를 고칠 때마다 뒤 두 자리를 올린다
   document.getElementById("ver").textContent = GAME_VERSION;
@@ -4906,7 +4906,7 @@
     { id: "closeCall",  ic: "😅", nm: "아슬아슬", ds: "똥을 아슬하게 피할수록 점수가 점점 커져요. 한 대 맞으면 처음부터!",
       once: true, go: () => { aug.closeCall = true; closeN = 0; } },
     { id: "coinArmor",  ic: "🛡", nm: "동전 갑옷", ds: "맞을 때 이번 판 코인이 대신 막아 줘요 (5개부터, 막을 때마다 1개씩 더)",
-      once: true, cond: () => job !== "powerp", go: () => { aug.coinArmor = true; } },
+      once: true, cond: () => job !== "powerp" && !aug.coinArmor, go: () => { aug.coinArmor = true; } },   // v0.9.331 냥이의 보은으로 이미 생겼으면 안 나온다
     { id: "credit",     ic: "📝", nm: "외상 장부", ds: "구름 상점에서 모아 둔 코인도 쓸 수 있어요",
       once: true, cond: () => accOn(5) && !testMode, go: () => { aug.credit = true; } },
     { id: "bombPoop",   ic: "💣", nm: "폭탄 똥", ds: "가끔 폭탄 똥이 떨어져요. 다른 똥에 부딪히면 펑! 주변 똥도 같이 터져요. 나한테 맞으면 아파요",
@@ -4915,8 +4915,8 @@
       hidden: true, once: true, cond: () => aug.dash && aug.juggle, go: () => { aug.fartRocket = true; } },
     { id: "zapDance",   ic: "🕺", nm: "번개 춤", ds: "아슬하게 피할 때마다 몸에서 찌릿! 그 똥이랑 위쪽 똥 두 개가 번개로 터져요",
       hidden: true, once: true, cond: () => aug.closeCall && petOn.eel, go: () => { aug.zapDance = true; } },
-    { id: "goldArmor",  ic: "🏵", nm: "냥이의 보은", ds: "동전 갑옷이 막을 때 코인이 사방으로 튀고, 코인냥이가 1~2개를 냉큼 물어 와요",
-      once: true,   /* v0.9.330 황금 갑옷 → 냥이의 보은, 숨은 증강 → 일반 증강 */ cond: () => aug.coinArmor && petOn.coincat, go: () => { aug.goldArmor = true; } },
+    { id: "goldArmor",  ic: "🏵", nm: "냥이의 보은", ds: "동전 갑옷이 생기고, 막을 때 코인이 사방으로 튀면 코인냥이가 1~2개를 냉큼 물어 와요",
+      once: true,   /* v0.9.330 황금 갑옷 → 냥이의 보은, 숨은 증강 → 일반 증강 */ cond: () => petOn.coincat && job !== "powerp", go: () => { aug.goldArmor = true; aug.coinArmor = true; } },   // v0.9.331 코인냥이만 있으면 — 동전 갑옷이 없으면 함께 생긴다
     { id: "twoRand",    ic: "🎲", nm: "아무거나 두 개", ds: "증강 두 개를 아무거나 받아요",
       go: () => {
         const got = [];
@@ -9413,7 +9413,7 @@
     chainZap: "똥을 부수는 펫(뿌잉·우주선·둘기·선물 요정·찌릿 장어)을 게임 중에 먹으면 나와요", pierce: "게임 중에 '펫 슝슝 우주선'를 먼저 먹으면 나와요",
     snackBig: "간식 증강을 4개 넘게 먹으면 나와요", cloudVip: "구름 상점이 오는 판에 나와요 (무무는 빼고)",
     fartRocket: "'방귀 대시'랑 '초승달 쓸기'를 같이 가지고 있으면 나와요", zapDance: "'아슬아슬'이랑 '펫 찌릿 장어'를 같이 가지고 있으면 나와요",
-    goldArmor: "'동전 갑옷'이랑 '펫 코인냥이'를 같이 가지고 있으면 나와요", credit: "구름 상점이 오는 판에 나와요", coinArmor: "무무는 빼고 나와요",
+    goldArmor: "'펫 코인냥이'가 있으면 나와요 (동전 갑옷도 함께 생겨요)", credit: "구름 상점이 오는 판에 나와요", coinArmor: "무무는 빼고 나와요",
  toilet: "하트가 3개 넘고 레벨 7 아래일 때 나와요", wak: "우주선이 2대 넘게 있으면 나와요",
     clone: "레벨 7부터 · 하트가 2개 아래일 때 나와요"
   };
