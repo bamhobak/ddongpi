@@ -2724,7 +2724,7 @@
   const elTitle = document.getElementById("overTitle");
   const coinNote = document.getElementById("coinNote");
 
-  const GAME_VERSION = "v0.9.345";
+  const GAME_VERSION = "v0.9.346";
   /* 제작사 스플래시(bamhobak friends 로고) — 2026-09-20 끔. 다시 켜려면 true */
   const SPLASH_USE = false;   // 코드를 고칠 때마다 뒤 두 자리를 올린다
   document.getElementById("ver").textContent = GAME_VERSION;
@@ -11650,6 +11650,7 @@
         const mem = [];                       // 줄지어 날아가는 오리 떼 — 앞뒤로 엇갈리고 위아래로 살짝 흩어진다
         for (let m = 0; m < DUCK_N; m++) mem.push({ dx: -m * 30 - Math.random() * 10, dy: (m % 2 ? 1 : -1) * (6 + Math.random() * 22), ph: Math.random() * 6.28 });
         ducks.push({ t: 0, dir: duckSide, y: H * (0.45 + Math.random() * 0.1), mem });
+        popText(duckSide > 0 ? 125 : W - 125, ducks[ducks.length - 1].y - 46, "🦆 오리 떼가 부릉!", "#ffe066", 20, 1.3);   // v0.9.346 나올 때 글자
         if (!sfx("dash", 0.7)) { beep(140, .18, "sawtooth", .05); beep(90, .22, "square", .03); }   // 방귀 대시 소리 재사용
       }
     }
