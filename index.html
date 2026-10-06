@@ -1948,7 +1948,7 @@
   #pgRank #myWeekLine[hidden] { display: none; }
   #pgRank #myBoard { display: none !important; }
   /* v0.9.305 이번 주 판 — 남는 세로를 다 쓰고, 캐릭터 탭은 정사각형 한 줄, 오른쪽 목록만 스크롤(11~100위) */
-  #startScreen > #pgRank { overflow: hidden; padding-bottom: 14px !important; }   /* v0.9.308 명예의 전당 버튼과 아래 탭 사이 띄움 */
+  #startScreen > #pgRank { overflow: hidden; padding-bottom: 26px !important; }   /* v0.9.308 명예의 전당 버튼과 아래 탭 사이 띄움 */
   #pgRank #boardSlot { flex: 1 1 0; min-height: 0; }
   #pgRank #boardSlot > .board.withTabs { flex: 1 1 0; min-height: 0; grid-template-columns: 50px minmax(0, 1fr); grid-template-rows: auto auto minmax(0, 1fr); column-gap: 7px; }
   #pgRank .board.withTabs .jobTabs { grid-template-columns: 1fr; grid-template-rows: none; grid-auto-rows: 50px; align-content: start; gap: 6px; min-height: 0; }
@@ -2088,7 +2088,7 @@
   #hallPop #boardLast .lp, #hallPop #boardLast .lp.p1 { height: 36px; font-size: 14.5px; }
   #hallPop #boardLast .lp b, #hallPop #boardLast .lp.p1 b { font-size: 15px; }
   /* v0.9.310 창 높이 고정(10위까지 보이는 높이) — 기록 수에 따라 들쑥날쑥하지 않게, 더 많으면 안에서 스크롤 */
-  #hallPop #hallBody { height: min(476px, calc(86vh - 130px)); max-height: none; flex-shrink: 0; }
+  #hallPop #hallBody { height: min(512px, calc(100vh - 210px)); max-height: none; flex-shrink: 0; }   /* v0.9.312 1~3위가 커진 만큼 늘려 10위까지 한눈에 */
   /* v0.9.310 1~3위 더 잘 보이게 — 금·은·동 판 */
   #hallPop #boardLast .lp.p1, #hallPop #boardLast .lp.p2, #hallPop #boardLast .lp.p3 { height: 44px; font-size: 16px; font-weight: 800; border-width: 2px; border-style: solid; }
   #hallPop #boardLast .lp.p1 { background: linear-gradient(180deg, rgba(255,214,90,.42), rgba(170,110,20,.3)); border-color: #ffd86b; box-shadow: 0 0 10px rgba(255,200,60,.45); }
@@ -2102,7 +2102,7 @@
     border-width: 0 calc(var(--bh) / 2); border-image: url(assets/ui/btn_blue.webp) 0 60 fill / 0 calc(var(--bh) / 2) / 0 stretch;
     padding: 0 6px calc(var(--bh) * .08); font-size: 14.5px; font-weight: 800; color: #fff; text-shadow: 0 1px 2px rgba(0,50,110,.65); display: block; margin-top: 0 !important; }
   #pgRank #myBoard { margin-top: 16px; padding-bottom: 0; }
-  #startScreen > #pgRank { gap: 8px !important; padding-bottom: 6px !important; }
+  #startScreen > #pgRank { gap: 8px !important; padding-bottom: 20px !important; }   /* v0.9.312 아래 탭과 도감처럼 띄움 */
   #startScreen > #pgRank { justify-content: flex-start !important; }   /* v0.9.292 제목 위치를 도감·상점·성장과 같게(가운데 정렬이면 화면마다 달라진다) */
   #pgRank #boardSlot { gap: 8px !important; }
   #pgRank .board.withTabs { margin-bottom: 0 !important; }
@@ -2636,7 +2636,7 @@
   const elTitle = document.getElementById("overTitle");
   const coinNote = document.getElementById("coinNote");
 
-  const GAME_VERSION = "v0.9.311";
+  const GAME_VERSION = "v0.9.312";
   /* 제작사 스플래시(bamhobak friends 로고) — 2026-09-20 끔. 다시 켜려면 true */
   const SPLASH_USE = false;   // 코드를 고칠 때마다 뒤 두 자리를 올린다
   document.getElementById("ver").textContent = GAME_VERSION;
