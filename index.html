@@ -2163,6 +2163,48 @@
 </style>
 </head>
 <body>
+<!-- v0.9.325 시작 로딩 창 — 게임에 쓰는 그림·소리·글꼴을 첫 화면 전에 다 받아 둔다 (들어간 뒤에 받느라 끊기지 않게) -->
+<div id="boot">
+  <img id="bootLogo" src="assets/logo.webp" alt="이피저피똥피">
+  <div id="bootBar"><i></i></div>
+  <div id="bootTxt">불러오는 중… 0%</div>
+</div>
+<style>
+  #boot { position: fixed; inset: 0; z-index: 100000; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 22px;
+    background: radial-gradient(ellipse at 50% 40%, #2c2a6b 0%, #120f33 60%, #07070f 100%); transition: opacity .35s ease; touch-action: none; }
+  #boot.done { opacity: 0; pointer-events: none; }
+  #bootLogo { width: min(64vw, 260px); height: auto; filter: drop-shadow(0 6px 10px rgba(0,0,0,.5)); animation: bootBob 1.6s ease-in-out infinite; }
+  @keyframes bootBob { 50% { transform: translateY(-6px); } }
+  #bootBar { width: min(68vw, 280px); height: 16px; box-sizing: border-box; border-radius: 999px; padding: 3px;
+    background: rgba(5,6,24,.75); box-shadow: inset 0 0 0 2px #ffd86b, 0 2px 0 #7a3b00; }
+  #bootBar i { display: block; height: 100%; width: 0; border-radius: 999px; background: linear-gradient(180deg, #fff3a8, #ffc42e 55%, #f29a0c); transition: width .15s linear; }
+  #bootTxt { font: 800 14px/1 "Malgun Gothic", "Apple SD Gothic Neo", system-ui, sans-serif; color: #e6e9ff; letter-spacing: .5px; text-shadow: 0 1px 2px rgba(0,0,0,.6); }
+</style>
+<script>
+/* 로딩 — preload.json 목록을 6개씩 받는다. 그림은 디코딩까지(window.__preImgs 에 붙잡아 두어 다시 쓰면 바로 뜬다),
+   소리·글꼴은 받아만 둔다(HTTP 캐시). 목록을 못 받거나 오래 걸리면(40초) 그냥 들어간다. */
+(function () {
+  var boot = document.getElementById("boot"), bar = document.querySelector("#bootBar i"), txt = document.getElementById("bootTxt");
+  var done = false; window.__preImgs = [];
+  function finish() { if (done) return; done = true; bar.style.width = "100%"; txt.textContent = "준비 완료!";
+    setTimeout(function () { boot.classList.add("done"); window.__bootDone = true; window.dispatchEvent(new Event("boot-done"));
+      setTimeout(function () { boot.remove(); }, 400); }, 180); }
+  setTimeout(finish, 40000);
+  fetch("preload.json", { cache: "no-cache" }).then(function (r) { return r.json(); }).then(function (m) {
+    var list = m.files || [], n = list.length, got = 0, i = 0;
+    if (!n) return finish();
+    function tick() { got++; var p = Math.floor(got / n * 100); bar.style.width = p + "%"; txt.textContent = "불러오는 중… " + p + "%"; if (got >= n) finish(); else next(); }
+    function next() {
+      if (i >= n) return; var u = list[i++];
+      if (/\.(webp|png|jpg)(\?|$)/.test(u)) {
+        var im = new Image(); window.__preImgs.push(im);
+        im.onload = function () { (im.decode ? im.decode() : Promise.resolve()).then(tick, tick); }; im.onerror = tick; im.src = u;
+      } else fetch(u).then(function (r) { return r.arrayBuffer(); }).then(tick, tick);
+    }
+    for (var k = 0; k < 6; k++) next();
+  }).catch(finish);
+})();
+</script>
 <div id="app">
   <div id="stage">
     <canvas id="cv"></canvas>
@@ -2650,7 +2692,7 @@
   const elTitle = document.getElementById("overTitle");
   const coinNote = document.getElementById("coinNote");
 
-  const GAME_VERSION = "v0.9.324";
+  const GAME_VERSION = "v0.9.325";
   /* 제작사 스플래시(bamhobak friends 로고) — 2026-09-20 끔. 다시 켜려면 true */
   const SPLASH_USE = false;   // 코드를 고칠 때마다 뒤 두 자리를 올린다
   document.getElementById("ver").textContent = GAME_VERSION;
