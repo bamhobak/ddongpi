@@ -2650,7 +2650,7 @@
   const elTitle = document.getElementById("overTitle");
   const coinNote = document.getElementById("coinNote");
 
-  const GAME_VERSION = "v0.9.323";
+  const GAME_VERSION = "v0.9.324";
   /* 제작사 스플래시(bamhobak friends 로고) — 2026-09-20 끔. 다시 켜려면 true */
   const SPLASH_USE = false;   // 코드를 고칠 때마다 뒤 두 자리를 올린다
   document.getElementById("ver").textContent = GAME_VERSION;
@@ -12545,10 +12545,12 @@
       }
     }
   }
+  const ZAPDANCE_CD = 1100;   // v0.9.324 번개 춤 쿨타임(ms) — 실측에서 너무 강했다(버틴 시간 +160%)
+  let zapDanceAt = 0;
   function onGraze(it) {
     grazeCount++;
     achBump("graze");
-    if (aug.zapDance) zapChain(it.x, it.y, 3, it.r + 30, null, 160);   // v0.9.249 번개 춤
+    if (aug.zapDance && performance.now() >= zapDanceAt) { zapDanceAt = performance.now() + ZAPDANCE_CD; zapChain(it.x, it.y, 3, it.r + 30, null, 160); }   // v0.9.249 번개 춤 · v0.9.324 쿨타임
     if (aug.closeCall) {                 // v0.9.249 아슬아슬 — 연속으로 쌓이는 점수, 땀 대신 반짝이·콤보 글자
       closeN = Math.min(30, closeN + 1);
       score += sc("똥", poopGain() * 0.5 * closeN);
