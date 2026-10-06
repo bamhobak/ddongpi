@@ -2724,7 +2724,7 @@
   const elTitle = document.getElementById("overTitle");
   const coinNote = document.getElementById("coinNote");
 
-  const GAME_VERSION = "v0.9.343";
+  const GAME_VERSION = "v0.9.344";
   /* 제작사 스플래시(bamhobak friends 로고) — 2026-09-20 끔. 다시 켜려면 true */
   const SPLASH_USE = false;   // 코드를 고칠 때마다 뒤 두 자리를 올린다
   document.getElementById("ver").textContent = GAME_VERSION;
@@ -3020,7 +3020,7 @@
               ds: "가끔 코인을 물어다 줘요" },
     eel:    { nm: "찌릿 장어", ic: "⚡", img: "assets/pet_eel.png",
               ds: "가끔 가까운 똥에 찌릿! 번개를 쏘고, 옆 똥까지 번져요" },
-    duck:   { nm: "방귀 부릉 오리", ic: "🦆", img: "assets/pet_duck.png",   // v0.9.343
+    duck:   { nm: "노란 오리", ic: "🦆", img: "assets/pet_duck.png",   // v0.9.343
               ds: "가끔 방귀로 부릉! 화면 가운데를 가로질러 날아가며 닿는 똥을 부숴요" }
   };
   // 게임 화면에 그릴 펫 그림 (카드 그림과 같은 파일)
@@ -4814,7 +4814,7 @@
       go: () => { petOn.gift = true; giftT = GIFT_EVERY * 0.5; } },
     { id: "pet:coincat", ic: "🐈", nm: "펫 코인냥이", ds: "가끔 코인을 물어다 줘요", once: true, w: 0.7, cond: () => hasPet("coincat"),
       go: () => { petOn.coincat = true; catT = CAT_EVERY * 0.5; } },
-    { id: "pet:duck",    ic: "🦆", nm: "펫 방귀 부릉 오리", ds: "가끔 방귀로 부릉! 화면 가운데를 가로질러 날아가며 닿는 똥을 부숴요", once: true, w: 0.7, cond: () => hasPet("duck"),
+    { id: "pet:duck",    ic: "🦆", nm: "펫 노란 오리", ds: "가끔 방귀로 부릉! 화면 가운데를 가로질러 날아가며 닿는 똥을 부숴요", once: true, w: 0.7, cond: () => hasPet("duck"),
       go: () => { petOn.duck = true; duckT = DUCK_EVERY * 0.5; } },
     { id: "pet:eel",     ic: "🐍", nm: "펫 찌릿 장어", ds: "가끔 가까운 똥에 찌릿! 번개를 쏘고, 옆 똥까지 번져요", once: true, w: 0.7, cond: () => hasPet("eel"),
       go: () => { petOn.eel = true; eelT = EEL_EVERY * 0.5; } },
@@ -5307,7 +5307,7 @@
   let fairies = [], giftT = 0;
   let cats = [], catT = 0, catN = 0;
   let eelT = 0, bolts = [];
-  /* v0.9.343 방귀 부릉 오리 — DUCK_EVERY 초마다 화면 높이 45~55% 한 줄을 가로로 1.2초에 날아가며 닿는 똥을 부순다(다크똥 제외) */
+  /* v0.9.343 노란 오리 — DUCK_EVERY 초마다 화면 높이 45~55% 한 줄을 가로로 1.2초에 날아가며 닿는 똥을 부순다(다크똥 제외) */
   const DUCK_EVERY = 8, DUCK_SEC = 1.2, DUCK_R = 34;
   let duckT = 0, ducks = [], duckSide = 1;
   /* ── 점술가 ── 수정 구슬(옛 포춘쿠키)은 평균 14초마다, 예언은 PROPH_SEC 동안 */
@@ -11641,7 +11641,7 @@
         eelT = n ? EEL_EVERY : 0.5;          // 똥이 없으면 잠깐 뒤 다시
       }
     }
-    // ---- 방귀 부릉 오리 — 가로로 휭 지나가며 똥을 부순다 ----
+    // ---- 노란 오리 — 가로로 휭 지나가며 똥을 부순다 ----
     if (petOn.duck && state === STATE.PLAY) {
       duckT -= dt * tsc * gPet();
       if (duckT <= 0) {
@@ -18304,7 +18304,7 @@
   }
   /* 앞쪽 — 날아다니는 선물 요정, 고개 내민 야옹이, 번개 */
   function drawPetsFront(now) {
-    for (const d of ducks) {                 // v0.9.343 방귀 부릉 오리
+    for (const d of ducks) {                 // v0.9.343 노란 오리
       if (!PET_IMG.duck || d.x === undefined) continue;
       const im = PET_IMG.duck, h = 54, w = h * im.width / im.height, bob = Math.sin(d.t * 18) * 3;
       ctx.save(); ctx.translate(d.x, d.y + bob);
