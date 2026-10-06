@@ -447,6 +447,7 @@
   #overAugDesc:empty { display: none; }
   #nameForm { display: flex; gap: 8px; width: 100%; max-width: 380px; padding: 0 14px; box-sizing: border-box; }   /* v0.9.319 좌우 여백 */
   #overScreen.firstName #retryRow { display: none !important; }
+  #retryRow #btnRetryJob { display: none !important; }   /* v0.9.321 메인으로와 같은 기능이라 뺐다 */
   #nameInput {
     flex: 1; min-width: 0;
     font: inherit; font-size: 16px;
@@ -2648,7 +2649,7 @@
   const elTitle = document.getElementById("overTitle");
   const coinNote = document.getElementById("coinNote");
 
-  const GAME_VERSION = "v0.9.320";
+  const GAME_VERSION = "v0.9.321";
   /* 제작사 스플래시(bamhobak friends 로고) — 2026-09-20 끔. 다시 켜려면 true */
   const SPLASH_USE = false;   // 코드를 고칠 때마다 뒤 두 자리를 올린다
   document.getElementById("ver").textContent = GAME_VERSION;
