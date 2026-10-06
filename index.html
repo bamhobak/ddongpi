@@ -2603,12 +2603,12 @@
        밀어 숨길 뿐 남겨 두어 textContent 가 그대로다(글자를 읽는 코드가 안 깨진다). 나중에 붙는 글자는 MutationObserver 가 잡는다.
      · 캔버스 글자: fillText/strokeText 를 감싸 이모지 자리에 그림을 그린다 — 자리 폭은 원래 이모지 폭 그대로라 배치가 안 바뀐다.
      그림이 아직 안 왔거나 목록에 없는 이모지는 원래 이모지로 나온다. */
-  /*ICONS-BEGIN*/ const ICON_KEYS = ["🏪", "🐍", "🪙", "⭐", "🌙", "🌕", "☂", "❤", "💧", "🧻", "🔮", "💩", "🚀", "🕊", "👼", "🧚", "🐈", "🦆", "🦴", "🍗", "⏸", "🏆", "👑", "✏", "🎵", "🔔", "🎉", "🥊", "🗼", "🔄", "🏠", "🔒", "🔓", "🔁", "🥇", "🥈", "🥉", "✨", "⚠", "⏱", "🏃", "🎈", "💪", "📋", "🎯", "🙏", "🫧", "🧘", "🚫", "🦸", "⚡", "🔥", "🐢", "🐦", "📯", "💥", "😋", "💉", "☔", "🌠", "🕳", "🌝", "🧲", "💨", "🍀", "🌧", "💢", "🌈", "📱", "🥕", "🦄", "🕰", "🎲", "👻", "👊", "👯", "🍷", "☝", "🍚", "🌀", "🐕", "🎰", "🪜", "🎼", "✂", "🌱", "⛰", "☁", "🌤", "🧊", "❄", "🛰", "🌍", "☄", "🌌", "🌑", "🌒", "⚫", "🍌", "😵", "🤢", "😜", "😭", "👍", "⚔", "🪐", "🌬", "🌫", "🏋", "🔩", "🍪", "🤏", "🟤", "🪺", "🦢", "📦", "🌂", "💞", "⏩", "🫙", "🪀", "🗿", "🐹", "🍰", "🎂", "🪰", "🍩", "🚽", "👟", "💰", "🍖", "💖", "🎾", "⭕", "🦍", "🪨", "🎁", "🙅", "🤹", "🧹", "😅", "🛡", "📝", "💣", "🧨", "🕺", "🏵", "🧑‍🚀"]; const ICON_COLS = 10, ICON_ROWS = 15, ICON_CELL = 96; /*ICONS-END*/
+  /*ICONS-BEGIN*/ const ICON_KEYS = ["🏪", "🐍", "🪙", "⭐", "🌙", "🌕", "☂", "❤", "💧", "🧻", "🔮", "💩", "🚀", "🕊", "👼", "🧚", "🐈", "🦆", "🦴", "🐥", "🎺", "🥚", "🍗", "⏸", "🏆", "👑", "✏", "🎵", "🔔", "🎉", "🥊", "🗼", "🔄", "🏠", "🔒", "🔓", "🔁", "🥇", "🥈", "🥉", "✨", "⚠", "⏱", "🏃", "🎈", "💪", "📋", "🎯", "🙏", "🫧", "🧘", "🚫", "🦸", "⚡", "🔥", "🐢", "🐦", "📯", "💥", "😋", "💉", "☔", "🌠", "🕳", "🌝", "🧲", "💨", "🍀", "🌧", "💢", "🌈", "📱", "🥕", "🦄", "🕰", "🎲", "👻", "👊", "👯", "🍷", "☝", "🍚", "🌀", "🐕", "🎰", "🪜", "🎼", "✂", "🌱", "⛰", "☁", "🌤", "🧊", "❄", "🛰", "🌍", "☄", "🌌", "🌑", "🌒", "⚫", "🍌", "😵", "🤢", "😜", "😭", "👍", "⚔", "🪐", "🌬", "🌫", "🏋", "🔩", "🍪", "🤏", "🟤", "🪺", "🦢", "📦", "🌂", "💞", "⏩", "🫙", "🪀", "🗿", "🐹", "🍰", "🎂", "🪰", "🍩", "🚽", "👟", "💰", "🍖", "💖", "🎾", "⭕", "🦍", "🪨", "🎁", "🙅", "🤹", "🧹", "😅", "🛡", "📝", "💣", "🧨", "🕺", "🏵", "🧑‍🚀"]; const ICON_COLS = 10, ICON_ROWS = 16, ICON_CELL = 96; /*ICONS-END*/
   const ICON_IDX = new Map(ICON_KEYS.map((k, i) => [k, i]));
   const ICON_RE = ICON_KEYS.length ? new RegExp("(" + ICON_KEYS.slice().sort((a, b) => b.length - a.length)
     .map(k => k.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")).join("|") + ")\\uFE0F?", "gu") : null;
   let iconSheet = null;
-  const ICON_V = 3;   // v0.9.341 그림만 바뀌어도 새로 받게 — 아이콘을 다시 그리면 1 올린다
+  const ICON_V = 4;   // v0.9.341 그림만 바뀌어도 새로 받게 — 아이콘을 다시 그리면 1 올린다
   const ICON_URL = "assets/icons.webp?k=" + ICON_KEYS.length + "-" + ICON_KEYS.join("").length + "-" + ICON_V;   // v0.9.78 칸 순서가 바뀌면 옛 그림을 쓰지 않게
   if (ICON_RE) {
     const im = new Image();
@@ -2724,7 +2724,7 @@
   const elTitle = document.getElementById("overTitle");
   const coinNote = document.getElementById("coinNote");
 
-  const GAME_VERSION = "v0.9.347";
+  const GAME_VERSION = "v0.9.348";
   /* 제작사 스플래시(bamhobak friends 로고) — 2026-09-20 끔. 다시 켜려면 true */
   const SPLASH_USE = false;   // 코드를 고칠 때마다 뒤 두 자리를 올린다
   document.getElementById("ver").textContent = GAME_VERSION;
@@ -4814,8 +4814,17 @@
       go: () => { petOn.gift = true; giftT = GIFT_EVERY * 0.5; } },
     { id: "pet:coincat", ic: "🐈", nm: "펫 코인냥이", ds: "가끔 코인을 물어다 줘요", once: true, w: 0.7, cond: () => hasPet("coincat"),
       go: () => { petOn.coincat = true; catT = CAT_EVERY * 0.5; } },
-    { id: "pet:duck",    ic: "🦆", nm: "펫 노란 오리", ds: "가끔 조그만 오리 떼가 방귀로 부릉! 화면 가운데를 가로지르며 한 마리가 똥 하나씩 부숴요", once: true, w: 0.7, cond: () => hasPet("duck"),
-      go: () => { petOn.duck = true; duckT = DUCK_EVERY * 0.5; } },
+    { id: "pet:duck",    ic: "🦆", nm: "펫 노란 오리", max: 5, w: 0.7, cond: () => hasPet("duck"),   // v0.9.348 단계형 — 2마리에서 단계마다 +1
+      nmFn: () => augCount["pet:duck"] ? "펫 노란 오리 " + (augCount["pet:duck"] + 1) + "단계" : "펫 노란 오리",
+      ds: "가끔 조그만 오리 떼가 방귀로 부릉! 화면 가운데를 가로지르며 한 마리가 똥 하나씩 부숴요",
+      dsFn: () => augCount["pet:duck"] ? "오리가 한 마리 더 날아가요" : "가끔 조그만 오리 떼가 방귀로 부릉! 화면 가운데를 가로지르며 한 마리가 똥 하나씩 부숴요",
+      go: () => { if (petOn.duck) aug.duck++; else { petOn.duck = true; aug.duck = 2; duckT = DUCK_EVERY * 0.5; } } },
+    { id: "duckFat",    ic: "🐥", nm: "통통 오리", ds: "오리가 1.25배 통통해져서 똥을 더 잘 부숴요",   // v0.9.348
+      once: true, cond: () => petOn.duck, go: () => { aug.duckFat = true; } },
+    { id: "duckMarch",  ic: "🎺", nm: "오리 행진곡", ds: "방귀 대시를 쓰면 그 자리에서 오리 떼가 대각선 위로 출동해요",   // v0.9.348
+      hidden: true, once: true, cond: () => petOn.duck && aug.dash, go: () => { aug.duckMarch = true; } },
+    { id: "duckEgg",    ic: "🥚", nm: "황금 오리알", ds: "오리가 똥을 부술 때 가끔(30%) 코인을 떨어뜨려요",   // v0.9.348
+      hidden: true, once: true, cond: () => petOn.duck && petOn.coincat, go: () => { aug.duckEgg = true; } },
     { id: "pet:eel",     ic: "🐍", nm: "펫 찌릿 장어", ds: "가끔 가까운 똥에 찌릿! 번개를 쏘고, 옆 똥까지 번져요", once: true, w: 0.7, cond: () => hasPet("eel"),
       go: () => { petOn.eel = true; eelT = EEL_EVERY * 0.5; } },
     /* ── 펫 전용 증강 — 그 펫을 데리고 있을 때만 후보에 나온다 ── */
@@ -5308,8 +5317,17 @@
   let cats = [], catT = 0, catN = 0;
   let eelT = 0, bolts = [];
   /* v0.9.343 노란 오리 — DUCK_EVERY 초마다 화면 높이 45~55% 한 줄을 가로로 1.2초에 날아가며 닿는 똥을 부순다(다크똥 제외) */
-  const DUCK_EVERY = 8, DUCK_SEC = 1.8, DUCK_R = 20, DUCK_N = 6;   // v0.9.345 한 마리 → 조그만 오리 떼 6마리
+  const DUCK_EVERY = 3, DUCK_SEC = 1.8, DUCK_R = 20;   // v0.9.348 3초마다 · 마리 수 = aug.duck (2 + 단계-1)
   let duckT = 0, ducks = [], duckSide = 1;
+  /* 오리 떼 출발 — (ox,oy) 에서 (ux,uy) 쪽으로. 가로로 날 때는 화면을 다 지나가고, 행진곡(대각선)은 화면 밖으로 나갈 때까지 */
+  function duckLaunch(ox, oy, dx, dy, n, march) {
+    const L = Math.hypot(dx, dy) || 1, ux = dx / L, uy = dy / L;
+    const speed = march ? 520 : (W + 60 + n * 60) / DUCK_SEC;
+    const mem = [];
+    for (let m = 0; m < n; m++) mem.push({ dx: -m * 34 - Math.random() * 40, dy: (Math.random() - 0.5) * (march ? 90 : 150), ph: Math.random() * 6.28,
+      sp: 0.85 + Math.random() * 0.35, wy: 8 + Math.random() * 14, dead: false });
+    ducks.push({ t: 0, ox, oy, ux, uy, speed, life: march ? 1.6 : DUCK_SEC, mem });
+  }
   /* ── 점술가 ── 수정 구슬(옛 포춘쿠키)은 평균 14초마다, 예언은 PROPH_SEC 동안 */
   const FORTUNE_FIRST = 2, PROPH_SEC = 10;   // 판 시작 2초 뒤 첫 예언, 그다음부터 10초마다 바뀐다
   /* 예언 — 10초마다 하나씩 저절로 바뀐다. good 좋은 것 · bad 나쁜 것 · both 양면.
@@ -9467,7 +9485,7 @@
   const BOOK_PET = { "pet:helper": "helper", hungry: "helper",
                      "pet:galaga": "galaga", wak: "galaga", pierce: "galaga",
                      "pet:dove": "dove", doveHome: "dove", doveWhat: "dove",
-                     "pet:angel": "angel", "pet:gift": "gift", "pet:coincat": "coincat", "pet:eel": "eel", "pet:duck": "duck" };
+                     "pet:angel": "angel", "pet:gift": "gift", "pet:coincat": "coincat", "pet:eel": "eel", "pet:duck": "duck", duckFat: "duck", duckMarch: "duck", duckEgg: "duck" };
   const BOOK_COND = {   // v0.9.163 꼬마·강아지 눈높이 말투
     small: "버피는 못 먹어요", umbrella3: "버피는 못 먹어요", dash: "도도는 못 먹어요",
     "pet:angel": "레벨 4부터 나와요",
@@ -9480,7 +9498,7 @@
     goldLord: "'무지개 똥'이랑 '자석'을 같이 가지고 있으면 나와요", inter: "'느릿느릿 하늘'을 2개 먹으면 나와요",
     chainZap: "똥을 부수는 펫(뿌잉·우주선·둘기·선물 요정·찌릿 장어)을 게임 중에 먹으면 나와요", pierce: "게임 중에 '펫 슝슝 우주선'를 먼저 먹으면 나와요",
     snackBig: "간식 증강을 4개 넘게 먹으면 나와요", cloudVip: "구름 상점이 오는 판에 나와요 (무무는 빼고)",
-    fartRocket: "'방귀 대시'랑 '초승달 쓸기'를 같이 가지고 있으면 나와요", zapDance: "'아슬아슬'이랑 '펫 찌릿 장어'를 같이 가지고 있으면 나와요",
+    fartRocket: "'방귀 대시'랑 '초승달 쓸기'를 같이 가지고 있으면 나와요", duckMarch: "'펫 노란 오리'랑 '방귀 대시'를 같이 가지고 있으면 나와요", duckEgg: "'펫 노란 오리'랑 '펫 코인냥이'를 같이 가지고 있으면 나와요", zapDance: "'아슬아슬'이랑 '펫 찌릿 장어'를 같이 가지고 있으면 나와요",
     goldArmor: "'펫 코인냥이'가 있으면 나와요 (동전 갑옷도 함께 생겨요)", credit: "구름 상점이 오는 판에 나와요", coinArmor: "무무는 빼고 나와요",
  toilet: "하트가 3개 넘고 레벨 7 아래일 때 나와요", wak: "우주선이 2대 넘게 있으면 나와요",
     clone: "레벨 7부터 · 하트가 2개 아래일 때 나와요"
@@ -10409,7 +10427,7 @@
     angelUsed = false; angelAura = 0; angelFx = 0; petFon = false; reviveUsed = false;
     fairies = []; giftT = GIFT_EVERY * 0.6;
     cats = []; catT = CAT_EVERY * 0.7; catN = 0;
-    eelT = EEL_EVERY * 0.6; bolts = []; duckT = DUCK_EVERY * 0.5; ducks = [];
+    eelT = EEL_EVERY * 0.6; bolts = []; duckT = DUCK_EVERY * 0.5; ducks = []; aug.duck = 0; aug.duckFat = false; aug.duckMarch = false; aug.duckEgg = false;
     bullets = []; shipClock = 0; aug.galaga = 0;
     coinRun = 0; coinDebt = 0; coinSeen = 0; coinGot = 0; coinSeenV = 0; coinGotV = 0;
     monkStreak = 0; fullOwn = false; fullBanner = 0; fullFx = 0;
@@ -11641,39 +11659,40 @@
         eelT = n ? EEL_EVERY : 0.5;          // 똥이 없으면 잠깐 뒤 다시
       }
     }
-    // ---- 노란 오리 — 가로로 휭 지나가며 똥을 부순다 ----
+    // ---- 노란 오리 — 떼로 휭 지나가며 한 마리가 똥 하나씩 부순다 ----
     if (petOn.duck && state === STATE.PLAY) {
       duckT -= dt * tsc * gPet();
       if (duckT <= 0) {
         duckT = DUCK_EVERY;
         duckSide = -duckSide;                 // 왼쪽에서, 다음엔 오른쪽에서
-        const mem = [];                       // 줄지어 날아가는 오리 떼 — 앞뒤로 엇갈리고 위아래로 살짝 흩어진다
-        for (let m = 0; m < DUCK_N; m++) mem.push({ dx: -m * 34 - Math.random() * 40, dy: (Math.random() - 0.5) * 150, ph: Math.random() * 6.28,   // v0.9.347 더 넓게·제멋대로
-          sp: 0.85 + Math.random() * 0.35, wy: 8 + Math.random() * 14, dead: false });
-        ducks.push({ t: 0, dir: duckSide, y: H * (0.45 + Math.random() * 0.1), mem });
-        popText(duckSide > 0 ? 125 : W - 125, ducks[ducks.length - 1].y - 46, "🦆 오리 떼가 부릉!", "#ffe066", 20, 1.3);   // v0.9.346 나올 때 글자
+        const y = H * (0.45 + Math.random() * 0.1);
+        duckLaunch(duckSide > 0 ? -30 : W + 30, y, duckSide, 0, aug.duck || 2, false);
+        popText(duckSide > 0 ? 125 : W - 125, y - 46, "🦆 오리 떼가 부릉!", "#ffe066", 20, 1.3);   // v0.9.346 나올 때 글자
         if (!sfx("dash", 0.7)) { beep(140, .18, "sawtooth", .05); beep(90, .22, "square", .03); }   // 방귀 대시 소리 재사용
       }
     }
     for (let k = ducks.length - 1; k >= 0; k--) {
       const d = ducks[k];
       d.t += dt * tsc;
-      const f = d.t / DUCK_SEC;
-      const span = W + 60 + DUCK_N * 60;      // 맨 뒤·느린 오리까지 화면을 다 지나가게
-      d.x = d.dir > 0 ? -30 + span * f : W + 30 - span * f;
-      if (f >= 1) { ducks.splice(k, 1); continue; }
+      if (d.t >= d.life) { ducks.splice(k, 1); continue; }
+      const px = -d.uy, py = d.ux;            // 나아가는 쪽에 수직
       for (const m of d.mem) {
         if (m.dead) continue;
-        const mx = d.x * m.sp + (d.dir > 0 ? 0 : W * (1 - m.sp)) + m.dx * d.dir, my = d.y + m.dy + Math.sin(d.t * 5 + m.ph) * m.wy;
+        const along = d.speed * m.sp * d.t + m.dx, side = m.dy + Math.sin(d.t * 5 + m.ph) * m.wy;
+        const mx = d.ox + d.ux * along + px * side, my = d.oy + d.uy * along + py * side;
         m.x = mx; m.y = my;
-        if (mx < -40 || mx > W + 40) continue;
-        if (Math.random() < dt * 10) burst(mx - d.dir * 14, my + 4, "#cfe2a8", 1);   // 방귀 자국
+        if (mx < -40 || mx > W + 40 || my < -40 || my > H + 40) continue;
+        if (Math.random() < dt * 10) burst(mx - d.ux * 14, my - d.uy * 14 + 4, "#cfe2a8", 1);   // 방귀 자국
         /* v0.9.347 한 마리당 똥 하나 — 부수면 그 오리는 뿅 사라진다 */
-        const q = items.find(it => it.type === "poop" && !it.dark && !it.special && Math.hypot(it.x - mx, it.y - my) < DUCK_R + it.r);
+        const rr = DUCK_R * (aug.duckFat ? 1.25 : 1);
+        const q = items.find(it => it.type === "poop" && !it.dark && !it.special && Math.hypot(it.x - mx, it.y - my) < rr + it.r);
         if (q) {
           const before = items.length;
           smashPoopsAround(q.x, q.y, 1, false);
-          if (items.length < before) { m.dead = true; burst(mx, my, "#ffe066", 10); burst(mx, my, "#ffffff", 5); shake = Math.max(shake, 3); }
+          if (items.length < before) {
+            m.dead = true; burst(mx, my, "#ffe066", 10); burst(mx, my, "#ffffff", 5); shake = Math.max(shake, 3);
+            if (aug.duckEgg && Math.random() < 0.3) { makeCoinAt(mx, my, 1); popText(mx, my - 20, "🥚", "#ffe066", 18, 0.8); }   // v0.9.348 황금 오리알
+          }
         }
       }
       if (d.mem.every(m => m.dead)) { ducks.splice(k, 1); continue; }
@@ -12821,6 +12840,11 @@
     invUntil = Math.max(invUntil, now + DASH_SLIDE * 1000 + 60); invQuietUntil = Math.max(invQuietUntil, invUntil);
     dashT = DASH_TAIL;                               // 아주 짧은 여운 — 이 동안은 스침을 계속 잰다
     dashCd = DASH_CD;
+    if (aug.duckMarch && petOn.duck) {               // v0.9.348 오리 행진곡 — 출발한 자리에서 대각선 위로 (대시한 쪽)
+      const sx = nx >= x0 ? 1 : -1;
+      duckLaunch(x0, cy, sx, -1.1, aug.duck || 2, true);
+      popText(x0, cy - 60, "🎺 오리 행진곡!", "#ffe066", 20, 1);
+    }
     if (partyOn()) {                                 // 여럿이 — 로블록스판처럼 3번 · 4초마다 · 도착 뒤 1초 무적
       dashCd = PA_DASH_CD;
       invUntil = Math.max(invUntil, now + PA_DASH_INV);
@@ -16615,7 +16639,10 @@
     "pet:angel": "쓰러지면 한 번 하트 1개로 되살림 + 2초 무적, 되살아난 뒤 6초 동안 반경 92px 똥을 밀어냄 · 레벨 4부터 · 상점 구매 필요",
     "pet:gift": "18초마다 떨어지는 똥 하나를 아이템으로(하트 25% · 우산 25% · 별 30% · 달 20%, 무무는 달 대신 별, 버피는 우산 대신 하트, 하트가 가득이면 별) · 처음은 9초 뒤 · 상점 구매 필요",
     "pet:coincat": "9초마다 코인을 물어다 떨어뜨림 · 세 번째마다 5코인 · 처음은 4.5초 뒤 · 상점 구매 필요",
-    "pet:duck": "8초마다 오리 6마리가 화면 가운데 언저리(±75px로 흩어져 물결치며)를 약 1.8초에 가로지름 · 마리당 똥 1개 부수고 사라짐(다크똥 제외, 좌우 번갈아) · 상점 구매 필요",
+    "pet:duck": "3초마다 오리 떼(1단계 2마리, 단계마다 +1, 최대 6마리)가 화면 가운데 언저리를 약 1.8초에 가로지름 · 마리당 똥 1개 부수고 사라짐(다크똥 제외, 좌우 번갈아) · 상점 구매 필요",
+    duckFat: "오리 크기·부수는 범위 1.25배",
+    duckMarch: "방귀 대시 때 출발 자리에서 대각선 위(대시한 쪽)로 오리 떼 출동 (마리 수는 단계 그대로)",
+    duckEgg: "오리가 똥을 부술 때 30% 확률로 1코인",
     "pet:eel": "7초마다 가장 가까운 똥에 번개, 옆 똥으로 2개까지 옮겨붙음(건너뛰는 거리 110px) · 상점 구매 필요",
     doveHome: "비둘기 출격 거리 -20% (겹칠수록 덜, 최대 3번: 110m → 88m → 73m → 62m)",
     hungry: "뿌잉이 아이템이 뜨고 3초 뒤 대신 먹으러 감(한 번에 한 마리, 다녀오면 2초 쉼, 속도 500px/s)",
@@ -18329,15 +18356,15 @@
   /* 앞쪽 — 날아다니는 선물 요정, 고개 내민 야옹이, 번개 */
   function drawPetsFront(now) {
     for (const d of ducks) {                 // v0.9.343 노란 오리
-      if (!PET_IMG.duck || d.x === undefined) continue;
-      const im = PET_IMG.duck, h = 28, w = h * im.width / im.height;   // v0.9.345 조그만 오리 떼
+      if (!PET_IMG.duck) continue;
+      const im = PET_IMG.duck, h = 28 * (aug.duckFat ? 1.25 : 1), w = h * im.width / im.height;   // v0.9.345 조그만 오리 떼 · v0.9.348 통통 오리
       for (const m of d.mem) {
         if (m.dead || m.x === undefined) continue;
         const mx = m.x, my = m.y;
         if (mx < -50 || mx > W + 50) continue;
         ctx.save(); ctx.translate(mx, my);
-        if (d.dir < 0) ctx.scale(-1, 1);     // 그림은 오른쪽을 본다
-        ctx.rotate(-0.06 + Math.sin(d.t * 12 + m.ph) * 0.06);
+        if (d.ux < 0) ctx.scale(-1, 1);      // 그림은 오른쪽을 본다
+        ctx.rotate(Math.atan2(d.uy, Math.abs(d.ux)) - 0.06 + Math.sin(d.t * 12 + m.ph) * 0.06);
         ctx.drawImage(im, -w / 2, -h / 2, w, h);
         ctx.restore();
       }
