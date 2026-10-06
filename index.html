@@ -2645,7 +2645,7 @@
   const elTitle = document.getElementById("overTitle");
   const coinNote = document.getElementById("coinNote");
 
-  const GAME_VERSION = "v0.9.314";
+  const GAME_VERSION = "v0.9.315";
   /* 제작사 스플래시(bamhobak friends 로고) — 2026-09-20 끔. 다시 켜려면 true */
   const SPLASH_USE = false;   // 코드를 고칠 때마다 뒤 두 자리를 올린다
   document.getElementById("ver").textContent = GAME_VERSION;
@@ -9919,7 +9919,7 @@
     let spent = 0;
     for (const g of GROW) for (let k = 0; k < Math.min(gl(g.id), g.max); k++) spent += g.cost(k);
     const rb = document.createElement("button"); rb.id = "btnGrowReset";
-    rb.textContent = spent ? "초기화 (🪙 " + spent + " 돌려받기)" : "초기화";
+    rb.textContent = "초기화";   // v0.9.315 돌려받는 코인은 누른 뒤 확인 창에서만
     rb.disabled = !spent;
     rb.addEventListener("click", () => {
       if (!spent) return;
