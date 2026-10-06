@@ -1271,7 +1271,8 @@
   #startScreen #btnOpt { left: 10px !important; right: auto !important; width: 34px !important; height: 34px !important; }   /* v0.9.316 38 → 34 (10% 작게) */
   #startScreen #pgHome #meBtn { position: static !important; margin: 10px auto 0; max-width: none; }
   #startScreen #pgOpt #ver { position: static !important; order: 99; margin: 14px auto 0; font-size: 12px; opacity: .55; }   /* v0.9.313 위 초승달 장식 없앰 */
-  #homeTraits { margin-top: -14px; }   /* 장식 자리만큼 위로 — 상세 버튼과 판 사이 = 판과 시작하기 사이 */
+  #homeTraits { margin-top: -14px; }
+  #homeTraits { height: 128px !important; min-height: 0 !important; }   /* v0.9.318 해금 수와 상관없이 도도 기준 크기로 고정 */   /* 장식 자리만큼 위로 — 상세 버튼과 판 사이 = 판과 시작하기 사이 */
   @media (max-height: 700px) { #homeTraits { font-size: 12px; min-height: 76px; padding: 18px 28px 18px; margin-top: 8px; } }
   @media (max-height: 760px) { #pgHome h1 img.ttl { width: min(36vw, 150px) !important; } #pgHome #jobList img.ic { height: 70px; } }
   /* 쪽 제목 — 리본 */
@@ -2646,7 +2647,7 @@
   const elTitle = document.getElementById("overTitle");
   const coinNote = document.getElementById("coinNote");
 
-  const GAME_VERSION = "v0.9.317";
+  const GAME_VERSION = "v0.9.318";
   /* 제작사 스플래시(bamhobak friends 로고) — 2026-09-20 끔. 다시 켜려면 true */
   const SPLASH_USE = false;   // 코드를 고칠 때마다 뒤 두 자리를 올린다
   document.getElementById("ver").textContent = GAME_VERSION;
