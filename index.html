@@ -2712,7 +2712,7 @@
   const elTitle = document.getElementById("overTitle");
   const coinNote = document.getElementById("coinNote");
 
-  const GAME_VERSION = "v0.9.336";
+  const GAME_VERSION = "v0.9.337";
   /* 제작사 스플래시(bamhobak friends 로고) — 2026-09-20 끔. 다시 켜려면 true */
   const SPLASH_USE = false;   // 코드를 고칠 때마다 뒤 두 자리를 올린다
   document.getElementById("ver").textContent = GAME_VERSION;
@@ -4931,7 +4931,7 @@
       once: true,   /* v0.9.330 황금 갑옷 → 냥이의 보은, 숨은 증강 → 일반 증강 */ cond: () => petOn.coincat && job !== "powerp", go: () => { aug.goldArmor = true; aug.coinArmor = true; } },   // v0.9.331 코인냥이만 있으면 — 동전 갑옷이 없으면 함께 생긴다
     { id: "twoRand",    ic: "🎲", nm: "아무거나 두 개", ds: "증강 두 개를 아무거나 받아요",
       go: () => {
-        const got = [];
+        const got = []; twoRandObjs = [];
         for (let k = 0; k < 2; k++) {
           const pool = AUGMENTS.filter(b => !b.hidden && b.id !== "twoRand"
             && (augCount[b.id] || 0) < maxOf(b) && (!b.cond || b.cond()) && achOpen(b.id));
@@ -4940,6 +4940,7 @@
           const nm = nameOf(b);
           augApply(b);
           got.push(b.ic + " " + nm);
+          twoRandObjs.push([b, nm]);
         }
         twoRandGot = got;              // 창을 닫은 뒤 무엇을 받았는지 띄운다
       } }
@@ -4949,7 +4950,7 @@
     a.go();
     augCount[a.id] = (augCount[a.id] || 0) + 1;
   }
-  let twoRandGot = null;
+  let twoRandGot = null, twoRandObjs = [];
 
   const augScreen = document.getElementById("augScreen");
   const augList   = document.getElementById("augList");
@@ -5147,6 +5148,7 @@
           if (pool2.length) { const b = pool2[Math.floor(Math.random() * pool2.length)]; augApply(b); popText(player.x, player.y - 130, "🕕 정시 퇴근 " + b.ic + " " + nameOf(b), "#9fe8ff", 18, 2.5); }
         }
         if (!sfx("aug")) { beep(900, .09, "square", .05); beep(1350, .13, "square", .05); }
+        const finishPick = () => {
         /* v0.9.336 여러 번 이어 고르면(보름달·증강 2연속) 고른 것을 모아 두었다가 끝날 때 전부 띄운다 (예전엔 마지막 것만) */
         if (twoRandGot) twoRandGot.forEach(t => augPickedSeq.push([t, "#9fe8ff"]));   // 아무거나 두 개 — 받은 두 개만
         else augPickedSeq.push([a.ic + " " + picked, "#ffd23f"]);
@@ -5159,6 +5161,22 @@
         const seq = augPickedSeq; augPickedSeq = [];
         const life = seq.length > 1 ? 2.5 : (twoRandGot ? 2.5 : undefined);
         seq.forEach(([t, c], i) => popText(player.x, player.y - 70 - (seq.length - 1 - i) * 32, t, c, seq.length > 1 ? 22 : 24, life));
+        };
+        /* v0.9.337 아무거나 두 개 — 받은 두 증강을 카드로 펼쳐 2.2초 보여 준 뒤 넘어간다 (떠오르는 글자만으론 놓치기 쉬웠다) */
+        if (a.id === "twoRand" && twoRandObjs.length) {
+          augList.innerHTML = ""; augList.style.pointerEvents = "none";
+          for (const [b, nm2] of twoRandObjs) {
+            const c = document.createElement("div"); c.className = "augCard gReveal trGot";
+            c.innerHTML = '<span class="ic"></span><span class="tx"><div class="nm2"></div><div class="ds"></div></span>';
+            c.querySelector(".ic").textContent = b.ic; c.querySelector(".nm2").textContent = nm2;
+            c.querySelector(".ds").textContent = b.dsFn ? b.dsFn() : b.ds;
+            augList.appendChild(c);
+          }
+          const t = document.getElementById("augTitle"); if (t) t.dataset.keep = t.textContent, t.textContent = "🎲 이 두 개를 받았어요!";
+          setTimeout(() => { augList.style.pointerEvents = ""; if (t && t.dataset.keep) t.textContent = t.dataset.keep; finishPick(); }, 2200);
+          return;
+        }
+        finishPick();
       });
       augList.appendChild(card);
     }
