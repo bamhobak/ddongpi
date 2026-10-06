@@ -2723,7 +2723,7 @@
   const elTitle = document.getElementById("overTitle");
   const coinNote = document.getElementById("coinNote");
 
-  const GAME_VERSION = "v0.9.339";
+  const GAME_VERSION = "v0.9.340";
   /* 제작사 스플래시(bamhobak friends 로고) — 2026-09-20 끔. 다시 켜려면 true */
   const SPLASH_USE = false;   // 코드를 고칠 때마다 뒤 두 자리를 올린다
   document.getElementById("ver").textContent = GAME_VERSION;
@@ -18236,18 +18236,14 @@
       const fade = Math.min(1, angelAura / 1.2);
       const pr = ANGEL_R * (0.94 + 0.06 * Math.sin(t * 6));
       ctx.save();
-      ctx.globalAlpha = 0.55 * fade;
-      const g = ctx.createRadialGradient(ax, ay, pr * 0.35, ax, ay, pr);
-      g.addColorStop(0, "rgba(255,244,200,0)");
-      g.addColorStop(0.75, "rgba(255,232,150,.35)");
-      g.addColorStop(1, "rgba(255,255,255,.75)");
-      ctx.fillStyle = g;
-      ctx.beginPath(); ctx.arc(ax, ay, pr, 0, 6.283); ctx.fill();
-      ctx.globalAlpha = 0.9 * fade;
-      ctx.strokeStyle = "#fff1b8"; ctx.lineWidth = 3;
-      ctx.setLineDash([10, 8]); ctx.lineDashOffset = -t * 40;
-      ctx.beginPath(); ctx.arc(ax, ay, pr, 0, 6.283); ctx.stroke();
-      ctx.setLineDash([]);
+      if (hudOk(angelRingImg)) {               // v0.9.340 Codex 깃털 고리 — 천천히 돈다 (예전 점선 원)
+        ctx.globalAlpha = 0.95 * fade;
+        ctx.translate(ax, ay); ctx.rotate(t * 0.35);
+        const d = pr * 2.16; ctx.drawImage(angelRingImg, -d / 2, -d / 2, d, d);
+      } else {
+        ctx.globalAlpha = 0.9 * fade; ctx.strokeStyle = "#fff1b8"; ctx.lineWidth = 3;
+        ctx.beginPath(); ctx.arc(ax, ay, pr, 0, 6.283); ctx.stroke();
+      }
       ctx.restore();
     }
     // 아기 천사 — 아직 쓰지 않았거나 오라가 도는 동안 어깨 위에 떠 있다
@@ -19078,6 +19074,7 @@
     ctx.beginPath(); ctx.arc(g.x, g.y, g.r * 1.06, 0, 6.283); ctx.stroke();
     ctx.restore();
   }
+  const angelRingImg = new Image(); angelRingImg.src = "assets/fx_angelring.webp";   // v0.9.340 아기 천사 보호 고리
   /* 방귀 대시 눈금 — 화면 오른쪽 아래 동그란 표시 (v0.8.01, 예전엔 머리 위라 캐릭터와 겹쳤다).
      다 차면 초록으로 환해지고 💨 가 도드라진다. 차는 중에는 남은 만큼 테두리가 돌아간다.
      증강을 가진 사람에게만 보인다 (안 고른 사람 화면에는 아무것도 늘지 않는다). */
