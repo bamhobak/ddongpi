@@ -1267,7 +1267,7 @@
   #meLvBox .lvHead > b { display: none; }
   #mePop #meLvBox { padding: 0 8px; }   /* v0.9.314 좌우 여백 */
   /* v0.9.314 설정(톱니)은 왼쪽 위, 똥피력 칩은 시작하기 아래, 버전은 옵션 맨 아래 */
-  #startScreen #btnOpt { left: 10px !important; right: auto !important; }
+  #startScreen #btnOpt { left: 10px !important; right: auto !important; width: 34px !important; height: 34px !important; }   /* v0.9.316 38 → 34 (10% 작게) */
   #startScreen #pgHome #meBtn { position: static !important; margin: 10px auto 0; max-width: none; }
   #startScreen #pgOpt #ver { position: static !important; order: 99; margin: 14px auto 0; font-size: 12px; opacity: .55; }   /* v0.9.313 위 초승달 장식 없앰 */
   #homeTraits { margin-top: -14px; }   /* 장식 자리만큼 위로 — 상세 버튼과 판 사이 = 판과 시작하기 사이 */
@@ -2645,7 +2645,7 @@
   const elTitle = document.getElementById("overTitle");
   const coinNote = document.getElementById("coinNote");
 
-  const GAME_VERSION = "v0.9.315";
+  const GAME_VERSION = "v0.9.316";
   /* 제작사 스플래시(bamhobak friends 로고) — 2026-09-20 끔. 다시 켜려면 true */
   const SPLASH_USE = false;   // 코드를 고칠 때마다 뒤 두 자리를 올린다
   document.getElementById("ver").textContent = GAME_VERSION;
