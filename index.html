@@ -2608,7 +2608,8 @@
   const ICON_RE = ICON_KEYS.length ? new RegExp("(" + ICON_KEYS.slice().sort((a, b) => b.length - a.length)
     .map(k => k.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")).join("|") + ")\\uFE0F?", "gu") : null;
   let iconSheet = null;
-  const ICON_URL = "assets/icons.webp?k=" + ICON_KEYS.length + "-" + ICON_KEYS.join("").length;   // v0.9.78 칸 순서가 바뀌면 옛 그림을 쓰지 않게
+  const ICON_V = 2;   // v0.9.341 그림만 바뀌어도 새로 받게 — 아이콘을 다시 그리면 1 올린다
+  const ICON_URL = "assets/icons.webp?k=" + ICON_KEYS.length + "-" + ICON_KEYS.join("").length + "-" + ICON_V;   // v0.9.78 칸 순서가 바뀌면 옛 그림을 쓰지 않게
   if (ICON_RE) {
     const im = new Image();
     im.onload = () => { iconSheet = im; document.documentElement.classList.add("iconsOn"); };
@@ -2723,7 +2724,7 @@
   const elTitle = document.getElementById("overTitle");
   const coinNote = document.getElementById("coinNote");
 
-  const GAME_VERSION = "v0.9.340";
+  const GAME_VERSION = "v0.9.341";
   /* 제작사 스플래시(bamhobak friends 로고) — 2026-09-20 끔. 다시 켜려면 true */
   const SPLASH_USE = false;   // 코드를 고칠 때마다 뒤 두 자리를 올린다
   document.getElementById("ver").textContent = GAME_VERSION;
