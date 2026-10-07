@@ -1802,7 +1802,7 @@
   #jobList .augCard.locked .ic { filter: grayscale(1) brightness(.8) opacity(.85); }
   #jobList .augCard.locked .nm2 { color: #3a3a3a; opacity: .75; }
   #jobScreen { gap: clamp(8px, 1.6vh, 14px); }
-  #btnPickOk, #btnJobGo {
+  #btnPickOk, #btnJobGo, #btnAugOk {
     --bh: 50px; height: var(--bh); box-sizing: border-box; padding: 0 30px calc(var(--bh) * .08); letter-spacing: 4px;
     border-style: solid; border-color: transparent; border-width: 0 calc(var(--bh) / 2); border-radius: 0;
     border-image: url(assets/ui/btn_yellow.webp) 0 60 fill / 0 calc(var(--bh) / 2) / 0 stretch;
@@ -1851,7 +1851,7 @@
     color: #fff; text-shadow: 0 1px 2px rgba(0,50,110,.65);
   }
   /* ---- v0.9.42 버튼 양식 통일 — 주요(노랑) 50px · 보조(파랑)·나가기(회색) 44px, 폭 240, 글자 16/15px ---- */
-  #btnStart, #btnRetry, #btnPickOk, #btnJobGo, #btnResume, #vsScreen #vsQuick {
+  #btnStart, #btnRetry, #btnPickOk, #btnJobGo, #btnAugOk, #btnResume, #vsScreen #vsQuick {
     --bh: 50px !important; min-width: 240px; font-size: 17px !important; letter-spacing: 1px !important; margin: 0;
   }
   #retryRow #btnRetryJob, #btnPauseRetry, #btnJobList, #btnReroll, #btnPetBuy, #vsScreen #vsBot,
@@ -1859,6 +1859,8 @@
     --bh: 44px !important; min-width: 240px; font-size: 15px !important; letter-spacing: 0 !important; font-weight: 800; margin: 0; opacity: 1;
   }
   #btnPetBuy:disabled { min-width: 240px; }
+  #btnAugOk[hidden] { display: none; }
+  #btnAugOk { margin-top: 6px; animation: trTtl .4s cubic-bezier(.3,1.6,.5,1) both, glowY 3.4s ease-in-out .4s infinite; }   /* v0.9.365 받은 증강을 다 보여 준 뒤 확인으로 재개 */
   /* ── v0.9.140 게임오버·일시정지 — 캐릭터 성장 창과 같은 남색 금테 판 + 금색 리본 제목 · 버튼은 큰 주요 하나 + 보조·나가기 나란히 ── */
   #overScreen, #pauseScreen { gap: 14px; }
   .gPanel { position: relative; width: min(92vw, 360px); box-sizing: border-box; display: flex; flex-direction: column; align-items: center; gap: 8px;
@@ -2508,6 +2510,7 @@
       <h2 id="augTitle">⭐ 증강 선택 🌙</h2>
       <div id="augList"></div>
       <button id="btnReroll">🔄 다시 뽑기</button>
+      <button id="btnAugOk" hidden>확인</button>
     </div>
 
     <div id="vsScreen" class="screen hidden">
@@ -2725,7 +2728,7 @@
   const elTitle = document.getElementById("overTitle");
   const coinNote = document.getElementById("coinNote");
 
-  const GAME_VERSION = "v0.9.364";
+  const GAME_VERSION = "v0.9.365";
   /* 제작사 스플래시(bamhobak friends 로고) — 2026-09-20 끔. 다시 켜려면 true */
   const SPLASH_USE = false;   // 코드를 고칠 때마다 뒤 두 자리를 올린다
   document.getElementById("ver").textContent = GAME_VERSION;
@@ -5028,7 +5031,7 @@
   }
 
   function openAugment(times) {
-    augPickedSeq = []; pjSeq = []; augSkipping = false; augAutoFn = null;
+    augPickedSeq = []; pjSeq = []; augSkipping = false; augAutoFn = null; augOkReset();
     if (!startAugNow) pjMoonN++;
     augTotal = times || 1;
     augRemain = augTotal;
@@ -5041,21 +5044,33 @@
 
   /* v0.9.359 저절로 받는 연출(제이 자동 받기·아무거나 두 개) — 기다리는 일을 하나 걸어 두고, 화면을 누르면 바로 실행한다.
      한 번 누르면(augSkipping) 이어지는 차례도 기다리지 않고 바로 넘어간다 */
-  const AUTO_BASE = 2500, AUTO_GAP = 1000;   // 1장 2.5초, 한 장 늘 때마다 +1초 · 카드 사이 1초
+  const AUTO_GAP = 1000;   // 카드 사이 1초 (v0.9.365 끝나는 시간 대신 확인 버튼)
   let augAutoFn = null, augAutoT = 0, augSkipping = false;
   function augAutoWait(fn, ms) {
     if (augSkipping) { fn(); return; }
     augAutoFn = fn; augAutoT = setTimeout(() => { augAutoFn = null; fn(); }, ms);
   }
-  document.addEventListener("pointerdown", () => {   // 화면 어디를 눌러도(안내 말풍선이 덮고 있어도) — 그래서 문서에 건다
-    if (!augAutoFn || state !== STATE.AUG) return;
+  /* v0.9.365 저절로 받은 증강은 저절로 넘어가지 않는다 — 카드가 다 나온 뒤 '확인' 을 눌러야 게임이 이어진다.
+     카드가 나오는 중에 화면을 누르면 남은 카드를 한꺼번에 펼치고 확인 버튼을 바로 띄운다. */
+  const btnAugOk = document.getElementById("btnAugOk");
+  let augOkFn = null;
+  function augConfirm(fn, ms) {
+    const show = () => { augAutoFn = null; augOkFn = fn; btnAugOk.hidden = false; };
+    if (augSkipping) { show(); return; }
+    augAutoFn = show; augAutoT = setTimeout(show, ms);
+  }
+  function augOkReset() { augOkFn = null; btnAugOk.hidden = true; }
+  btnAugOk.addEventListener("click", () => { if (!augOkFn) return; const f = augOkFn; augOkReset(); f(); });
+  document.addEventListener("pointerdown", e => {   // 화면 어디를 눌러도(안내 말풍선이 덮고 있어도) — 그래서 문서에 건다
+    if (!augAutoFn || state !== STATE.AUG || e.target === btnAugOk) return;
     clearTimeout(augAutoT); const f = augAutoFn; augAutoFn = null; augSkipping = true; f();
+    augList.querySelectorAll(".augCard").forEach(c => { c.style.animationDelay = "0s"; });   // 아직 안 나온 카드도 바로
     liftWait = true;   // 건너뛰려고 누른 이 손가락도 떼기 전엔 조작이 아니다
   }, true);
   let augPickedSeq = [], pjSeq = [], pjT0 = 0;   // pjSeq: 제이 자동 받기 — 보름달 앞 차례 카드들
   function closeAugScreen() {
     const wasStart = startAugNow;           // v0.9.217 시작 증강 뒤에는 '준비!' 없이 바로 이어 간다
-    startAugNow = false; augSkipping = false; augAutoFn = null;
+    startAugNow = false; augSkipping = false; augAutoFn = null; augOkReset();
     augScreen.classList.add("hidden");
     state = STATE.PLAY;
     inputHoldUntil = 0;   // v0.9.363 증강 뒤 터치 무시(시간) 없앰
@@ -5216,7 +5231,7 @@
             augList.appendChild(c);
           });
           const t = document.getElementById("augTitle"); if (t) t.dataset.keep = t.textContent, t.textContent = "🎲 이 두 개를 받았어요!"; t.classList.remove("trTtl"); void t.offsetWidth; t.classList.add("trTtl");
-          augAutoWait(() => { augList.style.pointerEvents = ""; if (t) { t.classList.remove("trTtl"); if (t.dataset.keep) t.textContent = t.dataset.keep; } finishPick(); }, AUTO_BASE + AUTO_GAP * (twoRandObjs.length - 1));   // 2장 3.5초
+          augConfirm(() => { augList.style.pointerEvents = ""; if (t) { t.classList.remove("trTtl"); if (t.dataset.keep) t.textContent = t.dataset.keep; } finishPick(); }, 750 + AUTO_GAP * (twoRandObjs.length - 1));   // v0.9.365 마지막 카드가 나오면 확인 버튼
           return;
         }
         finishPick();
@@ -5241,10 +5256,10 @@
         const c = card.cloneNode(true); c.classList.remove("trGot"); c.style.animation = "trGlow 1.2s ease-in-out infinite alternate";
         pjSeq.push(c); card.classList.remove("trGot"); card.click();
       }, AUTO_GAP);
-      else augAutoWait(() => {
+      else augConfirm(() => {   // v0.9.365 마지막 카드가 나오면 확인 버튼 — 눌러야 받고 이어 간다
         augList.style.pointerEvents = ""; if (rr) rr.style.visibility = ""; if (t) t.classList.remove("trTtl");
         pjSeq = []; card.classList.remove("trGot"); card.click();
-      }, Math.max(800, pjT0 + AUTO_BASE + k * AUTO_GAP - performance.now()));
+      }, 750);
     }
   }
   let state = STATE.READY;
