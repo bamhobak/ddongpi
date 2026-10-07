@@ -2725,7 +2725,7 @@
   const elTitle = document.getElementById("overTitle");
   const coinNote = document.getElementById("coinNote");
 
-  const GAME_VERSION = "v0.9.358";
+  const GAME_VERSION = "v0.9.359";
   /* 제작사 스플래시(bamhobak friends 로고) — 2026-09-20 끔. 다시 켜려면 true */
   const SPLASH_USE = false;   // 코드를 고칠 때마다 뒤 두 자리를 올린다
   document.getElementById("ver").textContent = GAME_VERSION;
@@ -5028,7 +5028,7 @@
   }
 
   function openAugment(times) {
-    augPickedSeq = []; pjSeq = [];
+    augPickedSeq = []; pjSeq = []; augSkipping = false; augAutoFn = null;
     if (!startAugNow) pjMoonN++;
     augTotal = times || 1;
     augRemain = augTotal;
@@ -5039,10 +5039,22 @@
     if (navigator.vibrate) navigator.vibrate(augTotal > 1 ? [40, 50, 40, 50, 40] : 40);
   }
 
+  /* v0.9.359 저절로 받는 연출(제이 자동 받기·아무거나 두 개) — 기다리는 일을 하나 걸어 두고, 화면을 누르면 바로 실행한다.
+     한 번 누르면(augSkipping) 이어지는 차례도 기다리지 않고 바로 넘어간다 */
+  const AUTO_BASE = 2500, AUTO_GAP = 1000;   // 1장 2.5초, 한 장 늘 때마다 +1초 · 카드 사이 1초
+  let augAutoFn = null, augAutoT = 0, augSkipping = false;
+  function augAutoWait(fn, ms) {
+    if (augSkipping) { fn(); return; }
+    augAutoFn = fn; augAutoT = setTimeout(() => { augAutoFn = null; fn(); }, ms);
+  }
+  document.addEventListener("pointerdown", () => {   // 화면 어디를 눌러도(안내 말풍선이 덮고 있어도) — 그래서 문서에 건다
+    if (!augAutoFn || state !== STATE.AUG) return;
+    clearTimeout(augAutoT); const f = augAutoFn; augAutoFn = null; augSkipping = true; f();
+  }, true);
   let augPickedSeq = [], pjSeq = [], pjT0 = 0;   // pjSeq: 제이 자동 받기 — 보름달 앞 차례 카드들
   function closeAugScreen() {
     const wasStart = startAugNow;           // v0.9.217 시작 증강 뒤에는 '준비!' 없이 바로 이어 간다
-    startAugNow = false;
+    startAugNow = false; augSkipping = false; augAutoFn = null;
     augScreen.classList.add("hidden");
     state = STATE.PLAY;
     inputHoldUntil = performance.now() + 350;   // 방금 누른 자리로 캐릭터가 순간이동하지 않게
@@ -5194,15 +5206,15 @@
           augList.innerHTML = ""; augList.style.pointerEvents = "none";
           twoRandObjs.forEach(([b, nm2], ti) => {
             const c = document.createElement("div"); c.className = "augCard gReveal trGot";
-            c.style.animationDelay = (0.12 + ti * 0.42) + "s";   // v0.9.338 한 장씩 통! 하고 뒤집혀 나온다
-            setTimeout(() => { if (!sfx("aug")) { beep(880 + ti * 220, .07, "square", .05); beep(1320 + ti * 220, .1, "triangle", .04); } }, (120 + ti * 420));
+            c.style.animationDelay = (0.12 + ti * AUTO_GAP / 1000) + "s";   // v0.9.338 한 장씩 통! 하고 뒤집혀 나온다 (v0.9.359 간격 1초)
+            setTimeout(() => { if (state !== STATE.AUG || augSkipping) return; if (!sfx("aug")) { beep(880 + ti * 220, .07, "square", .05); beep(1320 + ti * 220, .1, "triangle", .04); } }, (120 + ti * AUTO_GAP));
             c.innerHTML = '<span class="ic"></span><span class="tx"><div class="nm2"></div><div class="ds"></div></span>';
             c.querySelector(".ic").textContent = b.ic; c.querySelector(".nm2").textContent = nm2;
             c.querySelector(".ds").textContent = b.dsFn ? b.dsFn() : b.ds;
             augList.appendChild(c);
           });
           const t = document.getElementById("augTitle"); if (t) t.dataset.keep = t.textContent, t.textContent = "🎲 이 두 개를 받았어요!"; t.classList.remove("trTtl"); void t.offsetWidth; t.classList.add("trTtl");
-          setTimeout(() => { augList.style.pointerEvents = ""; if (t) { t.classList.remove("trTtl"); if (t.dataset.keep) t.textContent = t.dataset.keep; } finishPick(); }, 3200);
+          augAutoWait(() => { augList.style.pointerEvents = ""; if (t) { t.classList.remove("trTtl"); if (t.dataset.keep) t.textContent = t.dataset.keep; } finishPick(); }, AUTO_BASE + AUTO_GAP * (twoRandObjs.length - 1));   // 2장 3.5초
           return;
         }
         finishPick();
@@ -5212,7 +5224,8 @@
     syncReroll();
     augScreen.classList.remove("hidden");
     /* v0.9.354 제이 — 카드가 한 장뿐이면 고르는 창 없이 자동으로: 아무거나 두 개처럼 카드가 통! 튀어나와 보여 준 뒤 받는다
-       v0.9.358 보름달·2연속이면 차례마다 받은 카드를 쌓아 한 화면에 다 보여 준다 — 1장 2.7초, 한 장 늘 때마다 +0.5초 (3장 3.7초) */
+       v0.9.358 보름달·2연속이면 차례마다 받은 카드를 쌓아 한 화면에 다 보여 준다
+       v0.9.359 1장 2.5초, 한 장 늘 때마다 +1초(카드 간격도 1초) — 3장 4.5초. 화면을 한 번 누르면 남은 것까지 다 받고 바로 닫힌다 */
     if (job === "powerj" && picks.length === 1 && !blind) {
       const card = augList.querySelector(".augCard"), t = document.getElementById("augTitle"), k = pjSeq.length;
       augList.style.pointerEvents = "none";
@@ -5221,15 +5234,15 @@
       pjSeq.forEach(c => augList.insertBefore(c, card));   // 앞 차례에 받은 카드는 그대로 둔다
       card.classList.add("gReveal", "trGot"); card.style.animationDelay = "0.12s";
       if (t) { t.textContent = "📋 계획대로 되고 있어요!"; if (!k) { t.classList.remove("trTtl"); void t.offsetWidth; t.classList.add("trTtl"); } }
-      setTimeout(() => { if (!sfx("aug")) { beep(880 + k * 220, .07, "square", .05); beep(1320 + k * 220, .1, "triangle", .04); } }, 120);
-      if (augRemain > 1) setTimeout(() => {   // 다음 차례로 — 이 카드는 멈춘 모양 그대로 복사해 둔다
+      if (!augSkipping) setTimeout(() => { if (state !== STATE.AUG || augSkipping) return; if (!sfx("aug")) { beep(880 + k * 220, .07, "square", .05); beep(1320 + k * 220, .1, "triangle", .04); } }, 120);
+      if (augRemain > 1) augAutoWait(() => {   // 다음 차례로 — 이 카드는 멈춘 모양 그대로 복사해 둔다
         const c = card.cloneNode(true); c.classList.remove("trGot"); c.style.animation = "trGlow 1.2s ease-in-out infinite alternate";
         pjSeq.push(c); card.classList.remove("trGot"); card.click();
-      }, 760);
-      else setTimeout(() => {
+      }, AUTO_GAP);
+      else augAutoWait(() => {
         augList.style.pointerEvents = ""; if (rr) rr.style.visibility = ""; if (t) t.classList.remove("trTtl");
         pjSeq = []; card.classList.remove("trGot"); card.click();
-      }, Math.max(800, pjT0 + 2700 + k * 500 - performance.now()));
+      }, Math.max(800, pjT0 + AUTO_BASE + k * AUTO_GAP - performance.now()));
     }
   }
   let state = STATE.READY;
