@@ -15,7 +15,7 @@
   (function () {
     var LANGS = ["ko", "en", "ja"];
     var READY = { en: false, ja: false };   // 사전이 다 채워지면 true — 그때부터 기기 언어로 저절로 고른다
-    var LANG_V = 1;                          // 사전을 고치면 1 올린다 (옛 사전을 쓰지 않게)
+    var LANG_V = 2;                          // 사전을 고치면 1 올린다 (옛 사전을 쓰지 않게)
     var q = (location.search.match(/[?&]lang=([a-z]{2})/) || [])[1], s = null;
     try { s = localStorage.getItem("epjpddongpi_lang"); } catch (e) {}
     if (q && LANGS.indexOf(q) >= 0) { s = q; try { localStorage.setItem("epjpddongpi_lang", q); } catch (e) {} }
@@ -2865,7 +2865,7 @@
   const elTitle = document.getElementById("overTitle");
   const coinNote = document.getElementById("coinNote");
 
-  const GAME_VERSION = "v0.9.367";
+  const GAME_VERSION = "v0.9.368";
   /* 제작사 스플래시(bamhobak friends 로고) — 2026-09-20 끔. 다시 켜려면 true */
   const SPLASH_USE = false;   // 코드를 고칠 때마다 뒤 두 자리를 올린다
   document.getElementById("ver").textContent = GAME_VERSION;
@@ -9673,7 +9673,7 @@
     document.getElementById("startRow").after(document.getElementById("meBtn"));
     /* v0.9.367 언어 — 이름 아래. 고르면 저장하고 다시 불러온다 (사전은 시작할 때 한 번 받는다). 언어 이름은 그 언어 그대로 */
     const LANG_NM = { ko: "한국어", en: "English", ja: "日本語" };
-    const LANG_SHOW = ["ko", "en"];          // 사전이 쓸 만해진 언어만 (일본어는 사전이 차면 넣는다)
+    const LANG_SHOW = ["ko", "en", "ja"];    // 사전이 쓸 만해진 언어만
     const ll = document.createElement("div"); ll.className = "setLbl"; ll.textContent = "언어";
     const seg = document.createElement("div"); seg.className = "langSeg"; seg.setAttribute("data-noi18n", "");
     for (const l of LANG_SHOW) {
