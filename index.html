@@ -2756,7 +2756,7 @@
   const ICON_RE = ICON_KEYS.length ? new RegExp("(" + ICON_KEYS.slice().sort((a, b) => b.length - a.length)
     .map(k => k.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")).join("|") + ")\\uFE0F?", "gu") : null;
   let iconSheet = null;
-  const ICON_V = 4;   // v0.9.341 그림만 바뀌어도 새로 받게 — 아이콘을 다시 그리면 1 올린다
+  const ICON_V = 5;   // v0.9.374 무지개 수집가·선물 요정 새 그림 · v0.9.341 그림만 바뀌어도 새로 받게 — 아이콘을 다시 그리면 1 올린다
   const ICON_URL = "assets/icons.webp?k=" + ICON_KEYS.length + "-" + ICON_KEYS.join("").length + "-" + ICON_V;   // v0.9.78 칸 순서가 바뀌면 옛 그림을 쓰지 않게
   if (ICON_RE) {
     const im = new Image();
@@ -2875,7 +2875,7 @@
   const elTitle = document.getElementById("overTitle");
   const coinNote = document.getElementById("coinNote");
 
-  const GAME_VERSION = "v0.9.373";
+  const GAME_VERSION = "v0.9.374";
   /* 제작사 스플래시(bamhobak friends 로고) — 2026-09-20 끔. 다시 켜려면 true */
   const SPLASH_USE = false;   // 코드를 고칠 때마다 뒤 두 자리를 올린다
   document.getElementById("ver").textContent = GAME_VERSION;
@@ -3165,7 +3165,7 @@
               ds: "많이 움직이면 날아올라 똥을 터뜨려요" },
     angel:  { nm: "아기 천사", ic: "👼", img: "assets/pet_angel.png",
               ds: "쓰러지면 한 번 다시 일으켜 주고, 다가오는 똥을 밀어내요" },
-    gift:   { nm: "선물 요정", ic: "🧚", img: "assets/pet_fairy.png",
+    gift:   { nm: "선물 요정", ic: "🧚", img: "assets/pet_fairy.png?2",
               ds: "가끔 날아가서 똥을 펑! 하트·우산·별·달로 바꿔요" },
     coincat: { nm: "코인냥이", ic: "🐈", img: "assets/pet_cat.png", ui: "assets/pet_cat_shop.png?1",   // v0.9.373 상점 그림은 꼬리 말고 몸 기준 가운데
               ds: "가끔 코인을 물어다 줘요" },
@@ -3916,8 +3916,8 @@
   /* v0.9.37 날아가는 비둘기·선물 요정은 오른쪽을 보는 옆모습 — 왼쪽으로 갈 땐 뒤집는다 (카드는 정면 그림 그대로) */
   { const di = new Image(); di.onload = () => { doveImgG = di; }; di.src = "assets/dove_fly.png"; }
   { const di = new Image(); di.onload = () => { doveImgS = di; }; di.src = "assets/dove_space_fly.png"; }
-  { const fi = new Image(); fi.onload = () => { fairyImgG = fi; }; fi.src = "assets/pet_fairy_fly.png"; }
-  { const fi = new Image(); fi.onload = () => { fairyImgS = fi; }; fi.src = "assets/pet_fairy_space_fly.png"; }
+  { const fi = new Image(); fi.onload = () => { fairyImgG = fi; }; fi.src = "assets/pet_fairy_fly.png?2"; }
+  { const fi = new Image(); fi.onload = () => { fairyImgS = fi; }; fi.src = "assets/pet_fairy_space_fly.png?2"; }
   function doveImgNow() { return (inSpace() && doveImgS) ? doveImgS : doveImgG; }
 
   /* 캔버스 필터(ctx.filter)가 실제로 먹는지 — 사파리(아이폰)에는 아예 없다.
