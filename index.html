@@ -2725,7 +2725,7 @@
   const elTitle = document.getElementById("overTitle");
   const coinNote = document.getElementById("coinNote");
 
-  const GAME_VERSION = "v0.9.361";
+  const GAME_VERSION = "v0.9.362";
   /* 제작사 스플래시(bamhobak friends 로고) — 2026-09-20 끔. 다시 켜려면 true */
   const SPLASH_USE = false;   // 코드를 고칠 때마다 뒤 두 자리를 올린다
   document.getElementById("ver").textContent = GAME_VERSION;
@@ -5057,7 +5057,7 @@
     startAugNow = false; augSkipping = false; augAutoFn = null;
     augScreen.classList.add("hidden");
     state = STATE.PLAY;
-    inputHoldUntil = performance.now() + 350;   // 방금 누른 자리로 캐릭터가 순간이동하지 않게
+    inputHoldUntil = performance.now() + 300;   // 방금 누른 자리로 캐릭터가 순간이동하지 않게 (v0.9.362 0.35 → 0.3초)
     /* 증강을 고르는 동안 게임은 멈춰 있었지만 간식 타임·무적 시간은
        실제 시계로 재고 있어서 그대로 두면 고민한 만큼 깎여 나간다.
        멈춰 있던 시간만큼 마감 시각을 뒤로 밀어 원래 남은 시간을 돌려준다. */
@@ -5067,7 +5067,7 @@
     if (hurtUntil > 0) hurtUntil += paused;
     // 멈춰 있던 똥이 코앞에 있을 수 있으니 0.5초 무적으로 빠져나갈 틈을 준다
     invUntil = Math.max(invUntil, performance.now() + 500); invQuietUntil = invUntil;   // v0.9.189 증강 고른 뒤 무적은 둘레 빛 없이
-    return;   // v0.9.244 증강 뒤 '준비!' 한 박자는 없앴다 — 0.5초 무적·손가락 무시(350ms)만으로 바로 이어 간다
+    return;   // v0.9.244 증강 뒤 '준비!' 한 박자는 없앴다 — 0.5초 무적·손가락 무시(300ms)만으로 바로 이어 간다
     /* '준비' 한 박자 — 카드를 누르던 손가락을 옮길 틈. 일시정지를 풀 때의 3-2-1 과 같은 장치를 짧게(0.6초) 쓴다.
        멈춘 동안의 시간은 finishResume 이 무적·간식 마감에서 빼 준다 */
     state = STATE.PAUSE;
