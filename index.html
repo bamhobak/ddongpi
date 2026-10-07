@@ -22,11 +22,13 @@
     var d = (navigator.language || "ko").slice(0, 2).toLowerCase();
     var lang = (s && LANGS.indexOf(s) >= 0) ? s : (READY[d] ? d : "ko");
     window.GAME_LANG = lang; window.GAME_LANGS = LANGS; window.GAME_LANG_READY = READY;
+    /* v0.9.371 제목 로고도 언어마다 (한국어 이피저피똥피 · 영어 ZIG ZAG POOP · 일본어 あっちこっちうんち, 아랫줄 노랑) */
+    window.GAME_LOGO = lang === "ko" ? "assets/logo.webp?2" : "assets/logo_" + lang + ".webp?1";
+    document.write('<link rel="preload" as="image" href="' + window.GAME_LOGO + '">');
     document.documentElement.lang = lang;
     if (lang !== "ko") document.write('<script src="lang/' + lang + '.js?' + LANG_V + '"><\/script>');
   })();
 </script>
-<link rel="preload" as="image" href="assets/logo.webp">
 <link rel="preload" as="image" href="assets/ui/loading_bg.webp?2">
 <link rel="preload" as="image" href="assets/bg/home_fortune.webp?8">
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ctext x='50' y='52' font-size='84' text-anchor='middle' dominant-baseline='central'%3E%F0%9F%92%A9%3C/text%3E%3C/svg%3E">
@@ -2219,7 +2221,7 @@
 <body>
 <!-- v0.9.325 시작 로딩 창 — 게임에 쓰는 그림·소리·글꼴을 첫 화면 전에 다 받아 둔다 (들어간 뒤에 받느라 끊기지 않게) -->
 <div id="boot">
-  <img id="bootLogo" src="assets/logo.webp" alt="이피저피똥피">
+  <img id="bootLogo" alt="이피저피똥피"><script>document.getElementById("bootLogo").src = window.GAME_LOGO;</script>
   <div id="bootBar"><i></i></div>
   <div id="bootTxt">불러오는 중… 0%</div>
 </div>
@@ -2300,7 +2302,7 @@
       <button id="btnOpt" aria-label="옵션"><img src="assets/ui/tab_opt.webp" alt=""></button>
       <section class="page on" id="pgHome">
       <h1><span class="logoWrap">
-        <img class="ttl" src="assets/logo.webp" alt="이피저피똥피" decoding="async">
+        <img class="ttl" alt="이피저피똥피" decoding="async"><script>document.currentScript.previousElementSibling.src = window.GAME_LOGO;</script>
         <span id="testDot" aria-label="테스트 모드"></span>
         <span id="devDot" aria-label="통계"></span>
       </span></h1>
@@ -2700,7 +2702,7 @@
     return r;
   }
   const I18N_SKIP = { SCRIPT: 1, STYLE: 1, TEXTAREA: 1, TITLE: 1 };
-  const I18N_ATTR = ["placeholder", "title", "aria-label"];
+  const I18N_ATTR = ["placeholder", "title", "aria-label", "alt"];
   function i18nText(n) {
     const p = n.parentNode;
     if (!p || p.nodeType !== 1 || I18N_SKIP[p.nodeName] || p.closest("[data-noi18n]")) return;
@@ -2725,7 +2727,7 @@
     while (tw.nextNode()) list.push(tw.currentNode);
     for (const n of list) i18nText(n);
     i18nAttrs(root);
-    for (const el of root.querySelectorAll("[placeholder],[title],[aria-label]")) if (!el.closest("[data-noi18n]")) i18nAttrs(el);
+    for (const el of root.querySelectorAll("[placeholder],[title],[aria-label],[alt]")) if (!el.closest("[data-noi18n]")) i18nAttrs(el);
   }
   if (I18N) {
     document.title = T(document.title);
@@ -2872,7 +2874,7 @@
   const elTitle = document.getElementById("overTitle");
   const coinNote = document.getElementById("coinNote");
 
-  const GAME_VERSION = "v0.9.370";
+  const GAME_VERSION = "v0.9.371";
   /* 제작사 스플래시(bamhobak friends 로고) — 2026-09-20 끔. 다시 켜려면 true */
   const SPLASH_USE = false;   // 코드를 고칠 때마다 뒤 두 자리를 올린다
   document.getElementById("ver").textContent = GAME_VERSION;
