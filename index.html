@@ -2725,7 +2725,7 @@
   const elTitle = document.getElementById("overTitle");
   const coinNote = document.getElementById("coinNote");
 
-  const GAME_VERSION = "v0.9.356";
+  const GAME_VERSION = "v0.9.357";
   /* 제작사 스플래시(bamhobak friends 로고) — 2026-09-20 끔. 다시 켜려면 true */
   const SPLASH_USE = false;   // 코드를 고칠 때마다 뒤 두 자리를 올린다
   document.getElementById("ver").textContent = GAME_VERSION;
@@ -5202,7 +5202,7 @@
             augList.appendChild(c);
           });
           const t = document.getElementById("augTitle"); if (t) t.dataset.keep = t.textContent, t.textContent = "🎲 이 두 개를 받았어요!"; t.classList.remove("trTtl"); void t.offsetWidth; t.classList.add("trTtl");
-          setTimeout(() => { augList.style.pointerEvents = ""; if (t) { t.classList.remove("trTtl"); if (t.dataset.keep) t.textContent = t.dataset.keep; } finishPick(); }, 2700);
+          setTimeout(() => { augList.style.pointerEvents = ""; if (t) { t.classList.remove("trTtl"); if (t.dataset.keep) t.textContent = t.dataset.keep; } finishPick(); }, 3200);
           return;
         }
         finishPick();
@@ -5223,7 +5223,7 @@
         augList.style.pointerEvents = ""; if (rr) rr.style.visibility = "";
         if (t) { t.classList.remove("trTtl"); if (t.dataset.keep) t.textContent = t.dataset.keep; }
         card.classList.remove("trGot"); card.click();
-      }, 2200);
+      }, 2700);
     }
   }
   let state = STATE.READY;
