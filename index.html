@@ -2725,7 +2725,7 @@
   const elTitle = document.getElementById("overTitle");
   const coinNote = document.getElementById("coinNote");
 
-  const GAME_VERSION = "v0.9.353";
+  const GAME_VERSION = "v0.9.354";
   /* 제작사 스플래시(bamhobak friends 로고) — 2026-09-20 끔. 다시 켜려면 true */
   const SPLASH_USE = false;   // 코드를 고칠 때마다 뒤 두 자리를 올린다
   document.getElementById("ver").textContent = GAME_VERSION;
@@ -5211,6 +5211,20 @@
     }
     syncReroll();
     augScreen.classList.remove("hidden");
+    /* v0.9.354 제이 — 카드가 한 장뿐이면 고르는 창 없이 자동으로: 아무거나 두 개처럼 카드가 통! 튀어나와 보여 준 뒤 받는다 */
+    if (job === "powerj" && picks.length === 1 && !blind) {
+      const card = augList.querySelector(".augCard"), t = document.getElementById("augTitle");
+      augList.style.pointerEvents = "none";
+      const rr = document.getElementById("btnReroll"); if (rr) rr.style.visibility = "hidden";
+      card.classList.add("gReveal", "trGot"); card.style.animationDelay = "0.12s";
+      if (t) { t.dataset.keep = t.textContent; t.textContent = "📋 계획대로 받았어요!"; t.classList.remove("trTtl"); void t.offsetWidth; t.classList.add("trTtl"); }
+      setTimeout(() => { if (!sfx("aug")) { beep(880, .07, "square", .05); beep(1320, .1, "triangle", .04); } }, 120);
+      setTimeout(() => {
+        augList.style.pointerEvents = ""; if (rr) rr.style.visibility = "";
+        if (t) { t.classList.remove("trTtl"); if (t.dataset.keep) t.textContent = t.dataset.keep; }
+        card.classList.remove("trGot"); card.click();
+      }, 1700);
+    }
   }
   let state = STATE.READY;
   let testMode = false;            // 개발자 테스트 모드 — 목숨 무한, 기록 안 남김
