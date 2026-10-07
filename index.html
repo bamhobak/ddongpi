@@ -2267,6 +2267,8 @@
     try { j = localStorage.getItem("epjpddongpi_job") || "bangul"; } catch (e) {}
     var me = IMG[j] || j, ch = m.chars || {}, first = (m.now || m.files || []).concat(ch[me] || []), rest = (m.later || []).slice();
     for (var c in ch) if (c !== me) rest = rest.concat(ch[c]);
+    var LG = window.GAME_LANG || "ko";   // v0.9.376 메인 곡도 언어마다 (menu_en · menu_ja) — 그 언어 곡만 받는다
+    if (LG !== "ko") first = first.map(function (u) { return u === "assets/bgm/menu.mp3" ? "assets/bgm/menu_" + LG + ".mp3" : u; });
     run(first, 6, function (got, n) { var p = Math.floor(got / n * 100); bar.style.width = p + "%"; txt.textContent = "불러오는 중… " + p + "%"; },
       function () { finish(); setTimeout(function () { run(rest, 2, function () {}, function () { window.__preAll = true; }); }, 800); });
   }).catch(finish);
@@ -2875,7 +2877,7 @@
   const elTitle = document.getElementById("overTitle");
   const coinNote = document.getElementById("coinNote");
 
-  const GAME_VERSION = "v0.9.375";
+  const GAME_VERSION = "v0.9.376";
   /* 제작사 스플래시(bamhobak friends 로고) — 2026-09-20 끔. 다시 켜려면 true */
   const SPLASH_USE = false;   // 코드를 고칠 때마다 뒤 두 자리를 올린다
   document.getElementById("ver").textContent = GAME_VERSION;
@@ -4513,7 +4515,7 @@
      겹쳐 넘기면 그 자리가 크로스페이드로 메워진다. */
   // menu — 2026-09-19 새 곡(Suno). 실효값으로 맞춘 0.32 는 귀로 듣기에 작아서 0.45 로 올렸다
   // play·space — 2026-09-26 새 곡(Suno, v0.8.44). 옛 곡과 같은 크기로 들리게 실효값으로 맞췄다(새 곡이 6·9dB 크다)
-  const BGM_VOL = { menu: 0.45, play: 0.167, space: 0.125, blackhole: 0.40, fever: 0.42,
+  const BGM_VOL = { menu: 0.45, menu_en: 0.45, menu_ja: 0.45, play: 0.167, space: 0.125, blackhole: 0.40, fever: 0.42,
                     rhythm: 0.38,
                     /* 직업 곡 — 곡마다 소리 크기(실효값)를 재서 play 와 같은 크기로 들리게 맞췄다.
                        그대로 틀면 헬스걸 곡은 play 보다 10.8dB, 파워P 는 9dB 나 크다. */
@@ -4521,9 +4523,9 @@
                     powerp2: 0.121, powerp: 0.598, bangul: 0.252 };
   /* 곡마다 잰 박자와 첫 박 위치(초). 소리의 세기가 커지는 지점을 뽑아
      격자를 맞춰 구한 값이다 — 128·140·105·132 처럼 정수로 떨어져 믿을 만하다. */
-  const BGM_BPM = { menu: 140, play: 125.25, space: 107, blackhole: 104, fever: 132,
+  const BGM_BPM = { menu: 140, menu_en: 140, menu_ja: 140, play: 125.25, space: 107, blackhole: 104, fever: 132,
                     rhythm: 128 };   // 리듬 실험 전용
-  const BGM_OFF = { menu: 0.424, play: 0.207, space: 0.251, blackhole: 0.517, fever: 0.232,
+  const BGM_OFF = { menu: 0.424, menu_en: 0.424, menu_ja: 0.424, play: 0.207, space: 0.251, blackhole: 0.517, fever: 0.232,
                     rhythm: 0.467 };
   const BGM_LOOP_X = 3.5;            // 곡 끝과 처음을 겹치는 시간(초)
   /* 곡 안의 되돌이 자리 — b 에 닿으면 a 로 건너뛴다(처음으로 안 돌아가고 인트로는 한 번만).
@@ -4532,7 +4534,8 @@
      이음새 앞뒤 ±2초 스펙트럼 상관 play 0.93(24마디·46초 되돌이) · space 0.85(24마디·54초, 첫 103초는 한 번만) */
   /* v0.8.71 되돌아갈 자리 a 를 샘플 단위로 다듬었다 — b 앞뒤 ±4ms 파형과 가장 닮은 곳 (menu +6.6ms · play -29.3ms · space -12.6ms).
      Web Audio 로 딱 잘라 되돌아가므로 파형이 어긋나면 '틱' 소리가 난다. 그래도 남는 차이는 bgmBakeLoop 가 30ms 로 메운다 */
-  const BGM_LOOPPT = { menu: { a: 13.84027, b: 27.548 },
+  /* v0.9.376 영어·일본어 타이틀곡(수노 Cover — 같은 곡에 가사만) — 한국어판과 같은 32박 되돌이를 각 파일에서 다시 잼 (파형 0.87·0.78, 이음새 0.86·0.83) */
+  const BGM_LOOPPT = { menu: { a: 13.84027, b: 27.548 }, menu_en: { a: 13.83062, b: 27.544 }, menu_ja: { a: 13.76506, b: 27.425 },
                        play: { a: 32.75471, b: 78.770 }, space: { a: 103.38340, b: 157.260 } };
   const BGM_LOOPPT_X = 0.35;         // 되돌이 자리에서 겹치는 시간(초)
   /* 다음 벌은 겹치기 BGM_LOOPPT_PRE 초 전부터 소리 없이 미리 튼다. 튼 직후엔 기기마다 수십 ms 늦게 나오므로
@@ -4732,7 +4735,7 @@
       : inGame
       ? (feverBgm ? "fever"
                   : (inBlackhole() ? "blackhole" : (inSpace() ? "space" : "play")))   // v0.8.46 직업 곡(JOB_BGM) 안 씀 — 지상은 모두 새 곡
-      : "menu";
+      : (LANG !== "ko" ? "menu_" + LANG : "menu");   // v0.9.376 언어마다 타이틀곡
     if (want === bgmName || bgmOff) return;
     if (bgmName === null && Date.now() < bgmRetryAt) return;   // 막힌 직후에는 잠깐 쉰다
     playBgm(want);
