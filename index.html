@@ -2875,7 +2875,7 @@
   const elTitle = document.getElementById("overTitle");
   const coinNote = document.getElementById("coinNote");
 
-  const GAME_VERSION = "v0.9.374";
+  const GAME_VERSION = "v0.9.375";
   /* 제작사 스플래시(bamhobak friends 로고) — 2026-09-20 끔. 다시 켜려면 true */
   const SPLASH_USE = false;   // 코드를 고칠 때마다 뒤 두 자리를 올린다
   document.getElementById("ver").textContent = GAME_VERSION;
@@ -5358,7 +5358,7 @@
           const pool2 = AUGMENTS.filter(b => !b.hidden && b.id !== "twoRand" && (augCount[b.id] || 0) < maxOf(b) && (!b.cond || b.cond()) && achOpen(b.id));
           if (pool2.length) { const b = pool2[Math.floor(Math.random() * pool2.length)]; augApply(b); popText(player.x, player.y - 130, "🕕 정시 퇴근 " + b.ic + " " + nameOf(b), "#9fe8ff", 18, 2.5); }
         }
-        if (!pjQuiet && !sfx("aug")) { beep(900, .09, "square", .05); beep(1350, .13, "square", .05); }   // v0.9.366 제이 자동 받기는 카드가 나올 때 이미 울렸다 — 받을 때 또 울리면 두 번 들린다
+        if (!pjQuiet && !(a.id === "twoRand" && twoRandObjs.length) && !sfx("aug")) { beep(900, .09, "square", .05); beep(1350, .13, "square", .05); }   // v0.9.375 아무거나 두 개도 곧 카드마다 울리니 고를 때는 조용히 · v0.9.366 제이 자동 받기는 카드가 나올 때 이미 울렸다 — 받을 때 또 울리면 두 번 들린다
         const finishPick = () => {
         /* v0.9.336 여러 번 이어 고르면(보름달·증강 2연속) 고른 것을 모아 두었다가 끝날 때 전부 띄운다 (예전엔 마지막 것만) */
         if (twoRandGot) twoRandGot.forEach(t => augPickedSeq.push([t, "#9fe8ff"]));   // 아무거나 두 개 — 받은 두 개만
