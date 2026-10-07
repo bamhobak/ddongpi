@@ -1327,7 +1327,7 @@
   @media (max-height: 760px) { #pgHome h1 img.ttl { width: min(36vw, 150px) !important; } #pgHome #jobList img.ic { height: 70px; } }
   /* 쪽 제목 — 리본 */
   .pgTitle {
-    height: 44px; box-sizing: border-box; width: max-content; min-width: 52%; flex-shrink: 0;
+    height: 44px; box-sizing: border-box; width: max-content; min-width: min(52%, 210px); flex-shrink: 0;   /* v0.9.372 넓은 화면(태블릿·PC)에서 리본이 판보다 길게 늘어나던 것 — 210px 까지만 */
     border-style: solid; border-color: transparent; border-width: 0 45px;
     border-image: url(assets/ui/ribbon.webp) 0 125 fill / 0 45px / 0 stretch;
     padding: 0 8px; line-height: 35px; font-size: 19px; font-weight: 800; letter-spacing: 1px; text-align: center;
@@ -1337,7 +1337,7 @@
   /* 도감 */
   #pgBook, #pgShop, #pgOpt { justify-content: flex-start !important; }
   #bookCount { font-size: 13px; color: #cfd6e4; }
-  #bookList { display: grid; grid-template-columns: repeat(6, 1fr); gap: 7px; width: 100%; max-width: 360px; }
+  #bookList { display: grid; grid-template-columns: repeat(5, 1fr); gap: 7px; width: 100%; max-width: 360px; }   /* v0.9.372 한 줄 6 → 5칸 */
   #bookList .bk { position: relative; aspect-ratio: 1; border-radius: 10px; font-size: 26px; line-height: 1;
     display: flex; align-items: center; justify-content: center; cursor: pointer;
     background: linear-gradient(180deg, #fff8e6, #f3e3bf); border: 2px solid #8a5a2b; box-shadow: 0 2px 0 #6b4520; }
@@ -1381,6 +1381,7 @@
     background: radial-gradient(120% 90% at 50% 18%, #3d46ad, #232870 55%, #181b4f 100%);
     box-shadow: inset 0 1px 0 rgba(180,195,255,.45), inset 0 -3px 6px rgba(0,0,20,.45), 0 2px 0 #0a0c2a; }
   #bookList .bk:active { transform: translateY(1px); }
+  #bookList .bk { font-size: 31px; }   /* v0.9.372 5칸으로 커진 만큼 아이콘도 */
   #bookList .bk.hid { border-color: rgba(220,150,255,.75);
     background: radial-gradient(120% 90% at 50% 18%, #8a4fd8, #4f2496 55%, #2e1260 100%);
     box-shadow: inset 0 1px 0 rgba(240,200,255,.5), inset 0 -3px 6px rgba(20,0,40,.5), 0 0 8px rgba(190,110,255,.45), 0 2px 0 #1a0838; }
@@ -2874,7 +2875,7 @@
   const elTitle = document.getElementById("overTitle");
   const coinNote = document.getElementById("coinNote");
 
-  const GAME_VERSION = "v0.9.371";
+  const GAME_VERSION = "v0.9.372";
   /* 제작사 스플래시(bamhobak friends 로고) — 2026-09-20 끔. 다시 켜려면 true */
   const SPLASH_USE = false;   // 코드를 고칠 때마다 뒤 두 자리를 올린다
   document.getElementById("ver").textContent = GAME_VERSION;
@@ -3170,7 +3171,7 @@
               ds: "가끔 코인을 물어다 줘요" },
     eel:    { nm: "찌릿 장어", ic: "⚡", img: "assets/pet_eel.png",
               ds: "가끔 가까운 똥에 찌릿! 번개를 쏘고, 옆 똥까지 번져요" },
-    duck:   { nm: "노란 오리", ic: "🦆", img: "assets/pet_duck.png",   // v0.9.343
+    duck:   { nm: "노란 오리", ic: "🦆", img: "assets/pet_duck.png", ui: "assets/pet_duck_shop.png",   // v0.9.343 · v0.9.372 상점·고르기 그림은 방귀 뺀 것(ui)
               ds: "가끔 조그만 오리 떼가 방귀로 부릉! 화면 가운데를 가로지르며 한 마리가 똥 하나씩 부숴요" }
   };
   // 게임 화면에 그릴 펫 그림 (카드 그림과 같은 파일)
@@ -9109,7 +9110,7 @@
     {                                       // v0.8.78 펫 — 큰 그림 · 첫 줄 이름 · 둘째 줄 설명
       const pl = document.getElementById("jobPetLine"), P = PETS[pet];
       pl.innerHTML = "";
-      if (P.img) { const im = document.createElement("img"); im.src = P.img; im.alt = ""; pl.appendChild(im); }
+      if (P.img) { const im = document.createElement("img"); im.src = P.ui || P.img; im.alt = ""; pl.appendChild(im); }
       const tx = document.createElement("div"); tx.className = "pt";
       const nm = document.createElement("b"); nm.textContent = pet === "none" ? "펫 없음" : P.nm;
       tx.appendChild(nm);
@@ -9468,7 +9469,7 @@
       if (!PETS[petView]) petView = pet;
       for (const id in PETS) {
         let ic;
-        if (PETS[id].img) { ic = document.createElement("img"); ic.className = "ic"; ic.src = PETS[id].img; ic.alt = PETS[id].ic; }
+        if (PETS[id].img) { ic = document.createElement("img"); ic.className = "ic"; ic.src = PETS[id].ui || PETS[id].img; ic.alt = PETS[id].ic; }
         else { ic = document.createElement("div"); ic.className = "petNone"; ic.textContent = PETS[id].ic; }
         const card = pickCard(id === petView, ic, PETS[id].nm, PETS[id].ds, () => {
           if (petLocked()) return;          // 맨몸대결·똥탑등반은 펫 없이
@@ -10529,7 +10530,7 @@
       if (id === "none") continue;
       const P = PETS[id], own = hasPet(id);
       const row = document.createElement("div"); row.className = "shopItem" + (own ? " owned" : "");
-      const im = document.createElement("img"); im.className = "si"; im.src = P.img; im.alt = P.ic;
+      const im = document.createElement("img"); im.className = "si"; im.src = P.ui || P.img; im.alt = P.ic;
       const st = document.createElement("div"); st.className = "st";
       const b = document.createElement("b"); b.textContent = P.nm;
       const sp = document.createElement("span"); sp.textContent = P.ds;
@@ -16289,7 +16290,7 @@
   }
   function petIcon(id) {
     const pi = document.createElement("img");
-    pi.className = "pic"; pi.src = PETS[id].img; pi.alt = PETS[id].ic; pi.title = "펫 " + PETS[id].nm;
+    pi.className = "pic"; pi.src = PETS[id].ui || PETS[id].img; pi.alt = PETS[id].ic; pi.title = "펫 " + PETS[id].nm;
     return pi;
   }
   function renderBoard(el, list, msg) {
