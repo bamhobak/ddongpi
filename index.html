@@ -43,6 +43,13 @@
   @font-face { font-family: "GameFont"; src: url("assets/fonts/pretendard-Bold.woff2") format("woff2"); font-weight: 700; font-display: swap; }
   @font-face { font-family: "GameFont"; src: url("assets/fonts/ssurround.woff2") format("woff2"); font-weight: 800 900; font-display: swap;
     ascent-override: 87%; descent-override: 31%; }   /* v0.9.294 써라운드는 위·아래 여백이 80:38 이라 한글이 6.5% 떠 보인다 — 줄 높이(118%)는 그대로, 글자가 줄 가운데에 오게 */
+  /* v0.9.370 일본어 — 가나·한자는 위 글꼴에 없다. M PLUS Rounded 1c(OFL) 서브셋을 같은 이름에 unicode-range 로 붙인다.
+     그 글자가 화면에 나올 때만 받으니 한국어 사용자는 안 받는다 (tools/i18n.py build 가 ja 사전 글자로 다시 자른다) */
+  @font-face { font-family: "GameFont"; src: url("assets/fonts/mplusr-ja-800.woff2") format("woff2"); font-weight: 800 900; font-display: swap;
+    unicode-range: U+3000-30FF, U+3400-4DBF, U+4E00-9FFF, U+FF00-FFEF; }
+  @font-face { font-family: "GameFont"; src: url("assets/fonts/mplusr-ja-500.woff2") format("woff2"); font-weight: 100 700; font-display: swap;
+    unicode-range: U+3000-30FF, U+3400-4DBF, U+4E00-9FFF, U+FF00-FFEF; }
+  html[lang="ja"] body * { letter-spacing: 0 !important; }   /* 한국어에 맞춘 넓은 자간이 가나엔 'ス タ ー ト'처럼 벌어져 보인다 */
   @font-face { font-family: "Pretendard"; src: url("assets/fonts/pretendard-Regular.woff2") format("woff2"); font-weight: 100 500; font-display: swap; }
   @font-face { font-family: "Pretendard"; src: url("assets/fonts/pretendard-SemiBold.woff2") format("woff2"); font-weight: 600; font-display: swap; }
   @font-face { font-family: "Pretendard"; src: url("assets/fonts/pretendard-Bold.woff2") format("woff2"); font-weight: 700 900; font-display: swap; }
@@ -2865,7 +2872,7 @@
   const elTitle = document.getElementById("overTitle");
   const coinNote = document.getElementById("coinNote");
 
-  const GAME_VERSION = "v0.9.369";
+  const GAME_VERSION = "v0.9.370";
   /* 제작사 스플래시(bamhobak friends 로고) — 2026-09-20 끔. 다시 켜려면 true */
   const SPLASH_USE = false;   // 코드를 고칠 때마다 뒤 두 자리를 올린다
   document.getElementById("ver").textContent = GAME_VERSION;

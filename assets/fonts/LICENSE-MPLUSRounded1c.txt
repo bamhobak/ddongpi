@@ -1,0 +1,4 @@
+M PLUS Rounded 1c (일본어 글꼴 — 게임에 쓰는 글자만 남긴 서브셋 mplusr-ja-500/800.woff2)
+Copyright 2016 The Rounded M+ Project Authors.
+This Font Software is licensed under the SIL Open Font License, Version 1.1.
+This license is available with a FAQ at: https://openfontlicense.org (http://scripts.sil.org/OFL)
