@@ -2725,7 +2725,7 @@
   const elTitle = document.getElementById("overTitle");
   const coinNote = document.getElementById("coinNote");
 
-  const GAME_VERSION = "v0.9.359";
+  const GAME_VERSION = "v0.9.360";
   /* 제작사 스플래시(bamhobak friends 로고) — 2026-09-20 끔. 다시 켜려면 true */
   const SPLASH_USE = false;   // 코드를 고칠 때마다 뒤 두 자리를 올린다
   document.getElementById("ver").textContent = GAME_VERSION;
@@ -12128,7 +12128,7 @@
       /* 아슬! — 떨어지는 내내 히트박스에 가장 가까웠던 틈을 적어 둔다 (바닥에 닿을 때 점수가 갈린다).
          무적인 동안은 재지 않는다 — 맞고 난 뒤 1초를 공짜 스침으로 쓰지 못하게.
          대시 중에는 예외라, 뚫고 지나간 똥이 그대로 스침으로 잡힌다. */
-      if (dmg && !it.bounced && !it.ghost && (dashT > 0 || now >= invUntil) && !stonePass) {
+      if (dmg && !it.bounced && !it.ghost && (dashT > 0 || now >= invUntil) && !stonePass && !(hit && now >= invUntil)) {   // v0.9.360 몸에 맞은 똥은 스침이 아니다 (예전엔 맞는 그 순간 아슬+1 이 먼저 붙었다)
         const gap = segD - hitR;
         if (it.gap === undefined || gap < it.gap) it.gap = gap;
         if (gap <= GRAZE_GAP && !it.grazed) { it.grazed = true; onGraze(it); }
@@ -12208,6 +12208,7 @@
             /* 방울이 우산보다 먼저 터진다 — 방울은 저절로 다시 차지만
                우산은 주워야 생기니, 공짜인 쪽을 먼저 쓰는 게 이롭다. */
             if (bubbleOn) {
+              closeBreak();
               if (bubLayers > 1) bubLayers--; else { bubbleOn = false; bubbleT = 0; }   // v0.9.84 두 겹이면 한 겹만 터진다
               invUntil = now + (myPerk(4, "B") ? 1500 : 900);          // 터진 직후 잠깐은 안 맞는다 (Lv4 B — 1.5초)
               if (myPerk(2, "B")) {          // v0.9.84 Lv2 B — 터질 때 주변 똥을 밀어낸다
@@ -12256,7 +12257,7 @@
               continue;
             }
             if (charms > 0 && !fbHard(it)) {                // v0.9.85 도도 부적 — 똥 하나를 대신 막는다
-              charms--;
+              charms--; closeBreak();
               invUntil = now + 1000;
               burst(it.x, it.y, "#ffe08a", 18);
               popText(player.x, player.y - 60, "📜 부적!", "#ffe08a", 20);
@@ -12267,7 +12268,7 @@
             }
             if (shields > 0 && !fbHard(it)) {
               achBump("block");
-              shields--;                     // 우산이 막아준 건 '맞은 것'으로 치지 않는다
+              shields--; closeBreak();       // 우산이 막아준 건 '맞은 것'으로 치지 않는다 (v0.9.360 아슬아슬 콤보는 끊긴다)
               invUntil = now + 1000;        // 목숨을 잃었을 때와 같은 무적 시간
               hitStop = Math.max(hitStop, HITSTOP_SEC * 0.6);
               shake = Math.max(shake, 14);
@@ -12310,7 +12311,7 @@
               if (partyOn()) { if (paOnHit(player, it, now)) items.splice(i, 1); continue; }   // 여럿이 — 목숨 대신 맞은 횟수 (근육 폭발·책임 전가 포함)
               const caCost = 5 + coinArmorN;   // v0.9.330 5·6·7·8… 쓸 때마다 1개씩 비싸진다 (v0.9.328 첫 도입) — 코인이 계속 떨어져 판이 안 끝나던 것 막기
               if (aug.coinArmor && coinRun >= caCost && coins >= caCost && !fbHard(it)) {   // v0.9.249 동전 갑옷 — 이번 판 코인으로 대신
-                coinRun -= caCost; coins -= caCost; coinArmorN++;
+                coinRun -= caCost; coins -= caCost; coinArmorN++; closeBreak();
                 try { localStorage.setItem(LS_COINS, String(coins)); } catch (e) {}
                 showCoins(); achBump("carmor");
                 invUntil = now + 1000;
@@ -12325,7 +12326,7 @@
               }
               if (job === "fit" && myPerk(4, "A") && Math.random() < 0.2) {   // v0.9.85 버피 — 20% 버팀
                 invUntil = now + 1000;
-                popText(player.x, player.y - 60, "💪 버텼다!", "#ff9a6a", 22);
+                popText(player.x, player.y - 60, "💪 버텼다!", "#ff9a6a", 22); closeBreak();
                 burst(it.x, it.y, "#ff9a6a", 14);
                 items.splice(i, 1);
                 continue;
@@ -12341,7 +12342,7 @@
                   popText(player.x, player.y - 100, "🚽 쾅!", "#ffffff", 30, 1.4);
                 }
               }
-              if (aug.closeCall && closeN > 0) { popText(player.x, player.y - 95, "아슬+" + closeN + " 끝", "#c9c9d6", 16); closeN = 0; }   // v0.9.249
+              closeBreak();   // v0.9.249
               if (it.bomb) bombBoom(it.x, it.y);
               runHits++; achBump("hit");
               if (aug.fly) spawnFly(player.x, cy);
@@ -12656,6 +12657,8 @@
   const JUG_CD = 3, VAC_CD = 15, VAC_SEC = 1.3, VAC_R = 300, VAC_ANG = 0.75;
   let vacHeld = 0, coinArmorN = 0;
   let jugCd = 0, vacCd = 0, vacT = 0, closeN = 0, rocketTrails = [], goldFetch = null;
+  /* v0.9.360 아슬아슬 콤보 끊기 — 하트를 잃을 때만이 아니라 몸에 똥이 닿으면(방울·부적·우산·동전 갑옷·버팀으로 막아도) 처음부터 */
+  function closeBreak() { if (aug.closeCall && closeN > 0) { popText(player.x, player.y - 95, "아슬+" + closeN + " 끝", "#c9c9d6", 16); closeN = 0; } }
   function jugFling(q, hx) {                 // 위로 쓸어 올린다 — 날아가는 똥은 나를 안 다치고, 다른 똥에 닿으면 같이 터진다(주먹 총알과 같은 처리)
     q.vx = (q.x - hx) * 4 + (Math.random() - .5) * 160;
     q.vy = -(560 + Math.random() * 160);
@@ -16718,7 +16721,7 @@
     cloudVip: "구름 상점 증강 2개 → 3개 (히든도 달처럼 1/4 무게로 섞여 나옴)",
     juggle: "버튼 — 머리 둘레(몸 반경×2.4+30px) 안 위쪽 똥을 위로 튕김(곧게 위로), 튕긴 똥이 다른 똥에 닿으면 같이 터짐(반경 42) · 간식 제외(다크똥도 됨) · 쿨 3초",
     vacuum: "버튼 — 1.3초 동안 머리 위 ±43° 부채꼴 300px 안 똥(다크똥 포함)·아이템을 빨아들임, 똥은 부순 점수 · 쿨 15초",
-    closeCall: "아슬! 할 때마다 연속 +1(최대 30), 똥 점수 × 0.5 × 연속 · 하트를 잃으면 0",
+    closeCall: "아슬! 할 때마다 연속 +1(최대 30), 똥 점수 × 0.5 × 연속 · 몸에 똥이 닿으면 0 (방울·부적·우산·동전 갑옷·버팀으로 막아도) · 맞은 똥은 아슬로 안 침",
     coinArmor: "하트를 잃을 일이면 이번 판 코인으로 대신 막음(1초 무적) — 5·6·7… 쓸 때마다 1개씩 비싸짐",
     credit: "구름 상점에서 모아 둔 코인도 씀 (없으면 이번 판 코인만)",
     bombPoop: "보통 똥의 12%가 폭탄 똥 — 다른 똥에 닿으면 반경 80 폭발(다크 제외), 나한테 맞으면 하트 -1 + 폭발",
