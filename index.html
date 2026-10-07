@@ -1860,6 +1860,8 @@
   }
   #btnPetBuy:disabled { min-width: 240px; }
   #btnAugOk[hidden] { display: none; }
+  #btnAugOk.rsv { visibility: hidden; animation: none; pointer-events: none; }   /* v0.9.366 자리만 미리 잡아 둔다 — 버튼이 나타날 때 카드가 위로 밀려 올라가지 않게 */
+  #augList .augPh { visibility: hidden; pointer-events: none; animation: none; }   /* 제이 보름달 — 아직 안 나온 카드 자리 */
   #btnAugOk { margin-top: 6px; animation: trTtl .4s cubic-bezier(.3,1.6,.5,1) both, glowY 3.4s ease-in-out .4s infinite; }   /* v0.9.365 받은 증강을 다 보여 준 뒤 확인으로 재개 */
   /* ── v0.9.140 게임오버·일시정지 — 캐릭터 성장 창과 같은 남색 금테 판 + 금색 리본 제목 · 버튼은 큰 주요 하나 + 보조·나가기 나란히 ── */
   #overScreen, #pauseScreen { gap: 14px; }
@@ -2728,7 +2730,7 @@
   const elTitle = document.getElementById("overTitle");
   const coinNote = document.getElementById("coinNote");
 
-  const GAME_VERSION = "v0.9.365";
+  const GAME_VERSION = "v0.9.366";
   /* 제작사 스플래시(bamhobak friends 로고) — 2026-09-20 끔. 다시 켜려면 true */
   const SPLASH_USE = false;   // 코드를 고칠 때마다 뒤 두 자리를 올린다
   document.getElementById("ver").textContent = GAME_VERSION;
@@ -5055,11 +5057,19 @@
   const btnAugOk = document.getElementById("btnAugOk");
   let augOkFn = null;
   function augConfirm(fn, ms) {
-    const show = () => { augAutoFn = null; augOkFn = fn; btnAugOk.hidden = false; };
+    const show = () => { augAutoFn = null; augOkFn = fn; btnAugOk.hidden = false; btnAugOk.classList.remove("rsv"); };
     if (augSkipping) { show(); return; }
     augAutoFn = show; augAutoT = setTimeout(show, ms);
   }
-  function augOkReset() { augOkFn = null; btnAugOk.hidden = true; }
+  function augOkReset() { augOkFn = null; btnAugOk.hidden = true; btnAugOk.classList.remove("rsv"); augScreen.style.justifyContent = augScreen.style.paddingTop = ""; }
+  /* v0.9.366 위치 고정 — 가운데 정렬이라 카드 높이(한 줄·두 줄 설명)가 바뀔 때마다 제목·카드가 들썩였다.
+     카드가 나오기 시작할 때의 제목 자리에서 위쪽을 못 박아 두고, 그 뒤 생기는 높이 차이는 아래로만 흘려보낸다 */
+  function augAnchor() {
+    if (augScreen.style.paddingTop) return;
+    const y = augTitle.offsetTop - (parseFloat(getComputedStyle(augTitle).marginTop) || 0);
+    augScreen.style.justifyContent = "flex-start"; augScreen.style.paddingTop = Math.max(0, y) + "px";
+  }
+  function augOkReserve() { btnAugOk.hidden = false; btnAugOk.classList.add("rsv"); }   // v0.9.366 카드가 나오기 시작할 때 확인 버튼 자리를 먼저 잡는다
   btnAugOk.addEventListener("click", () => { if (!augOkFn) return; const f = augOkFn; augOkReset(); f(); });
   document.addEventListener("pointerdown", e => {   // 화면 어디를 눌러도(안내 말풍선이 덮고 있어도) — 그래서 문서에 건다
     if (!augAutoFn || state !== STATE.AUG || e.target === btnAugOk) return;
@@ -5067,7 +5077,7 @@
     augList.querySelectorAll(".augCard").forEach(c => { c.style.animationDelay = "0s"; });   // 아직 안 나온 카드도 바로
     liftWait = true;   // 건너뛰려고 누른 이 손가락도 떼기 전엔 조작이 아니다
   }, true);
-  let augPickedSeq = [], pjSeq = [], pjT0 = 0;   // pjSeq: 제이 자동 받기 — 보름달 앞 차례 카드들
+  let augPickedSeq = [], pjSeq = [], pjT0 = 0, pjQuiet = false;   // pjSeq: 제이 자동 받기 — 보름달 앞 차례 카드들
   function closeAugScreen() {
     const wasStart = startAugNow;           // v0.9.217 시작 증강 뒤에는 '준비!' 없이 바로 이어 간다
     startAugNow = false; augSkipping = false; augAutoFn = null; augOkReset();
@@ -5203,7 +5213,7 @@
           const pool2 = AUGMENTS.filter(b => !b.hidden && b.id !== "twoRand" && (augCount[b.id] || 0) < maxOf(b) && (!b.cond || b.cond()) && achOpen(b.id));
           if (pool2.length) { const b = pool2[Math.floor(Math.random() * pool2.length)]; augApply(b); popText(player.x, player.y - 130, "🕕 정시 퇴근 " + b.ic + " " + nameOf(b), "#9fe8ff", 18, 2.5); }
         }
-        if (!sfx("aug")) { beep(900, .09, "square", .05); beep(1350, .13, "square", .05); }
+        if (!pjQuiet && !sfx("aug")) { beep(900, .09, "square", .05); beep(1350, .13, "square", .05); }   // v0.9.366 제이 자동 받기는 카드가 나올 때 이미 울렸다 — 받을 때 또 울리면 두 번 들린다
         const finishPick = () => {
         /* v0.9.336 여러 번 이어 고르면(보름달·증강 2연속) 고른 것을 모아 두었다가 끝날 때 전부 띄운다 (예전엔 마지막 것만) */
         if (twoRandGot) twoRandGot.forEach(t => augPickedSeq.push([t, "#9fe8ff"]));   // 아무거나 두 개 — 받은 두 개만
@@ -5221,6 +5231,7 @@
         /* v0.9.337 아무거나 두 개 — 받은 두 증강을 카드로 펼쳐 2.2초 보여 준 뒤 넘어간다 (떠오르는 글자만으론 놓치기 쉬웠다) */
         if (a.id === "twoRand" && twoRandObjs.length) {
           augList.innerHTML = ""; augList.style.pointerEvents = "none";
+          btnReroll.style.display = "none"; augOkReserve();   // v0.9.366 자리 고정
           twoRandObjs.forEach(([b, nm2], ti) => {
             const c = document.createElement("div"); c.className = "augCard gReveal trGot";
             c.style.animationDelay = (0.12 + ti * AUTO_GAP / 1000) + "s";   // v0.9.338 한 장씩 통! 하고 뒤집혀 나온다 (v0.9.359 간격 1초)
@@ -5230,6 +5241,7 @@
             c.querySelector(".ds").textContent = b.dsFn ? b.dsFn() : b.ds;
             augList.appendChild(c);
           });
+          augAnchor();   // v0.9.366 위치 고정
           const t = document.getElementById("augTitle"); if (t) t.dataset.keep = t.textContent, t.textContent = "🎲 이 두 개를 받았어요!"; t.classList.remove("trTtl"); void t.offsetWidth; t.classList.add("trTtl");
           augConfirm(() => { augList.style.pointerEvents = ""; if (t) { t.classList.remove("trTtl"); if (t.dataset.keep) t.textContent = t.dataset.keep; } finishPick(); }, 750 + AUTO_GAP * (twoRandObjs.length - 1));   // v0.9.365 마지막 카드가 나오면 확인 버튼
           return;
@@ -5249,16 +5261,18 @@
       const rr = document.getElementById("btnReroll"); if (rr) rr.style.visibility = "hidden";
       if (!k) pjT0 = performance.now();
       pjSeq.forEach(c => augList.insertBefore(c, card));   // 앞 차례에 받은 카드는 그대로 둔다
+      for (let n = 1; n < augRemain; n++) { const ph = card.cloneNode(true); ph.className = "augCard augPh"; ph.removeAttribute("style"); augList.appendChild(ph); }   // v0.9.366 남은 카드 자리를 미리 — 쌓일 때 위로 밀리지 않게
+      augOkReserve(); augAnchor();
       card.classList.add("gReveal", "trGot"); card.style.animationDelay = "0.12s";
       if (t) { t.textContent = "📋 계획대로 되고 있어요!"; if (!k) { t.classList.remove("trTtl"); void t.offsetWidth; t.classList.add("trTtl"); } }
       if (!augSkipping) setTimeout(() => { if (state !== STATE.AUG || augSkipping) return; if (!sfx("aug")) { beep(880 + k * 220, .07, "square", .05); beep(1320 + k * 220, .1, "triangle", .04); } }, 120);
       if (augRemain > 1) augAutoWait(() => {   // 다음 차례로 — 이 카드는 멈춘 모양 그대로 복사해 둔다
         const c = card.cloneNode(true); c.classList.remove("trGot"); c.style.animation = "trGlow 1.2s ease-in-out infinite alternate";
-        pjSeq.push(c); card.classList.remove("trGot"); card.click();
+        pjSeq.push(c); card.classList.remove("trGot"); pjQuiet = true; card.click(); pjQuiet = false;
       }, AUTO_GAP);
       else augConfirm(() => {   // v0.9.365 마지막 카드가 나오면 확인 버튼 — 눌러야 받고 이어 간다
         augList.style.pointerEvents = ""; if (rr) rr.style.visibility = ""; if (t) t.classList.remove("trTtl");
-        pjSeq = []; card.classList.remove("trGot"); card.click();
+        pjSeq = []; card.classList.remove("trGot"); pjQuiet = true; card.click(); pjQuiet = false;
       }, 750);
     }
   }
