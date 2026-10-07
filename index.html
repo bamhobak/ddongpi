@@ -2724,7 +2724,7 @@
   const elTitle = document.getElementById("overTitle");
   const coinNote = document.getElementById("coinNote");
 
-  const GAME_VERSION = "v0.9.351";
+  const GAME_VERSION = "v0.9.352";
   /* 제작사 스플래시(bamhobak friends 로고) — 2026-09-20 끔. 다시 켜려면 true */
   const SPLASH_USE = false;   // 코드를 고칠 때마다 뒤 두 자리를 올린다
   document.getElementById("ver").textContent = GAME_VERSION;
@@ -4923,7 +4923,7 @@
     { id: "stone",      ic: "🗿", nm: "돌부처", ds: "2초 가만히 있으면 돌이 돼서 안 맞아요(최대 5초) · 그동안 점수랑 아이템은 없어요",
       once: true, go: () => { aug.stone = true; stoneT = 0; } },
     { id: "gacha",      ic: "🪀", nm: "뽑기", ds: "증강이 물음표로 나와요 · 그중 절반은 비밀 증강",
-      once: true, go: () => { aug.gacha = true; } },
+      once: true, cond: () => job !== "powerj", go: () => { aug.gacha = true; } },   // v0.9.352 제이는 카드가 1장이라 물음표가 의미 없다
     { id: "snackBig",   ic: "🍩", nm: "배불뚝이", ds: "간식 타임에 몸이 커져서 간식을 더 많이 받아먹어요",
       hidden: true, once: true,
       cond: () => (augCount["fever_time"] || 0) + (augCount["fever50"] || 0) + (augCount["downpour"] || 0) + (augCount["giant"] || 0) + (augCount["legion"] || 0) >= 4,   // 간식 증강 4개 이상
