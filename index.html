@@ -2725,7 +2725,7 @@
   const elTitle = document.getElementById("overTitle");
   const coinNote = document.getElementById("coinNote");
 
-  const GAME_VERSION = "v0.9.360";
+  const GAME_VERSION = "v0.9.361";
   /* 제작사 스플래시(bamhobak friends 로고) — 2026-09-20 끔. 다시 켜려면 true */
   const SPLASH_USE = false;   // 코드를 고칠 때마다 뒤 두 자리를 올린다
   document.getElementById("ver").textContent = GAME_VERSION;
@@ -12782,10 +12782,10 @@
     achBump("graze");
     if (aug.zapDance && performance.now() >= zapDanceAt) { zapDanceAt = performance.now() + ZAPDANCE_CD; zapChain(it.x, it.y, 3, it.r + 30, null, 160); }   // v0.9.249 번개 춤 · v0.9.324 쿨타임
     if (aug.closeCall) {                 // v0.9.249 아슬아슬 — 연속으로 쌓이는 점수, 땀 대신 반짝이·콤보 글자
-      closeN = Math.min(30, closeN + 1);
-      score += sc("똥", poopGain() * 0.5 * closeN);
+      closeN++;   // v0.9.361 연속 숫자는 30 넘게도 올라간다 — 점수 배율만 30에서 멈춘다 (예전엔 숫자도 30에서 멈춰 고장처럼 보였다)
+      score += sc("똥", poopGain() * 0.5 * Math.min(30, closeN));
       burst(player.x, player.y + player.hy - player.r * 0.6, "#ffe08a", 4 + Math.min(8, closeN));
-      popText(player.x, player.y - 70, "아슬+" + closeN, closeN >= 10 ? "#ffb347" : "#ffe08a", 15 + Math.min(12, closeN), 0.8);
+      popText(player.x, player.y - 70, "아슬+" + closeN, closeN >= 30 ? "#ff7a59" : closeN >= 10 ? "#ffb347" : "#ffe08a", 15 + Math.min(12, closeN), 0.8);
     } else {
     /* 똥이 지나간 반대쪽으로 땀이 튄다 — 스친 쪽으로 몸이 움찔한 것처럼 보인다 */
     const side = it.x > player.x ? -1 : 1;
@@ -16721,7 +16721,7 @@
     cloudVip: "구름 상점 증강 2개 → 3개 (히든도 달처럼 1/4 무게로 섞여 나옴)",
     juggle: "버튼 — 머리 둘레(몸 반경×2.4+30px) 안 위쪽 똥을 위로 튕김(곧게 위로), 튕긴 똥이 다른 똥에 닿으면 같이 터짐(반경 42) · 간식 제외(다크똥도 됨) · 쿨 3초",
     vacuum: "버튼 — 1.3초 동안 머리 위 ±43° 부채꼴 300px 안 똥(다크똥 포함)·아이템을 빨아들임, 똥은 부순 점수 · 쿨 15초",
-    closeCall: "아슬! 할 때마다 연속 +1(최대 30), 똥 점수 × 0.5 × 연속 · 몸에 똥이 닿으면 0 (방울·부적·우산·동전 갑옷·버팀으로 막아도) · 맞은 똥은 아슬로 안 침",
+    closeCall: "아슬! 할 때마다 연속 +1(숫자는 계속 오르고 점수 배율은 30에서 멈춤), 똥 점수 × 0.5 × 연속(최대 30) · 몸에 똥이 닿으면 0 (방울·부적·우산·동전 갑옷·버팀으로 막아도) · 맞은 똥은 아슬로 안 침",
     coinArmor: "하트를 잃을 일이면 이번 판 코인으로 대신 막음(1초 무적) — 5·6·7… 쓸 때마다 1개씩 비싸짐",
     credit: "구름 상점에서 모아 둔 코인도 씀 (없으면 이번 판 코인만)",
     bombPoop: "보통 똥의 12%가 폭탄 똥 — 다른 똥에 닿으면 반경 80 폭발(다크 제외), 나한테 맞으면 하트 -1 + 폭발",
