@@ -2875,7 +2875,7 @@
   const elTitle = document.getElementById("overTitle");
   const coinNote = document.getElementById("coinNote");
 
-  const GAME_VERSION = "v0.9.372";
+  const GAME_VERSION = "v0.9.373";
   /* 제작사 스플래시(bamhobak friends 로고) — 2026-09-20 끔. 다시 켜려면 true */
   const SPLASH_USE = false;   // 코드를 고칠 때마다 뒤 두 자리를 올린다
   document.getElementById("ver").textContent = GAME_VERSION;
@@ -3167,11 +3167,11 @@
               ds: "쓰러지면 한 번 다시 일으켜 주고, 다가오는 똥을 밀어내요" },
     gift:   { nm: "선물 요정", ic: "🧚", img: "assets/pet_fairy.png",
               ds: "가끔 날아가서 똥을 펑! 하트·우산·별·달로 바꿔요" },
-    coincat: { nm: "코인냥이", ic: "🐈", img: "assets/pet_cat.png",
+    coincat: { nm: "코인냥이", ic: "🐈", img: "assets/pet_cat.png", ui: "assets/pet_cat_shop.png?1",   // v0.9.373 상점 그림은 꼬리 말고 몸 기준 가운데
               ds: "가끔 코인을 물어다 줘요" },
     eel:    { nm: "찌릿 장어", ic: "⚡", img: "assets/pet_eel.png",
               ds: "가끔 가까운 똥에 찌릿! 번개를 쏘고, 옆 똥까지 번져요" },
-    duck:   { nm: "노란 오리", ic: "🦆", img: "assets/pet_duck.png", ui: "assets/pet_duck_shop.png",   // v0.9.343 · v0.9.372 상점·고르기 그림은 방귀 뺀 것(ui)
+    duck:   { nm: "노란 오리", ic: "🦆", img: "assets/pet_duck.png", ui: "assets/pet_duck_shop.png?2",   // v0.9.343 · v0.9.372 상점·고르기 그림은 방귀 뺀 것(ui)
               ds: "가끔 조그만 오리 떼가 방귀로 부릉! 화면 가운데를 가로지르며 한 마리가 똥 하나씩 부숴요" }
   };
   // 게임 화면에 그릴 펫 그림 (카드 그림과 같은 파일)
