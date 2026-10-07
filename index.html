@@ -460,6 +460,7 @@
   /* ---- 이름 등록 ---- */
   #nameRow { display: none; flex-direction: column; align-items: center; gap: 10px; width: 100%; }
   #nameRow.on { display: flex; }
+  #nameRow .tag.err { font-size: 15px; color: #ffc2b8; text-shadow: 0 1px 0 rgba(0,0,0,.4); }   /* v0.9.377 등록 실패 — 축하 글씨처럼 크지 않게 */
   #nameRow .tag {
     font-size: 21px; font-weight: 800; color: #ffd23f;   /* v0.9.41 14 → 21px — 순위 달성이 한눈에 */
     text-shadow: 0 0 12px rgba(255,210,63,.55), 0 2px 0 rgba(0,0,0,.4);
@@ -1486,6 +1487,7 @@
   /* 옵션 — 예전 설정 창의 내용 */
   #pgOpt #optRow { display: flex; flex-direction: column; align-items: center; gap: 14px; }
   #pgOpt .setLbl { font-size: 13px; color: #9fb4d0; margin-bottom: -6px; }
+  #privLink { font-size: 12px; color: #9fb4d0; text-decoration: underline; margin-top: 2px; }
   /* v0.9.367 언어 고르기 — 네모 칸 나란히, 고른 것은 노랑 */
   .langSeg { display: flex; gap: 8px; width: 100%; max-width: 260px; }
   .langSeg button { flex: 1; height: 38px; border-radius: 8px; border: 1px solid rgba(255,255,255,.28); background: rgba(255,255,255,.1); color: #fff; font-size: 15px; font-weight: 800; letter-spacing: 0; padding: 0; }
@@ -2306,8 +2308,7 @@
       <section class="page on" id="pgHome">
       <h1><span class="logoWrap">
         <img class="ttl" alt="이피저피똥피" decoding="async"><script>document.currentScript.previousElementSibling.src = window.GAME_LOGO;</script>
-        <span id="testDot" aria-label="테스트 모드"></span>
-        <span id="devDot" aria-label="통계"></span>
+
       </span></h1>
       <div id="homeJobs"></div>
       <div id="startRow"><button id="btnStart">시작하기</button><button id="btnHyper" aria-label="스피드 모드">⚡</button></div>
@@ -2380,20 +2381,7 @@
       </nav>
     </div>
 
-    <div id="devScreen" class="screen hidden" data-noi18n>
-      <div id="devHead">
-        <h2>개발자 페이지</h2>
-        <button id="devHome">메인으로</button>
-      </div>
-      <div id="devPwRow">
-        <input id="devPw" type="password" maxlength="40" autocomplete="off">
-        <button id="devGo">확인</button>
-      </div>
-      <div id="devMsg"></div>
-      <div id="devTabs"></div>
-      <div id="devBody"></div>
-      <button id="devClose">닫기</button>
-    </div>
+
 
     <div id="pauseScreen" class="screen hidden">
       <div class="gPanel">
@@ -2407,7 +2395,7 @@
           <input class="sndVol" data-snd="sfx" type="range" min="0" max="100" step="5" aria-label="효과음 크기"></div>
       </div>
       </div>
-      <div id="tAugRow"><button id="btnTAug">증강 고르기</button><button id="btnTAugAll">증강 전부 먹기</button></div>
+
       <div class="gBtns">
         <button id="btnResume">계속하기</button>
         <div class="gSub"><button id="btnPauseRetry">다시하기</button><button id="btnPauseHome">처음으로</button></div>
@@ -2423,7 +2411,7 @@
         <button id="btnEditName" title="이름 수정" aria-label="이름 수정">✏️ 이름 바꾸기</button>
       </div>
       <div id="nameEdit">
-        <input id="startName" type="text" maxlength="6" placeholder="이름 (3~6자)"
+        <input id="startName" type="text" maxlength="8" placeholder="이름 (2~6자)"
                autocomplete="off" autocorrect="off" spellcheck="false">
         <button id="btnSaveName">저장</button>
       </div>
@@ -2436,7 +2424,7 @@
       <div class="lpTtl">환영해요!</div>
       <span class="hiDog" aria-hidden="true"></span>
       <div class="hiMsg" data-i18h>안녕하세요!<br><b>이피저피똥피</b>에 오신 걸 환영해요!<br>사용자님의 이름을 알려주세요.</div>
-      <input id="hiName" type="text" maxlength="6" placeholder="이름 (3~6자)" autocomplete="off" autocorrect="off" spellcheck="false">
+      <input id="hiName" type="text" maxlength="8" placeholder="이름 (2~6자)" autocomplete="off" autocorrect="off" spellcheck="false">
       <div id="hiErr"></div>
       <button id="hiGo">좋아요!</button>
     </div></div>
@@ -2477,13 +2465,7 @@
       <div class="ulHow"></div>
       <button class="ulOk">확인</button>
     </div></div>
-    <!-- v0.9.151 테스트 모드2 — 계정·캐릭터 레벨, 코인, 해금 상태 고치기 -->
-    <div id="t2Pop" class="lvPop"><div class="lpIn">
-      <div class="lpTtl">테스트 모드2</div>
-      <div class="lpBody" id="t2Body"></div>
-      <div class="t2Btns"><button class="t2Save">저장하고 다시 불러오기</button></div>
-      <button class="lpClose">닫기</button>
-    </div></div>
+
     <!-- v0.9.124 캐릭터 레벨 상세 — 카드 아래 '상세' -->
     <div id="chrPop" class="lvPop"><div class="lpIn">
       <div class="lpTtl">캐릭터 성장</div>
@@ -2530,16 +2512,7 @@
       <button id="btnJobBack">메인으로 돌아가기</button>
     </div>
 
-    <div id="testScreen" class="screen hidden">
-      <h2 id="testTitle">테스트 모드</h2>
-      <div class="sub" id="testSub">목숨 무한 · 기록은 남지 않습니다</div>
-      <div id="testRow">
-        <input id="testPw" type="password" maxlength="40" autocomplete="off">
-        <button id="testGo">확인</button>
-      </div>
-      <div id="testMsg"></div>
-      <button id="testClose">닫기</button>
-    </div>
+
 
     <div id="augScreen" class="screen hidden">
       <h2 id="augTitle">⭐ 증강 선택 🌙</h2>
@@ -2579,7 +2552,7 @@
       <div id="nameRow">
         <div class="tag" id="nameTag">🎉 TOP 10 진입! 이름을 남기세요</div>
         <div id="nameForm">
-          <input id="nameInput" type="text" maxlength="6" placeholder="이름 (3~6자)"
+          <input id="nameInput" type="text" maxlength="8" placeholder="이름 (2~6자)"
                  autocomplete="off" autocorrect="off" spellcheck="false">
           <button id="btnSave">등록</button>
         </div>
@@ -2669,11 +2642,6 @@
   function i18nLook(core) {                   // 번역 또는 undefined (못 찾은 건 i18nMiss 에 적는다)
     let r = I18N[core];
     if (r !== undefined) return r;
-    if (core.indexOf("\n") >= 0) {              // 여러 줄 — 사전에 통째로 없으면 줄마다 따로
-      let ok = false;
-      const lines = core.split("\n").map(l => { const t = T(l); if (t !== l || !I18N_HAN.test(l)) ok = true; return t; });
-      return ok ? lines.join("\n") : undefined;
-    }
     const e = I18N_EMO.exec(core);              // 앞뒤 이모지는 떼고 맞춘다 — 사전 원문엔 이모지를 안 넣는다
     if ((e[1] || e[3]) && e[2]) { const mid = i18nLook(e[2]); return mid === undefined ? undefined : e[1] + mid + e[3]; }
     if (!i18nPats) i18nCompile();
@@ -2689,6 +2657,11 @@
       }
       if (!ok) { if (i18nMiss.size > miss0) for (const x of [...i18nMiss].slice(miss0)) i18nMiss.delete(x); continue; }
       return p.v.replace(/\{(\d+)\}/g, (_, i) => { const j = p.order.indexOf(+i); return j >= 0 ? vals[j] : ""; });
+    }
+    if (core.indexOf("\n") >= 0) {              // 여러 줄 — 통째로(틀 포함) 못 맞추면 줄마다 따로 (v0.9.377 틀을 먼저 본다)
+      let ok = false;
+      const lines = core.split("\n").map(l => { const t = T(l); if (t !== l || !I18N_HAN.test(l)) ok = true; return t; });
+      if (ok) return lines.join("\n");
     }
     i18nMiss.add(core);
     return undefined;
@@ -2877,7 +2850,7 @@
   const elTitle = document.getElementById("overTitle");
   const coinNote = document.getElementById("coinNote");
 
-  const GAME_VERSION = "v0.9.376";
+  const GAME_VERSION = "v0.9.377";
   /* 제작사 스플래시(bamhobak friends 로고) — 2026-09-20 끔. 다시 켜려면 true */
   const SPLASH_USE = false;   // 코드를 고칠 때마다 뒤 두 자리를 올린다
   document.getElementById("ver").textContent = GAME_VERSION;
@@ -8765,13 +8738,22 @@
   const myNameEl  = document.getElementById("myName");
   const startName = document.getElementById("startName");
 
-  /* v0.9.218 닉네임 — 3~6자, 한글(완성형)·영어·숫자만. 다른 사람이 쓰는 이름은 못 쓴다(sql/supabase_nameClaim.sql).
+  /* v0.9.218 닉네임 — (v0.9.377 부터 2~6자·일본어 글자도, 아래 nameRuleErr). 다른 사람이 쓰는 이름은 못 쓴다(sql/supabase_nameClaim.sql).
      서버 함수가 아직 없거나 인터넷이 안 되면 중복 검사만 건너뛴다. 결과: 문제 없으면 "", 있으면 알려 줄 말 */
+  /* v0.9.377 일본어 이름도 — 2~6자(영어·숫자만이면 8자), 한글·영어·숫자·히라가나·가타카나·한자. 금지어는 서버(ddongpi_name_banned)와 같은 목록 */
+  const NAME_OK_RE = /^[가-힣A-Za-z0-9ぁ-ゖァ-ヺー一-鿿]+$/;
+  const NAME_BANNED = ["시발", "씨발", "씨빨", "시빨", "씹", "좆", "존나", "졸라", "병신", "븅신", "빙신", "개새", "새끼", "섹스", "보지", "자지",
+    "니미", "니애미", "느금", "애미", "애비", "엠창", "미친", "꺼져", "닥쳐", "찐따", "한남", "김치녀", "일베", "메갈", "강간", "자살", "살인", "성기", "운영자", "관리자",
+    "fuck", "fuk", "shit", "bitch", "cunt", "dick", "cock", "pussy", "nigger", "nigga", "fag", "rape", "porn", "sex",
+    "asshole", "bastard", "whore", "slut", "penis", "vagina", "hitler", "nazi", "admin",
+    "しね", "死ね", "シネ", "ころす", "殺す", "ちんこ", "ちんぽ", "まんこ", "セックス", "せっくす", "きちがい", "キチガイ", "ガイジ", "がいじ", "障害", "運営"];
+  function nameBanned(n) { const s = String(n || "").toLowerCase(); return NAME_BANNED.some(w => s.includes(w)); }
   function nameRuleErr(n) {
-    const len = [...n].length;
-    if (len < 3) return "이름은 3글자 이상이에요";
-    if (len > 6) return "이름은 6글자까지예요";
-    if (!/^[가-힣A-Za-z0-9]+$/.test(n)) return "한글·영어·숫자만 쓸 수 있어요 (띄어쓰기 X)";
+    const len = [...n].length, ascii = /^[A-Za-z0-9]+$/.test(n);
+    if (len < 2) return "이름은 2글자 이상이에요";
+    if (len > (ascii ? 8 : 6)) return ascii ? "영어·숫자 이름은 8글자까지예요" : "이름은 6글자까지예요";
+    if (!NAME_OK_RE.test(n)) return "글자와 숫자만 쓸 수 있어요 (띄어쓰기·기호 X)";
+    if (nameBanned(n)) return "그 이름은 쓸 수 없어요";
     return "";
   }
   async function claimName(n) {
@@ -8786,12 +8768,45 @@
       if (!res.ok) return "";                  // 함수가 아직 없다 — 건너뛴다
       const r = await res.json();
       if (r === "taken") return "다른 친구가 이미 쓰고 있는 이름이에요";
-      if (r === "bad") return "한글·영어·숫자로 3~6글자만 돼요";
+      if (r === "bad") return "글자와 숫자로 2~6글자만 돼요 (영어는 8글자)";
+      if (r === "banned") return "그 이름은 쓸 수 없어요";
     } catch (e) {}
     return "";
   }
   function savedName() {
     try { return (localStorage.getItem(LS_NAME) || "").trim(); } catch (e) { return ""; }
+  }
+  /* v0.9.377 닉네임 신고 — 순위판 이름을 꾹(0.6초) 누르면 신고. 서버 ddongpi_reports 에 쌓이고 개발자 페이지 '신고' 탭에서 정리한다.
+     같은 이름은 한 기기에서 한 번만 (서버도 이름·기기 짝으로 한 번) */
+  const LS_REPORTED = "epjpddongpi_reported";
+  function reportedSet() { try { return new Set(JSON.parse(localStorage.getItem(LS_REPORTED) || "[]")); } catch (e) { return new Set(); } }
+  async function reportName(nm) {
+    const set = reportedSet();
+    if (set.has(nm)) { popHint("🚩 이미 신고한 이름이에요"); return; }
+    try {
+      const res = await fetch(SB_URL + "/rest/v1/ddongpi_reports", {
+        method: "POST", headers: sbHeaders({ "Content-Type": "application/json", Prefer: "return=minimal" }),
+        body: JSON.stringify({ name: nm.slice(0, 12), reporter: String(deviceId).slice(0, 40) })
+      });
+      if (!res.ok && res.status !== 409) throw new Error("HTTP " + res.status);
+      set.add(nm); try { localStorage.setItem(LS_REPORTED, JSON.stringify([...set].slice(-200))); } catch (e) {}
+      popHint("🚩 신고했어요. 확인하고 정리할게요");
+    } catch (e) { popHint("신고하지 못했어요. 잠시 뒤 다시 해 주세요"); }
+  }
+  {
+    const BOARD_SEL = "#boardStart, #boardOver, #boardLast, .vsbList";
+    let t = 0, x0 = 0, y0 = 0, on = false;
+    document.addEventListener("pointerdown", e => {
+      const nm = e.target.closest && e.target.closest(".nm");
+      if (!nm || !nm.closest(BOARD_SEL) || !SB_ON) return;
+      const name = nm.textContent.trim();
+      if (!name || name === "-" || name === savedName()) return;
+      x0 = e.clientX; y0 = e.clientY; on = true; clearTimeout(t);
+      t = setTimeout(() => { on = false; askYesNo("'" + name + "' 이름을 신고할까요?\n(나쁜 말·불쾌한 이름)", () => reportName(name)); }, 600);
+    });
+    const stop = e => { if (on && e.type === "pointermove" && Math.hypot(e.clientX - x0, e.clientY - y0) < 10) return; on = false; clearTimeout(t); };
+    for (const ev of ["pointerup", "pointercancel", "pointermove"]) document.addEventListener(ev, stop);
+    document.addEventListener("contextmenu", e => { if (e.target.closest && e.target.closest(".nm")) e.preventDefault(); });   // 꾹 누를 때 폰 메뉴가 안 뜨게
   }
   function showNameView() {
     const n = savedName();
@@ -8920,50 +8935,7 @@
     beep(500, .08, "sine", .04);
   }
   btnPause.addEventListener("click", doPause);
-  /* v0.9.278 테스트 모드 — 일시정지에서 증강을 골라 먹거나, 전체를 한 번에 먹는다 (조건·해금·상한 무시, 상한만 지킨다) */
-  function tAugList() { return AUGMENTS.filter(a => !a.gone && a.id !== "twoRand"); }
-  function tAugEat(a) {
-    if ((augCount[a.id] || 0) >= maxOf(a)) return false;
-    augApply(a); return true;
-  }
-  function tAugRefresh() {
-    fillAugList(document.getElementById("pauseAugs"), document.getElementById("pauseAugDesc"));
-  }
-  function openTAug() {
-    let p = document.getElementById("tAugPop");
-    if (!p) {
-      p = document.createElement("div"); p.id = "tAugPop";
-      p.innerHTML = '<div class="tHead"><span>🧪 증강 고르기 (테스트)</span><button>닫기</button></div><div class="tList"></div>';
-      document.body.appendChild(p);
-      p.querySelector(".tHead button").addEventListener("click", () => { p.classList.remove("on"); tAugRefresh(); });
-    }
-    const list = p.querySelector(".tList");
-    const draw = () => {
-      list.innerHTML = "";
-      for (const a of tAugList()) {
-        const n = augCount[a.id] || 0, full = n >= maxOf(a);
-        const b = document.createElement("button");
-        b.className = "tItem" + (a.hidden ? " hid" : "") + (full ? " full" : "");
-        const ic = document.createElement("span"); ic.className = "ti"; ic.textContent = a.ic;
-        const nm = document.createElement("span"); nm.textContent = nameOf(a);
-        b.append(ic, nm);
-        if (n) { const c = document.createElement("em"); c.textContent = "×" + n; b.appendChild(c); }
-        b.addEventListener("click", () => { if (tAugEat(a)) beep(900, .05, "triangle", .04); else beep(220, .05, "square", .03); draw(); });
-        list.appendChild(b);
-      }
-    };
-    draw();
-    p.classList.add("on");
-  }
-  document.getElementById("btnTAug").addEventListener("click", () => { if (testMode) openTAug(); });
-  document.getElementById("btnTAugAll").addEventListener("click", () => {
-    if (!testMode) return;
-    let k = 0;
-    for (const a of tAugList()) if (tAugEat(a)) k++;
-    tAugRefresh();
-    popHint("🧪 증강 " + k + "개 먹음");
-    beep(1200, .08, "triangle", .05);
-  });
+
 
   if (SPLASH_USE) startScreen.style.visibility = "hidden";      // 스플래시가 끝나면 드러난다
   for (const ev of ["pointerdown", "keydown"])
@@ -9624,7 +9596,7 @@
   for (const b of document.querySelectorAll("#modeSeg button")) b.addEventListener("click", () => {
     if (gameMode === b.dataset.mode) return;
     beep(640, .05, "square", .04);
-    if (b.dataset.mode === "noitem" && !towerOpen) { openPwScreen("tower"); return; }   // 잠금 — 비밀번호부터
+    if (b.dataset.mode === "noitem" && !towerOpen) { if (typeof openPwScreen === "function") openPwScreen("tower"); else popHint("🔒 아직 준비 중인 모드예요"); return; }   // 잠금 — 비밀번호부터 (v0.9.377 배포판엔 비밀번호 창이 없다)
     setMode(b.dataset.mode);
   });
   syncMode();
@@ -9711,13 +9683,13 @@
       }); });
       document.getElementById("pgOpt").appendChild(r);
     }
-    for (const [t, id] of [["📊 개발자 통계", "devDot"], ["🧪 테스트 모드", "testDot"], ["🛠 테스트 모드2", "test2"]]) {
-      const b = document.createElement("button"); b.textContent = t;
-      b.addEventListener("click", () => { beep(800, .04, "triangle", .04); if (id === "test2") openPwScreen("test2"); else document.getElementById(id).click(); });
-      d.appendChild(b);
-    }
-    document.getElementById("pgOpt").appendChild(d);
+
     document.getElementById("pgOpt").appendChild(document.getElementById("ver"));   // v0.9.314 버전은 옵션 맨 아래
+    {   /* v0.9.377 개인정보처리방침 — 언어마다 그 언어 판으로 (앱 안에서도 찾을 수 있게) */
+      const pv = document.createElement("a"); pv.id = "privLink"; pv.target = "_blank"; pv.rel = "noopener";
+      pv.href = LANG === "ko" ? "privacy.html" : "privacy_" + LANG + ".html"; pv.textContent = "개인정보처리방침";
+      document.getElementById("pgOpt").appendChild(pv);
+    }
   }
   /* 도감 — 지금은 모두 열림. 나중에 잠금이 들어오면 bookOpen() 이 false 인 것은 회색 '?' 로, 여는 법(BOOK_HOW)을 보여 준다 */
   /* v0.9.51 도감 — 못 쓰는 증강(그 펫을 상점에서 안 산 것)은 회색. 누르면 해금 조건, 열린 것은 게임 중 나오는 조건 */
@@ -9963,93 +9935,7 @@
   /* v0.9.152 백업·초기화는 이 게임의 저장값 전부(기기 식별자와 백업 자신만 빼고) — 기기 식별자를 지우면 랭킹에서 다른 사람이 된다 */
   const T2_KEEP = ["epjpddongpi_device", "epjpddongpi_t2bak"];
   function t2Keys() { const ks = []; try { for (let i = 0; i < localStorage.length; i++) { const k = localStorage.key(i); if (k && k.startsWith("epjpddongpi_") && !T2_KEEP.includes(k)) ks.push(k); } } catch (e) {} return ks; }
-  let t2 = null;
-  function openT2() {
-    try { if (!localStorage.getItem(LS_T2BAK)) { const b = {}; for (const k of t2Keys()) b[k] = localStorage.getItem(k); localStorage.setItem(LS_T2BAK, JSON.stringify(b)); } } catch (e) {}
-    t2 = { coins, acc: accLv(), cl: {}, owned: Object.keys(JOBS).filter(k => JOBS[k].needUnlock).every(k => jobUnlocked.has(k)), pets: new Set(petOwned), augs: "keep", perks: false };
-    for (const j in JOBS) if (!JOBS[j].gone) t2.cl[j] = lvOf(lvData.cx[j] || 0, CHR_XP);
-    renderT2(); lvPopOpen("t2Pop");
-  }
-  function renderT2() {
-    const box = document.getElementById("t2Body"); box.innerHTML = "";
-    const sec = (title) => { const d = document.createElement("div"); d.className = "t2Sec"; const h = document.createElement("div"); h.className = "t2H"; h.textContent = title; d.appendChild(h); box.appendChild(d); return d; };
-    const row = (parent, label, img) => { const r = document.createElement("div"); r.className = "t2Row"; const sp = document.createElement("span");
-      if (img) { const im = document.createElement("img"); im.src = img; sp.appendChild(im); } sp.appendChild(document.createTextNode(label)); r.appendChild(sp); parent.appendChild(r); return r; };
-    const seg = (parent, opts, cur, onPick) => { const g = document.createElement("div"); g.className = "seg";
-      for (const [v, t] of opts) { const b = document.createElement("button"); b.textContent = t; if (v === cur) b.classList.add("on");
-        b.addEventListener("click", () => { beep(820, .03, "triangle", .03); onPick(v); renderT2(); }); g.appendChild(b); }
-      parent.appendChild(g); return g; };
-    const lv5 = [[1, "1"], [2, "2"], [3, "3"], [4, "4"], [5, "5"]];
-    // 코인
-    const c = sec("🪙 코인");
-    const cr = row(c, "가진 코인");
-    const inp = document.createElement("input"); inp.type = "number"; inp.min = 0; inp.value = t2.coins;
-    inp.addEventListener("input", () => { t2.coins = Math.max(0, parseInt(inp.value, 10) || 0); });
-    inp.addEventListener("keydown", e => e.stopPropagation());
-    cr.appendChild(inp);
-    const cq = row(c, "");
-    for (const [t, f] of [["0", () => 0], ["+100", v => v + 100], ["+1000", v => v + 1000], ["9999", () => 9999]]) {
-      const b = document.createElement("button"); b.className = "t2Mini"; b.textContent = t;
-      b.addEventListener("click", () => { t2.coins = f(t2.coins); renderT2(); }); cq.appendChild(b);
-    }
-    // 계정 레벨
-    const a = sec("💩 똥피력");
-    seg(row(a, "단계"), [[1, "1"], [2, "2"], [3, "3"], [4, "4"], [5, "5"], [6, "6"], [7, "7"]], t2.acc, v => { t2.acc = v; });
-    const an = document.createElement("div"); an.className = "t2Note"; an.textContent = "2 다시 뽑기 · 3 시작 증강 · 4 성장 탭 · 5 구름 상점 · 6 스피드 모드 · 7 태그 교대"; a.appendChild(an);
-    // 캐릭터 레벨
-    const ch = sec("🐶 캐릭터 레벨");
-    for (const j in t2.cl) seg(row(ch, jobShort(j), jobPic(j)), lv5, t2.cl[j], v => { t2.cl[j] = v; });
-    const allR = row(ch, "모두");
-    seg(allR, lv5, 0, v => { for (const j in t2.cl) t2.cl[j] = v; });
-    const pr = row(ch, "능력 고른 것");
-    seg(pr, [[false, "그대로"], [true, "모두 지우기(다시 해금부터)"]], t2.perks, v => { t2.perks = v; });
-    // 캐릭터 해금
-    const u = sec("🔓 해금");
-    seg(row(u, "캐릭터"), [[true, "모두 열림"], [false, "방울이만"]], t2.owned, v => { t2.owned = v; });
-    seg(row(u, "증강(업적)"), [["keep", "그대로"], ["all", "모두 열기"], ["none", "모두 잠그기"]], t2.augs, v => { t2.augs = v; });
-    const pets = Object.keys(PETS).filter(k => k !== "none");
-    const allPet = pets.every(k => t2.pets.has(k)), noPet = pets.every(k => !t2.pets.has(k));
-    seg(row(u, "펫"), [["all", "모두 보유"], ["none", "모두 없음"]], allPet ? "all" : noPet ? "none" : "", v => { t2.pets = new Set(v === "all" ? pets : []); });
-    // 되돌리기
-    const r = sec("↩️ 되돌리기");
-    const rn = document.createElement("div"); rn.className = "t2Note"; rn.textContent = "처음 상태로 되돌리기 — 테스트 모드2를 처음 열기 전 상태로. 게임 초기상태로 — 처음 접속한 사람처럼 모두 지운다(이름·코인·레벨·해금·설정, 랭킹 기록은 그대로).";
-    r.appendChild(rn);
-    const rb = document.createElement("button"); rb.className = "t2Mini"; rb.textContent = "처음 상태로 되돌리기";
-    rb.addEventListener("click", () => askYesNo("테스트 전 상태로 되돌릴까요?", () => {
-      try { const b = JSON.parse(localStorage.getItem(LS_T2BAK) || "null"); if (b) { for (const k of t2Keys()) localStorage.removeItem(k); for (const k in b) if (b[k] != null) localStorage.setItem(k, b[k]); localStorage.removeItem(LS_T2BAK); } } catch (e) {}
-      location.reload();
-    }));
-    const zb = document.createElement("button"); zb.className = "t2Mini"; zb.textContent = "🆕 게임 초기상태로";
-    zb.addEventListener("click", () => askYesNo("처음 접속한 상태로 모두 지울까요?\n(되돌리기 백업은 남겨 둡니다)", () => {
-      try { for (const k of t2Keys()) localStorage.removeItem(k); } catch (e) {}
-      location.reload();
-    }));
-    const rr = document.createElement("div"); rr.className = "t2Row"; rr.append(rb, zb); r.appendChild(rr);
-  }
-  document.querySelector("#t2Pop .t2Save").addEventListener("click", () => {
-    if (!t2) return;
-    try {
-      localStorage.setItem(LS_COINS, String(t2.coins));
-      lvData.xp = Math.max(t2.acc >= 2 ? ACC_XP[t2.acc - 1] : 0, Math.min(lvData.xp, (ACC_XP[t2.acc] || 1e12) - 1));
-      if (lvOf(lvData.xp, ACC_XP) !== t2.acc) lvData.xp = ACC_XP[t2.acc - 1];
-      for (const j in t2.cl) { const cur = lvData.cx[j] || 0; if (lvOf(cur, CHR_XP) !== t2.cl[j]) lvData.cx[j] = CHR_XP[t2.cl[j] - 1]; }
-      if (t2.perks) { lvData.pick = {}; lvData.un = {}; }
-      localStorage.setItem(LS_LV, JSON.stringify(lvData));
-      achData.j = t2.owned ? Object.keys(JOBS).filter(k => JOBS[k].needUnlock) : []; achData.jv = 1;
-      if (!t2.owned) localStorage.setItem(LS_JOB, "bangul");
-      if (t2.augs === "all") achData.u = Object.keys(ACH);
-      else if (t2.augs === "none") achData.u = [];
-      else achData.u = [...achU];
-      localStorage.setItem(LS_ACH, JSON.stringify(achData));
-      localStorage.setItem(LS_PET_OWN, JSON.stringify([...t2.pets].filter(k => k !== "none")));
-    } catch (e) {}
-    location.reload();
-  });
-  {
-    const p = document.getElementById("t2Pop");
-    p.querySelector(".lpClose").addEventListener("click", () => { beep(700, .04, "triangle", .04); p.classList.remove("on"); });
-    p.addEventListener("click", e => { if (e.target === p) p.classList.remove("on"); });
-  }
+
 
   /* v0.9.155 처음 접속 — 이름이 없으면 환영 인사와 함께 바로 이름을 정한다 (바깥을 눌러도 안 닫힌다) */
   function hiOpen() {
@@ -15888,7 +15774,7 @@
     nameRow.classList.remove("on");
     btnSave.disabled = false;
     btnSave.textContent = "등록";
-    nameTag.textContent = "🎉 TOP 10 진입! 이름을 남기세요";
+    nameTag.textContent = "🎉 TOP 10 진입! 이름을 남기세요"; nameTag.classList.remove("err");
     // 게임오버 순위표는 이번 판 직업 탭으로 연다 (전체 TOP 10에 들면 아래에서 전체 탭으로 바꾼다)
     boardJob = job;
     syncBoardTitle();
@@ -15905,7 +15791,7 @@
         // 이름을 미리 정해뒀으면 곧바로 등록한다
         nameRow.classList.add("on");
         nameForm.style.display = "none";
-        nameTag.textContent = qualifies(s) ? "🎉 이번 주 " + rank + "위 등록 중…" : "기록 등록 중…";
+        nameTag.textContent = qualifies(s) ? "🎉 이번 주 " + rank + "위 등록 중…" : "기록 등록 중…"; nameTag.classList.remove("err");
         try {
           await submitScore(nm, pendingScore, pendingLevel);
           myRowKey = nm + "|" + pendingScore;
@@ -15930,7 +15816,7 @@
             else nameRow.classList.remove("on");
           }
         } catch (e) {
-          nameTag.textContent = "등록 실패 — 아래에서 다시 시도해주세요";
+          nameTag.textContent = "등록하지 못했어요 · 다시 눌러 주세요"; nameTag.classList.add("err");   // v0.9.377 작고 덜 튀게
           nameForm.style.display = "";
           nameInput.value = nm;
         }
@@ -15939,7 +15825,7 @@
         nameRow.classList.add("on");
         nameForm.style.display = "";
         nameInput.value = "";
-        nameTag.textContent = overFirst ? "이름을 남겨 주세요" : "🎉 " + rank + "위 진입! 이름을 남기세요";
+        nameTag.textContent = overFirst ? "이름을 남겨 주세요" : "🎉 " + rank + "위 진입! 이름을 남기세요"; nameTag.classList.remove("err");
         if (overFirst) overScreen.classList.add("firstName");   // v0.9.319 첫 판 — 이름 등록만 (다시 하기·캐릭터 바꾸기·메인으로 숨김)
       }
     });
@@ -16542,669 +16428,7 @@
     try { go(0); } catch (e) {}
   }
 
-  /* ---------- 개발자 통계 패널 ----------
-     제목 오른쪽 💩 을 누르고 비밀번호를 넣으면 집계를 보여준다.
-     원본 기록은 익명 키로 못 읽고, 비밀번호가 맞을 때만 서버 함수가 집계를 돌려준다. */
-  const AUG_NAMES = {};
-  const AUG_HIDDEN = {};
-  for (const a of AUGMENTS) { AUG_NAMES[a.id] = a.nm; AUG_HIDDEN[a.id] = !!a.hidden; }
-  for (const id in PETS) if (id !== "none") AUG_NAMES["pet:" + id] = PETS[id].ic + " 펫 " + PETS[id].nm;
-  AUG_NAMES["mode:noitem"] = "🗼 똥탑등반";
-  AUG_NAMES["mode:pure"] = "🥊 맨몸대결";
-  AUG_NAMES.gamble = "도박꾼(삭제됨)";   // 옛 기록 표시용
-  AUG_NAMES.fly = "초전도(삭제됨)";
-  AUG_NAMES.refill = "간식 무한리필(삭제됨)";
-  AUG_NAMES.ghost = "유령화(삭제됨)";
-  AUG_NAMES.subs = "간식 정기구독(삭제됨)";
-  const JOB_NAMES = { none: "쉬었음 청년", fortune: "루나 · 점술가", gambler: "도박사", levitator: "도도 · 부양사", fit: "버피 · 헬스견", powerj: "제이 · 계획러", powerp: "무무 · 무소유", powerp2: "파워P", bangul: "방울이 · 집순이", "(none)": "(기록 없음)" };
-  const devScreen = document.getElementById("devScreen");
-  const devPw     = document.getElementById("devPw");
-  const devBody   = document.getElementById("devBody");
-  const devMsg    = document.getElementById("devMsg");
 
-  function devRow(cells, tag) {
-    const tr = document.createElement("tr");
-    for (const c of cells) {
-      const td = document.createElement(tag || "td");
-      if (typeof c === "object") { td.textContent = c.t; td.className = c.c || ""; }
-      else td.textContent = c;
-      tr.appendChild(td);
-    }
-    return tr;
-  }
-  function devSection(title, head, rows) {
-    const box = document.createElement("div");
-    box.className = "sec";
-    const h = document.createElement("h4");
-    h.textContent = title;
-    box.appendChild(h);
-    const tb = document.createElement("table");
-    if (head) tb.appendChild(devRow(head, "th"));
-    for (const r of rows) tb.appendChild(devRow(r));
-    box.appendChild(tb);
-    return box;
-  }
-
-  // {star50:2, lucky:1} → "반짝반짝 별 x2, 행운"
-  function augLabel(augs) {
-    const keys = Object.keys(augs || {});
-    if (!keys.length) return "-";
-    return keys.map(k => (AUG_NAMES[k] || k) + (augs[k] > 1 ? " x" + augs[k] : "")).join(", ");
-  }
-
-  /* 평균 코인 한 칸 — 몇 판에서 잰 값인지 같이 보여준다.
-     기록이 아직 없으면(예전 판에는 코인 칸이 없다) 줄만 남기고 비운다. */
-  function coinCell(avg, runs) {
-    if (!runs) return "-";
-    return Number(avg || 0).toFixed(2) + "개 (" + runs + "판)";
-  }
-
-  function renderDevStats(data) {
-    const P = devPanes;
-    const su = data.summary || {};
-    P.sum.appendChild(devSection("전체 요약", null, [
-      ["총 플레이", { t: (su.runs || 0) + "판", c: "num" }],
-      ["평균 점수", { t: Number(su.avg_score || 0).toLocaleString(), c: "num" }],
-      ["최고 점수", { t: Number(su.max_score || 0).toLocaleString(), c: "num" }],
-      ["평균 생존", { t: (su.avg_secs || 0) + "초", c: "num" }],
-      ["평균 별 개수", { t: su.avg_stars || 0, c: "num" }],
-      /* 코인은 풀소유 판을 따로 뺀다 — 풀소유는 코인이 열다섯 배로 쏟아져
-         같이 묶으면 평범한 판의 감각이 묻힌다. */
-      ["평균 코인 (풀소유 빼고)", { t: coinCell(su.avg_coins, su.coin_runs), c: "num" }],
-      ["평균 코인 (풀소유)", { t: coinCell(su.avg_coins_full, su.coin_runs_full), c: "num" }]
-    ]));
-
-    /* 오브젝트별 점수 비중 — 판마다의 비중을 평균 낸 값이라
-       점수가 큰 한두 판에 끌려가지 않는다. */
-    const srcRows = data.src || [];
-    if (srcRows.length) {
-      const SRC_LABEL = { star: "별", burst: "별똥별", fever: "간식",
-                          gold: "무지개똥", poop: "똥", time: "생존", spot: "명당" };
-      P.sum.appendChild(devSection("오브젝트별 점수 비중 (판마다의 평균)",
-        ["오브젝트", "평균 비중", "판수"],
-        srcRows.map(r => [
-          SRC_LABEL[r.k] || r.k,
-          { t: (r.pct || 0) + "%", c: "num" },
-          { t: r.runs, c: "num" }
-        ])));
-    }
-
-    const augs = data.augs || [];
-    P.aug.appendChild(devSection("증강별 채택 (판수 순)",
-      ["증강", "판수", "중첩", "평균점수"],
-      augs.length ? augs.map(a => [
-        { t: AUG_NAMES[a.id] || a.id, c: AUG_HIDDEN[a.id] ? "hid" : "" },
-        { t: a.picks, c: "num" },
-        { t: a.stack, c: "num" },
-        { t: Number(a.score || 0).toLocaleString(), c: "num" }
-      ]) : [["기록 없음", "", "", ""]]));
-
-  // 버전별 표를 '지금 쓰는 마이너 버전만 자세히, 이전 마이너는 하나로' 묶는다.
-  //  예) 현재가 v1.4.xx 면  v1.4.47 · v1.4.46 … 은 그대로 두고,
-  //      v1.3.01~99 는 'v1.3' 한 줄로, v1.2.01~99 는 'v1.2' 한 줄로 합친다.
-  //  v1.5 가 나오면 v1.4 가 자동으로 묶인다(따로 고칠 필요 없음).
-  //  평균생존은 판수로 가중평균해서 합친다(단순 평균은 판수 1판짜리가 과대반영됨).
-  //  2026-09 에 번호를 v1.5.97 → v0.6 으로 새로 매겼다. 그래서 v1.x 는 '옛 번호'(더 오래된 판)이고,
-  //  숫자 크기가 아니라 시대로 줄을 세운다 — 새 번호(v0.x)가 위, 옛 번호(v1.x)는 맨 아래.
-  function groupVers(list) {
-    const parse = (t) => {
-      const m = /^v?(\d+)\.(\d+)(?:\.(\d+))?/.exec(String(t || ""));
-      return m ? { maj: +m[1], min: +m[2], pat: m[3] === undefined ? 999 : +m[3] } : null;
-    };
-    const oldEra = p => p.maj >= 1;       // 번호를 새로 매기기 전
-    const top = parse(GAME_VERSION);      // 지금 쓰는 마이너 버전대 (예: v0.7)
-    if (!top) return list;
-    const keep = [], bucket = new Map();
-    for (const v of list) {
-      const p = parse(v.ver);
-      if (!p) { keep.push(v); continue; }               // '(없음)' 같은 건 그대로
-      if (p.maj === top.maj && p.min === top.min && p.pat !== 999) { keep.push(v); continue; }
-      const key = "v" + p.maj + "." + p.min + (oldEra(p) ? " (옛 번호)" : "");
-      const b = bucket.get(key) || { ver: key, runs: 0, secs: 0, score: 0, _w: 0 };
-      const runs = Number(v.runs) || 0;
-      b.runs += runs;
-      b._w += runs;
-      b.secs += (Number(v.secs) || 0) * runs;           // 가중합
-      b.score += (Number(v.score) || 0) * runs;
-      bucket.set(key, b);
-    }
-    for (const b of bucket.values()) {
-      b.secs = b._w ? Math.round(b.secs / b._w) : 0;
-      b.score = b._w ? Math.round(b.score / b._w) : 0;
-      delete b._w;
-      keep.push(b);
-    }
-    const rank = (v) => {
-      const p = parse(v.ver);
-      if (!p) return -1;
-      return (oldEra(p) ? 0 : 1e9) + p.maj * 1e6 + p.min * 1e3 + p.pat;   // 새 번호가 늘 위, 묶음은 그 마이너의 맨 위
-    };
-    return keep.sort((a, b) => rank(b) - rank(a));
-  }
-
-    const vers = groupVers(data.vers || []);
-    if (vers.length) {
-      P.sum.appendChild(devSection("버전별",
-        ["버전", "판수", "평균생존"],
-        vers.map(v => [
-          v.ver,
-          { t: v.runs, c: "num" },
-          { t: (v.secs || 0) + "초", c: "num" }
-        ])));
-    }
-
-    const jb = data.jobs || [];
-    if (jb.length) {
-      P.sum.appendChild(devSection("캐릭터별",
-        ["캐릭터", "판수", "평균점수", "최고점수", "평균생존"],
-        jb.map(q => [
-          JOB_NAMES[q.job] || q.job,
-          { t: q.runs, c: "num" },
-          { t: Number(q.avg || 0).toLocaleString(), c: "num" },
-          { t: Number(q.best || 0).toLocaleString(), c: "num" },
-          { t: (q.secs == null ? "-" : q.secs + "초"), c: "num" }
-        ])));
-    }
-
-    /* 펫별 — 따로 만든 DB 함수(ddongpi_pet_stats)에서 받는다. 함수가 아직 없으면
-       증강 통계에 섞여 있는 'pet:<id>' 줄로 판수·평균점수만이라도 보여 준다. */
-    const petBox = document.createElement("div");
-    P.sum.appendChild(petBox);
-    const petName = id => id === "none" ? "펫 없음" : (PETS[id] ? PETS[id].ic + " " + PETS[id].nm : id);
-    const petTable = (rows, note) => {
-      petBox.innerHTML = "";
-      petBox.appendChild(devSection("펫별" + (note || ""),
-        ["펫", "판수", "평균점수", "최고점수", "평균생존"],
-        rows.length ? rows.map(q => [
-          petName(q.pet),
-          { t: q.runs, c: "num" },
-          { t: Number(q.avg || 0).toLocaleString(), c: "num" },
-          { t: q.best == null ? "-" : Number(q.best).toLocaleString(), c: "num" },
-          { t: (q.secs == null ? "-" : q.secs + "초"), c: "num" }
-        ]) : [["기록 없음", "", "", "", ""]]));
-    };
-    const fromAugs = (data.augs || []).filter(a => String(a.id).slice(0, 4) === "pet:")
-      .map(a => ({ pet: String(a.id).slice(4), runs: a.picks, avg: a.score, best: null, secs: null }));
-    petTable(fromAugs, " (불러오는 중…)");
-    (async () => {
-      try {
-        const res = await fetch(SB_URL + "/rest/v1/rpc/ddongpi_pet_stats", {
-          method: "POST",
-          headers: sbHeaders({ "Content-Type": "application/json" }),
-          body: JSON.stringify({ pw: devPwOK })
-        });
-        if (!res.ok) throw new Error("HTTP " + res.status);
-        petTable(await res.json());
-      } catch (e) {
-        petTable(fromAugs, " (최고점수·생존은 DB 함수 실행 후)");
-      }
-    })();
-
-    /* 최근 판 — 아이템전·노템전을 따로. 모드별 최근 20판은 따로 만든 DB 함수(ddongpi_recent_mode)에서 받고,
-       함수가 아직 없으면 요약에 딸려 온 최근 20판을 모드로 갈라 보여 준다. */
-    const isNo = r => !!(r.augs && r.augs["mode:noitem"]);
-    const isPure = r => !!(r.augs && r.augs["mode:pure"]);
-    const recTable = (rows, md, note) => {
-      if (md === "item") rows = rows.filter(r => !isPure(r) && !isNo(r));   // 똥대잔치 목록에는 다른 맵 판을 섞지 않는다
-      if (md === "pure") rows = rows.filter(isPure);
-      const pane = md === "noitem" ? P.nrec : md === "pure" ? P.prec : P.rec;
-      pane.innerHTML = "";
-      const no = md === "noitem";
-      const sec = devSection((md !== "item" ? MODES[md].nm + " " : "") + "최근 " + rows.length + "판" + (note || ""),
-        no ? ["이름", "캐릭터", "거리", "생존", "펫·증강"] : ["이름", "캐릭터", "점수", "생존", "증강"],
-        rows.length ? rows.map(r => [
-          r.name || "-",
-          r.job ? (JOB_NAMES[r.job] || r.job) : "-",
-          no ? { t: Math.floor((r.secs || 0) / LEVEL_SEC_NOITEM * 100).toLocaleString() + "m", c: "num" }   // 레벨 하나(8초) = 100m
-             : { t: Number(r.score || 0).toLocaleString(), c: "num" },
-          { t: (r.secs || 0) + "초", c: "num" },
-          { t: augLabel(Object.fromEntries(Object.entries(r.augs || {}).filter(([k]) => k.slice(0, 5) !== "mode:"))), c: "lft" }
-        ]) : [["기록 없음", "", "", "", ""]]);
-      sec.querySelector("table").classList.add("tbRecent");
-      pane.appendChild(sec);
-    };
-    const rec = data.recent || [];
-    recTable(rec.filter(r => !isNo(r)), "item", " (불러오는 중…)");
-    recTable(rec.filter(isNo), "noitem", " (불러오는 중…)");
-    recTable(rec, "pure", " (불러오는 중…)");
-    for (const md of ["item", "noitem", "pure"]) (async () => {
-      try {
-        const res = await fetch(SB_URL + "/rest/v1/rpc/ddongpi_recent_mode", {
-          method: "POST",
-          headers: sbHeaders({ "Content-Type": "application/json" }),
-          body: JSON.stringify({ pw: devPwOK, md: md })
-        });
-        if (!res.ok) throw new Error("HTTP " + res.status);
-        recTable(await res.json() || [], md);
-      } catch (e) {
-        recTable(md === "noitem" ? rec.filter(isNo) : rec, md, " (최근 20판 중에서 — DB 함수 실행 전)");
-      }
-    })();
-
-  }
-
-  let devPwOK = "";          // 인증에 성공한 비밀번호 (삭제할 때 다시 쓴다)
-
-  // 이번 주 기록을 원본 그대로(중복 포함) 불러온다 — 지울 대상을 고르기 위해
-  async function devFetchRaw(md) {
-    const url = SB_URL + "/rest/v1/" + SB_TABLE +
-      "?select=id,name,score,level,created_at" +
-      "&created_at=gte." + encodeURIComponent(new Date(weekStartMs(0)).toISOString()) +
-      (md && md !== "item" ? "&mode=eq." + md : "&or=(mode.is.null,mode.eq.item)") +
-      "&order=score.desc&limit=200";
-    const res = await fetch(url, { headers: sbHeaders() });
-    if (!res.ok) throw new Error("HTTP " + res.status);
-    return res.json();
-  }
-
-  async function devDeleteIds(ids, btn, label) {
-    btn.disabled = true;
-    btn.textContent = "…";
-    try {
-      const res = await fetch(SB_URL + "/rest/v1/rpc/ddongpi_delete", {
-        method: "POST",
-        headers: sbHeaders({ "Content-Type": "application/json" }),
-        body: JSON.stringify({ pw: devPwOK, ids: ids })
-      });
-      if (!res.ok) throw new Error("HTTP " + res.status);
-      await devRenderRaw();        // 목록 새로고침
-      refreshBoards();             // 시작·게임오버 화면 순위표도 갱신
-    } catch (e) {
-      btn.disabled = false;
-      btn.textContent = label;
-      devMsg.textContent = "삭제하지 못했습니다 (함수 설치 필요)";
-    }
-  }
-
-  function devDelete(id, btn) {
-    if (!confirm("이 기록을 지울까요?")) return;
-    devDeleteIds([id], btn, "삭제");
-  }
-
-  async function devRenderRaw(md) {
-    if (!md) { await devRenderRaw("item"); await devRenderRaw("noitem"); await devRenderRaw("pure"); return; }   // 셋 다 새로
-    const no = md === "noitem";
-    const secId = md === "noitem" ? "devRawSecN" : md === "pure" ? "devRawSecP" : "devRawSec";
-    const old = document.getElementById(secId);
-    if (old) old.remove();
-    let rows = [];
-    try { rows = await devFetchRaw(md); } catch (e) { /* 아래에서 안내 */ }
-    const box = devSection((md !== "item" ? MODES[md].nm + " " : "") + "이번 주 기록 (지우기)",
-      ["이름", no ? "거리" : "점수", "Lv", ""],
-      rows.length ? rows.map(r => [
-        r.name,
-        { t: Number(r.score || 0).toLocaleString() + (no ? "m" : ""), c: "num" },
-        { t: r.level == null ? "-" : r.level, c: "num" },
-        { t: "", c: "" }
-      ]) : [["기록 없음", "", "", ""]]);
-    box.id = secId;
-    // 랭킹 탭에 붙인다 (삭제 후 다시 그릴 때도 같은 자리)
-    if (rows.length) {                      // 제목 옆에 일괄 삭제 버튼
-      const all = document.createElement("button");
-      all.className = "del";
-      all.style.marginLeft = "8px";
-      all.textContent = "전체 " + rows.length + "건 삭제";
-      all.addEventListener("click", () => {
-        if (!confirm((md !== "item" ? MODES[md].nm + " " : "") + "이번 주 기록 " + rows.length + "건을 모두 지울까요? 되돌릴 수 없습니다.")) return;
-        devDeleteIds(rows.map(r => r.id), all, "전체 삭제");
-      });
-      box.querySelector("h4").appendChild(all);
-    }
-    // 마지막 칸에 삭제 버튼을 심는다
-    const trs = box.querySelectorAll("tr");
-    rows.forEach((r, i) => {
-      const tr = trs[i + 1];               // 0번은 머리글
-      if (!tr) return;
-      const btn = document.createElement("button");
-      btn.className = "del";
-      btn.textContent = "삭제";
-      btn.addEventListener("click", () => devDelete(r.id, btn));
-      tr.lastChild.appendChild(btn);
-    });
-    ((no ? devPanes.nrank : md === "pure" ? devPanes.prank : devPanes.rank) || devBody).appendChild(box);
-  }
-
-  /* ---------- 개발자 화면 탭 ----------
-     섹션이 많아져서 성격별로 묶는다. 탭 버튼을 누르면 해당 판만 보인다. */
-  const DEV_TABS = [["요약", "sum"], ["증강", "aug"], ["최근 판", "rec"], ["랭킹", "rank"], ["증강 상세", "augd"], ["캐릭터 상세", "jobd"],
-                    ["똥탑 최근 판", "nrec"], ["똥탑 랭킹", "nrank"],
-                    ["맨몸 최근 판", "prec"], ["맨몸 랭킹", "prank"]];
-  /* v0.9.43 똥탑등반·맨몸대결은 뺀 모드라 탭 버튼을 숨긴다 (판은 만들어 둔다 — 불러오는 코드가 거기에 채우므로) */
-  const DEV_TABS_HIDDEN = new Set(["nrec", "nrank", "prec", "prank"]);
-  let devPanes = {};
-  /* ── v0.9.93 조회용 상세표 — 숫자는 지금 코드 값. 같은 증강을 또 먹으면 dim() 으로 0.85배씩 줄어드는 것은 "겹칠수록 덜" 로 적었다 ── */
-  const DEV_AUG_DETAIL = {
-    fever_time: "간식 타임 +1.5초 (먹을 때마다, 줄지 않음 · 기본 8초)",
-    star50: "별 점수 배율 +0.25 (겹칠수록 0.85배씩 덜) · 별 점수 = 2000 × 먹은 순번 × 배율",
-    time2x: "생존 점수 ×1.5 (겹칠수록 덜: 1.5 → ×1.425 → …)",
-    fever50: "간식 낙하물 점수 +20% (먹을 때마다, 줄지 않음)",
-    slow: "똥 낙하 속도 -12% (겹칠수록 덜)",
-    small: "몸(판정) -12% (겹칠수록 덜) · 버피는 안 나옴",
-    tinypoop: "똥 크기 -12% (겹칠수록 덜)",
-    umbrella3: "우산 +3개 (증강으로는 최대 10개) · 버피·우산 10개면 안 나옴",
-    "pet:helper": "1단계: 뿌잉 출격 6.5초마다, 크기 1배, 부수는 반경 35px · 단계마다 간격 ×0.88, 크기 +0.12 (5단계 3.9초 · 1.48배) · 상점 구매 필요",
-    "pet:galaga": "1단계: 우주선 1대, 0.7초마다 총알 · 단계마다 한 대 추가, 대당 간격 +0.25초 (5대 = 각 1.7초) · 상점 구매 필요",
-    "pet:dove": "1단계: 110m(1,320px) 움직일 때마다 비둘기 1마리 출격, 부딪히면 반경 50px 폭발(특수똥도), 똥 점수 5배 · 단계마다 한 번에 +1마리(최대 5마리) · 상점 구매 필요",
-    "pet:angel": "쓰러지면 한 번 하트 1개로 되살림 + 2초 무적, 되살아난 뒤 6초 동안 반경 92px 똥을 밀어냄 · 레벨 4부터 · 상점 구매 필요",
-    "pet:gift": "18초마다 떨어지는 똥 하나를 아이템으로(하트 25% · 우산 25% · 별 30% · 달 20%, 무무는 달 대신 별, 버피는 우산 대신 하트, 하트가 가득이면 별) · 처음은 9초 뒤 · 상점 구매 필요",
-    "pet:coincat": "9초마다 코인을 물어다 떨어뜨림 · 세 번째마다 5코인 · 처음은 4.5초 뒤 · 상점 구매 필요",
-    "pet:duck": "3초마다 오리 떼(1단계 2마리, 단계마다 +1, 최대 6마리)가 화면 가운데 언저리를 약 1.8초에 가로지름 · 마리당 똥 1개 부수고 사라짐(다크똥 제외, 좌우 번갈아) · 상점 구매 필요",
-    duckFat: "오리 크기 1.25배 · 부수는 범위 1.5배",
-    duckMarch: "방귀 대시 때 출발 자리에서 대각선 위(대시한 쪽)로 오리 떼 출동 (마리 수는 단계 그대로)",
-    duckEgg: "오리가 똥을 부술 때 30% 확률로 1코인",
-    "pet:eel": "7초마다 가장 가까운 똥에 번개, 옆 똥으로 2개까지 옮겨붙음(건너뛰는 거리 110px) · 상점 구매 필요",
-    doveHome: "비둘기 출격 거리 -20% (겹칠수록 덜, 최대 3번: 110m → 88m → 73m → 62m)",
-    hungry: "뿌잉이 아이템이 뜨고 3초 뒤 대신 먹으러 감(한 번에 한 마리, 다녀오면 2초 쉼, 속도 500px/s)",
-    roid: "6초 동안 몸 2배, 닿는 똥을 튕겨냄(피한 점수 받음, 다크똥 제외) · 끝날 때 0.5초 무적 · 버피 전용, 레벨 7부터, 계속 나옴",
-    doveWhat: "비둘기 크기·속도 1.5배, 출격 거리 ×0.75",
-    steelUmb: "우산이 하나도 없으면 6.5초마다 한 개 배송",
-    starburst: "별을 먹으면 화면의 똥 전부 제거(무지개똥·다크똥·간식 제외), 개당 똥 점수 6배, 0.5초 동안 새 똥 안 나옴",
-    blackhole: "자석 반경 220 → 390px, 간식 낙하물도 반경 195px 안에서 끌림",
-    legion: "대왕 간식 등장 2.1배, 점수 1.5배",
-    magnet: "아이템·무지개똥을 반경 220px 안에서 끌어옴(무지개똥은 반경·힘 절반) · 코인은 자석 없어도 110px",
-    dash: "화면 두 번 두드리면 그 자리로 순간이동(가까우면 보는 쪽 210px), 재사용 10초, 지나온 길의 똥은 스친 것으로 침 · 무적 없음 · 도도는 안 나옴",
-    lucky: "아이템 등장 간격 ÷(1+0.15) (겹칠수록 덜, 5개 ≈ +65%)",
-    giant: "간식 타임에 대왕 간식(반지름 104~124, 점수 138)가 섞여 나옴",
-    downpour: "간식 타임 낙하량 +20% (먹을 때마다, 줄지 않음)",
-    angryUmb: "우산이 깨질 때 화면 2/3를 덮는 폭발로 똥을 날려 보냄(날아간 똥끼리 부딪히면 터짐) · 우산 5개 이상일 때 나옴",
-    gold: "똥이 무지개똥으로 바뀔 확률 첫 개 8%, 이후 +7%p씩 · 무지개똥 = 120 × 레벨 × 점수배율",
-    dopa: "똥 속도 +10%, 생존 점수 ×1.5 (둘 다 겹칠수록 덜)",
-    carrot: "하트 1개 잃고 모든 점수 ×1.2 (최대 5번) · 하트 2개 이상일 때",
-    dungy: "모든 점수 ×(1 + 1/하트 수) — 하트 1개 2배 · 2개 1.5배 · 3개 1.33배",
-    goldLord: "무지개똥 끌어오는 반경·힘 2배(아이템과 같게), 무지개똥 점수 2배",
-    inter: "8초마다 2초 동안 세상만 느려짐(점수 시계는 그대로) · 간식 타임엔 안 걸림",
-    afterimage: "맞을 때 피할 확률 첫 개 10%, 이후 +5%p씩(최대 5개 30%) · 우산보다 먼저 굴림",
-    chainZap: "우주선 총알·뿌잉·비둘기·선물 요정이 똥을 부술 때 번개로 옆 똥 2개(100px 안) 더 · 찌릿 장어는 번개가 2개 더 옮겨붙음",
-    wak: "우주선 총알이 주먹 — 맞은 똥이 튕겨 올라가 처음 부딪힌 똥과 반경 42px 폭발 · 우주선 2대 이상",
-    clone: "1.5초마다 작은 분신이 머리 위 똥에게 날아가 반경 110px 폭발(특수똥도) · 레벨 7부터, 하트 2개 이하일 때",
-    glass: "모든 점수 ×1.25, 몸(판정) ×1.15 (최대 3번)",
-    pierce: "우주선 총알이 똥 하나를 뚫고 계속 날아감",
-    fly: "맞을 때마다 똥파리 1마리, 5초 동안 400px/s 로 가까운 똥을 쫓아 반경 18px 부숨",
-    stone: "2초 가만히 있으면 돌(무적, 최대 5초) · 풀린 뒤 1초는 다시 안 굳음 · 돌인 동안 점수·아이템 없음 (스테이지는 흐름) · 다크똥은 돌이어도 맞음",
-    gacha: "이후 증강 카드가 물음표로 · 칸마다 50% 확률로 히든 증강에서 뽑음",
-    snackBig: "간식 타임 동안 몸(판정) 1.5배 · 간식 증강(간식 시간 더!·간식 냠냠 대박·간식 비·대왕 간식·군단) 4개 이상",
-    cloudVip: "구름 상점 증강 2개 → 3개 (히든도 달처럼 1/4 무게로 섞여 나옴)",
-    juggle: "버튼 — 머리 둘레(몸 반경×2.4+30px) 안 위쪽 똥을 위로 튕김(곧게 위로), 튕긴 똥이 다른 똥에 닿으면 같이 터짐(반경 42) · 간식 제외(다크똥도 됨) · 쿨 3초",
-    vacuum: "버튼 — 1.3초 동안 머리 위 ±43° 부채꼴 300px 안 똥(다크똥 포함)·아이템을 빨아들임, 똥은 부순 점수 · 쿨 15초",
-    closeCall: "아슬! 할 때마다 연속 +1(숫자는 계속 오르고 점수 배율은 30에서 멈춤), 똥 점수 × 0.5 × 연속(최대 30) · 몸에 똥이 닿으면 0 (방울·부적·우산·동전 갑옷·버팀으로 막아도) · 맞은 똥은 아슬로 안 침",
-    coinArmor: "하트를 잃을 일이면 이번 판 코인으로 대신 막음(1초 무적) — 5·6·7… 쓸 때마다 1개씩 비싸짐",
-    credit: "구름 상점에서 모아 둔 코인도 씀 (없으면 이번 판 코인만)",
-    bombPoop: "보통 똥의 12%가 폭탄 똥 — 다른 똥에 닿으면 반경 80 폭발(다크 제외), 나한테 맞으면 하트 -1 + 폭발",
-    fartRocket: "대시 지나간 길에 1초 바람 — 닿는 똥을 초승달 쓸기처럼 튕김",
-    zapDance: "아슬! 마다 그 똥 + 위쪽 가까운 똥 2개 번개 연쇄",
-    goldArmor: "동전 갑옷이 막을 때 코인 5개가 사방으로 튀고, 0.7초 뒤 코인냥이가 1~2개를 물어 옴",
-    toilet: "달마다 증강 선택 2배(보름달 6번) · 하트로 맞으면 50% 확률로 즉사 · 하트 3개 이상 · 레벨 7 이하",
-    twoRand: "일반 증강 중 무작위 2개를 바로 받음"
-  };
-  const DEV_JOB_DETAIL = {
-    bangul: ["비누방울 1겹 두르고 시작 — 맞으면 방울만 터지고 0.9초 무적", "방울은 20초 뒤 다시 맺힘", "하트 3개", "레벨 보상: 아래 표"],
-    fit: ["하트 5개로 시작, 최대 30개", "몸(판정) 1.3배", "하트 등장 5배, 우산 자리에 하트", "우산·다이어트·우산 세 개·화난 우산 안 나옴", "레벨 7부터 '벌크업'(6초 몸 2배·똥 튕김) 계속 나옴"],
-    powerj: ["달 등장 1.8배", "증강 카드 1장만(다시 뽑기 없음)", "같은 증강 연속 등장을 더 세게 막음(바로 다음 1/8)"],
-    levitator: ["처음부터 하늘 어디든 날 수 있음(위아래 이동)", "이동 속도 2.5배", "높이 있을수록 모든 점수 +0~100%(꼭대기 2배)", "아이템을 반경 121px 에서 끌어옴(자석 없이)"],
-    powerp: ["잠긴 캐릭터 — 코인 안 먹고 100초 버티면 해금", "달이 안 나옴(증강 없음)", "별 등장 1.5배", "안 맞은 초당 점수 +10%(상한 없음), 하트를 잃으면 그 시간 절반을 잃음", "코인 2배 · 코인 자동으로 안 끌려옴", "코인을 연달아 3개 쥐면 '풀소유'(코인 7.5배)", "판 끝에 흘려보낸 코인 값 1당 점수 +1%"],
-    fortune: ["판 시작 2초 뒤부터 10초마다 예언이 바뀜", "좋은 예언 12가지 · 나쁜 예언 7가지 · 양면 1가지(운명의 주사위)", "명당 위에 서면 생존 점수 4배"]
-  };
-  const DEV_PROPH = {     // v0.9.95 예언별 설명 (10초 동안)
-    small: "떠 있는 똥과 새 똥 크기 ×0.55",
-    slow: "똥 낙하 속도 ×0.7 (떠 있는 똥도 바로)",
-    coin: "0.5초마다 코인 하나씩 떨어짐 (10초에 약 20개)",
-    double: "모든 점수 2배",
-    shield: "바뀌는 순간 우산 +1 (최대 5) · 버피는 하트 +1",
-    fever: "바로 간식 타임 3초 (간식 시간 더! 증강은 안 붙음)",
-    magnet: "화면 어디서든 아이템·코인이 끌려옴 (반경 2400px, 힘 1.8배)",
-    sight: "천리안 — 떨어지는 똥이 바닥 어디에 닿을지 선으로 보임",
-    spot: "명당 — 땅에 빛나는 자리가 생기고, 그 위에 서면 생존 점수 4배 · 절반쯤에 한 번 옮겨 감",
-    fast: "똥 낙하 속도 ×1.3",
-    big: "똥 크기 ×1.3",
-    dark: "다크똥(부술 수 없는 똥)이 최소 30% 섞여 나옴",
-    heavy: "몸(판정) 1.3배",
-    reverse: "좌우 조작이 반대로",
-    fog: "화면 위쪽이 뿌옇게 가려져 똥이 늦게 보임",
-    wind: "옆바람 — 똥이 한쪽으로 초당 120px 밀림 (방향은 무작위)",
-    dice: "모든 점수 3배, 대신 똥 수 1.5배"
-  };
-  function devCode(fn) { return fn ? fn.toString().replace(/\s+/g, " ").replace(/^\(\) => \{ ?|\}$/g, "").trim() : ""; }
-  function renderDevSpecs() {
-    /* 증강 상세 */
-    const pa = devPanes.augd; pa.innerHTML = "";
-    const groups = [["일반 증강", a => !a.hidden && !a.id.startsWith("pet:")], ["펫 증강", a => a.id.startsWith("pet:")], ["히든 증강", a => a.hidden]];
-    for (const [title, f] of groups) {
-      const sec = document.createElement("div"); sec.className = "sec";
-      sec.innerHTML = "<h4>" + title + "</h4>";
-      for (const a of AUGMENTS.filter(x => !x.gone).filter(f)) {
-        const c = document.createElement("div"); c.className = "spec" + (a.hidden ? " hid" : "");
-        const lim = a.once ? "1번" : "최대 " + maxOf(a) + "번";
-        const wt = a.w !== undefined ? a.w : (a.hidden ? 0.25 : 1);
-        const tags = [lim, "뽑힐 비중 " + wt];
-        if (ACH[a.id]) tags.push("🔒 업적: " + ACH[a.id].t);
-        if (BOOK_PET[a.id]) tags.push("🐾 상점 펫: " + PETS[BOOK_PET[a.id]].nm);
-        if (BOOK_COND[a.id]) tags.push("조건: " + BOOK_COND[a.id]);
-        c.innerHTML = '<div class="sh"><b></b><i></i></div><div class="sv"></div><div class="sd"></div><div class="st"></div><details><summary>코드</summary><code></code></details>';
-        c.querySelector(".sv").textContent = "화면: " + a.ds + (a.dsFn && maxOf(a) > 1 ? "  /  2단계부터: " + (() => { const k = augCount[a.id]; augCount[a.id] = 1; let t = ""; try { t = a.dsFn(); } catch (e) {} if (k === undefined) delete augCount[a.id]; else augCount[a.id] = k; return t; })() : "");   // v0.9.353 실제 카드에 적힌 그대로
-        c.querySelector("b").textContent = a.ic + " " + a.nm;
-        c.querySelector("i").textContent = a.id;
-        c.querySelector(".sd").textContent = DEV_AUG_DETAIL[a.id] || a.ds;
-        c.querySelector(".st").textContent = tags.join(" · ");
-        c.querySelector("code").textContent = (a.cond ? "조건: " + devCode(a.cond) + "\n" : "") + "효과: " + devCode(a.go);
-        sec.appendChild(c);
-      }
-      pa.appendChild(sec);
-    }
-    /* 캐릭터 상세 */
-    const pj = devPanes.jobd; pj.innerHTML = "";
-    const lvSec2 = document.createElement("div"); lvSec2.className = "sec";
-    lvSec2.innerHTML = "<h4>레벨 공통</h4>";
-    const lvs = document.createElement("div"); lvs.className = "spec";
-    lvs.innerHTML = '<div class="sd"></div>';
-    lvs.querySelector(".sd").textContent = "똥피력 경험치(버틴 초): " + ACC_XP.slice(1).map((x, k) => (k + 2) + "단계 " + x.toLocaleString()).join(" · ") +
-      "\n캐릭터 레벨(그 캐릭터로 버틴 초 · 방울이·도도·루나 ×1.1, 무무 ×1.3): " + CHR_XP.slice(1).map((x, k) => "Lv" + (k + 2) + " " + x.toLocaleString()).join(" · ") +
-      "\n" + Object.entries(ACC_REW).map(([l, t]) => "똥피력 " + l + "단계: " + t).join("\n") +
-      "\n스테이지 " + LEVEL_SEC + "초 · 끝판왕 " + FB_LV + "레벨부터 " + FB_LEN + "스테이지";
-    lvs.querySelector(".sd").style.whiteSpace = "pre-line";
-    lvSec2.appendChild(lvs); pj.appendChild(lvSec2);
-    for (const id in JOBS) {
-      if (JOBS[id].gone) continue;
-      const sec = document.createElement("div"); sec.className = "sec";
-      const h = document.createElement("h4"); h.textContent = JOBS[id].ic + " " + JOBS[id].nm + "  (" + id + ")"; sec.appendChild(h);
-      const c = document.createElement("div"); c.className = "spec";
-      const ul = document.createElement("div"); ul.className = "sd"; ul.style.whiteSpace = "pre-line";
-      ul.textContent = "• " + (DEV_JOB_DETAIL[id] || [JOBS[id].ds]).join("\n• ");
-      const sv = document.createElement("div"); sv.className = "sv"; sv.style.whiteSpace = "pre-line";   // v0.9.353 홈 화면 설명판에 실제로 보이는 글 그대로
-      sv.textContent = "화면: " + jobTraitLines(JOBS[id]).join(" / ") + (JOBS[id].needUnlock ? "\n잠겼을 때: 🔒 " + unlockHow(id) : "");
-      c.append(sv, ul);
-      const P = CHR_PERKS[id];
-      if (P) {
-        const t = document.createElement("table");
-        t.innerHTML = "<tr><th>Lv</th><th class='lft'>A</th><th class='lft'>B</th></tr>";
-        for (let l = 2; l <= 5; l++) {
-          const tr = document.createElement("tr");
-          const td0 = document.createElement("td"); td0.textContent = l + (l === 3 ? "🌐" : l === 5 ? "⭐" : "");
-          const tdA = document.createElement("td"); tdA.className = "lft"; tdA.textContent = P[l].A;
-          const tdB = document.createElement("td"); tdB.className = "lft"; tdB.textContent = P[l].B;
-          tr.append(td0, tdA, tdB); t.appendChild(tr);
-        }
-        c.appendChild(t);
-      }
-      sec.appendChild(c); pj.appendChild(sec);
-    }
-    /* 루나 예언 목록 */
-    const ps = document.createElement("div"); ps.className = "sec";
-    ps.innerHTML = "<h4>🔮 루나 예언 (10초씩)</h4>";
-    const pl = document.createElement("div"); pl.className = "spec"; const pd = document.createElement("div"); pd.className = "sd"; pd.style.whiteSpace = "pre-line";
-    pd.textContent = PROPHECIES.map(q => (q.bad ? "❌ " : q.both ? "🎲 " : "✅ ") + q.nm + (DEV_PROPH[q.id] ? "\n      " + DEV_PROPH[q.id] : "")).join("\n");
-    pl.appendChild(pd); ps.appendChild(pl); pj.appendChild(ps);
-  }
-  function devInitTabs() {
-    const bar = document.getElementById("devTabs");
-    bar.innerHTML = "";
-    devBody.innerHTML = "";
-    devPanes = {};
-    for (const [label, key] of DEV_TABS) {
-      const pane = document.createElement("div");
-      pane.className = "tabPane";
-      pane.dataset.key = key;
-      devBody.appendChild(pane);
-      devPanes[key] = pane;
-      if (DEV_TABS_HIDDEN.has(key)) continue;
-      const btn = document.createElement("button");
-      btn.textContent = label;
-      btn.dataset.key = key;
-      btn.addEventListener("click", () => devShowTab(key));
-      bar.appendChild(btn);
-    }
-    bar.classList.add("on");
-    devShowTab(DEV_TABS[0][1]);
-  }
-  function devShowTab(key) {
-    for (const el of devBody.querySelectorAll(".tabPane"))
-      el.classList.toggle("on", el.dataset.key === key);
-    for (const b of document.getElementById("devTabs").children)
-      b.classList.toggle("on", b.dataset.key === key);
-  }
-
-  async function devLoad(pw) {
-    devMsg.textContent = "불러오는 중…";
-    try {
-      const res = await fetch(SB_URL + "/rest/v1/rpc/ddongpi_stats", {
-        method: "POST",
-        headers: sbHeaders({ "Content-Type": "application/json" }),
-        body: JSON.stringify({ pw: pw })
-      });
-      if (!res.ok) { devMsg.textContent = "비밀번호가 틀렸습니다"; return; }
-      devMsg.textContent = "";
-      devPw.value = "";
-      devPwOK = pw;
-      document.getElementById("devPwRow").style.display = "none";   // 들어왔으면 비번창은 치운다
-      devInitTabs();
-      renderDevSpecs();                         // v0.9.93 증강·캐릭터 상세 (서버 자료 없이 게임 코드에서)
-      renderDevStats(await res.json());
-      // 이번 주 랭킹은 별도 테이블이라 따로 불러와 랭킹 탭 맨 위에 붙인다 (아이템전 · 노템전 따로)
-      for (const md of ["item", "noitem", "pure"]) {
-        const no = md === "noitem", pane = no ? devPanes.nrank : md === "pure" ? devPanes.prank : devPanes.rank;
-        const ttl = (md !== "item" ? MODES[md].nm + " " : "") + "이번 주 TOP " + TOP_N;
-        try {
-          const rows = await fetchRange(weekStartMs(0), null, TOP_N, null, md);
-          const topSec = devSection(ttl,
-            ["#", "이름", "캐릭터", no ? "거리" : "점수", "Lv", no ? "펫" : "증강"],
-            rows.length ? rows.map((r, i) => [
-              (i + 1) + "",
-              r.name,
-              r.job ? (JOB_NAMES[r.job] || r.job) : "-",
-              { t: Number(r.score || 0).toLocaleString() + (no ? "m" : ""), c: "num" },
-              { t: r.level == null ? "-" : r.level, c: "num" },
-              { t: augLabel(Object.fromEntries(Object.entries(r.augs || {}).filter(([k]) => k.slice(0, 5) !== "mode:"))), c: "lft" }
-            ]) : [["", "기록 없음", "", "", "", ""]]);
-          topSec.querySelector("table").classList.add("tbTop");
-          pane.appendChild(topSec);
-        } catch (e) {
-          pane.appendChild(devSection(ttl, null, [["랭킹을 불러오지 못했습니다", ""]]));
-        }
-      }
-      await devRenderRaw();
-    } catch (e) {
-      devMsg.textContent = "불러오지 못했습니다";
-    }
-  }
-
-  document.getElementById("devDot").addEventListener("click", () => {
-    devBody.innerHTML = ""; devMsg.textContent = ""; devPw.value = "";
-    document.getElementById("devPwRow").style.display = "";
-    document.getElementById("devTabs").classList.remove("on");
-    devScreen.classList.remove("hidden");
-    devPw.focus();
-  });
-  document.getElementById("devHome").addEventListener("click", () => {
-    devScreen.classList.add("hidden");
-  });
-  document.getElementById("devClose").addEventListener("click", () => {
-    devScreen.classList.add("hidden");
-  });
-  devPw.addEventListener("keydown", e => {
-    e.stopPropagation();                       // 스페이스로 게임이 시작되지 않도록
-    if (e.key === "Enter") { e.preventDefault(); devLoad(devPw.value.trim()); }
-  });
-  document.getElementById("devGo").addEventListener("click", () => {
-    devLoad(devPw.value.trim());
-  });
-
-  /* ---------- 개발자 테스트 모드 ----------
-     제목 왼쪽 💩 → 비밀번호 → 목숨 무한으로 시작한다.
-     비밀번호는 개발자 통계와 같은 것을 쓰고, 확인은 서버에서 한다 (코드에 적어두지 않는다). */
-  const testScreen = document.getElementById("testScreen");
-  const testPw     = document.getElementById("testPw");
-  const testMsg    = document.getElementById("testMsg");
-  const testGo     = document.getElementById("testGo");
-
-  let pwPurpose = "test";                   // "test" = 테스트 모드로 시작, "tower" = 똥탑등반 열기
-  function openPwScreen(purpose) {
-    pwPurpose = purpose;
-    document.getElementById("testTitle").textContent = purpose === "tower" ? "🗼 똥탑등반" : purpose === "test2" ? "테스트 모드2" : "테스트 모드";
-    document.getElementById("testSub").textContent = purpose === "tower"
-      ? "아직 준비 중인 스테이지입니다 · 개발자 비밀번호"
-      : purpose === "test2" ? "레벨·코인·해금 상태를 마음대로 바꿔 실제 상황을 시험합니다" : "목숨 무한 · 기록은 남지 않습니다";
-    testPw.value = ""; testMsg.textContent = "";
-    testScreen.classList.remove("hidden");
-    testPw.focus();
-  }
-  document.getElementById("testDot").addEventListener("click", () => openPwScreen("test"));
-  document.getElementById("testClose").addEventListener("click", () => {
-    testScreen.classList.add("hidden");
-  });
-  testPw.addEventListener("keydown", e => {
-    e.stopPropagation();                       // 스페이스로 게임이 시작되지 않도록
-    if (e.key === "Enter") { e.preventDefault(); testStart(); }
-  });
-  testGo.addEventListener("click", testStart);
-
-  async function testStart() {
-    const pw = testPw.value.trim();
-    if (!pw) { testPw.focus(); return; }
-    testMsg.textContent = "확인 중…";
-    testGo.disabled = true;
-    let ok = false;
-    try {
-      const res = await fetch(SB_URL + "/rest/v1/rpc/ddongpi_stats", {
-        method: "POST",
-        headers: sbHeaders({ "Content-Type": "application/json" }),
-        body: JSON.stringify({ pw: pw })
-      });
-      ok = res.ok;
-      if (!ok) testMsg.textContent = "비밀번호가 틀렸습니다";
-    } catch (e) {
-      testMsg.textContent = "확인하지 못했습니다";
-    }
-    testGo.disabled = false;
-    if (!ok) { testPw.value = ""; testPw.focus(); return; }
-    testMsg.textContent = "";
-    testPw.value = "";
-    testScreen.classList.add("hidden");
-    if (pwPurpose === "tower") return;     // 똥탑등반은 v0.8.98 에 뺐다
-    if (pwPurpose === "test2") { openT2(); return; }
-    openJobSelect(true);                   // 테스트 모드도 직업을 고르고 시작
-  }
-
-  document.getElementById("btnRhythm").addEventListener("click", () => {
-    rhythmOn = !rhythmOn;
-    document.getElementById("btnRhythm").textContent = rhythmOn ? "리듬 ON" : "리듬 OFF";
-    popText(W / 2, H * 0.3, rhythmOn ? "리듬 켬" : "리듬 끔", "#9fd8ff", 22);
-    beep(rhythmOn ? 1000 : 600, .07, "triangle", .05);
-  });
-  document.getElementById("btnLvUp").addEventListener("click", () => testJumpLevel(1));
-  document.getElementById("btnLvDn").addEventListener("click", () => testJumpLevel(-1));
-
-  btnTestEnd.addEventListener("click", () => {
-    testMode = false;
-    rhythmOn = false; beatPulse = 0;
-    document.getElementById("btnRhythm").textContent = "리듬 OFF";
-    btnTestEnd.classList.remove("on");
-    testLv.classList.remove("on");
-    btnPause.classList.remove("on");
-    pauseScreen.classList.add("hidden");
-    state = STATE.READY;
-    augScreen.classList.add("hidden");
-    overScreen.classList.add("hidden");
-    startScreen.classList.remove("hidden");
-  });
 
   /* 화면에 보이는 이번 주 TOP 10 을 기준으로만 판단한다.
      내 지난 기록이 더 높든 낮든 상관없이, 지금 점수가 순위표에 들어갈 점수면 등록할 수 있다. */
@@ -17219,7 +16443,7 @@
     const name = nameInput.value.trim();
     if (!name) { nameInput.focus(); return; }
     const err = await claimName(name);   // v0.9.218
-    if (err) { nameTag.textContent = "⚠️ " + err; nameInput.focus(); return; }
+    if (err) { nameTag.textContent = "⚠️ " + err; nameTag.classList.add("err"); nameInput.focus(); return; }
     btnSave.disabled = true;
     btnSave.textContent = "등록 중…";
     try {
@@ -17232,7 +16456,7 @@
       refreshBoards(boardStart);
       if (overScreen.classList.contains("firstName")) { overScreen.classList.remove("firstName"); document.getElementById("btnHome").click(); }   // v0.9.319 첫 판 등록 끝 → 시작 화면
     } catch (e) {
-      nameTag.textContent = "등록 실패 — 다시 시도해주세요";
+      nameTag.textContent = "등록하지 못했어요 · 다시 눌러 주세요"; nameTag.classList.add("err");
       btnSave.disabled = false;
     }
     btnSave.textContent = "등록";
@@ -19753,8 +18977,28 @@
     const msg = ((e && e.message) || String(e)).slice(0, 80) + (at ? " @" + at : "");
     if (!errNote || errNote.msg !== msg) console.error("게임 오류", e);
     errNote = { msg, t: performance.now(), v: GAME_VERSION };
+    errSend(e, msg);
   }
   window.addEventListener("error", ev => noteError(ev.error || ev.message));
+  window.addEventListener("unhandledrejection", ev => { const r = ev.reason; if (r && r.name === "AbortError") return; errSend(r, ((r && r.message) || String(r)).slice(0, 120) + " (promise)"); });
+  /* v0.9.377 오류 수집 — 사용자 폰에서 난 오류를 서버(ddongpi_errors)에 남긴다. 같은 문구는 한 번만, 한 번 켤 때 5개까지.
+     이 컴퓨터에서 연 개발판(파일·localhost — 앱은 빼고)은 안 보낸다. 개발자 페이지 '오류' 탭에서 본다 */
+  const ERR_LOCAL = !window.Capacitor && (location.protocol === "file:" || /^(localhost|127\.|192\.168\.)/.test(location.hostname));
+  let errSent = 0;
+  const errSeen = new Set();
+  function errSend(e, msg) {
+    if (ERR_LOCAL || !SB_ON || errSent >= 5 || errSeen.has(msg)) return;
+    errSeen.add(msg); errSent++;
+    let ctx = "";
+    try { ctx = [Object.keys(STATE).find(k => STATE[k] === state), job, "lv" + level, gameMode].join(" "); } catch (x) {}
+    try {
+      fetch(SB_URL + "/rest/v1/ddongpi_errors", {
+        method: "POST", keepalive: true, headers: sbHeaders({ "Content-Type": "application/json", Prefer: "return=minimal" }),
+        body: JSON.stringify({ ver: GAME_VERSION, lang: LANG, msg: String(msg).slice(0, 400), stack: String((e && e.stack) || "").slice(0, 2000),
+                               ua: navigator.userAgent.slice(0, 300), dev: String(deviceId || "").slice(0, 40), ctx: ctx.slice(0, 200) })
+      }).catch(() => {});
+    } catch (x) {}
+  }
   function drawErrNote(now) {
     if (!errNote || now - errNote.t > 8000) return;
     ctx.save();
