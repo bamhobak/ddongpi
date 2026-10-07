@@ -2725,7 +2725,7 @@
   const elTitle = document.getElementById("overTitle");
   const coinNote = document.getElementById("coinNote");
 
-  const GAME_VERSION = "v0.9.363";
+  const GAME_VERSION = "v0.9.364";
   /* 제작사 스플래시(bamhobak friends 로고) — 2026-09-20 끔. 다시 켜려면 true */
   const SPLASH_USE = false;   // 코드를 고칠 때마다 뒤 두 자리를 올린다
   document.getElementById("ver").textContent = GAME_VERSION;
@@ -5050,6 +5050,7 @@
   document.addEventListener("pointerdown", () => {   // 화면 어디를 눌러도(안내 말풍선이 덮고 있어도) — 그래서 문서에 건다
     if (!augAutoFn || state !== STATE.AUG) return;
     clearTimeout(augAutoT); const f = augAutoFn; augAutoFn = null; augSkipping = true; f();
+    liftWait = true;   // 건너뛰려고 누른 이 손가락도 떼기 전엔 조작이 아니다
   }, true);
   let augPickedSeq = [], pjSeq = [], pjT0 = 0;   // pjSeq: 제이 자동 받기 — 보름달 앞 차례 카드들
   function closeAugScreen() {
@@ -5057,7 +5058,8 @@
     startAugNow = false; augSkipping = false; augAutoFn = null;
     augScreen.classList.add("hidden");
     state = STATE.PLAY;
-    inputHoldUntil = 0;   // v0.9.363 증강 뒤 터치 무시 없앰 (예전 0.35 → 0.3초) — 끌기는 누른 자리 기준의 상대 이동이라 순간이동하지 않는다
+    inputHoldUntil = 0;   // v0.9.363 증강 뒤 터치 무시(시간) 없앰
+    liftWait = ptrsDown.size > 0;   // v0.9.364 대신 증강 창을 누르던 손가락은 한 번 떼고 다시 눌러야 조작이 된다
     /* 증강을 고르는 동안 게임은 멈춰 있었지만 간식 타임·무적 시간은
        실제 시계로 재고 있어서 그대로 두면 고민한 만큼 깎여 나간다.
        멈춰 있던 시간만큼 마감 시각을 뒤로 밀어 원래 남은 시간을 돌려준다. */
@@ -8304,6 +8306,15 @@
   function doveMul()   { return aug.doveWhat ? 1.5 : 1; }
   function doveEvery() { return DOVE_EVERY * (aug.doveWhat ? 0.75 : 1) * aug.doveFreq; }
   let inputHoldUntil = 0;          // 이 시각까지는 화면 터치를 조작으로 받지 않는다
+  /* v0.9.364 손 떼기 기다림 — 증강 창(카드·건너뛰기)이나 시작 버튼을 누르던 손가락이 화면이 닫힌 뒤에도
+     붙어 있으면, 그 손가락은 조작으로 받지 않는다. 모든 손가락을 한 번 뗀 다음 새로 누른 것부터 캐릭터가 움직인다. */
+  let liftWait = false;
+  const ptrsDown = new Set();
+  document.addEventListener("pointerdown", e => ptrsDown.add(e.pointerId), true);
+  const ptrUp = e => { ptrsDown.delete(e.pointerId); if (!ptrsDown.size) liftWait = false; };
+  document.addEventListener("pointerup", ptrUp, true);
+  document.addEventListener("pointercancel", ptrUp, true);
+  window.addEventListener("blur", () => { ptrsDown.clear(); liftWait = false; });
   let roidT = 0;                   // 스테로이드 과다 복용: 남은 약발 시간(초)
   /* v0.9.61 새 증강 상태 */
   let cloudT = 60;                 // v0.9.84 구름 상점 — 다음 구름까지(초)
@@ -8457,6 +8468,7 @@
     /* 화면(증강·직업 선택)을 누른 손가락이 그대로 게임 조작으로 새는 걸 막는다.
        화면이 닫힌 뒤 브라우저가 같은 자리에 흉내내는 마우스 이벤트를 흘려보낸다. */
     if (performance.now() < inputHoldUntil) return true;
+    if (liftWait) return true;
     return false;
   }
   function dragAnchor(e) {
@@ -8537,7 +8549,7 @@
     if (mouseEcho(e)) return;
     if (state !== STATE.PLAY || dying > 0) return;
     const now = performance.now();
-    if (now < inputHoldUntil) return;
+    if (now < inputHoldUntil || liftWait) return;
     const x = pointerX(e), y = pointerY(e);
     if (vsSplit() && x > W / 2) return;             // 한 폰 대전 — 오른쪽 반은 P2 몫 (P2 는 방귀 대시가 없다)
     if (now - lastTapAt < DTAP_MS && Math.hypot(x - lastTapX, y - lastTapY) < DTAP_DIST) {
@@ -10507,7 +10519,7 @@
     overScreen.classList.add("hidden");
     nameRow.classList.remove("on");
     beep(660, .1, "square", .04);
-    inputHoldUntil = performance.now() + 350;   // 직업 카드를 누른 손가락이 조작으로 새지 않게
+    inputHoldUntil = 0; liftWait = ptrsDown.size > 0;   // v0.9.364 시작 0.35초 터치 무시 없앰 — 누르고 있던 손가락만 떼고 다시 누를 때까지 무시
     btnPause.classList.add("on");
     pauseScreen.classList.add("hidden");
     resumeCountEnd = 0;
