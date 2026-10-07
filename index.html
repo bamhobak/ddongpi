@@ -727,6 +727,7 @@
   #devBody .spec .sh { display: flex; justify-content: space-between; gap: 6px; }
   #devBody .spec .sh b { color: #fff; font-size: 12.5px; } #devBody .spec.hid .sh b { color: #c98bff; }
   #devBody .spec .sh i { color: #6c7286; font-style: normal; font-size: 10.5px; }
+  #devBody .spec .sv { color: #ffd86b; font-size: 11.5px; line-height: 1.4; margin-top: 2px; word-break: keep-all; }
   #devBody .spec .sd { color: #e6e9f2; line-height: 1.45; margin-top: 2px; word-break: keep-all; }
   #devBody .spec .st { color: #9aa3ba; font-size: 11px; margin-top: 2px; word-break: keep-all; }
   #devBody .spec details { margin-top: 2px; } #devBody .spec summary { color: #6c7286; font-size: 10.5px; cursor: pointer; }
@@ -2724,7 +2725,7 @@
   const elTitle = document.getElementById("overTitle");
   const coinNote = document.getElementById("coinNote");
 
-  const GAME_VERSION = "v0.9.352";
+  const GAME_VERSION = "v0.9.353";
   /* 제작사 스플래시(bamhobak friends 로고) — 2026-09-20 끔. 다시 켜려면 true */
   const SPLASH_USE = false;   // 코드를 고칠 때마다 뒤 두 자리를 올린다
   document.getElementById("ver").textContent = GAME_VERSION;
@@ -16737,7 +16738,8 @@
         if (ACH[a.id]) tags.push("🔒 업적: " + ACH[a.id].t);
         if (BOOK_PET[a.id]) tags.push("🐾 상점 펫: " + PETS[BOOK_PET[a.id]].nm);
         if (BOOK_COND[a.id]) tags.push("조건: " + BOOK_COND[a.id]);
-        c.innerHTML = '<div class="sh"><b></b><i></i></div><div class="sd"></div><div class="st"></div><details><summary>코드</summary><code></code></details>';
+        c.innerHTML = '<div class="sh"><b></b><i></i></div><div class="sv"></div><div class="sd"></div><div class="st"></div><details><summary>코드</summary><code></code></details>';
+        c.querySelector(".sv").textContent = "화면: " + a.ds + (a.dsFn && maxOf(a) > 1 ? "  /  2단계부터: " + (() => { const k = augCount[a.id]; augCount[a.id] = 1; let t = ""; try { t = a.dsFn(); } catch (e) {} if (k === undefined) delete augCount[a.id]; else augCount[a.id] = k; return t; })() : "");   // v0.9.353 실제 카드에 적힌 그대로
         c.querySelector("b").textContent = a.ic + " " + a.nm;
         c.querySelector("i").textContent = a.id;
         c.querySelector(".sd").textContent = DEV_AUG_DETAIL[a.id] || a.ds;
@@ -16766,7 +16768,9 @@
       const c = document.createElement("div"); c.className = "spec";
       const ul = document.createElement("div"); ul.className = "sd"; ul.style.whiteSpace = "pre-line";
       ul.textContent = "• " + (DEV_JOB_DETAIL[id] || [JOBS[id].ds]).join("\n• ");
-      c.appendChild(ul);
+      const sv = document.createElement("div"); sv.className = "sv"; sv.style.whiteSpace = "pre-line";   // v0.9.353 홈 화면 설명판에 실제로 보이는 글 그대로
+      sv.textContent = "화면: " + jobTraitLines(JOBS[id]).join(" / ") + (JOBS[id].needUnlock ? "\n잠겼을 때: 🔒 " + unlockHow(id) : "");
+      c.append(sv, ul);
       const P = CHR_PERKS[id];
       if (P) {
         const t = document.createElement("table");
