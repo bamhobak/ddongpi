@@ -177,6 +177,9 @@
     line-height: 1.4; height: 1.4em;
   }
   .board .mini .mn b { color: #7f93b5; font-weight: 700; margin-right: 2px; }
+  /* v0.9.382 순위 숫자는 칸 왼쪽 위 귀퉁이로 — 이름이 칸 폭을 다 쓰게 */
+  .board .mini { position: relative; }
+  .board .mini .mn b { position: absolute; left: 4px; top: 3px; margin: 0; font-size: 10px; line-height: 1.2; }
   .board .mini .ms { font-size: 12px; font-weight: 700; color: #ffd23f; font-variant-numeric: tabular-nums; line-height: 1.35; height: 1.35em; }
   .board li.five .mini { background: rgba(255,255,255,.04); border-color: rgba(255,255,255,.10); }
   .board li.five .mini .mn { font-size: 10px; }
@@ -2851,7 +2854,7 @@
   const elTitle = document.getElementById("overTitle");
   const coinNote = document.getElementById("coinNote");
 
-  const GAME_VERSION = "v0.9.381";
+  const GAME_VERSION = "v0.9.382";
   /* 제작사 스플래시(bamhobak friends 로고) — 2026-09-20 끔. 다시 켜려면 true */
   const SPLASH_USE = false;   // 코드를 고칠 때마다 뒤 두 자리를 올린다
   document.getElementById("ver").textContent = GAME_VERSION;
@@ -16100,6 +16103,7 @@
         chip.append(nm, sc);
         row.appendChild(chip);
       });
+      watchNames(row);
       lastBoard.hidden = false;
       lastProbe(ago + 1, jb);
       hallMine(ago, jb, from, to);
@@ -16242,6 +16246,27 @@
     pi.className = "pic"; pi.src = PETS[id].ui || PETS[id].img; pi.alt = PETS[id].ic; pi.title = "펫 " + PETS[id].nm;
     return pi;
   }
+  /* v0.9.382 긴 이름은 잘리기 전에 글씨부터 줄인다 (원래 크기의 60%·9px 까지, 그래도 길면 … 로 자른다).
+     칸이 실제 폭을 얻을 때(숨어 있던 판이 보일 때·화면 돌릴 때 포함) ResizeObserver 가 다시 맞춘다 */
+  const nameFitRO = typeof ResizeObserver === "function" ? new ResizeObserver(es => { for (const e of es) fitName(e.target); }) : null;
+  function fitName(box) {
+    const nm = box.classList.contains("mn") ? box.querySelector(".nmt") : box;
+    if (!nm) return;
+    const w = box.clientWidth;
+    if (!w || box._fitW === w) return;   // 같은 폭이면 다시 안 잰다 (글씨를 바꿔 폭이 흔들리는 되먹임 방지)
+    box._fitW = w;
+    nm.style.fontSize = "";
+    const base = parseFloat(getComputedStyle(nm).fontSize) || 12;
+    const min = Math.max(9, base * 0.6);   // 9px 밑은 폰에서 못 읽는다
+    const cs = getComputedStyle(box), room = w - parseFloat(cs.paddingLeft) - parseFloat(cs.paddingRight);
+    const rg = document.createRange(); rg.selectNodeContents(nm);   // 글자 폭을 소수점까지 (scrollWidth 는 1px 안쪽 넘침을 못 잡는다)
+    for (let px = base - 0.5; rg.getBoundingClientRect().width > room + 0.1 && px >= min; px -= 0.5) nm.style.fontSize = px + "px";
+  }
+  function watchNames(root) {
+    if (!nameFitRO || !root) return;
+    root.querySelectorAll(".nm[data-name]").forEach(b => nameFitRO.observe(b));
+    root.querySelectorAll(".nmt").forEach(t => nameFitRO.observe(t.parentElement));
+  }
   function renderBoard(el, list, msg) {
     el.innerHTML = "";
     const rows = (list || []).slice(0, 10);
@@ -16323,6 +16348,7 @@
       ov.textContent = note;
       el.appendChild(ov);
     }
+    watchNames(el);
     if (el === boardStart && list && list.length >= 10) renderMore(el);   // v0.9.305 랭킹 탭은 11~100위까지 아래로 이어 붙인다
   }
   /* v0.9.305 랭킹 탭 이번 주 판 — 10위 아래로 100위까지(목록만 스크롤, 왼쪽 캐릭터 탭은 그대로) */
@@ -16345,6 +16371,7 @@
       sc.textContent = gameMode === "noitem" ? Number(row.score).toLocaleString() + "m" : (Number(row.score) || 0).toLocaleString();
       li.append(rk, nm, im, sc); el.appendChild(li);
     });
+    watchNames(el);
   }
 
   const noteStart = document.getElementById("noteStart");
@@ -19046,7 +19073,7 @@
     errNote = { msg, t: performance.now(), v: GAME_VERSION };
     errSend(e, msg);
   }
-  window.addEventListener("error", ev => noteError(ev.error || ev.message));
+  window.addEventListener("error", ev => { if (/ResizeObserver loop/.test(ev.message || "")) return; noteError(ev.error || ev.message); });   // v0.9.382 ResizeObserver 경고는 오류가 아니다
   window.addEventListener("unhandledrejection", ev => { const r = ev.reason; if (r && r.name === "AbortError") return; errSend(r, ((r && r.message) || String(r)).slice(0, 120) + " (promise)"); });
   /* v0.9.377 오류 수집 — 사용자 폰에서 난 오류를 서버(ddongpi_errors)에 남긴다. 같은 문구는 한 번만, 한 번 켤 때 5개까지.
      이 컴퓨터에서 연 개발판(파일·localhost — 앱은 빼고)은 안 보낸다. 개발자 페이지 '오류' 탭에서 본다 */
