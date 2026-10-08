@@ -2412,7 +2412,7 @@
         <button id="btnEditName" title="이름 수정" aria-label="이름 수정">✏️ 이름 바꾸기</button>
       </div>
       <div id="nameEdit">
-        <input id="startName" type="text" maxlength="8" placeholder="이름 (2~6자)"
+        <input id="startName" type="text" maxlength="12" placeholder="이름 (한글 6자·영어 12자)"
                autocomplete="off" autocorrect="off" spellcheck="false">
         <button id="btnSaveName">저장</button>
       </div>
@@ -2425,7 +2425,7 @@
       <div class="lpTtl">환영해요!</div>
       <span class="hiDog" aria-hidden="true"></span>
       <div class="hiMsg" data-i18h>안녕하세요!<br><b>이피저피똥피</b>에 오신 걸 환영해요!<br>사용자님의 이름을 알려주세요.</div>
-      <input id="hiName" type="text" maxlength="8" placeholder="이름 (2~6자)" autocomplete="off" autocorrect="off" spellcheck="false">
+      <input id="hiName" type="text" maxlength="12" placeholder="이름 (한글 6자·영어 12자)" autocomplete="off" autocorrect="off" spellcheck="false">
       <div id="hiErr"></div>
       <button id="hiGo">좋아요!</button>
     </div></div>
@@ -2553,7 +2553,7 @@
       <div id="nameRow">
         <div class="tag" id="nameTag">🎉 TOP 10 진입! 이름을 남기세요</div>
         <div id="nameForm">
-          <input id="nameInput" type="text" maxlength="8" placeholder="이름 (2~6자)"
+          <input id="nameInput" type="text" maxlength="12" placeholder="이름 (한글 6자·영어 12자)"
                  autocomplete="off" autocorrect="off" spellcheck="false">
           <button id="btnSave">등록</button>
         </div>
@@ -2851,7 +2851,7 @@
   const elTitle = document.getElementById("overTitle");
   const coinNote = document.getElementById("coinNote");
 
-  const GAME_VERSION = "v0.9.380";
+  const GAME_VERSION = "v0.9.381";
   /* 제작사 스플래시(bamhobak friends 로고) — 2026-09-20 끔. 다시 켜려면 true */
   const SPLASH_USE = false;   // 코드를 고칠 때마다 뒤 두 자리를 올린다
   document.getElementById("ver").textContent = GAME_VERSION;
@@ -8741,7 +8741,8 @@
 
   /* v0.9.218 닉네임 — (v0.9.377 부터 2~6자·일본어 글자도, 아래 nameRuleErr). 다른 사람이 쓰는 이름은 못 쓴다(sql/supabase_nameClaim.sql).
      서버 함수가 아직 없거나 인터넷이 안 되면 중복 검사만 건너뛴다. 결과: 문제 없으면 "", 있으면 알려 줄 말 */
-  /* v0.9.377 일본어 이름도 — 2~6자(영어·숫자만이면 8자), 한글·영어·숫자·히라가나·가타카나·한자. 금지어는 서버(ddongpi_name_banned)와 같은 목록 */
+  /* v0.9.377 일본어 이름도 — 한글·영어·숫자·히라가나·가타카나·한자. 금지어는 서버(ddongpi_name_banned)와 같은 목록
+     v0.9.381 길이는 '칸' 으로 — 한글·일본어·한자 2칸, 영어·숫자 1칸, 12칸까지 (한글 6자 · 영어 12자 · 섞어서 방울이123456). 최소 2글자 */
   const NAME_OK_RE = /^[가-힣A-Za-z0-9ぁ-ゖァ-ヺー一-鿿]+$/;
   const NAME_BANNED = ["시발", "씨발", "씨빨", "시빨", "씹", "좆", "존나", "졸라", "병신", "븅신", "빙신", "개새", "새끼", "섹스", "보지", "자지",
     "니미", "니애미", "느금", "애미", "애비", "엠창", "미친", "꺼져", "닥쳐", "찐따", "한남", "김치녀", "일베", "메갈", "강간", "자살", "살인", "성기", "운영자", "관리자",
@@ -8749,10 +8750,11 @@
     "asshole", "bastard", "whore", "slut", "penis", "vagina", "hitler", "nazi", "admin",
     "しね", "死ね", "シネ", "ころす", "殺す", "ちんこ", "ちんぽ", "まんこ", "セックス", "せっくす", "きちがい", "キチガイ", "ガイジ", "がいじ", "障害", "運営"];
   function nameBanned(n) { const s = String(n || "").toLowerCase(); return NAME_BANNED.some(w => s.includes(w)); }
+  function nameUnits(n) { let u = 0; for (const c of n) u += /[A-Za-z0-9]/.test(c) ? 1 : 2; return u; }
   function nameRuleErr(n) {
-    const len = [...n].length, ascii = /^[A-Za-z0-9]+$/.test(n);
+    const len = [...n].length;
     if (len < 2) return "이름은 2글자 이상이에요";
-    if (len > (ascii ? 8 : 6)) return ascii ? "영어·숫자 이름은 8글자까지예요" : "이름은 6글자까지예요";
+    if (nameUnits(n) > 12) return "이름이 너무 길어요 (한글 6자·영어 12자까지)";
     if (!NAME_OK_RE.test(n)) return "글자와 숫자만 쓸 수 있어요 (띄어쓰기·기호 X)";
     if (nameBanned(n)) return "그 이름은 쓸 수 없어요";
     return "";
@@ -8769,7 +8771,7 @@
       if (!res.ok) return "";                  // 함수가 아직 없다 — 건너뛴다
       const r = await res.json();
       if (r === "taken") return "다른 친구가 이미 쓰고 있는 이름이에요";
-      if (r === "bad") return "글자와 숫자로 2~6글자만 돼요 (영어는 8글자)";
+      if (r === "bad") return "글자와 숫자로 2글자 이상, 한글 6자·영어 12자까지 돼요";
       if (r === "banned") return "그 이름은 쓸 수 없어요";
     } catch (e) {}
     return "";
