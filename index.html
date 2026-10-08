@@ -2851,7 +2851,7 @@
   const elTitle = document.getElementById("overTitle");
   const coinNote = document.getElementById("coinNote");
 
-  const GAME_VERSION = "v0.9.379";
+  const GAME_VERSION = "v0.9.380";
   /* 제작사 스플래시(bamhobak friends 로고) — 2026-09-20 끔. 다시 켜려면 true */
   const SPLASH_USE = false;   // 코드를 고칠 때마다 뒤 두 자리를 올린다
   document.getElementById("ver").textContent = GAME_VERSION;
@@ -8828,6 +8828,7 @@
     const n = startName.value.trim();
     if (!n) { startName.focus(); return; }
     const err = await claimName(n);
+    if (nameBanPop(err, startName)) return;
     if (err) { popHint("⚠️ " + err); beep(220, .08, "square", .04); startName.focus(); return; }
     try { localStorage.setItem(LS_NAME, n); } catch (e) {}
     showNameView();
@@ -9962,6 +9963,7 @@
     if (!n) { document.getElementById("hiErr").textContent = "이름을 적어 주세요!"; inp.focus(); return; }
     if (hiBusy) return;
     hiBusy = true; const err = await claimName(n); hiBusy = false;   // v0.9.218
+    if (nameBanPop(err, inp)) { document.getElementById("hiErr").textContent = ""; return; }
     if (err) { document.getElementById("hiErr").textContent = err; inp.focus(); return; }
     try { localStorage.setItem(LS_NAME, n); } catch (e) {}
     showNameView();
@@ -10287,6 +10289,20 @@
     box.classList.remove("hidden");
   }
   /* v0.9.70 예/아니오 묻는 창 — 예(노랑)·아니오(회색) */
+  /* v0.9.380 확인 단추 하나짜리 창 (askYesNo 와 같은 상자) */
+  function alertBox(msg, onOk) {
+    askYesNo(msg, onOk || (() => {}));
+    const box = document.getElementById("askBox");
+    box.querySelector(".askNo").style.display = "none";
+    box.querySelector(".askYes").textContent = "확인";
+  }
+  /* v0.9.380 비속어 이름은 아래 글씨 대신 창으로 — 확인을 누르면 입력칸으로 돌아가 바로 고칠 수 있게 고른 상태로 */
+  function nameBanPop(err, inp) {
+    if (err !== "그 이름은 쓸 수 없어요") return false;
+    beep(220, .08, "square", .04);
+    alertBox("🚫 " + err + "\n다른 이름으로 지어 주세요", () => { try { inp.focus(); inp.select(); } catch (e) {} });
+    return true;
+  }
   function askYesNo(msg, onYes) {
     let box = document.getElementById("askBox");
     if (!box) {
@@ -10295,6 +10311,7 @@
       document.body.appendChild(box);
     }
     box.querySelector(".askMsg").textContent = msg;
+    box.querySelector(".askNo").style.display = ""; box.querySelector(".askYes").textContent = "예";   // v0.9.380 alertBox 가 바꿔 둔 걸 되돌린다
     const close = () => { box.classList.remove("on"); };
     box.querySelector(".askYes").onclick = () => { close(); onYes(); };
     box.querySelector(".askNo").onclick = close;
@@ -16490,6 +16507,7 @@
     const name = nameInput.value.trim();
     if (!name) { nameInput.focus(); return; }
     const err = await claimName(name);   // v0.9.218
+    if (nameBanPop(err, nameInput)) return;
     if (err) { nameTag.textContent = "⚠️ " + err; nameTag.classList.add("err"); nameInput.focus(); return; }
     btnSave.disabled = true;
     btnSave.textContent = "등록 중…";
