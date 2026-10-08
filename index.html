@@ -1487,6 +1487,7 @@
   /* 옵션 — 예전 설정 창의 내용 */
   #pgOpt #optRow { display: flex; flex-direction: column; align-items: center; gap: 14px; }
   #pgOpt .setLbl { font-size: 13px; color: #9fb4d0; margin-bottom: -6px; }
+  .nm .flag, .nmt .flag { margin-right: 3px; font-size: .92em; font-family: "Apple Color Emoji", "Segoe UI Emoji", "Noto Color Emoji", sans-serif; }   /* v0.9.379 국기 */
   #privLink { font-size: 12px; color: #9fb4d0; text-decoration: underline; margin-top: 2px; }
   /* v0.9.367 언어 고르기 — 네모 칸 나란히, 고른 것은 노랑 */
   .langSeg { display: flex; gap: 8px; width: 100%; max-width: 260px; }
@@ -2682,7 +2683,7 @@
   function i18nText(n) {
     const p = n.parentNode;
     if (!p || p.nodeType !== 1 || I18N_SKIP[p.nodeName] || p.closest("[data-noi18n]")) return;
-    if (p.classList.contains("nm") || p.id === "meNm" || p.id === "nameInput") return;   // 사람 이름 — 사전에 같은 낱말이 있어도 바꾸지 않는다
+    if (p.classList.contains("nm") || p.classList.contains("nmt") || p.id === "meNm" || p.id === "nameInput") return;   // 사람 이름 — 사전에 같은 낱말이 있어도 바꾸지 않는다
     const v = T(n.data);
     if (v !== n.data) n.data = v;
   }
@@ -2850,7 +2851,7 @@
   const elTitle = document.getElementById("overTitle");
   const coinNote = document.getElementById("coinNote");
 
-  const GAME_VERSION = "v0.9.378";
+  const GAME_VERSION = "v0.9.379";
   /* 제작사 스플래시(bamhobak friends 로고) — 2026-09-20 끔. 다시 켜려면 true */
   const SPLASH_USE = false;   // 코드를 고칠 때마다 뒤 두 자리를 올린다
   document.getElementById("ver").textContent = GAME_VERSION;
@@ -8797,16 +8798,16 @@
     const BOARD_SEL = "#boardStart, #boardOver, #boardLast, .vsbList";
     let t = 0, x0 = 0, y0 = 0, on = false;
     document.addEventListener("pointerdown", e => {
-      const nm = e.target.closest && e.target.closest(".nm");
+      const nm = e.target.closest && e.target.closest(".nm, .nmt");
       if (!nm || !nm.closest(BOARD_SEL) || !SB_ON) return;
-      const name = nm.textContent.trim();
+      const name = (nm.dataset.name || nm.textContent).trim();   // v0.9.379 국기 빼고 이름만
       if (!name || name === "-" || name === savedName()) return;
       x0 = e.clientX; y0 = e.clientY; on = true; clearTimeout(t);
       t = setTimeout(() => { on = false; askYesNo("'" + name + "' 이름을 신고할까요?\n(나쁜 말·불쾌한 이름)", () => reportName(name)); }, 600);
     });
     const stop = e => { if (on && e.type === "pointermove" && Math.hypot(e.clientX - x0, e.clientY - y0) < 10) return; on = false; clearTimeout(t); };
     for (const ev of ["pointerup", "pointercancel", "pointermove"]) document.addEventListener(ev, stop);
-    document.addEventListener("contextmenu", e => { if (e.target.closest && e.target.closest(".nm")) e.preventDefault(); });   // 꾹 누를 때 폰 메뉴가 안 뜨게
+    document.addEventListener("contextmenu", e => { if (e.target.closest && e.target.closest(".nm, .nmt")) e.preventDefault(); });   // 꾹 누를 때 폰 메뉴가 안 뜨게
   }
   function showNameView() {
     const n = savedName();
@@ -16071,7 +16072,8 @@
         chip.className = "lp";
         const nm = document.createElement("span");
         const rk = document.createElement("i"); rk.className = "rk"; rk.textContent = medal[i] || String(i + 1); chip.appendChild(rk);
-        nm.textContent = r.name; nm.className = "nm";
+        nm.textContent = r.name; nm.className = "nm"; nm.dataset.name = r.name;
+        { const fl = flagEl(r.country); if (fl) nm.prepend(fl); }   // v0.9.379 국기
         if (i >= 3) chip.classList.add("lp45");
         const sc = document.createElement("b");
         sc.textContent = gameMode === "noitem" ? Number(r.score).toLocaleString() + "m" : (Number(r.score) || 0).toLocaleString();   // v0.9.149 줄여 쓰지 않고 다
@@ -16116,6 +16118,41 @@
     document.getElementById("lastBoard").hidden = false;
   }
 
+  /* v0.9.379 나라 — 폰의 시간대를 먼저 보고(여행 중이면 여행지), 애매하면 지역 설정(ja-JP → JP). 권한·IP 는 안 쓴다.
+     순위판 이름 앞에 국기로 보여 준다 (sql/supabase_country.sql). 모르면 빈칸 → 국기 없이 */
+  const TZ_COUNTRY = {
+    "Asia/Seoul": "KR", "Asia/Tokyo": "JP", "Asia/Shanghai": "CN", "Asia/Chongqing": "CN", "Asia/Hong_Kong": "HK", "Asia/Macau": "MO",
+    "Asia/Taipei": "TW", "Asia/Singapore": "SG", "Asia/Bangkok": "TH", "Asia/Ho_Chi_Minh": "VN", "Asia/Saigon": "VN", "Asia/Manila": "PH",
+    "Asia/Jakarta": "ID", "Asia/Makassar": "ID", "Asia/Kuala_Lumpur": "MY", "Asia/Kolkata": "IN", "Asia/Calcutta": "IN", "Asia/Dubai": "AE",
+    "Asia/Riyadh": "SA", "Asia/Jerusalem": "IL", "Asia/Ulaanbaatar": "MN", "Asia/Almaty": "KZ", "Asia/Tashkent": "UZ", "Asia/Karachi": "PK",
+    "Asia/Dhaka": "BD", "Asia/Kathmandu": "NP", "Asia/Yangon": "MM", "Asia/Phnom_Penh": "KH", "Asia/Vientiane": "LA",
+    "Europe/London": "GB", "Europe/Dublin": "IE", "Europe/Paris": "FR", "Europe/Berlin": "DE", "Europe/Madrid": "ES", "Europe/Rome": "IT",
+    "Europe/Amsterdam": "NL", "Europe/Brussels": "BE", "Europe/Zurich": "CH", "Europe/Vienna": "AT", "Europe/Stockholm": "SE",
+    "Europe/Oslo": "NO", "Europe/Copenhagen": "DK", "Europe/Helsinki": "FI", "Europe/Warsaw": "PL", "Europe/Prague": "CZ",
+    "Europe/Budapest": "HU", "Europe/Lisbon": "PT", "Europe/Athens": "GR", "Europe/Istanbul": "TR", "Europe/Kiev": "UA", "Europe/Kyiv": "UA",
+    "Europe/Moscow": "RU", "Europe/Bucharest": "RO",
+    "Australia/Sydney": "AU", "Australia/Melbourne": "AU", "Australia/Brisbane": "AU", "Australia/Perth": "AU", "Australia/Adelaide": "AU",
+    "Pacific/Auckland": "NZ", "Pacific/Honolulu": "US", "Pacific/Guam": "GU",
+    "America/Toronto": "CA", "America/Vancouver": "CA", "America/Montreal": "CA", "America/Edmonton": "CA", "America/Winnipeg": "CA", "America/Halifax": "CA",
+    "America/Mexico_City": "MX", "America/Sao_Paulo": "BR", "America/Buenos_Aires": "AR", "America/Argentina/Buenos_Aires": "AR",
+    "America/Santiago": "CL", "America/Bogota": "CO", "America/Lima": "PE", "Africa/Cairo": "EG", "Africa/Johannesburg": "ZA", "Africa/Lagos": "NG" };
+  function myCountry() {
+    let tz = "";
+    try { tz = Intl.DateTimeFormat().resolvedOptions().timeZone || ""; } catch (e) {}
+    if (TZ_COUNTRY[tz]) return TZ_COUNTRY[tz];
+    if (/^(America\/(New_York|Chicago|Denver|Los_Angeles|Phoenix|Anchorage|Detroit|Boise|Indiana|Kentucky|North_Dakota)|US\/)/.test(tz)) return "US";
+    const langs = (navigator.languages && navigator.languages.length) ? navigator.languages : [navigator.language || ""];
+    for (const l of langs) { const m = /[-_]([A-Za-z]{2})(?:$|[-_])/.exec(l); if (m) return m[1].toUpperCase(); }
+    return { ko: "KR", ja: "JP" }[String(langs[0] || "").slice(0, 2).toLowerCase()] || "";
+  }
+  /* 국기 — 나라 코드 두 글자를 국기 이모지로 (윈도 PC 는 국기 대신 글자로 나온다) */
+  function flagEl(cc) {
+    if (!/^[A-Z]{2}$/.test(cc || "")) return null;
+    const f = document.createElement("span"); f.className = "flag";
+    f.textContent = String.fromCodePoint(...[...cc].map(c => 0x1F1E6 + c.charCodeAt(0) - 65));
+    f.title = cc;
+    return f;
+  }
   async function submitScore(name, sc, lv) {
     // DB 제약(최대 1억점)에 걸려 등록이 실패하지 않도록 방어
     const base = {
@@ -16131,12 +16168,14 @@
         method: "POST",
         headers: sbHeaders({ "Content-Type": "application/json", Prefer: "return=minimal" }),
         body: JSON.stringify(Object.assign({}, base, { device: deviceId, augs: augCount, job: job,
-                                                        fullown: pendingFull, dog: pendingDog, mode: pendingMode }))
+                                                        fullown: pendingFull, dog: pendingDog, mode: pendingMode }, myCountry() ? { country: myCountry() } : {}))
       });
       if (res.ok) return;
       throw new Error(MODES[pendingMode].nm + " 순위판 준비 중 (HTTP " + res.status + ")");
     }
+    const cc = myCountry();
     const tries = [
+      Object.assign({}, base, { device: deviceId, augs: augCount, job: job, fullown: pendingFull, dog: pendingDog }, cc ? { country: cc } : {}),   // v0.9.379 나라
       Object.assign({}, base, { device: deviceId, augs: augCount, job: job, fullown: pendingFull, dog: pendingDog }),
       Object.assign({}, base, { device: deviceId, augs: augCount, job: job, fullown: pendingFull }),
       Object.assign({}, base, { device: deviceId, augs: augCount, job: job }),
@@ -16153,7 +16192,7 @@
       });
       if (res.ok) return;
       lastErr = "HTTP " + res.status + " " + (await res.text()).slice(0, 120);
-      if (res.status !== 400) break;      // 컬럼 문제(400)일 때만 다시 시도한다
+      if (res.status !== 400 || lastErr.includes("P0001")) break;      // 컬럼 문제(400)일 때만 다시 시도한다 · v0.9.379 서버 점수 검사에 걸린 거면(P0001) 그만
     }
     throw new Error(lastErr);
   }
@@ -16203,6 +16242,7 @@
       const nm = document.createElement("span");
       nm.className = "nm";
       nm.textContent = row ? row.name : "-";     // textContent → HTML 삽입 불가
+      if (row) { nm.dataset.name = row.name; const fl = flagEl(row.country); if (fl) nm.prepend(fl); }   // v0.9.379 국기
       const sc = document.createElement("span");
       const digits = row ? String(Math.round(Number(row.score) || 0)).length : 0;
       sc.className = "sc" + (digits >= 11 ? " xlong" : digits >= 9 ? " long" : "");
@@ -16239,7 +16279,11 @@
       mn.className = "mn";
       const b = document.createElement("b"); b.textContent = rank;
       mn.appendChild(b);
-      mn.appendChild(document.createTextNode(row ? row.name : ""));
+      if (row) {   // v0.9.379 이름을 감싸 국기·신고(꾹)·번역 안 함이 되게
+        const nt = document.createElement("span"); nt.className = "nmt"; nt.dataset.name = row.name; nt.textContent = row.name;
+        const fl = flagEl(row.country); if (fl) nt.prepend(fl);
+        mn.appendChild(nt);
+      }
       const ms = document.createElement("span");
       ms.className = "ms";
       ms.textContent = row ? (gameMode === "noitem" ? Number(row.score).toLocaleString() + "m" : shortScore(Number(row.score) || 0)) : "-";
@@ -16275,7 +16319,8 @@
       const li = document.createElement("li");
       li.className = "more" + (myRowKey && row.name + "|" + row.score === myRowKey ? " me" : "");
       const rk = document.createElement("span"); rk.className = "rk"; rk.textContent = i + 11;
-      const nm = document.createElement("span"); nm.className = "nm"; nm.textContent = row.name;
+      const nm = document.createElement("span"); nm.className = "nm"; nm.textContent = row.name; nm.dataset.name = row.name;
+      { const fl = flagEl(row.country); if (fl) nm.prepend(fl); }   // v0.9.379 국기
       const im = document.createElement("img"); im.className = "jic2"; im.src = "assets/" + boardImg(row) + "_right.png"; im.alt = "";
       const sc = document.createElement("span"); sc.className = "sc";
       sc.textContent = gameMode === "noitem" ? Number(row.score).toLocaleString() + "m" : (Number(row.score) || 0).toLocaleString();
