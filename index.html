@@ -2862,7 +2862,7 @@
   const elTitle = document.getElementById("overTitle");
   const coinNote = document.getElementById("coinNote");
 
-  const GAME_VERSION = "v0.9.399";
+  const GAME_VERSION = "v0.9.400";
   /* 제작사 스플래시(bamhobak friends 로고) — 2026-09-20 끔. 다시 켜려면 true */
   const SPLASH_USE = false;   // 코드를 고칠 때마다 뒤 두 자리를 올린다
   document.getElementById("ver").textContent = GAME_VERSION;
@@ -18623,7 +18623,7 @@
 
       ctx.textAlign = "center"; ctx.textBaseline = "middle";
       if (snackOk) {                                  // v0.9.399 글자 그림 — 막대보다 살짝 크게, 가운데
-        const ih = bh * 1.55, iw = ih * SNACK_TXT.naturalWidth / SNACK_TXT.naturalHeight;
+        const ih = bh * 1.7, iw = ih * SNACK_TXT.naturalWidth / SNACK_TXT.naturalHeight;
         ctx.drawImage(SNACK_TXT, W / 2 - iw / 2, by + bh / 2 - ih / 2, iw, ih);
       } else {
       ctx.font = "800 12px GameFont, Pretendard, NanumBarunGothic, system-ui, sans-serif";
@@ -18654,7 +18654,7 @@
 
       ctx.textAlign = "center"; ctx.textBaseline = "middle";
       if (snackOk) {                                  // v0.9.399 글자 그림
-        const ih = 70, iw = ih * SNACK_TXT.naturalWidth / SNACK_TXT.naturalHeight;
+        const ih = 77, iw = ih * SNACK_TXT.naturalWidth / SNACK_TXT.naturalHeight;
         ctx.drawImage(SNACK_TXT, -iw / 2, -ih / 2, iw, ih);
       } else {
       ctx.font = "900 34px GameFont, Pretendard, NanumBarunGothic, system-ui, sans-serif";
