@@ -1067,7 +1067,7 @@
     background: linear-gradient(180deg, #2b3290 0%, #1d2068 55%, #171a52 100%); border: 1.5px solid rgba(120,150,255,.55);
     box-shadow: inset 0 1px 0 rgba(170,190,255,.35), 0 3px 0 #0a0c2a; }
   button.lvOpt:active { transform: translateY(2px); box-shadow: inset 0 1px 0 rgba(170,190,255,.35), 0 1px 0 #0a0c2a; }
-  .lvOpt .med { flex-shrink: 0; width: 42px; height: 42px; background: url(assets/ui/perks.webp) 0 0 / 800% 600% no-repeat; filter: drop-shadow(0 2px 3px rgba(0,0,0,.5)); }   /* v0.9.129 능력마다 그린 아이콘(Codex, 8칸×6줄) — 테두리 없이 */
+  .lvOpt .med { flex-shrink: 0; width: 42px; height: 42px; background: url(assets/ui/perks.webp?v=2) 0 0 / 600% 600% no-repeat; filter: drop-shadow(0 2px 3px rgba(0,0,0,.5)); }   /* v0.9.129 능력마다 그린 아이콘(Codex, 8칸×6줄) — 테두리 없이 */
   .lvOpt .txt { display: flex; flex-direction: column; gap: 2px; min-width: 0; }
   .lvOpt .ttl { font-size: 13.5px; letter-spacing: -.3px; font-weight: 900; color: #fff; line-height: 1.2; }
   .lvOpt .ttl em { font-style: normal; font-size: 15px; margin-right: 4px; background: linear-gradient(180deg, #f2b8ff, #a86bff); -webkit-background-clip: text; background-clip: text; color: transparent; }
@@ -2730,12 +2730,12 @@
        밀어 숨길 뿐 남겨 두어 textContent 가 그대로다(글자를 읽는 코드가 안 깨진다). 나중에 붙는 글자는 MutationObserver 가 잡는다.
      · 캔버스 글자: fillText/strokeText 를 감싸 이모지 자리에 그림을 그린다 — 자리 폭은 원래 이모지 폭 그대로라 배치가 안 바뀐다.
      그림이 아직 안 왔거나 목록에 없는 이모지는 원래 이모지로 나온다. */
-  /*ICONS-BEGIN*/ const ICON_KEYS = ["🏪", "🐍", "🪙", "⭐", "🌙", "🌕", "☂", "❤", "💧", "🧻", "🔮", "💩", "🚀", "🕊", "👼", "🧚", "🐈", "🦆", "🦴", "🐥", "🎺", "🥚", "🍗", "⏸", "🏆", "👑", "✏", "🎵", "🔔", "🎉", "🥊", "🗼", "🔄", "🏠", "🔒", "🔓", "🔁", "🥇", "🥈", "🥉", "✨", "⚠", "⏱", "🏃", "🎈", "💪", "📋", "🎯", "🙏", "🫧", "🧘", "🚫", "🦸", "⚡", "🔥", "🐢", "🐦", "📯", "💥", "😋", "💉", "☔", "🌠", "🕳", "🌝", "🧲", "💨", "🍀", "🌧", "💢", "🌈", "📱", "🥕", "🦄", "🕰", "🎲", "👻", "👊", "👯", "🍷", "☝", "🍚", "🌀", "🐕", "🎰", "🪜", "🎼", "✂", "🌱", "⛰", "☁", "🌤", "🧊", "❄", "🛰", "🌍", "☄", "🌌", "🌑", "🌒", "⚫", "🍌", "😵", "🤢", "😜", "😭", "👍", "⚔", "🪐", "🌬", "🌫", "🏋", "🔩", "🍪", "🐜", "🟤", "🪺", "🦢", "📦", "🌂", "💞", "⏩", "🫙", "🪀", "🗿", "🐹", "🍰", "🎂", "🪰", "🍩", "🚽", "👟", "💰", "🍖", "💖", "🎾", "⭕", "🦍", "🪨", "🎁", "🙅", "🤹", "🧹", "😅", "🛡", "📝", "💣", "🧨", "🕺", "🏵", "🧑‍🚀"]; const ICON_COLS = 10, ICON_ROWS = 16, ICON_CELL = 96; /*ICONS-END*/
+  /*ICONS-BEGIN*/ const ICON_KEYS = ["🏪", "🐍", "🪙", "⭐", "🌙", "🌕", "☂", "❤", "💧", "🧻", "🔮", "💩", "🚀", "🕊", "👼", "🧚", "🐈", "🦆", "🦴", "🐥", "🎺", "🥚", "🍗", "⏸", "🏆", "👑", "✏", "🎵", "🔔", "🎉", "🥊", "🗼", "🔄", "🏠", "🔒", "🔓", "🔁", "🥇", "🥈", "🥉", "✨", "⚠", "⏱", "🏃", "🎈", "💪", "📋", "🎯", "🙏", "🫧", "🧘", "🚫", "🦸", "⚡", "🔥", "🐢", "🐦", "📯", "💥", "😋", "💉", "☔", "🌠", "🕳", "🌝", "🧲", "💨", "🍀", "🌧", "💢", "🌈", "📱", "🥕", "🦄", "🕰", "🎲", "👻", "👊", "👯", "🍷", "☝", "🍚", "🌀", "🐕", "🎰", "🪜", "🎼", "✂", "🌱", "⛰", "☁", "🌤", "🧊", "❄", "🛰", "🌍", "☄", "🌌", "🌑", "🌒", "⚫", "🍌", "😵", "🤢", "😜", "😭", "👍", "⚔", "🪐", "🌬", "🌫", "🏋", "🔩", "🍪", "🐜", "🟤", "🪺", "🦢", "📦", "🌂", "💞", "⏩", "🫙", "🪀", "🗿", "🐹", "🍰", "🎂", "🪰", "🍩", "🚽", "👟", "💰", "🍖", "💖", "🎾", "⭕", "🦍", "🪨", "🎁", "🙅", "🤹", "🧹", "😅", "🛡", "📝", "💣", "🧨", "🕺", "🏵", "🧑‍🚀", "⏳", "🏹", "🎖", "🎀", "🦾", "🧗", "👥", "⛓", "🎊"]; const ICON_COLS = 10, ICON_ROWS = 16, ICON_CELL = 96; /*ICONS-END*/
   const ICON_IDX = new Map(ICON_KEYS.map((k, i) => [k, i]));
   const ICON_RE = ICON_KEYS.length ? new RegExp("(" + ICON_KEYS.slice().sort((a, b) => b.length - a.length)
     .map(k => k.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")).join("|") + ")\\uFE0F?", "gu") : null;
   let iconSheet = null;
-  const ICON_V = 6;   // v0.9.384 둘기 모이(모이 자루) · v0.9.374 무지개 수집가·선물 요정 새 그림 · v0.9.341 그림만 바뀌어도 새로 받게 — 아이콘을 다시 그리면 1 올린다
+  const ICON_V = 7;   // v0.9.385 이름 바뀐 증강 19개 새 그림 · v0.9.384 둘기 모이(모이 자루) · v0.9.374 무지개 수집가·선물 요정 새 그림 · v0.9.341 그림만 바뀌어도 새로 받게 — 아이콘을 다시 그리면 1 올린다
   const ICON_URL = "assets/icons.webp?k=" + ICON_KEYS.length + "-" + ICON_KEYS.join("").length + "-" + ICON_V;   // v0.9.78 칸 순서가 바뀌면 옛 그림을 쓰지 않게
   if (ICON_RE) {
     const im = new Image();
@@ -2854,7 +2854,7 @@
   const elTitle = document.getElementById("overTitle");
   const coinNote = document.getElementById("coinNote");
 
-  const GAME_VERSION = "v0.9.384";
+  const GAME_VERSION = "v0.9.385";
   /* 제작사 스플래시(bamhobak friends 로고) — 2026-09-20 끔. 다시 켜려면 true */
   const SPLASH_USE = false;   // 코드를 고칠 때마다 뒤 두 자리를 올린다
   document.getElementById("ver").textContent = GAME_VERSION;
@@ -3003,7 +3003,7 @@
     ctx.restore();
   }
 
-  /* 우주선 전투기 — 원작처럼 흰 몸통에 빨간 무늬, 파란 속날개, 뾰족한 기수 */
+  /* 뿅뿅기 전투기 — 원작처럼 흰 몸통에 빨간 무늬, 파란 속날개, 뾰족한 기수 */
   /* 주먹 총알 — 총알 대신 조그만 주먹이 날아간다.
      위로 곧게 올라가므로 손등이 위를 보고, 아래에 빨간 소매가 따라붙는다.
      roundRect 는 옛 모바일 브라우저에 없어서 타원만으로 그린다. */
@@ -3116,9 +3116,9 @@
     ctx.restore();
   }
 
-  /* 우주선 우주선 자리 — 캐릭터를 한가운데 두고 좌우로 고르게 늘어선다.
+  /* 뿅뿅기 뿅뿅기 자리 — 캐릭터를 한가운데 두고 좌우로 고르게 늘어선다.
      예전에는 좌우로 번갈아 놓느라 한 대뿐일 때 왼쪽으로 한 칸 비켜서 있었다. */
-  /* v0.9.333 우주선 높이 — 땅에 붙어 있지 않고 캐릭터 발밑을 따라다닌다 (부양사가 날아오르면 우주선도 함께).
+  /* v0.9.333 뿅뿅기 높이 — 땅에 붙어 있지 않고 캐릭터 발밑을 따라다닌다 (부양사가 날아오르면 뿅뿅기도 함께).
      땅에 있을 때는 예전 자리(잔디 위) 그대로 */
   function shipY() { return H - GROUND_H * 0.55 + (player.y - groundY); }
   function shipX(k, n) {
@@ -3132,14 +3132,14 @@
   let job = JOB_DEFAULT;
   try { const j = localStorage.getItem(LS_JOB); if (jobOk(j)) job = j; } catch (e) {}
   /* ---------- 펫 ----------
-     직업과 별개로 하나를 데리고 나간다. 전에는 증강(뿌잉·우주선)이거나 직업 능력(도박사의 비둘기)
+     직업과 별개로 하나를 데리고 나간다. 전에는 증강(뿌잉·뿅뿅기)이거나 직업 능력(도박사의 비둘기)
      이었던 것들 — 판 내내 따라다니며 제 몫을 한다. 펫에서 이어지는 히든 증강은 그 펫이 있을 때만 나온다. */
   const PETS = {
     none:   { nm: "없음",   ic: "🚫", ds: "펫 없이 혼자 뛰어요" },
     helper: { nm: "뿌잉", ic: "🐹", img: "assets/hamster.png",
               ds: "가끔 슝 날아올라 지나간 자리의 똥을 부숴요" },
-    galaga: { nm: "슝슝 우주선", ic: "🚀", img: "assets/pet_galaga.png",
-              ds: "우주선이 땅에서 총알을 쏘아 올려요" },
+    galaga: { nm: "뿅뿅기", ic: "🚀", img: "assets/pet_galaga.png",
+              ds: "뿅뿅기가 총알을 쏘아 올려요" },
     dove:   { nm: "둘기", ic: "🕊️", img: "assets/dove.png",
               ds: "많이 움직이면 날아올라 똥을 터뜨려요" },
     angel:  { nm: "아기 천사", ic: "👼", img: "assets/pet_angel.png",
@@ -4232,11 +4232,20 @@
      v0.9.124 레벨이 되면 상세 창에서 '해금'하고 둘 중 하나를 골라야 켜진다(예전처럼 저절로 A 가 아니다). */
   const LS_LV = "epjpddongpi_lv";
   const ACC_XP = [0, 450, 1700, 3850, 6850, 10700, 15400];   // v0.9.229 똥피력 7단계 ≈ 70판(평균 220초) — 1·4·9·16·25·36 비율 그대로 줄임   // v0.9.223 똥피력 7단계 · v0.9.224 7단계 = 캐릭터 4명 Lv5(9,000초×4) — 1·4·9·16·25·36 천 초
-  const CHR_XP = [0, 360, 1200, 2700, 5400];    // v0.9.229 Lv5 ≈ 20판 (버피 평균 272초 기준, 예전 값의 0.6배)
+  const CHR_XP = [0, 600, 2400, 5400];    // v0.9.385 Lv4 까지 — 예전 Lv5 문턱(5,400 ≈ 20판)을 Lv4 로, 1:4:9   // v0.9.229 Lv5 ≈ 20판 (버피 평균 272초 기준)
   /* v0.9.229 판이 짧게 끝나는 캐릭터는 경험치를 더 받는다 — 캐릭터마다 비슷한 판 수에 Lv5 */
   const JOB_XP_MUL = { bangul: 1.1, levitator: 1.1, fortune: 1.1, powerp: 1.3 };   // v0.9.230 루나 1.1 · 무무 1.3
   let lvData = { xp: 0, cx: {}, pick: {}, un: {}, hyper: false };
   try { const d = JSON.parse(localStorage.getItem(LS_LV) || "null"); if (d && typeof d.xp === "number") lvData = Object.assign(lvData, d); } catch (e) {}
+  if (!lvData.v4) {                            // v0.9.385 캐릭터 레벨 Lv4 까지 — 능력이 바뀐 칸만 고른 것을 지운다
+    const CH = { bangul: ["4B"], fit: ["4A", "4B"], powerj: ["4A"], levitator: ["2B", "4A", "4B"], powerp: ["2B", "4B"], fortune: ["2B", "4A", "4B"] };
+    for (const j in lvData.pick || {}) {
+      const p = lvData.pick[j] || {};
+      for (const l of [2, 4]) if (p[l] && (CH[j] || []).includes(l + p[l])) delete p[l];
+      delete p[5]; if (lvData.un && lvData.un[j]) delete lvData.un[j][5];
+    }
+    lvData.v4 = 1; try { localStorage.setItem(LS_LV, JSON.stringify(lvData)); } catch (e) {}
+  }
   function lvSave() { try { localStorage.setItem(LS_LV, JSON.stringify(lvData)); } catch (e) {} }
   function lvOf(xp, T) { let l = 1; for (let i = 1; i < T.length; i++) if (xp >= T[i]) l = i + 1; return l; }
   function accLv() { return lvOf(lvData.xp, ACC_XP); }
@@ -4296,38 +4305,32 @@
     bangul: {
       2: { A: "비누방울 다시 맺히는 시간 -25%", B: "비누방울이 터질 때 주변 똥을 밀어낸다" },
       3: { A: "미끌미끌 — 맞은 뒤 무적 +0.2초", B: "거품 정리 — 스테이지가 바뀔 때마다 내 주변 똥이 거품으로 사라진다" },
-      4: { A: "비누방울 두 겹", B: "비누방울이 터지면 1.5초 무적" },
-      5: { A: "집콕 — 1초 가만히 있으면 비누방울이 두 배 빨리 맺힌다", B: "대왕 비누방울 — 스킬 버튼(쿨타임 20초), 2초 동안 큰 방울 속에서 무적" }
+      4: { A: "비누방울 두 겹", B: "대왕 비누방울 — 스킬 버튼(쿨타임 20초), 2초 동안 큰 방울 속에서 무적" }
     },
     fit: {
       2: { A: "하트를 먹으면 1초 무적", B: "하트가 가득일 때 먹는 하트는 큰 점수" },
       3: { A: "단백질 보충 — 하트 등장 +10%", B: "근성 — 마지막 하트일 때 이동 속도 +10%" },
-      4: { A: "맞을 때 20% 확률로 버팀", B: "하트 하나당 점수 +3%" },
-      5: { A: "근육 폭발 — 벌크업이 끝날 때 충격파로 똥 정리", B: "무한 벌크업 — 하트 3개 먹을 때마다 3초 벌크업" }
+      4: { A: "근육 폭발 — 벌크업이 끝날 때 충격파로 똥 정리", B: "무한 벌크업 — 하트 3개 먹을 때마다 3초 벌크업" }
     },
     powerj: {
       2: { A: "두 번에 한 번 고르기 — 달 두 번에 한 번은 2장 중 선택", B: "몰빵 — 가진 증강을 또 고르면 30% 확률로 한 번 더 (평균 1.3배)" },
       3: { A: "일정표 — 달이 떨어질 자리를 1초 전에 표시", B: "마감 연장 — 달·별이 바닥에서 1초 머문다" },
-      4: { A: "착착 — 달을 먹을 때마다 1초 무적", B: "정시 퇴근 — 증강 5개마다 보너스 증강 1개" },
-      5: { A: "오늘의 할 일 — 판 시작 전 정한 증강이 첫 달로 나옴", B: "야근 — 블랙홀 지대부터 달이 두 배" }
+      4: { A: "오늘의 할 일 — 판 시작 전 정한 증강이 첫 달로 나옴", B: "정시 퇴근 — 증강 5개마다 보너스 증강 1개" }
     },
     levitator: {
-      2: { A: "부적 — 판마다 한 번 똥 하나를 대신 막음", B: "높이 수련 — 높이 점수 상한 +20%" },
+      2: { A: "부적 — 판마다 한 번 똥 하나를 대신 막음", B: "상투 회오리 — 위로 치솟을 때 머리 위 똥을 날려 버림" },
       3: { A: "가벼운 기운 — 아이템이 15% 빨리 떨어짐", B: "가벼운 발걸음 — 이동 속도 +3%" },
-      4: { A: "부적 두 장 — 판마다 2장, 타면서 주변 똥도 태움 (2레벨 선택과 무관)", B: "구름 방패 — 하늘 꼭대기에 2초 머물면 우산 1개" },
-      5: { A: "축지법 — 화면 좌우 끝이 이어짐", B: "상투 회오리 — 위로 치솟을 때 머리 위 똥을 날려 버림" }
+      4: { A: "축지법 — 화면 좌우 끝이 이어짐", B: "부적 두 장 — 판마다 2장, 타면서 주변 똥도 태움 (2레벨 선택과 무관)" }
     },
     powerp: {
-      2: { A: "맞아도 무피격 배율을 절반 대신 1/4만 잃음", B: "별을 먹으면 0.5초 무적" },
+      2: { A: "맞아도 무피격 배율을 절반 대신 1/4만 잃음", B: "빈손의 힘 — 별 5개마다 3초 무적" },
       3: { A: "비움의 미학 — 별 등장 +10%", B: "마음 비우기 — 맞은 뒤 2초 동안 똥이 15% 느려짐" },
-      4: { A: "20초 안 맞을 때마다 하트 +1", B: "별 점수 +30%" },
-      5: { A: "해탈 — 60초 안 맞으면 2초 동안 똥이 연꽃으로(무적)", B: "빈손의 힘 — 별 5개마다 3초 무적" }
+      4: { A: "20초 안 맞을 때마다 하트 +1", B: "해탈 — 60초 안 맞으면 2초 동안 똥이 연꽃으로(무적)" }
     },
     fortune: {
-      2: { A: "예지 — 예언이 바뀌기 3초 전 다음 예언 표시", B: "여운 — 좋은 예언이 끝나도 2초 더 유지" },
+      2: { A: "예지 — 예언이 바뀌기 3초 전 다음 예언 표시", B: "액막이 — 나쁜 예언 확률 절반" },
       3: { A: "오늘의 운세 — 날마다 바뀌는 작은 행운 하나", B: "불길한 예감 — 특수똥이 나오기 0.5초 전 예고" },
-      4: { A: "전화위복 — 나쁜 예언 동안 점수 +30%", B: "액막이 — 나쁜 예언 확률 절반" },
-      5: { A: "대길 — 판마다 한 번, 좋은 예언 둘을 동시에 10초", B: "천기누설 — 나쁜 예언이 오기 3초 전에 미리 알려줌" }
+      4: { A: "대길 — 판마다 한 번, 좋은 예언 둘을 동시에 10초", B: "전화위복 — 나쁜 예언 동안 점수 +30%" }
     }
   };
   /* v0.9.129 능력 아이콘 시트(assets/ui/perks.webp) 줄 순서 */
@@ -4421,7 +4424,7 @@
   }
   // 맞았을 때 — 그 캐릭터의 아픈 소리 (풀소유는 따로, 없으면 옛 hurt)
   const PET_SFX_ONE = { gift: "_2", cat: "_2", eel: "_2", angel: "_2", dove: "_2" };   // v0.9.109 고른 하나만
-  const PET_SFX_OLD = { helper: "helper", galaga: "galaga" };   // v0.9.111 뿌잉·우주선은 예전 소리 그대로
+  const PET_SFX_OLD = { helper: "helper", galaga: "galaga" };   // v0.9.111 뿌잉·뿅뿅기는 예전 소리 그대로
   function petSfx(p, vol) { if (PET_SFX_OLD[p]) return sfx(PET_SFX_OLD[p], vol); return sfx("pet_" + p + (PET_SFX_ONE[p] || (Math.random() < 0.5 ? "_1" : "_2")), vol); }   // v0.9.107
   function hurtSfx(jb) {
     const k = (jb === "powerp" && fullOwn ? "hurt_full" : "hurt_" + jb) + (Math.random() < 0.5 ? "_1" : "_2");   // v0.9.82 둘 중 하나
@@ -4778,7 +4781,7 @@
     timeMul: 1,         // 생존 점수 배율
     feverScoreMul: 1,   // 간식 낙하물 점수 배율
     fallMul: 1,         // 낙하 속도 배율
-    galaga: 0,          // 우주선 우주선 수 (펫이면 1)
+    galaga: 0,          // 뿅뿅기 뿅뿅기 수 (펫이면 1)
     hitboxMul: 1,       // 피격 판정 + 캐릭터 크기 배율
     poopMul: 1,         // 똥 크기 배율
     itemRateMul: 1,     // 아이템 등장 간격 배율(작을수록 자주)
@@ -4798,11 +4801,11 @@
     dodge: 0,           // 잔상 회피 — 맞을 때 피할 확률 (0~0.30)
     dungy: false,       // 벼랑 끝 (하트가 적을수록 모든 점수가 오른다)
     momMeal: false,     // 쉬었음 청년: 엄마는 우리 딸 믿어 (엄마의 밥상이 떨어진다)
-    chainZap: false,    // 히든: 연쇄 번개 (우주선 총알이 옆 똥 두 개로 번진다)
+    chainZap: false,    // 히든: 연쇄 번개 (뿅뿅기 총알이 옆 똥 두 개로 번진다)
     wak: false,         // 히든: 주먹 총알 (주먹이 똥을 튕겨 올리고, 부딪히면 같이 터진다)
     scoreMul: 1,        // 모든 점수에 곱해지는 배율
     dash: false,        // 방귀 대시 (두 번 두드리면 짧게 돌진 · 그동안 무적)
-    pierce: false,      // 관통 총알 (우주선 총알이 똥 하나를 뚫고 지나간다)
+    pierce: false,      // 관통 총알 (뿅뿅기 총알이 똥 하나를 뚫고 지나간다)
     fly: false,         // 똥파리 (맞을 때마다 파리 한 마리가 5초 동안 똥을 부순다)
     stone: false,       // 얼음 땡 (1초 가만히 있으면 돌 — 무적, 점수·아이템 없음)
     gacha: false,       // 뽑기 (증강이 물음표로 나오고 절반은 히든)
@@ -4900,11 +4903,11 @@
   function nameOf(a) { return a.nmFn ? a.nmFn() : a.nm; }
 
   const AUGMENTS = [
-    { id: "fever_time", ic: "🔥", nm: "간식 연장", ds: "간식 타임이 더 길어져요",
+    { id: "fever_time", ic: "⏳", nm: "간식 연장", ds: "간식 타임이 더 길어져요",
       go: () => { aug.feverBonus += 1500; } },   // 먹을 때마다 +1.5초, 감쇠 없음
-    { id: "star50",     ic: "⭐", nm: "별 사냥꾼",   ds: "별을 먹으면 점수를 더 많이 받아요",
+    { id: "star50",     ic: "🏹", nm: "별 사냥꾼",   ds: "별을 먹으면 점수를 더 많이 받아요",
       go: () => { aug.starMul += 0.25 * dim("star50"); } },
-    { id: "time2x",     ic: "⏱️", nm: "끈기 대장",   ds: "오래 버틸수록 점수가 더 빨리 쌓여요",
+    { id: "time2x",     ic: "🎖", nm: "끈기 대장",   ds: "오래 버틸수록 점수가 더 빨리 쌓여요",
       go: () => { aug.timeMul *= 1 + 0.5 * dim("time2x"); } },
     { id: "fever50",    ic: "🍪", nm: "꿀맛 간식", ds: "간식 타임에 먹는 간식 점수가 올라요",
       go: () => { aug.feverScoreMul += 0.20; } },   // 먹을 때마다 +20%, 감쇠 없음
@@ -4916,22 +4919,22 @@
       go: () => { aug.hitboxMul *= 1 - 0.12 * dim("small"); } },
     { id: "tinypoop",   ic: "🟤", nm: "꼬마 똥",   ds: "떨어지는 똥이 작아져요",
       go: () => { aug.poopMul *= 1 - 0.12 * dim("tinypoop"); } },
-    { id: "umbrella3",  ic: "☂️", nm: "우산 꾸러미", ds: "우산을 3개 받아요. 우산이 똥을 막아 줘요",
+    { id: "umbrella3",  ic: "🎀", nm: "우산 꾸러미", ds: "우산을 3개 받아요. 우산이 똥을 막아 줘요",
       max: 99,                    // 조건이 막아주므로 보유 상한은 사실상 없음
       cond: () => job !== "fit" && shields < 10,   // 헬스걸은 방패가 없는 직업 — 미등장
       noCount: true,              // 방패 수는 화면에 우산으로 보이니 보유 뱃지는 생략
       go: () => { shields = Math.min(shields + 3, 10); } },   // 증강으로는 최대 10개까지
     /* ── v0.9.45 펫 증강 — 먹으면 그 펫이 이번 판 내내 함께한다. 여러 마리 가능, 한 마리당 한 번 ── */
-    /* v0.9.76 펫과 그 펫을 키우는 증강(도와줘 뿌잉·우주선 편대·비둘기 떼)을 한 증강으로 묶었다 — 처음 먹으면 펫이 오고, 또 먹으면 한 단계씩 (최대 5단계) */
+    /* v0.9.76 펫과 그 펫을 키우는 증강(도와줘 뿌잉·뿅뿅기 편대·비둘기 떼)을 한 증강으로 묶었다 — 처음 먹으면 펫이 오고, 또 먹으면 한 단계씩 (최대 5단계) */
     { id: "pet:helper",  ic: "🐹", nm: "펫 뿌잉", max: 5, w: 0.7, cond: () => hasPet("helper"),
       nmFn: () => augCount["pet:helper"] ? "펫 뿌잉 " + (augCount["pet:helper"] + 1) + "단계" : "펫 뿌잉",
       ds: "로켓 햄스터가 가끔 슝 날아와서 지나간 자리의 똥을 부숴요",
       dsFn: () => augCount["pet:helper"] ? "뿌잉이 더 커지고 더 자주 날아와요" : "로켓 햄스터가 가끔 슝 날아와서 지나간 자리의 똥을 부숴요",
       go: () => { if (petOn.helper) aug.helper++; else { petOn.helper = true; aug.helper = Math.max(aug.helper, 1); } helperTimer = Math.min(helperTimer, 0.6); } },
-    { id: "pet:galaga",  ic: "🚀", nm: "펫 슝슝 우주선", max: 5, w: 0.7, cond: () => hasPet("galaga"),
-      nmFn: () => augCount["pet:galaga"] ? "펫 슝슝 우주선 " + (augCount["pet:galaga"] + 1) + "단계" : "펫 슝슝 우주선",
-      ds: "우주선이 땅에서 총알을 쏘아 올려요",
-      dsFn: () => augCount["pet:galaga"] ? "우주선이 한 대 더 생겨요 · 많아지면 하나하나는 천천히 쏴요" : "우주선이 땅에서 총알을 쏘아 올려요",
+    { id: "pet:galaga",  ic: "🚀", nm: "펫 뿅뿅기", max: 5, w: 0.7, cond: () => hasPet("galaga"),
+      nmFn: () => augCount["pet:galaga"] ? "펫 뿅뿅기 " + (augCount["pet:galaga"] + 1) + "단계" : "펫 뿅뿅기",
+      ds: "뿅뿅기가 총알을 쏘아 올려요",
+      dsFn: () => augCount["pet:galaga"] ? "뿅뿅기가 한 대 더 생겨요" : "뿅뿅기가 총알을 쏘아 올려요",
       go: () => { if (petOn.galaga) aug.galaga++; else { petOn.galaga = true; aug.galaga = Math.max(aug.galaga, 1); } } },
     { id: "pet:dove",    ic: "🕊️", nm: "펫 둘기", max: 5, w: 0.7, cond: () => hasPet("dove"),
       nmFn: () => augCount["pet:dove"] ? "펫 둘기 " + (augCount["pet:dove"] + 1) + "단계" : "펫 둘기",
@@ -4965,7 +4968,7 @@
     { id: "hungry",     ic: "😋", nm: "먹보 뿌잉", ds: "뿌잉이 아이템을 대신 먹어 줘요",
       hidden: true, once: true, cond: () => petOn.helper && aug.magnet > 0,   // 뿌잉 펫 + 자석
       go: () => { aug.hungry = true; } },
-    { id: "roid",       ic: "💪", nm: "근육 거인", ds: "6초 동안 몸이 2배로 커지고, 닿는 똥을 모두 튕겨 내요",   // v0.9.40 옛 이름 '스테로이드 과다 복용' 
+    { id: "roid",       ic: "🦾", nm: "근육 거인", ds: "6초 동안 몸이 2배로 커지고, 닿는 똥을 모두 튕겨 내요",   // v0.9.40 옛 이름 '스테로이드 과다 복용' 
       max: 99, noCount: true, cond: () => job === "fit" && level >= 7,   // 헬스걸 전용 — 우산 꾸러미 자리
       go: () => { roidT = 6; } },   // v0.9.31 7 → 6초
     { id: "doveWhat",   ic: "🦢", nm: "왕 둘기", ds: "둘기가 더 크고 빨라지고, 더 자주 날아와요",
@@ -4985,7 +4988,7 @@
     { id: "legion",     ic: "🍰", nm: "간식 군단", ds: "대왕 간식이 우르르 몰려와요",
       hidden: true, once: true, cond: () => aug.giant > 0,
       go: () => { aug.legion = true; } },
-    { id: "magnet",     ic: "🧲", nm: "자석",       ds: "가까운 아이템이 졸졸 끌려와요",
+    { id: "magnet",     ic: "🧲", nm: "자석",       ds: "근처의 아이템이 끌려와요",
       once: true, go: () => { aug.magnet = 220; } },   // 끌어당기는 반지름(px) · 구름 상점은 무엇으로도 끌려오지 않는다(v0.9.208)
     /* 조작이 끌기 하나뿐이라 실력을 드러낼 통로가 좁다. 기본 기능으로 넣지 않고 증강으로만 둔다 —
        조작이 복잡해지는 건 원하는 사람만 지게. 부양사는 이미 두 배 반으로 빠르니 안 나온다. */
@@ -4997,7 +5000,7 @@
       go: () => { aug.itemRateMul /= 1 + 0.15 * dim("lucky"); } },
     { id: "giant",      ic: "🎂", nm: "대왕 간식", ds: "커다란 대왕 간식이 나와요",
       once: true, go: () => { aug.giant = 1; } },
-    { id: "downpour",   ic: "🌧️", nm: "간식 비", ds: "간식이 비처럼 더 많이 쏟아져요",
+    { id: "downpour",   ic: "🌧️", nm: "간식 세일", ds: "간식이 더 많이 쏟아져요",
       go: () => { aug.feverRateMul = 1 / (1 / aug.feverRateMul + 0.20); } },   // 먹을 때마다 양 +20%, 감쇠 없음
     { id: "angryUmb",   ic: "🌂", nm: "화난 우산",   ds: "우산이 깨질 때 펑! 터져서 주변 똥을 멀리 날려요",
       hidden: true, once: true,
@@ -5012,7 +5015,7 @@
       // 목숨을 파는 증강이라, 목숨 대신 오염도로 버티는 방울이에게는 나오지 않는다
       max: 5, cond: () => !dirtJob() && lives >= 2,
       go: () => { lives = Math.max(1, lives - 1); aug.scoreMul *= 1.2; } },
-    { id: "dungy",      ic: "💩", nm: "벼랑 끝", ds: "하트가 적을수록 점수가 올라요 · 하트 1개면 2배",
+    { id: "dungy",      ic: "🧗", nm: "벼랑 끝", ds: "하트가 적을수록 점수가 올라요 · 하트 1개면 2배",
       once: true,                               // v0.9.65 모든 캐릭터 공통 (예전엔 방울이 전용 · 오염도 기준)
       go: () => { aug.dungy = true; } },
     { id: "goldLord",   ic: "🦄", nm: "무지개 수집가", ds: "무지개 똥이 멀리서도 쌩 끌려오고, 점수가 2배",
@@ -5025,17 +5028,17 @@
       go: () => { aug.inter = true; interTimer = 8; bulletT = 2; } },
     /* 회피 확률은 일부러 안 적는다 — 숫자를 세는 것보다 '가끔 스르륵 피해진다'는
        느낌으로 두는 게 낫다. 안쪽 값은 10% 로 시작해 한 장마다 5%p 씩 (최대 30%). */
-    { id: "afterimage", ic: "👻", nm: "잔상 회피", ds: "맞을 때 가끔 그림자만 남기고 쏙 피해요",
+    { id: "afterimage", ic: "👥", nm: "잔상 회피", ds: "맞을 때 가끔 그림자만 남기고 쏙 피해요",
       max: 5,
       dsFn: () => (augCount["afterimage"] || 0)
         ? "더 자주 쏙 피해요"
         : "맞을 때 가끔 그림자만 남기고 쏙 피해요",
       go: () => { aug.dodge += augCount["afterimage"] ? 0.05 : 0.10; } },
-    { id: "chainZap",   ic: "⚡", nm: "연쇄 번개", ds: "펫이 똥을 부술 때 번개가 튀어서 옆 똥 두 개도 터져요",
+    { id: "chainZap",   ic: "⛓", nm: "연쇄 번개", ds: "펫이 똥을 부술 때 번개가 튀어서 옆 똥 두 개도 터져요",
       hidden: true, once: true, cond: () => zapOwnN() >= 3 && (petOn.galaga || petOn.helper || petOn.dove || petOn.eel || petOn.gift || petOn.duck),   // v0.9.61 똥을 부수는 펫이면 누구든 · v0.9.161 그 펫 3마리 이상 사 둬야
       go: () => { aug.chainZap = true; } },
     { id: "wak",        ic: "👊", nm: "주먹 총알", ds: "총알이 주먹으로 바뀌어요. 맞은 똥이 날아가 다른 똥이랑 같이 펑!",
-      hidden: true, once: true, cond: () => petOn.galaga && aug.galaga >= 2,   // 우주선 2대 이상
+      hidden: true, once: true, cond: () => petOn.galaga && aug.galaga >= 2,   // 뿅뿅기 2대 이상
       go: () => { aug.wak = true; } },
     { id: "clone",      ic: "👯", nm: "꼬마 분신", ds: "작은 분신이 날아가서 똥이랑 같이 펑 터져요",
       hidden: true, once: true,
@@ -5046,7 +5049,7 @@
       max: 3, go: () => { aug.scoreMul *= 1.25; aug.hitboxMul *= 1.15; } },
     /* (☝️ 외줄 타기는 v0.8.58 에 뺐다 — 방어 증강까지 두 배가 되어 우산·잔상·작은 몸으로 사실상 안 죽었다) */
     /* ── v0.9.61 새 증강 ── */
-    { id: "pierce",     ic: "🔩", nm: "관통 총알", ds: "우주선 총알이 똥 하나를 뚫고 지나가요",
+    { id: "pierce",     ic: "🔩", nm: "관통 총알", ds: "뿅뿅기 총알이 똥 하나를 뚫고 지나가요",
       once: true, cond: () => petOn.galaga,
       go: () => { aug.pierce = true; } },
     { id: "fly",        ic: "🪰", nm: "똥파리", ds: "맞을 때마다 똥파리가 나와서 5초 동안 똥을 부숴요",
@@ -5075,7 +5078,7 @@
     { id: "closeCall",  ic: "😅", nm: "외줄 타기", ds: "똥을 아슬하게 피할수록 점수가 점점 커져요. 한 대 맞으면 처음부터!",
       once: true, go: () => { aug.closeCall = true; closeN = 0; } },
     { id: "coinArmor",  ic: "🛡", nm: "동전 갑옷", ds: "맞을 때 이번 판 코인이 대신 막아 줘요 (5개부터, 막을 때마다 1개씩 더)",
-      once: true, cond: () => job !== "powerp" && !aug.coinArmor, go: () => { aug.coinArmor = true; } },   // v0.9.331 냥이 보은으로 이미 생겼으면 안 나온다
+      once: true, cond: () => job !== "powerp" && !aug.coinArmor, go: () => { aug.coinArmor = true; } },   // v0.9.331 냥이의 보은으로 이미 생겼으면 안 나온다
     { id: "credit",     ic: "📝", nm: "외상 장부", ds: "구름 상점에서 모아 둔 코인도 쓸 수 있어요",
       once: true, cond: () => accOn(5) && !testMode, go: () => { aug.credit = true; } },
     { id: "bombPoop",   ic: "💣", nm: "폭탄 똥", ds: "가끔 폭탄 똥이 떨어져요. 다른 똥에 부딪히면 펑! 주변 똥도 같이 터져요. 나한테 맞으면 아파요",
@@ -5084,9 +5087,9 @@
       hidden: true, once: true, cond: () => aug.dash && aug.juggle, go: () => { aug.fartRocket = true; } },
     { id: "zapDance",   ic: "🕺", nm: "번개 춤", ds: "아슬하게 피할 때마다 몸에서 찌릿! 그 똥이랑 위쪽 똥 두 개가 번개로 터져요",
       hidden: true, once: true, cond: () => aug.closeCall && petOn.eel, go: () => { aug.zapDance = true; } },
-    { id: "goldArmor",  ic: "🏵", nm: "냥이 보은", ds: "동전 갑옷이 생기고, 막을 때 코인이 사방으로 튀면 코인냥이가 1~2개를 냉큼 물어 와요",
-      once: true,   /* v0.9.330 황금 갑옷 → 냥이 보은, 숨은 증강 → 일반 증강 */ cond: () => petOn.coincat && job !== "powerp", go: () => { aug.goldArmor = true; aug.coinArmor = true; } },   // v0.9.331 코인냥이만 있으면 — 동전 갑옷이 없으면 함께 생긴다
-    { id: "twoRand",    ic: "🎲", nm: "깜짝 선물", ds: "증강 두 개를 아무거나 받아요",
+    { id: "goldArmor",  ic: "🏵", nm: "냥이의 보은", ds: "동전 갑옷이 생기고, 막을 때 코인이 사방으로 튀면 코인냥이가 1~2개를 냉큼 물어 와요",
+      once: true,   /* v0.9.330 황금 갑옷 → 냥이의 보은, 숨은 증강 → 일반 증강 */ cond: () => petOn.coincat && job !== "powerp", go: () => { aug.goldArmor = true; aug.coinArmor = true; } },   // v0.9.331 코인냥이만 있으면 — 동전 갑옷이 없으면 함께 생긴다
+    { id: "twoRand",    ic: "🎊", nm: "깜짝 선물", ds: "증강 두 개를 아무거나 받아요",
       go: () => {
         const got = []; twoRandObjs = [];
         for (let k = 0; k < 2; k++) {
@@ -5148,9 +5151,8 @@
     starCount++;
     achBump("star");                         // v0.9.154 루나 해금(별 30개 누적)
     if (starCount >= 5) achUnlock("starburst");
-    const gain = Math.round(2000 * starCount * aug.starMul * scoreMul() * (job === "powerp" && myPerk(4, "B") ? 1.3 : 1) * (dailyIs(0) ? 1.1 : 1));
-    if (job === "powerp" && myPerk(2, "B")) invUntil = Math.max(invUntil, performance.now() + 500);     // v0.9.85 무무
-    if (job === "powerp" && myPerk(5, "B") && starCount % 5 === 0) { invUntil = Math.max(invUntil, performance.now() + 3000); popText(player.x, player.y - 100, "🙏 빈손의 힘", "#ffe9a8", 20); }
+    const gain = Math.round(2000 * starCount * aug.starMul * scoreMul() * (dailyIs(0) ? 1.1 : 1));
+    if (job === "powerp" && myPerk(2, "B") && starCount % 5 === 0) { invUntil = Math.max(invUntil, performance.now() + 3000); popText(player.x, player.y - 100, "🙏 빈손의 힘", "#ffe9a8", 20); }
     score += sc("별", gain);
     popGain(x, y, gain, "⭐", "#ffd23f");   // v0.9.199 몇 번째(×n)는 안 보여 준다
     if (!sfx("star")) { beep(1400, .1, "square", .05); beep(1750, .12, "square", .04); }
@@ -5275,7 +5277,7 @@
       }
       picks.push(pool.splice(pool.indexOf(src[idx]), 1)[0]);
     }
-    if (job === "powerj" && myPerk(5, "A") && !todoDone && !startAugNow && lvData.todo) {   // v0.9.85 오늘의 할 일 — 첫 달
+    if (job === "powerj" && myPerk(4, "A") && !todoDone && !startAugNow && lvData.todo) {   // v0.9.85 오늘의 할 일 — 첫 달
       todoDone = true;
       const t = AUGMENTS.find(a => a.id === lvData.todo);
       if (t && (augCount[t.id] || 0) < maxOf(t) && (!t.cond || t.cond()) && achOpen(t.id)) picks.splice(0, picks.length, t);
@@ -5549,7 +5551,7 @@
   const SPOT_MUL = 4, SPOT_HALF = 38;
   let spotX = 0, spotOn = 0, spotMoved = false;
   function prophIs(id) { return (prophecy && prophecy.id === id && prophT > 0) || (prophecy2 && prophecy2.id === id && proph2T > 0); }   // v0.9.85 대길·여운 — 두 번째 예언
-  let bullets = [], shipClock = 0;   // 우주선: 날아가는 총알과 편대 공용 시계
+  let bullets = [], shipClock = 0;   // 뿅뿅기: 날아가는 총알과 편대 공용 시계
   /* ── 리듬 실험 ──
      rhythmOn 이면 평소 생성기를 멈추고, 곡의 박자에 '도착' 하도록 떨어뜨린다.
      rhythmLead 는 몇 초 앞서 내보낼지 — 그만큼의 거리를 그 시간에 주파하도록
@@ -8450,10 +8452,10 @@
   let sweats = [];
   const SWEAT_MAX = 24;
   let wakBooms = [];                 // 주먹 총알 — 똥끼리 부딪혀 터진 자리의 고리
-  /* 우주선 한 대가 다시 쏘기까지. 대수가 늘수록 각자 느긋해진다 —
+  /* 뿅뿅기 한 대가 다시 쏘기까지. 대수가 늘수록 각자 느긋해진다 —
      1대 0.6초 · 2대 0.8초 · 3대 1.0초 … (겹칠수록 총 화력의 상승폭이 줄어든다) */
   // 대수별 발사 간격 0.5 / 0.7 / 0.9 / 1.1 / 1.3 초
-  const SHIP_GAP = 0.7, SHIP_GAP_STEP = 0.25;   // v0.9.45 0.56/0.22 → 0.7/0.25   // v0.9.31 0.5/0.2 → 0.56/0.22 (우주선 화력 약 10%↓)
+  const SHIP_GAP = 0.7, SHIP_GAP_STEP = 0.25;   // v0.9.45 0.56/0.22 → 0.7/0.25   // v0.9.31 0.5/0.2 → 0.56/0.22 (뿅뿅기 화력 약 10%↓)
   function shipGap(n) { return SHIP_GAP + SHIP_GAP_STEP * (n - 1); }
   const M_PX = 12, DOVE_EVERY = 110 * M_PX;   // v0.9.45 90m → 110m   // v0.9.31 80m → 90m   // 100m 에서 20% 줄여 80m 마다
   // 히든 '왕 비둘기' — 속도·크기·폭발은 1.5배, 출격은 3/4 거리마다
@@ -8490,7 +8492,7 @@
   let bubLayers = 1, bangIdle = 0, bangPX = 0, skillCd = 0, skillUntil = 0;
   const SKILL_CD = 20, SKILL_SEC = 2;
   const btnSkill = document.getElementById("btnSkill");
-  function skillReady() { return job === "bangul" && myPerk(5, "B") && !vsLike(); }
+  function skillReady() { return job === "bangul" && myPerk(4, "B") && !vsLike(); }
   function syncSkill(now) {
     const on = skillReady() && (state === STATE.PLAY || state === STATE.PAUSE || state === STATE.AUG);
     btnSkill.classList.toggle("on", on);
@@ -8515,20 +8517,14 @@
         monkHeartN = Math.floor(since / 20);
         lives = Math.min(aug.maxLives, lives + 1); popText(player.x, player.y - 80, "❤️ +1", "#ff8fb0", 20);
       }
-      if (myPerk(5, "A") && since >= 60 && !lotusDone) {             // 해탈
+      if (myPerk(4, "B") && since >= 60 && !lotusDone) {             // 해탈 (v0.9.385 Lv4 B)
         lotusDone = true; lotusUntil = now + 2000; invUntil = Math.max(invUntil, now + 2000);
         popText(W / 2, H * 0.36, "🪷 해탈", "#ffd6f0", 28, 1.6); feverFlash = Math.max(feverFlash, 0.5);
       }
     }
     if (job === "levitator" && flyOn) {
       const top = H * FLY_TOP;
-      if (myPerk(4, "B")) {                                          // 구름 방패 — 꼭대기에 2초
-        if (player.y <= top + 6) {
-          topT += dt;
-          if (topT >= 2 && !topGiven) { topGiven = true; shields = Math.min(shields + 1, 5); popText(player.x, player.y - 60, "☁️ 구름 방패", "#cfe8ff", 20); }
-        } else if (player.y > top + 40) { topT = 0; topGiven = false; }
-      }
-      if (myPerk(5, "B")) {                                          // 상투 회오리 — 위로 치솟을 때
+      if (myPerk(2, "B")) {                                          // 상투 회오리 (v0.9.385 Lv2 B) — 위로 치솟을 때
         if (riseCd > 0) riseCd -= dt;
         const up = (prevPY - player.y) / Math.max(dt, 1e-4);
         if (up > 320 && riseCd <= 0) {
@@ -8540,7 +8536,7 @@
       prevPY = player.y;
     }
     if (job === "fortune" && nextProph && prophT > 0 && prophT <= 3 && !nextShown
-        && (myPerk(2, "A") || (myPerk(5, "B") && nextProph.bad))) {   // 예지 · v0.9.266 천기누설(나쁜 예언만 3초 전에)
+        && myPerk(2, "A")) {   // 예지 (v0.9.385 천기누설 뺌)
       nextShown = true;
       if (myPerk(2, "A")) popText(W / 2, H * 0.30, "🔮 다음 예언: " + nextProph.nm, nextProph.c, 18, 3);
       else { popText(W / 2, H * 0.30, "⚠️ 곧 나쁜 예언: " + nextProph.nm, "#ff8a8a", 19, 3); beep(440, .1, "triangle", .04); }
@@ -8915,7 +8911,7 @@
     job = to;
     // 들어오는 캐릭터 — 비누방울은 바로 채우지 않고 새로 맺힌다(교대로 방패를 채우지 못하게), 부적은 한 판에 한 번만
     if (to === "bangul") { bubbleOn = false; bubbleT = 0; }
-    if (to === "levitator") { flyOn = true; if (!tagCharms) { tagCharms = true; charms = myPerk(4, "A") ? 2 : myPerk(2, "A") ? 1 : 0; } }
+    if (to === "levitator") { flyOn = true; if (!tagCharms) { tagCharms = true; charms = myPerk(4, "B") ? 2 : myPerk(2, "A") ? 1 : 0; } }
     if (to === "fit") { aug.maxLives = 30; aug.hitboxMul *= 1.3; }
     if (to === "fortune") fortuneT = FORTUNE_FIRST;
     tagCd = TAG_CD;
@@ -9714,11 +9710,11 @@
     legion: "'대왕 간식'을 먹으면 나와요", angryUmb: "우산이 5개 넘게 있으면 나와요 (버피는 빼고)",
     carrot: "하트가 2개 넘게 있으면 나와요",
     goldLord: "'무지개 똥'이랑 '자석'을 같이 가지고 있으면 나와요", inter: "'느림보 하늘'을 2개 먹으면 나와요",
-    chainZap: "똥을 부수는 펫(뿌잉·우주선·둘기·선물 요정·찌릿 장어)을 게임 중에 먹으면 나와요", pierce: "게임 중에 '펫 슝슝 우주선'를 먼저 먹으면 나와요",
+    chainZap: "똥을 부수는 펫(뿌잉·뿅뿅기·둘기·선물 요정·찌릿 장어)을 게임 중에 먹으면 나와요", pierce: "게임 중에 '펫 뿅뿅기'를 먼저 먹으면 나와요",
     snackBig: "간식 증강을 4개 넘게 먹으면 나와요", cloudVip: "구름 상점이 오는 판에 나와요 (무무는 빼고)",
     fartRocket: "'방귀 대시'랑 '초승달 쓸기'를 같이 가지고 있으면 나와요", duckMarch: "'펫 노란 오리'랑 '방귀 대시'를 같이 가지고 있으면 나와요", duckEgg: "'펫 노란 오리'랑 '펫 코인냥이'를 같이 가지고 있으면 나와요", zapDance: "'외줄 타기'랑 '펫 찌릿 장어'를 같이 가지고 있으면 나와요",
     goldArmor: "'펫 코인냥이'가 있으면 나와요 (동전 갑옷도 함께 생겨요)", credit: "구름 상점이 오는 판에 나와요", coinArmor: "무무는 빼고 나와요",
- toilet: "하트가 3개 넘고 레벨 7 아래일 때 나와요", wak: "우주선이 2대 넘게 있으면 나와요",
+ toilet: "하트가 3개 넘고 레벨 7 아래일 때 나와요", wak: "뿅뿅기가 2대 넘게 있으면 나와요",
     clone: "레벨 7부터 · 하트가 2개 아래일 때 나와요"
   };
   /* v0.9.161 연쇄 번개 — 똥을 부수는 펫 다섯 중 3마리 이상 사 두면 열린다 */
@@ -9737,7 +9733,7 @@
       const pid = BOOK_PET[a.id];
       if (!ok) {                                   // v0.9.52 잠긴 것은 해금 조건이 맨 윗줄 (자물쇠와 함께)
         const lk = document.createElement("span"); lk.className = "how lockHow top";
-        lk.textContent = a.id === "chainZap" ? "🔒 뿌잉·우주선·둘기·선물 요정·찌릿 장어 중 3개 이상 구매하면 해금 (" + zapOwnN() + "/3)"
+        lk.textContent = a.id === "chainZap" ? "🔒 뿌잉·뿅뿅기·둘기·선물 요정·찌릿 장어 중 3개 이상 구매하면 해금 (" + zapOwnN() + "/3)"
           : ACH[a.id] && !achU.has(a.id) ? "🔒 " + ACH[a.id].t + " 해금" + achProg(a.id)
           : "🔒 상점에서 '" + PETS[pid].nm + "'를 사면 해금 (" + petPrice(pid) + "코인" + ")";
         desc.appendChild(lk);
@@ -9870,7 +9866,7 @@
   let lvJustOpen = "";                         // 방금 해금한 줄 — 한 번 반짝
   function chrPerkRows(c, j, redraw) {
     const cl = chrLv(j), P = CHR_PERKS[j], xp = lvData.cx[j] || 0;
-    for (let l = 2; l <= 5; l++) {
+    for (let l = 2; l <= 4; l++) {
       const open = perkOpen(j, l), cur = pickOf(j, l);
       const row = document.createElement("div"); row.className = "lvPick" + (cl >= l ? (open ? "" : " ready") : " lock");
       if (lvJustOpen === j + ":" + l) { row.classList.add("pop"); lvJustOpen = ""; }
@@ -9902,7 +9898,7 @@
         const t = P[l][ab], k = t.indexOf(" — ");                        // "이름 — 설명" 이면 이름을 크게
         const md = document.createElement("i"); md.className = "med";
         const pr = PERK_ROW[j], pc = (l - 2) * 2 + (ab === "A" ? 0 : 1);       // v0.9.129 시트 칸: 줄 = 캐릭터, 칸 = 2A 2B 3A 3B …
-        if (pr !== undefined) md.style.backgroundPosition = (pc / 7 * 100) + "% " + (pr / 5 * 100) + "%";
+        if (pr !== undefined) md.style.backgroundPosition = (pc / 5 * 100) + "% " + (pr / 5 * 100) + "%";
         const tx = document.createElement("div"); tx.className = "txt";
         const tt = document.createElement("div"); tt.className = "ttl";
         const em = document.createElement("em"); em.textContent = ab; tt.appendChild(em);
@@ -9918,7 +9914,7 @@
         ch.appendChild(b);
       }
       row.appendChild(ch);
-      if (j === "powerj" && l === 5 && cl >= 5) {         // v0.9.85 오늘의 할 일 — 첫 달로 받을 증강
+      if (j === "powerj" && l === 4 && cl >= 4) {         // v0.9.85 오늘의 할 일 (v0.9.385 Lv4) — 첫 달로 받을 증강
         const sel = document.createElement("select"); sel.className = "lvSel"; sel.disabled = cur !== "A";
         const o0 = document.createElement("option"); o0.value = ""; o0.textContent = "오늘의 할 일 — 증강 고르기"; sel.appendChild(o0);
         for (const a of AUGMENTS) if (!a.hidden && a.id !== "twoRand" && achOpen(a.id)) {
@@ -10034,7 +10030,7 @@
   });
   /* 펫을 사서 연쇄 번개가 열렸는지 */
   function zapUnlockCheck(before) {
-    if (before < 3 && zapOwnN() >= 3) { unlockQ.push({ k: "증강", t: "⚡ 연쇄 번개", how: "똥을 부수는 펫 3마리를 모았어요! 이제 게임 중에 비밀 증강으로 나와요" }); unlockShow(); }
+    if (before < 3 && zapOwnN() >= 3) { unlockQ.push({ k: "증강", t: "⛓ 연쇄 번개", how: "똥을 부수는 펫 3마리를 모았어요! 이제 게임 중에 비밀 증강으로 나와요" }); unlockShow(); }
   }
 
   /* v0.9.169 지난 명예의 전당은 창으로 — 랭킹 탭은 이번 주 TOP 10 과 나의 순위가 한 화면에 */
@@ -10543,7 +10539,7 @@
     aug.steelUmb = false; aug.starburst = false; aug.scoreMul = 1;
     aug.dodge = 0; aug.wak = false; aug.chainZap = false; aug.dungy = false; aug.momMeal = false;
     rerolls = REROLLS; rerollN = 0; ghosts = []; wakBooms = []; sweats = [];
-    charms = job === "levitator" ? (myPerk(4, "A") ? 2 : myPerk(2, "A") ? 1 : 0) : 0;
+    charms = job === "levitator" ? (myPerk(4, "B") ? 2 : myPerk(2, "A") ? 1 : 0) : 0;
     heartEat = 0; lastHitAt = 0; monkHeartN = 0; lotusDone = false; lotusUntil = 0; mindSlowUntil = 0;
     topT = 0; topGiven = false; riseCd = 0; prevPY = 0; pjMoonN = 0; pjPicks = 0; todoDone = false;
     prophecy2 = null; proph2T = 0; daegilUsed = false; nextProph = null; nextShown = false;
@@ -11056,7 +11052,6 @@
     if (b.type === "star" && job === "powerp") mean /= 1.5;  // 무소유 — 별 1.5배
     if (b.type === "heart" && allPerk("fit", "A")) mean /= 1.1;          // v0.9.85 단백질 보충
     if (b.type === "star" && allPerk("powerp", "A")) mean /= 1.1;        // 비움의 미학
-    if ((b.type === "moon" || b.type === "fullmoon") && job === "powerj" && myPerk(5, "B") && zoneIdx() >= BH_Z) mean /= 2;   // 야근
     return mean;
   }
   /* 다음 하나까지의 시간 — 레벨 1에서 평균의 80~120%, 레벨마다 2%p 씩 벌어진다.
@@ -11279,7 +11274,7 @@
     if (state === STATE.PLAY) lvTick(dt, now);   // v0.9.85 캐릭터 레벨 보상(시간으로 도는 것)
     // 방울이 — 터진 방울이 다시 맺힌다
     if (job === "bangul" && state === STATE.PLAY && !bubbleOn && !itemsOff()) {   // 맨몸대결·똥탑등반은 방울이 다시 맺히지 않는다
-      bubbleT += dt * (myPerk(5, "A") && bangIdle >= 1 ? 2 : 1);   // 집콕 — 1초 가만히 있으면 두 배 빨리
+      bubbleT += dt;   // v0.9.385 집콕 뺌
       if (bubbleT >= bubbleSec()) {
         bubbleT = 0; bubbleOn = true; bubLayers = myPerk(4, "A") ? 2 : 1;
         burst(player.x, player.y + player.hy, "#bfe9ff", 10);
@@ -11531,7 +11526,7 @@
       if (Math.random() < dt * 14) burst(player.x + (Math.random() - .5) * player.r * 2.2, player.y + player.hy + player.r * 0.6, "#ffb347", 1);   // v0.9.279 근육 거인 — 불꽃 튀어 오르기
       if (roidT <= 0) {
         roidT = 0;
-        if (job === "fit" && myPerk(5, "A")) {   // v0.9.85 근육 폭발 — 충격파
+        if (job === "fit" && myPerk(4, "A")) {   // v0.9.85 근육 폭발 (v0.9.385 Lv4 A) — 충격파
           smashPoopsAround(player.x, player.y + player.hy, 230, true);
           rings.push({ x: player.x, y: player.y + player.hy, t: 0, life: 0.5, r1: 230, color: "#ff8a6a" });
           shake = Math.max(shake, 18); popText(player.x, player.y - 90, "💥 근육 폭발!", "#ff6a6a", 22);
@@ -11613,9 +11608,9 @@
       }
     }
 
-      // ---- 우주선 — 땅에 늘어선 우주선이 저마다 제 주기로 총알을 쏘아 올린다 ----
+      // ---- 뿅뿅기 — 땅에 늘어선 뿅뿅기가 저마다 제 주기로 총알을 쏘아 올린다 ----
     if (aug.galaga > 0) {
-      /* 우주선마다 제 박자가 있다 — 다 같이 쏘면 여러 대라도 한 발처럼 보인다.
+      /* 뿅뿅기마다 제 박자가 있다 — 다 같이 쏘면 여러 대라도 한 발처럼 보인다.
          한 대는 shipGap(n) 마다 쏘되, k 번째는 그 주기를 n 등분한 만큼 늦게 쏜다.
          시계 하나로 재기 때문에 대수가 바뀌어도 박자가 저절로 다시 갈린다. */
       const n = aug.galaga, was = shipClock, gap = shipGap(n);
@@ -12324,7 +12319,7 @@
             if (bubbleOn) {
               closeBreak();
               if (bubLayers > 1) bubLayers--; else { bubbleOn = false; bubbleT = 0; }   // v0.9.84 두 겹이면 한 겹만 터진다
-              invUntil = now + (myPerk(4, "B") ? 1500 : 900);          // 터진 직후 잠깐은 안 맞는다 (Lv4 B — 1.5초)
+              invUntil = now + 900;          // 터진 직후 잠깐은 안 맞는다 (v0.9.385 1.5초 능력 뺌)
               if (myPerk(2, "B")) {          // v0.9.84 Lv2 B — 터질 때 주변 똥을 밀어낸다
                 for (const q of items) {
                   if (q.type !== "poop" || q === it || q.blast || q.dark || q.bounced) continue;
@@ -12375,7 +12370,7 @@
               invUntil = now + 1000;
               burst(it.x, it.y, "#ffe08a", 18);
               popText(player.x, player.y - 60, "📜 부적!", "#ffe08a", 20);
-              if (myPerk(4, "A")) { smashPoopsAround(player.x, player.y + player.hy, 120, true); rings.push({ x: player.x, y: player.y + player.hy, t: 0, life: 0.45, r1: 120, color: "#ffb35a" }); }
+              if (myPerk(4, "B")) { smashPoopsAround(player.x, player.y + player.hy, 120, true); rings.push({ x: player.x, y: player.y + player.hy, t: 0, life: 0.45, r1: 120, color: "#ffb35a" }); }
               if (!sfx("break")) beep(500, .1, "triangle", .05);
               items.splice(i, 1);
               continue;
@@ -12435,13 +12430,6 @@
                 if (it.bomb) bombBoom(it.x, it.y);
                 if (aug.goldArmor) goldArmorFx(cy);
                 if (!sfx("coin")) beep(1200, .08, "triangle", .05);
-                items.splice(i, 1);
-                continue;
-              }
-              if (job === "fit" && myPerk(4, "A") && Math.random() < 0.2) {   // v0.9.85 버피 — 20% 버팀
-                invUntil = now + 1000;
-                popText(player.x, player.y - 60, "💪 버텼다!", "#ff9a6a", 22); closeBreak();
-                burst(it.x, it.y, "#ff9a6a", 14);
                 items.splice(i, 1);
                 continue;
               }
@@ -12630,7 +12618,6 @@
     }
     if (it.type === "moon" || it.type === "fullmoon") {
       const full = it.type === "fullmoon";
-      if (job === "powerj" && myPerk(4, "A")) invUntil = Math.max(invUntil, now + 1000);   // v0.9.85 착착
       burst(it.x, it.y, full ? "#ffe9a8" : "#cfe4ff", full ? 40 : 20);
       if (full) { flash = 0; feverFlash = 1; shake = Math.max(shake, 14); }
       achBump("moon");
@@ -12696,7 +12683,7 @@
       }
       if (job === "fit" && myPerk(2, "A")) invUntil = Math.max(invUntil, now + 1000);
       heartEat++;
-      if (job === "fit" && myPerk(5, "B") && heartEat % 3 === 0) { roidT = Math.max(roidT, 3); popText(player.x, player.y - 90, "💪 벌크업!", "#ff6a6a", 22); }
+      if (job === "fit" && myPerk(4, "B") && heartEat % 3 === 0) { roidT = Math.max(roidT, 3); popText(player.x, player.y - 90, "💪 벌크업!", "#ff6a6a", 22); }
       lives = Math.min(aug.maxLives, lives + 1);
       popText(it.x, it.y, "❤️ +1", "#ff8fb0");
       if (!sfx("heart")) beep(1000, .15, "sine", .06);
@@ -12945,7 +12932,7 @@
      (예전에는 두드린 쪽으로 210px 만 갔다). 캐릭터 바로 위를 두드렸거나 키보드로 냈을 때는
      갈 곳이 없으니 보고 있는 쪽으로 DASH_DIST 만큼 간다. */
   /* v0.9.214 축지법(부양사 Lv5 A) — 화면 좌우가 이어진다. 몸은 반쯤 넘어가면 반대쪽에 나머지가 보인다(통째로 순간이동하지 않는다) */
-  function wrapOn() { return job === "levitator" && myPerk(5, "A") && state === STATE.PLAY && !vsLike() && !partyOn(); }
+  function wrapOn() { return job === "levitator" && myPerk(4, "A") && state === STATE.PLAY && !vsLike() && !partyOn(); }
   function wrapMod(x) { return ((x % W) + W) % W; }
   function wrapNear(px, x) { if (!wrapOn()) return px; const d = x - px; return d > W / 2 ? px + W : d < -W / 2 ? px - W : px; }   // 물건 쪽에 더 가까운 몸 자리
   function tryDash(now, sx, sy) {
@@ -14846,7 +14833,7 @@
      바나나는 폰에 버튼이 없어서 먹으면 1.5초마다 내 뒤에 저절로 하나씩(3개) 깐다. 대시는 두 번 두드리기 그대로(3번). */
   const PA_LIST = [
     { id: "slim",       ic: "🎯", nm: "홀쭉이 변신",           max: 5, w: 10 },
-    { id: "afterimage", ic: "👻", nm: "잔상 회피", max: 5, w: 10 },
+    { id: "afterimage", ic: "👥", nm: "잔상 회피", max: 5, w: 10 },
     { id: "dash",       ic: "💨", nm: "방귀 대시",             max: 1, w: 8, uses: 3 },
     { id: "giant",      ic: "🦍", nm: "근육 폭발",             max: 0, w: 6, instant: true },
     { id: "magnet",     ic: "🧲", nm: "자석",                  max: 1, w: 6 },
@@ -15480,7 +15467,7 @@
   function pickProph(exclude, goodOnly) {
     const pool = PROPHECIES.filter(q => !exclude.includes(q) && !(noItem() && q.noTower) && (!goodOnly || (!q.bad && !q.both))
       && !(q.id === "petrush" && !Object.keys(petOn).some(k => petOn[k])));   // v0.9.231 펫이 없으면 펫 신바람은 빼고
-    let tot = 0; const wt = q => (q.bad && job === "fortune" && myPerk(4, "B")) ? 0.5 : 1;   // v0.9.85 액막이 — 나쁜 예언 절반
+    let tot = 0; const wt = q => (q.bad && job === "fortune" && myPerk(2, "B")) ? 0.5 : 1;   // v0.9.85 액막이 (v0.9.385 Lv2 B) — 나쁜 예언 절반
     for (const q of pool) tot += wt(q);
     let n = Math.random() * tot;
     for (const q of pool) { n -= wt(q); if (n <= 0) return q; }
@@ -15488,7 +15475,6 @@
   }
   function startProphecy(now, second) {
     // 방금 것과 같은 예언이 연달아 나오지 않게 — 바뀌는 게 보여야 한다. 똥탑등반에선 점수·간식 예언 빼고
-    if (!second && prophecy && !prophecy.bad && !prophecy.both && job === "fortune" && myPerk(2, "B")) { prophecy2 = prophecy; proph2T = 2; }   // v0.9.85 여운 — 끝난 좋은 예언이 2초 더
     let pr = second ? pickProph([prophecy, prophecy2], true)
            : (nextProph && nextProph !== prophecy ? nextProph : pickProph([prophecy], false));
     if (second) { prophecy2 = pr; proph2T = PROPH_SEC; }
@@ -15522,7 +15508,7 @@
     // 가운데에 큰 글자는 띄우지 않는다 — 예언 막대(화면 가운데, 간식 막대 아래)가 바뀌는 것으로 알린다
     feverFlash = Math.max(feverFlash, pr.bad ? 0.3 : 0.5);
     if (!sfx(pr.bad ? "hurt" : "aug", 0.8)) { beep(pr.bad ? 300 : 1100, .15, "triangle", .05); }
-    if (!second && !pr.bad && !pr.both && job === "fortune" && myPerk(5, "A") && !daegilUsed) {   // v0.9.85 대길 — 판마다 한 번, 좋은 예언 하나 더
+    if (!second && !pr.bad && !pr.both && job === "fortune" && myPerk(4, "A") && !daegilUsed) {   // v0.9.85 대길 — 판마다 한 번, 좋은 예언 하나 더
       daegilUsed = true;
       startProphecy(now, true);
       popText(W / 2, H * 0.30, "🌟 대길! " + pr.nm + " + " + prophecy2.nm, "#ffe066", 20, 3);
@@ -16637,15 +16623,14 @@
   function levMul() {
     if (job !== "levitator" || !flyOn) return 1;
     const air = Math.max(0, Math.min(1, (groundY - player.y) / Math.max(1, groundY - H * FLY_TOP)));
-    return 1 + (myPerk(2, "B") ? 1.2 : 1.0) * air;   // v0.9.85 높이 수련 — 상한 +20%
+    return 1 + air;   // v0.9.385 높이 수련 뺌
   }
   /* 무소유 — 증강이 없는 대신, 안 맞고 버틴 시간만큼 배율이 오른다 (초당 +10%, 상한 없음).
      레벨 배수는 곱하지 않는다 — 점수 자체가 이미 레벨에 비례하므로 두 번 세는 셈이 된다.
      목숨을 잃으면 무피격 시간의 절반이 깎인다(v0.9.33) (우산·방울·회피로 막은 것은 그대로 유지). */
   function lvScoreMul() {                       // v0.9.85 버피 Lv4 B · 루나 Lv4 A
     let m = 1;
-    if (job === "fit" && myPerk(4, "B")) m *= 1 + 0.03 * Math.max(0, lives);
-    if (job === "fortune" && myPerk(4, "A") && prophecy && prophecy.bad && prophT > 0) m *= 1.3;
+    if (job === "fortune" && myPerk(4, "B") && prophecy && prophecy.bad && prophT > 0) m *= 1.3;   // 전화위복 (v0.9.385 Lv4 B)
     return m;
   }
   function monkMul() {
@@ -18862,7 +18847,7 @@
         }
       }
     }
-    // 우주선 — 총알과 우주선
+    // 뿅뿅기 — 총알과 뿅뿅기
     if (bullets.length) {
       if (aug.wak) {                              // 주먹 총알 — 조그만 주먹
         for (const bu of bullets) drawFist(bu.x, bu.y);
