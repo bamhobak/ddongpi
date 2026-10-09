@@ -490,6 +490,10 @@
   #nameInput { border-radius: 4px; }
   #nameInput:focus { outline: none; border-color: #35f0ff; box-shadow: 0 0 12px rgba(53,240,255,.35); }
   #btnSave { padding: 12px 20px; font-size: 15px; flex: none; }
+  #nameRow .tag { word-break: keep-all; text-wrap: balance; }   /* v0.9.392 긴 문구는 낱말 단위로 고르게 두 줄 */
+  #nameForm { flex-direction: column; align-items: stretch; gap: 10px; }   /* v0.9.392 이름 칸·등록 단추를 두 줄로 */
+  #nameForm #nameInput { flex: none; width: 100%; box-sizing: border-box; text-align: center; }
+  #nameForm #btnSave { width: 100%; }
   .screen h1 { font-size: clamp(26px, 7vw, 36px); letter-spacing: -1px; }
   .screen h2 { font-size: clamp(22px, 6vw, 30px); }
   .screen p { font-size: clamp(13px, 3.6vw, 15px); line-height: 1.6; color: #c8cbd6; }
@@ -2856,7 +2860,7 @@
   const elTitle = document.getElementById("overTitle");
   const coinNote = document.getElementById("coinNote");
 
-  const GAME_VERSION = "v0.9.391";
+  const GAME_VERSION = "v0.9.392";
   /* 제작사 스플래시(bamhobak friends 로고) — 2026-09-20 끔. 다시 켜려면 true */
   const SPLASH_USE = false;   // 코드를 고칠 때마다 뒤 두 자리를 올린다
   document.getElementById("ver").textContent = GAME_VERSION;
@@ -15847,7 +15851,7 @@
         nameRow.classList.add("on");
         nameForm.style.display = "";
         nameInput.value = "";
-        nameTag.textContent = overFirst ? "이름을 남겨 주세요" : "🎉 " + rank + "위 진입! 이름을 남기세요"; nameTag.classList.remove("err");
+        nameTag.textContent = overFirst ? "사용자님을 뭐라고 부르면 좋을까요?" : "🎉 " + rank + "위 진입! 이름을 남기세요"; nameTag.classList.remove("err");
         if (overFirst) overScreen.classList.add("firstName");   // v0.9.319 첫 판 — 이름 등록만 (다시 하기·캐릭터 바꾸기·메인으로 숨김)
       }
     });
