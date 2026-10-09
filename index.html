@@ -508,7 +508,7 @@
   button:active { transform: scale(.96); }
 
   /* v0.9.332 뽑기 카드 커튼 — 물음표 막이 위로 걷히며 고른 증강이 드러난다 */
-  .augCard.gReveal { position: relative; overflow: hidden; box-shadow: 0 0 0 3px #ffe066, 0 0 18px rgba(255,220,80,.9) !important; transform: scale(1.04); transition: transform .2s; }
+  .augCard.gReveal { position: relative; overflow: hidden; box-shadow: 0 0 0 3px #ffe066, 0 0 18px rgba(255,220,80,.9) !important; }   /* v0.9.398 1.04배 확대 뺌 — 글자가 흐려 보였다 */
   .augCard .gCurtain { position: absolute; inset: 0; z-index: 5; display: grid; place-items: center; border-radius: inherit;
     background: repeating-linear-gradient(90deg, #6b3fc4 0 14px, #5a32ad 14px 28px); box-shadow: inset 0 -6px 0 #3b1f7a;
     animation: gCurtainUp .7s cubic-bezier(.6,0,.3,1) .15s forwards; }
@@ -519,13 +519,13 @@
   /* v0.9.338 깜짝 선물 결과 — 쫀득하게: 제목이 통통 튀고, 카드가 한 장씩 뒤집히며 튀어나와 반짝 */
   #augTitle.trTtl { animation: trTtl .5s cubic-bezier(.3,1.6,.5,1) both; }
   @keyframes trTtl { 0% { transform: scale(.4) rotate(-8deg); opacity: 0; } 60% { transform: scale(1.18) rotate(3deg); opacity: 1; } 100% { transform: none; } }
-  .augCard.trGot { opacity: 0; animation: trPop .62s cubic-bezier(.25,1.7,.45,1) both, trGlow 1.2s ease-in-out .7s infinite alternate; transform-origin: 50% 60%; }
-  @keyframes trPop { 0% { opacity: 0; transform: perspective(500px) rotateY(95deg) scale(.5) translateY(30px); }
-                     55% { opacity: 1; transform: perspective(500px) rotateY(-12deg) scale(1.12) translateY(-6px); }
-                     78% { transform: perspective(500px) rotateY(5deg) scale(.97); }
-                     100% { opacity: 1; transform: perspective(500px) rotateY(0) scale(1.04); } }
+  /* v0.9.398 더 빠르게 — 뒤집기(0.62초) 대신 0.26초 만에 툭 튀어나와 꽂힌다. 끝나면 확대·3D 없이 제 크기 (그대로 두면 글자가 흐려 보였다) */
+  .augCard.trGot { opacity: 0; animation: trPop .26s cubic-bezier(.2,1.5,.4,1) both, trGlow 1.2s ease-in-out .3s infinite alternate; transform-origin: 50% 50%; }
+  @keyframes trPop { 0% { opacity: 0; transform: translateY(18px) scale(.72); }
+                     60% { opacity: 1; transform: translateY(-3px) scale(1.05); }
+                     100% { opacity: 1; transform: none; } }
   @keyframes trGlow { from { box-shadow: 0 0 0 3px #ffe066, 0 0 14px rgba(255,220,80,.7); } to { box-shadow: 0 0 0 3px #fff3a8, 0 0 28px rgba(255,230,120,1); } }
-  .augCard.trGot .ic { animation: trIc .5s cubic-bezier(.3,1.8,.5,1) both; animation-delay: inherit; }
+  .augCard.trGot .ic { animation: trIc .3s cubic-bezier(.3,1.8,.5,1) both; animation-delay: inherit; }
   @keyframes trIc { 0% { transform: scale(0) rotate(-40deg); } 70% { transform: scale(1.35) rotate(8deg); } 100% { transform: none; } }
   /* ---- 🌙 증강 선택 ---- */
   #augList { display: flex; flex-direction: column; gap: 10px; width: 100%; max-width: 340px; }
@@ -1905,7 +1905,8 @@
   #btnAugOk[hidden] { display: none; }
   #btnAugOk.rsv { visibility: hidden; animation: none; pointer-events: none; }   /* v0.9.366 자리만 미리 잡아 둔다 — 버튼이 나타날 때 카드가 위로 밀려 올라가지 않게 */
   #augList .augPh { visibility: hidden; pointer-events: none; animation: none; }   /* 제이 보름달 — 아직 안 나온 카드 자리 */
-  #btnAugOk { margin-top: 6px; animation: trTtl .4s cubic-bezier(.3,1.6,.5,1) both, glowY 3.4s ease-in-out .4s infinite; }   /* v0.9.365 받은 증강을 다 보여 준 뒤 확인으로 재개 */
+  #btnAugOk { margin-top: 6px; animation: okIn .2s ease-out both, glowY 3.4s ease-in-out .2s infinite; }   /* v0.9.398 확대·회전 없이 떠오르기 — 세 조각 버튼 그림이 커지는 동안 이음새가 세로 검은 줄로 보였다 */
+  @keyframes okIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: none; } }   /* v0.9.365 받은 증강을 다 보여 준 뒤 확인으로 재개 */
   /* ── v0.9.140 게임오버·일시정지 — 캐릭터 성장 창과 같은 남색 금테 판 + 금색 리본 제목 · 버튼은 큰 주요 하나 + 보조·나가기 나란히 ── */
   #overScreen, #pauseScreen { gap: 14px; }
   .gPanel { position: relative; width: min(92vw, 360px); box-sizing: border-box; display: flex; flex-direction: column; align-items: center; gap: 8px;
@@ -2860,7 +2861,7 @@
   const elTitle = document.getElementById("overTitle");
   const coinNote = document.getElementById("coinNote");
 
-  const GAME_VERSION = "v0.9.397";
+  const GAME_VERSION = "v0.9.398";
   /* 제작사 스플래시(bamhobak friends 로고) — 2026-09-20 끔. 다시 켜려면 true */
   const SPLASH_USE = false;   // 코드를 고칠 때마다 뒤 두 자리를 올린다
   document.getElementById("ver").textContent = GAME_VERSION;
@@ -5367,8 +5368,8 @@
           btnReroll.style.display = "none"; augOkReserve();   // v0.9.366 자리 고정
           twoRandObjs.forEach(([b, nm2], ti) => {
             const c = document.createElement("div"); c.className = "augCard gReveal trGot";
-            c.style.animationDelay = (0.12 + ti * AUTO_GAP / 1000) + "s";   // v0.9.338 한 장씩 통! 하고 뒤집혀 나온다 (v0.9.359 간격 1초)
-            setTimeout(() => { if (state !== STATE.AUG || augSkipping) return; if (!sfx("aug")) { beep(880 + ti * 220, .07, "square", .05); beep(1320 + ti * 220, .1, "triangle", .04); } }, (120 + ti * AUTO_GAP));
+            c.style.animationDelay = (0.04 + ti * AUTO_GAP / 1000) + "s";   // v0.9.338 한 장씩 통! 하고 뒤집혀 나온다 (v0.9.359 간격 1초)
+            setTimeout(() => { if (state !== STATE.AUG || augSkipping) return; if (!sfx("aug")) { beep(880 + ti * 220, .07, "square", .05); beep(1320 + ti * 220, .1, "triangle", .04); } }, (40 + ti * AUTO_GAP));
             c.innerHTML = '<span class="ic"></span><span class="tx"><div class="nm2"></div><div class="ds"></div></span>';
             c.querySelector(".ic").textContent = b.ic; c.querySelector(".nm2").textContent = nm2;
             c.querySelector(".ds").textContent = b.dsFn ? b.dsFn() : b.ds;
@@ -5376,7 +5377,7 @@
           });
           augAnchor();   // v0.9.366 위치 고정
           const t = document.getElementById("augTitle"); if (t) t.dataset.keep = t.textContent, t.textContent = "🎲 이 두 개를 받았어요!"; t.classList.remove("trTtl"); void t.offsetWidth; t.classList.add("trTtl");
-          augConfirm(() => { augList.style.pointerEvents = ""; if (t) { t.classList.remove("trTtl"); if (t.dataset.keep) t.textContent = t.dataset.keep; } finishPick(); }, 750 + AUTO_GAP * (twoRandObjs.length - 1));   // v0.9.365 마지막 카드가 나오면 확인 버튼
+          augConfirm(() => { augList.style.pointerEvents = ""; if (t) { t.classList.remove("trTtl"); if (t.dataset.keep) t.textContent = t.dataset.keep; } finishPick(); }, 500 + AUTO_GAP * (twoRandObjs.length - 1));   // v0.9.365 마지막 카드가 나오면 확인 버튼
           return;
         }
         finishPick();
@@ -5396,9 +5397,9 @@
       pjSeq.forEach(c => augList.insertBefore(c, card));   // 앞 차례에 받은 카드는 그대로 둔다
       for (let n = 1; n < augRemain; n++) { const ph = card.cloneNode(true); ph.className = "augCard augPh"; ph.removeAttribute("style"); augList.appendChild(ph); }   // v0.9.366 남은 카드 자리를 미리 — 쌓일 때 위로 밀리지 않게
       augOkReserve(); augAnchor();
-      card.classList.add("gReveal", "trGot"); card.style.animationDelay = "0.12s";
+      card.classList.add("gReveal", "trGot"); card.style.animationDelay = "0.04s";
       if (t) { t.textContent = "📋 계획대로 되고 있어요!"; if (!k) { t.classList.remove("trTtl"); void t.offsetWidth; t.classList.add("trTtl"); } }
-      if (!augSkipping) setTimeout(() => { if (state !== STATE.AUG || augSkipping) return; if (!sfx("aug")) { beep(880 + k * 220, .07, "square", .05); beep(1320 + k * 220, .1, "triangle", .04); } }, 120);
+      if (!augSkipping) setTimeout(() => { if (state !== STATE.AUG || augSkipping) return; if (!sfx("aug")) { beep(880 + k * 220, .07, "square", .05); beep(1320 + k * 220, .1, "triangle", .04); } }, 40);
       if (augRemain > 1) augAutoWait(() => {   // 다음 차례로 — 이 카드는 멈춘 모양 그대로 복사해 둔다
         const c = card.cloneNode(true); c.classList.remove("trGot"); c.style.animation = "trGlow 1.2s ease-in-out infinite alternate";
         pjSeq.push(c); card.classList.remove("trGot"); pjQuiet = true; card.click(); pjQuiet = false;
@@ -5406,7 +5407,7 @@
       else augConfirm(() => {   // v0.9.365 마지막 카드가 나오면 확인 버튼 — 눌러야 받고 이어 간다
         augList.style.pointerEvents = ""; if (rr) rr.style.visibility = ""; if (t) t.classList.remove("trTtl");
         pjSeq = []; card.classList.remove("trGot"); pjQuiet = true; card.click(); pjQuiet = false;
-      }, 750);
+      }, 500);   // v0.9.398 0.75 → 0.5초
     }
   }
   let state = STATE.READY;
