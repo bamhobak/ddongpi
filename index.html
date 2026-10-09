@@ -2860,7 +2860,7 @@
   const elTitle = document.getElementById("overTitle");
   const coinNote = document.getElementById("coinNote");
 
-  const GAME_VERSION = "v0.9.396";
+  const GAME_VERSION = "v0.9.397";
   /* 제작사 스플래시(bamhobak friends 로고) — 2026-09-20 끔. 다시 켜려면 true */
   const SPLASH_USE = false;   // 코드를 고칠 때마다 뒤 두 자리를 올린다
   document.getElementById("ver").textContent = GAME_VERSION;
@@ -9732,12 +9732,14 @@
   const AUG_CATS = [["간식", ["fever_time", "fever50", "downpour", "giant", "legion", "snackBig"]], ["아이템·증강", ["star50", "starburst", "magnet", "blackhole", "lucky", "gacha", "twoRand", "toilet", "credit", "cloudVip"]], ["하늘·똥", ["slow", "inter", "tinypoop", "gold", "goldLord", "dopa", "bombPoop"]], ["생존", ["time2x", "carrot", "dungy", "glass", "closeCall"]], ["몸·이동", ["small", "roid", "dash", "fartRocket", "afterimage", "stone"]], ["방어", ["umbrella3", "steelUmb", "angryUmb", "coinArmor"]], ["공격", ["juggle", "fly", "clone", "zapDance"]], ["펫", ["pet:helper", "hungry", "pet:galaga", "pierce", "wak", "pet:dove", "doveHome", "doveWhat", "pet:angel", "pet:gift", "pet:coincat", "goldArmor", "pet:duck", "duckFat", "duckMarch", "duckEgg", "pet:eel", "chainZap"]]];
   const AUG_RANK = {}; AUG_CATS.forEach(([, l]) => l.forEach(id => AUG_RANK[id] = Object.keys(AUG_RANK).length));
   const augRank = a => a.id in AUG_RANK ? AUG_RANK[a.id] : 1e4;
+  const augCatIdx = a => { const i = AUG_CATS.findIndex(([, l]) => l.includes(a.id)); return i < 0 ? 99 : i; };
+  const augCmp = (p, q) => augCatIdx(p) - augCatIdx(q) || !!p.hidden - !!q.hidden || augRank(p) - augRank(q);   // v0.9.397 묶음 → 일반 먼저·비밀은 뒤 → 목록 순서
   const augCatOf = a => { const c = AUG_CATS.find(([, l]) => l.includes(a.id)); return c ? c[0] : (a.hidden ? "비밀 증강" : "기타"); };
   function renderBook() {
     const list = document.getElementById("bookList"), desc = document.getElementById("bookDesc");
     list.innerHTML = "";
     const live = AUGMENTS.filter(a => !a.gone);
-    const all = live.slice().sort((p, q) => augRank(p) - augRank(q));   // v0.9.395 비밀 증강도 종류 묶음 안에 (관련 증강 옆) · v0.9.389 종류별
+    const all = live.slice().sort(augCmp);   // v0.9.395 비밀 증강도 종류 묶음 안에 (관련 증강 옆) · v0.9.389 종류별
     let open = 0;
     const show = (a, ok) => {
       desc.innerHTML = "";
