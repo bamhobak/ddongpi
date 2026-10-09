@@ -2854,7 +2854,7 @@
   const elTitle = document.getElementById("overTitle");
   const coinNote = document.getElementById("coinNote");
 
-  const GAME_VERSION = "v0.9.385";
+  const GAME_VERSION = "v0.9.386";
   /* 제작사 스플래시(bamhobak friends 로고) — 2026-09-20 끔. 다시 켜려면 true */
   const SPLASH_USE = false;   // 코드를 고칠 때마다 뒤 두 자리를 올린다
   document.getElementById("ver").textContent = GAME_VERSION;
@@ -2883,17 +2883,17 @@
                ds: "힘들때마다 차려지는 엄마의 따뜻한 밥상 · 코인이 2배로 나온다" },
     /* 점술가 — 도박사 자리를 이어받았다. 가끔 떨어지는 수정 구슬(옛 포춘쿠키)을 먹으면 10초 동안 예언 하나가 이뤄진다.
        (옛 도박사 기록은 순위표에 도박사로 그대로 남는다 — JOB_NAMES·JOB_IMG 에만 남겨 두었다) */
-    fortune: { nm: "루나 · 점술가", ic: "🔮", needUnlock: "별 30개 먹으면 해금", ds: "수정 구슬로 10초마다 앞날을 점쳐요 · 어떤 일들이 생길까요?" },
-    levitator: { nm: "도도 · 부양사", ic: "☁️", needUnlock: "한 판에 7스테이지까지 가면 해금", ds: "하늘 어디든 둥실 날 수 있어요 · 높이 날수록 점수가 올라요" },
-    fit: { nm: "버피 · 헬스견", ic: "💪", needUnlock: "한 판에 60초 이상 버티면 해금", ds: "하트 5개로 시작해요 · 우산은 안 나와요 · 하트가 아주 잘 나와요 · 근육이 빵빵해요" },
-    powerj: { nm: "제이 · 계획러", ic: "📋", needUnlock: "달 15개 먹으면 해금", ds: "달이 잘 나와요 · 대신 증강은 계획대로 1개만 받아요" },
+    fortune: { nm: "루나 · 점술가", ic: "🔮", needUnlock: "별 50개 먹으면 해금", ds: "수정 구슬로 10초마다 앞날을 점쳐요 · 어떤 일들이 생길까요?" },
+    levitator: { nm: "도도 · 부양사", ic: "☁️", needUnlock: "15스테이지 도달", ds: "하늘 어디든 날아다닐 수 있어요 · 높이 날수록 점수가 올라요" },
+    fit: { nm: "버피 · 헬스견", ic: "💪", needUnlock: "똥 60초 동안 안 맞기", ds: "하트 5개로 시작해요 · 근육이 빵빵해요" },
+    powerj: { nm: "제이 · 계획러", ic: "📋", needUnlock: "달 누적 50개", ds: "달이 잘 나와요 · 증강 고를 계획이 다 짜여 있어요" },
     /* 파워P — 파워J 의 거울. 달은 남들만큼 오는데, 올 때마다 네 장을 펼쳐 놓고 고른다.
        아이디가 powerp2 인 것은, powerp 는 무소유가 예전에 파워P 였을 때 쓰던 이름이라
        이미 차 있기 때문이다 (옛 기록과 순위표가 그 이름을 쓴다). */
     powerp2: { nm: "파워P", ic: "🎯", gone: true, ds: "증강을 4개 중에서 고른다" },
-    powerp: { nm: "무무 · 무소유", ic: "🙏", needUnlock: "코인 하나도 안 먹고 100초 버티면 해금",   // v0.9.62 잠긴 캐릭터
-              ds: "달이 아예 안 나와요 · 별이 조금 잘 나와요 · 안 맞을수록 점수가 쑥쑥 올라요" },
-    bangul: { nm: "방울이 · 집순이", ic: "🫧", ds: "비누방울이 똥을 한 번 대신 막아 줘요 · 조금 있으면 다시 생겨요" }
+    powerp: { nm: "무무 · 무소유", ic: "🙏", needUnlock: "코인 안 먹고 100초",   // v0.9.62 잠긴 캐릭터
+              ds: "달이 안 나와요 · 안 맞을수록 점수가 쑥쑥 올라요" },
+    bangul: { nm: "방울이 · 집순이", ic: "🫧", ds: "비누방울이 똥을 대신 막아 줘요" }
   };
   // v0.8.77 고르는 화면·순위 탭 순서 (두 줄씩: 방울이 버피 / 제이 소라 / 무무 루나) — 키를 다시 넣어 순서를 바꾼다
   for (const k of ["bangul", "fit", "powerj", "levitator", "powerp", "fortune"]) { const v = JOBS[k]; delete JOBS[k]; JOBS[k] = v; }
@@ -4303,7 +4303,7 @@
   };
   const CHR_PERKS = {
     bangul: {
-      2: { A: "비누방울 다시 맺히는 시간 -25%", B: "비누방울이 터질 때 주변 똥을 밀어낸다" },
+      2: { A: "비누방울 다시 맺히는 시간 -15%", B: "비누방울이 터질 때 주변 똥을 밀어낸다" },
       3: { A: "미끌미끌 — 맞은 뒤 무적 +0.2초", B: "거품 정리 — 스테이지가 바뀔 때마다 내 주변 똥이 거품으로 사라진다" },
       4: { A: "비누방울 두 겹", B: "대왕 비누방울 — 스킬 버튼(쿨타임 20초), 2초 동안 큰 방울 속에서 무적" }
     },
@@ -4883,8 +4883,8 @@
   function achTick(dt) {                     // 매 프레임 — 버티기·레벨 업적, 쌓인 횟수 저장
     if (!achLive()) return;
     if (elapsed >= 100 && coinGot === 0) jobUnlock("powerp");   // 무무 — 100초 넘게 코인을 하나도 안 먹기
-    if (elapsed >= 60) jobUnlock("fit");                        // v0.9.154 버피 — 한 판에 60초
-    if (level >= 7) jobUnlock("levitator");                     // v0.9.154 도도 — 7스테이지(오로라 커튼)
+    if (elapsed - touchAt >= 60) jobUnlock("fit");              // v0.9.386 버피 — 똥이 몸에 60초 동안 안 닿기 (우산·방울·부적·동전 갑옷으로 막아도 닿은 것)
+    if (level >= 15) jobUnlock("levitator");                    // v0.9.386 도도 — 15스테이지 도달 (예전 7)
     if (level >= 15) achUnlock("inter");
     if (level >= 6 && runHits === 0) achUnlock("afterimage");
     if (level >= 12) achUnlock("bombPoop");   // v0.9.249
@@ -8543,7 +8543,7 @@
     }
     if (proph2T > 0) { proph2T = Math.max(0, proph2T - dt); if (proph2T <= 0) prophecy2 = null; }
   }
-  function bubbleSec() { return BUBBLE_SEC * (myPerk(2, "A") ? 0.75 : 1); }
+  function bubbleSec() { return BUBBLE_SEC * (myPerk(2, "A") ? 0.85 : 1); }   // v0.9.386 -25% → -15%
   /* 점수판은 실제 점수를 곧바로 따라가지 않고 뒤에서 굴러 오른다.
      크게 먹은 순간에만 튀어야 해서, 생존 점수처럼 조금씩 새는 건 흘려보낸다. */
   let scoreShown = 0, scorePunch = 0, prevScore = 0;
@@ -9168,7 +9168,7 @@
     achData.j = [...jobUnlocked]; achData.jv = 1; achSave();
   }
   /* 누적 조건은 진행도도 보여 준다 */
-  const JOB_UNLOCK_N = { fortune: ["star", 30], powerj: ["moon", 15] };
+  const JOB_UNLOCK_N = { fortune: ["star", 50], powerj: ["moon", 50] };   // v0.9.386 별 30 → 50 · 달 15 → 50 (누적)
   function unlockHow(id) {
     const u = JOB_UNLOCK_N[id], t = JOBS[id].needUnlock;
     return u ? t + " (" + Math.min(u[1], achData.c[u[0]] || 0) + "/" + u[1] + ")" : t;
@@ -10573,7 +10573,7 @@
     cats = []; catT = CAT_EVERY * 0.7; catN = 0;
     eelT = EEL_EVERY * 0.6; bolts = []; duckT = DUCK_EVERY * 0.5; ducks = []; aug.duck = 0; aug.duckFat = false; aug.duckMarch = false; aug.duckEgg = false;
     bullets = []; shipClock = 0; aug.galaga = 0;
-    coinRun = 0; coinDebt = 0; coinSeen = 0; coinGot = 0; coinSeenV = 0; coinGotV = 0;
+    coinRun = 0; coinDebt = 0; coinSeen = 0; coinGot = 0; touchAt = 0; coinSeenV = 0; coinGotV = 0;
     monkStreak = 0; fullOwn = false; fullBanner = 0; fullFx = 0;
     shieldTimer = UMB_SEC;
     aug.itemRateMul = 1; aug.feverRateMul = 1; aug.giant = 0; aug.magnet = 0;
@@ -10696,6 +10696,7 @@
   /* 무소유의 계산용 — 이번 판에 나온 코인과 주운 코인의 개수(값이 아니라 낱개).
      둘의 차이가 '흘려보낸 코인' 이고, 판 끝에 그만큼 점수가 늘어난다. */
   let coinSeen = 0, coinGot = 0;
+  let touchAt = 0;                   // v0.9.386 똥이 몸에 마지막으로 닿은 때(초) — 버피 해금 (closeBreak 에서 적는다)
   // 무소유의 셈은 개수가 아니라 값으로 한다 — 3코인은 3%, 5코인은 5%
   let coinSeenV = 0, coinGotV = 0;
   /* 무소유 → 풀소유. 코인을 연달아 FULL_NEED 개 쥐면 진화한다.
@@ -12759,7 +12760,7 @@
   let vacHeld = 0, coinArmorN = 0;
   let jugCd = 0, jugCdMax = JUG_CD, vacCd = 0, vacT = 0, closeN = 0, rocketTrails = [], goldFetch = null;   // jugCdMax — 버튼 차오름 기준(다크똥을 쳤으면 두 배)
   /* v0.9.360 아슬아슬 콤보 끊기 — 하트를 잃을 때만이 아니라 몸에 똥이 닿으면(방울·부적·우산·동전 갑옷·버팀으로 막아도) 처음부터 */
-  function closeBreak() { if (aug.closeCall && closeN > 0) { popText(player.x, player.y - 95, "아슬+" + closeN + " 끝", "#c9c9d6", 16); closeN = 0; } }
+  function closeBreak() { touchAt = elapsed; if (aug.closeCall && closeN > 0) { popText(player.x, player.y - 95, "아슬+" + closeN + " 끝", "#c9c9d6", 16); closeN = 0; } }
   function jugFling(q, hx) {                 // 위로 쓸어 올린다 — 날아가는 똥은 나를 안 다치고, 다른 똥에 닿으면 같이 터진다(주먹 총알과 같은 처리)
     q.vx = (q.x - hx) * 4 + (Math.random() - .5) * 160;
     q.vy = -(560 + Math.random() * 160);
