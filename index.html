@@ -2854,7 +2854,7 @@
   const elTitle = document.getElementById("overTitle");
   const coinNote = document.getElementById("coinNote");
 
-  const GAME_VERSION = "v0.9.387";
+  const GAME_VERSION = "v0.9.388";
   /* 제작사 스플래시(bamhobak friends 로고) — 2026-09-20 끔. 다시 켜려면 true */
   const SPLASH_USE = false;   // 코드를 고칠 때마다 뒤 두 자리를 올린다
   document.getElementById("ver").textContent = GAME_VERSION;
@@ -4992,7 +4992,7 @@
       once: true, go: () => { aug.magnet = 220; } },   // 끌어당기는 반지름(px) · 구름 상점은 무엇으로도 끌려오지 않는다(v0.9.208)
     /* 조작이 끌기 하나뿐이라 실력을 드러낼 통로가 좁다. 기본 기능으로 넣지 않고 증강으로만 둔다 —
        조작이 복잡해지는 건 원하는 사람만 지게. 부양사는 이미 두 배 반으로 빠르니 안 나온다. */
-    { id: "dash",       ic: "💨", nm: "방귀 대시",   ds: "화면을 두 번 톡톡 누르면 그 자리로 뿡! 날아가요",
+    { id: "dash",       ic: "💨", nm: "방귀 대시",   ds: "화면을 두 번 톡톡 누르면 그 자리로 대시 (쿨타임 10초)",
       once: true, cond: () => actOk(),   // v0.9.210 부양사도 나온다 · v0.9.249 액티브 스킬은 두 가지까지
       go: () => { aug.dash = true; dashCd = 0; dashT = 0; } },
     { id: "lucky",      ic: "🍀", nm: "네잎클로버",       ds: "아이템이 더 자주 나와요",
@@ -5054,9 +5054,9 @@
       go: () => { aug.pierce = true; } },
     { id: "fly",        ic: "🪰", nm: "똥파리", ds: "맞을 때마다 똥파리가 나와서 5초 동안 똥을 부숴요",
       once: true, go: () => { aug.fly = true; } },
-    { id: "stone",      ic: "🗿", nm: "돌부처", ds: "2초 가만히 있으면 돌이 돼서 안 맞아요(최대 5초) · 그동안 점수랑 아이템은 없어요",
+    { id: "stone",      ic: "🗿", nm: "돌부처", ds: "1초 가만히 있으면 돌이 돼요 (최대 5초)",
       once: true, go: () => { aug.stone = true; stoneT = 0; } },
-    { id: "gacha",      ic: "🪀", nm: "뽑기", ds: "증강이 물음표로 나와요 · 그중 절반은 비밀 증강",
+    { id: "gacha",      ic: "🪀", nm: "뽑기", ds: "증강이 물음표로 나와서 뭔지 알 수 없어요 · 비밀 증강일 확률이 올라요",
       once: true, cond: () => job !== "powerj", go: () => { aug.gacha = true; } },   // v0.9.352 제이는 카드가 1장이라 물음표가 의미 없다
     { id: "snackBig",   ic: "🍩", nm: "배불뚝이", ds: "간식 타임에 몸이 커져서 간식을 더 많이 받아먹어요",
       hidden: true, once: true,
@@ -5071,7 +5071,7 @@
       cond: () => accOn(5) && !testMode && job !== "powerp",   // 구름 상점이 오는 판에만 (무무는 상점에 증강이 안 나온다)
       go: () => { aug.cloudVip = true; } },
     /* ── v0.9.249 새 증강 — 액티브 스킬(방귀 대시·초승달 쓸기·똥 청소기)은 두 가지까지만 ── */
-    { id: "juggle",     ic: "🤹", nm: "초승달 쓸기", ds: "똥이 머리에 닿기 직전에 버튼을 톡! 하얀 초승달로 쓸어 올려 똥을 튕겨 내요. 튕긴 똥은 다른 똥이랑 같이 펑 (3초마다 · 다크똥을 치면 6초)",
+    { id: "juggle",     ic: "🤹", nm: "초승달 쓸기", ds: "초승달 쓸기로 똥을 튕겨 내요. 튕긴 똥은 다른 똥이랑 같이 펑 (쿨타임 3초 · 다크똥을 치면 6초)",
       once: true, cond: () => actOk(), go: () => { aug.juggle = true; jugCd = 0; for (const k in UPPER_PAD) if (k.startsWith(upperKey().split("_")[0])) { const im = new Image(); im.src = "assets/upper_" + k + ".webp"; UPPER_IMG[k] = im; } } },   // 어퍼컷 그림 미리 불러 둔다
     { id: "vacuum",     ic: "🧹", nm: "똥 청소기", ds: "버튼을 누르면 머리 위 똥이랑 아이템을 쓰읍 빨아들여요 (15초마다)",
       gone: true, once: true, cond: () => false, go: () => { aug.vacuum = true; vacCd = 0; } },   // v0.9.342 뺐다 — 증강·도감·테스트 목록에 안 나온다
@@ -11447,7 +11447,7 @@
           stoneT = Math.min(stoneT, 0);
         } else {
           stoneT += dt;
-          if (!stoneOn && stoneT >= 2) {   // v0.9.105 1 → 2초
+          if (!stoneOn && stoneT >= 1) {   // v0.9.388 2 → 1초 · v0.9.105 1 → 2초
             stoneDur = 0;
             stoneOn = true;
             popText(player.x, player.y - 70, "🗿 돌부처", "#d9d9d9", 22);
