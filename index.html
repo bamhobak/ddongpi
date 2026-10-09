@@ -2865,7 +2865,7 @@
   const elTitle = document.getElementById("overTitle");
   const coinNote = document.getElementById("coinNote");
 
-  const GAME_VERSION = "v0.9.408";
+  const GAME_VERSION = "v0.9.409";
   /* 제작사 스플래시(bamhobak friends 로고) — 2026-09-20 끔. 다시 켜려면 true */
   const SPLASH_USE = false;   // 코드를 고칠 때마다 뒤 두 자리를 올린다
   document.getElementById("ver").textContent = GAME_VERSION;
@@ -3153,16 +3153,16 @@
               ds: "뿅뿅이가 총알을 쏘아 올려요" },
     dove:   { nm: "둘기", ic: "🕊️", img: "assets/dove.png",
               ds: "많이 움직이면 날아올라 똥을 터뜨려요" },
+    eel:    { nm: "찌릿 장어", ic: "⚡", img: "assets/pet_eel.png",
+              ds: "가끔 가까운 똥에 찌릿! 번개를 쏘고, 옆 똥까지 번져요" },
+    duck:   { nm: "노란 오리", ic: "🦆", img: "assets/pet_duck.png", ui: "assets/pet_duck_shop.png?2",   // v0.9.343 · v0.9.372 상점·고르기 그림은 방귀 뺀 것(ui)
+              ds: "가끔 조그만 오리 떼가 방귀로 부릉! 화면 가운데를 가로지르며 한 마리가 똥 하나씩 부숴요" },
     angel:  { nm: "아기 천사", ic: "👼", img: "assets/pet_angel.png",
               ds: "쓰러지면 한 번 다시 일으켜 주고, 다가오는 똥을 밀어내요" },
     gift:   { nm: "선물 요정", ic: "🧚", img: "assets/pet_fairy.png?2",
               ds: "가끔 날아가서 똥을 펑! 하트·우산·별·달로 바꿔요" },
     coincat: { nm: "코인냥이", ic: "🐈", img: "assets/pet_cat.png", ui: "assets/pet_cat_shop.png?1",   // v0.9.373 상점 그림은 꼬리 말고 몸 기준 가운데
-              ds: "가끔 코인을 물어다 줘요" },
-    eel:    { nm: "찌릿 장어", ic: "⚡", img: "assets/pet_eel.png",
-              ds: "가끔 가까운 똥에 찌릿! 번개를 쏘고, 옆 똥까지 번져요" },
-    duck:   { nm: "노란 오리", ic: "🦆", img: "assets/pet_duck.png", ui: "assets/pet_duck_shop.png?2",   // v0.9.343 · v0.9.372 상점·고르기 그림은 방귀 뺀 것(ui)
-              ds: "가끔 조그만 오리 떼가 방귀로 부릉! 화면 가운데를 가로지르며 한 마리가 똥 하나씩 부숴요" }
+              ds: "가끔 코인을 물어다 줘요" }
   };
   // 게임 화면에 그릴 펫 그림 (카드 그림과 같은 파일)
   const PET_IMG = {};
@@ -9737,7 +9737,7 @@
   function bookOpen(a) { const p = BOOK_PET[a.id]; if (a.id === "chainZap" && zapOwnN() < 3) return false; return (!p || hasPet(p)) && (!ACH[a.id] || achU.has(a.id)); }   // v0.9.61 업적으로 여는 증강도 잠긴 채 보인다
   let bookSel = null;
   /* v0.9.389 증강 정렬 — 종류별 (도감·개발자 증강 상세). 새 증강을 만들면 여기에도 넣을 것 — 빠진 건 맨 뒤 */
-  const AUG_CATS = [["간식", ["fever_time", "fever50", "downpour", "giant", "legion", "snackBig"]], ["아이템·증강", ["star50", "starburst", "magnet", "blackhole", "lucky", "gacha", "twoRand", "toilet", "credit", "cloudVip"]], ["하늘·똥", ["slow", "inter", "tinypoop", "gold", "goldLord", "dopa", "bombPoop"]], ["생존", ["time2x", "carrot", "dungy", "glass", "closeCall"]], ["몸·이동", ["small", "roid", "dash", "fartRocket", "afterimage", "stone"]], ["방어", ["umbrella3", "steelUmb", "angryUmb", "coinArmor"]], ["공격", ["juggle", "fly", "clone", "zapDance"]], ["펫", ["pet:helper", "hungry", "pet:galaga", "pierce", "wak", "pet:dove", "doveHome", "doveWhat", "pet:angel", "pet:gift", "pet:coincat", "goldArmor", "pet:duck", "duckFat", "duckMarch", "duckEgg", "pet:eel", "chainZap"]]];
+  const AUG_CATS = [["간식", ["fever_time", "fever50", "downpour", "giant", "legion", "snackBig"]], ["아이템·증강", ["star50", "starburst", "magnet", "blackhole", "lucky", "gacha", "twoRand", "toilet", "credit", "cloudVip"]], ["하늘·똥", ["slow", "inter", "tinypoop", "gold", "goldLord", "dopa", "bombPoop"]], ["생존", ["time2x", "carrot", "dungy", "glass", "closeCall"]], ["몸·이동", ["small", "roid", "dash", "fartRocket", "afterimage", "stone"]], ["방어", ["umbrella3", "steelUmb", "angryUmb", "coinArmor"]], ["공격", ["juggle", "fly", "clone", "zapDance"]], ["펫", ["pet:helper", "hungry", "pet:galaga", "pierce", "wak", "pet:dove", "doveHome", "doveWhat", "pet:eel", "chainZap", "pet:duck", "duckFat", "duckMarch", "duckEgg", "pet:angel", "pet:gift", "pet:coincat", "goldArmor"]]];
   const AUG_RANK = {}; AUG_CATS.forEach(([, l]) => l.forEach(id => AUG_RANK[id] = Object.keys(AUG_RANK).length));
   const augRank = a => a.id in AUG_RANK ? AUG_RANK[a.id] : 1e4;
   const augCatIdx = a => { const i = AUG_CATS.findIndex(([, l]) => l.includes(a.id)); return i < 0 ? 99 : i; };
