@@ -2735,7 +2735,7 @@
   const ICON_RE = ICON_KEYS.length ? new RegExp("(" + ICON_KEYS.slice().sort((a, b) => b.length - a.length)
     .map(k => k.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")).join("|") + ")\\uFE0F?", "gu") : null;
   let iconSheet = null;
-  const ICON_V = 5;   // v0.9.374 무지개 수집가·선물 요정 새 그림 · v0.9.341 그림만 바뀌어도 새로 받게 — 아이콘을 다시 그리면 1 올린다
+  const ICON_V = 6;   // v0.9.384 둘기 모이(모이 자루) · v0.9.374 무지개 수집가·선물 요정 새 그림 · v0.9.341 그림만 바뀌어도 새로 받게 — 아이콘을 다시 그리면 1 올린다
   const ICON_URL = "assets/icons.webp?k=" + ICON_KEYS.length + "-" + ICON_KEYS.join("").length + "-" + ICON_V;   // v0.9.78 칸 순서가 바뀌면 옛 그림을 쓰지 않게
   if (ICON_RE) {
     const im = new Image();
@@ -2854,7 +2854,7 @@
   const elTitle = document.getElementById("overTitle");
   const coinNote = document.getElementById("coinNote");
 
-  const GAME_VERSION = "v0.9.383";
+  const GAME_VERSION = "v0.9.384";
   /* 제작사 스플래시(bamhobak friends 로고) — 2026-09-20 끔. 다시 켜려면 true */
   const SPLASH_USE = false;   // 코드를 고칠 때마다 뒤 두 자리를 올린다
   document.getElementById("ver").textContent = GAME_VERSION;
@@ -4794,7 +4794,7 @@
     legion: false,      // 히든: 간식 군단 (대왕 등장·점수 강화)
     doveWhat: false,    // 히든: 왕 비둘기 (비둘기 펫이 세지고 자주 나온다)
     doveFlock: 0,       // 비둘기 떼 — 한 번 출격에 더 나가는 마리 수
-    doveFreq: 1,        // 비둘기 집 — 출격 거리 배율 (작을수록 자주)
+    doveFreq: 1,        // 비둘기 모이 — 출격 거리 배율 (작을수록 자주)
     dodge: 0,           // 잔상 회피 — 맞을 때 피할 확률 (0~0.30)
     dungy: false,       // 벼랑 끝 (하트가 적을수록 모든 점수가 오른다)
     momMeal: false,     // 쉬었음 청년: 엄마는 우리 딸 믿어 (엄마의 밥상이 떨어진다)
@@ -4906,13 +4906,13 @@
       go: () => { aug.starMul += 0.25 * dim("star50"); } },
     { id: "time2x",     ic: "⏱️", nm: "끈기 대장",   ds: "오래 버틸수록 점수가 더 빨리 쌓여요",
       go: () => { aug.timeMul *= 1 + 0.5 * dim("time2x"); } },
-    { id: "fever50",    ic: "🍪", nm: "간식 미식가", ds: "간식 타임에 먹는 간식 점수가 올라요",
+    { id: "fever50",    ic: "🍪", nm: "꿀맛 간식", ds: "간식 타임에 먹는 간식 점수가 올라요",
       go: () => { aug.feverScoreMul += 0.20; } },   // 먹을 때마다 +20%, 감쇠 없음
     { id: "slow",       ic: "🐢", nm: "느림보 하늘",   ds: "똥이 느릿느릿 떨어져요",
       go: () => { aug.fallMul *= 1 - 0.12 * dim("slow"); } },
-    { id: "small",      ic: "🐜", nm: "콩알 변신", ds: "몸이 작아져서 똥을 피하기 쉬워요",
+    { id: "small",      ic: "🐜", nm: "개미 변신", ds: "몸이 작아져서 똥을 피하기 쉬워요",
       cond: () => job !== "fit",   // 헬스걸은 벌크업이 정체성 — 마운자로를 맞지 않는다
-      nmFn: () => "콩알 변신 " + ((augCount["small"] || 0) + 1) + "단계",
+      nmFn: () => "개미 변신 " + ((augCount["small"] || 0) + 1) + "단계",
       go: () => { aug.hitboxMul *= 1 - 0.12 * dim("small"); } },
     { id: "tinypoop",   ic: "🟤", nm: "꼬마 똥",   ds: "떨어지는 똥이 작아져요",
       go: () => { aug.poopMul *= 1 - 0.12 * dim("tinypoop"); } },
@@ -4959,7 +4959,7 @@
     { id: "pet:eel",     ic: "🐍", nm: "펫 찌릿 장어", ds: "가끔 가까운 똥에 찌릿! 번개를 쏘고, 옆 똥까지 번져요", once: true, w: 0.7, cond: () => hasPet("eel"),
       go: () => { petOn.eel = true; eelT = EEL_EVERY * 0.5; } },
     /* ── 펫 전용 증강 — 그 펫을 데리고 있을 때만 후보에 나온다 ── */
-    { id: "doveHome",   ic: "🪺", nm: "둘기 집", ds: "둘기가 더 자주 날아와요",
+    { id: "doveHome",   ic: "🪺", nm: "둘기 모이", ds: "둘기가 더 자주 날아와요",
       max: 3, cond: () => petOn.dove,
       go: () => { aug.doveFreq *= 1 - 0.2 * dim("doveHome"); } },   // 80m → 64m → 53m …
     { id: "hungry",     ic: "😋", nm: "먹보 뿌잉", ds: "뿌잉이 아이템을 대신 먹어 줘요",
@@ -4970,7 +4970,7 @@
       go: () => { roidT = 6; } },   // v0.9.31 7 → 6초
     { id: "doveWhat",   ic: "🦢", nm: "왕 둘기", ds: "둘기가 더 크고 빨라지고, 더 자주 날아와요",
       hidden: true, once: true,
-      cond: () => petOn.dove && Math.max(0, (augCount["pet:dove"] || 0) - 1) + (augCount["doveHome"] || 0) >= 2,   // 비둘기 강화 2개 이상 (펫 둘기 2단계부터 + 비둘기 집)
+      cond: () => petOn.dove && Math.max(0, (augCount["pet:dove"] || 0) - 1) + (augCount["doveHome"] || 0) >= 2,   // 비둘기 강화 2개 이상 (펫 둘기 2단계부터 + 비둘기 모이)
       go: () => { aug.doveWhat = true; } },
     { id: "steelUmb",   ic: "📦", nm: "우산 택배", ds: "우산이 없으면 저절로 배달돼요",
       hidden: true, once: true,
@@ -9709,7 +9709,7 @@
     "pet:angel": "레벨 4부터 나와요",
     doveHome: "게임 중에 '펫 둘기'를 먼저 먹으면 나와요",
     hungry: "뿌잉이랑 자석을 같이 가지고 있으면 나와요",
-    roid: "버피만 · 레벨 7부터 나와요", doveWhat: "둘기 강화나 둘기 집을 2개 넘게 먹으면 나와요",
+    roid: "버피만 · 레벨 7부터 나와요", doveWhat: "둘기 강화나 둘기 모이를 2개 넘게 먹으면 나와요",
     steelUmb: "'우산 꾸러미'를 먹으면 나와요 (버피는 빼고)", starburst: "'별 사냥꾼'을 먹으면 나와요", blackhole: "'자석'을 먹으면 나와요",
     legion: "'대왕 간식'을 먹으면 나와요", angryUmb: "우산이 5개 넘게 있으면 나와요 (버피는 빼고)",
     carrot: "하트가 2개 넘게 있으면 나와요",
@@ -10425,7 +10425,7 @@
     const zb = zapOwnN();
     petOwned.add(id);
     try { localStorage.setItem(LS_PET_OWN, JSON.stringify([...petOwned])); } catch (e) {}
-    /* v0.9.195 펫 증강이 열린 것도 알림으로 · v0.9.199 그 펫으로 함께 열리는 증강(둘기 집·왕 둘기 등)도 하나씩 */
+    /* v0.9.195 펫 증강이 열린 것도 알림으로 · v0.9.199 그 펫으로 함께 열리는 증강(둘기 모이·왕 둘기 등)도 하나씩 */
     for (const a of AUGMENTS) {
       if (a.gone || BOOK_PET[a.id] !== id || !bookOpen(a)) continue;
       unlockQ.push({ k: "증강", t: a.ic + " " + a.nm, how: a.id.startsWith("pet:") ? "게임 중에 달을 먹으면 나와요" : (BOOK_COND[a.id] ? "✨ " + BOOK_COND[a.id] : "게임 중에 달을 먹으면 나와요") });
