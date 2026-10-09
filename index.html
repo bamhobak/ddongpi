@@ -2628,7 +2628,8 @@
      사전에 없는 한국어는 그대로 나가고 window.__i18nMiss 에 모인다 (tools/i18n.py collect 가 거둬 간다).
      data-noi18n 이 붙은 칸(개발자·테스트 창, 남이 지은 이름)은 건드리지 않는다. */
   const LANG = window.GAME_LANG || "ko";
-  const SNACK_TXT = new Image(); SNACK_TXT.src = "assets/snacktime_" + (["en", "ja"].includes(LANG) ? LANG : "ko") + ".webp?1";   // v0.9.399 '간식 타임' 글자 그림
+  const SNACK_TXT = new Image(); SNACK_TXT.src = "assets/snacktime_" + (["en", "ja"].includes(LANG) ? LANG : "ko") + ".webp?1";
+  const SNACK_DY = { ko: .095, en: .05, ja: .08 }[LANG] || .095;   // v0.9.401 노란 글자 몸통이 그림 가운데보다 아래라 그만큼 올려 그린다 (아래 두꺼운 테두리·위 별 때문)   // v0.9.399 '간식 타임' 글자 그림
   const I18N = LANG !== "ko" && window.I18N_DICT ? window.I18N_DICT : null;
   const I18N_HAN = /[가-힣]/;
   const i18nCache = new Map(), i18nMiss = window.__i18nMiss = new Set();
@@ -2862,7 +2863,7 @@
   const elTitle = document.getElementById("overTitle");
   const coinNote = document.getElementById("coinNote");
 
-  const GAME_VERSION = "v0.9.400";
+  const GAME_VERSION = "v0.9.401";
   /* 제작사 스플래시(bamhobak friends 로고) — 2026-09-20 끔. 다시 켜려면 true */
   const SPLASH_USE = false;   // 코드를 고칠 때마다 뒤 두 자리를 올린다
   document.getElementById("ver").textContent = GAME_VERSION;
@@ -18624,7 +18625,7 @@
       ctx.textAlign = "center"; ctx.textBaseline = "middle";
       if (snackOk) {                                  // v0.9.399 글자 그림 — 막대보다 살짝 크게, 가운데
         const ih = bh * 1.7, iw = ih * SNACK_TXT.naturalWidth / SNACK_TXT.naturalHeight;
-        ctx.drawImage(SNACK_TXT, W / 2 - iw / 2, by + bh / 2 - ih / 2, iw, ih);
+        ctx.drawImage(SNACK_TXT, W / 2 - iw / 2, by + bh / 2 - ih / 2 - ih * SNACK_DY, iw, ih);
       } else {
       ctx.font = "800 12px GameFont, Pretendard, NanumBarunGothic, system-ui, sans-serif";
       ctx.lineWidth = 3.5; ctx.strokeStyle = "rgba(46,12,0,.66)";
@@ -18655,7 +18656,7 @@
       ctx.textAlign = "center"; ctx.textBaseline = "middle";
       if (snackOk) {                                  // v0.9.399 글자 그림
         const ih = 77, iw = ih * SNACK_TXT.naturalWidth / SNACK_TXT.naturalHeight;
-        ctx.drawImage(SNACK_TXT, -iw / 2, -ih / 2, iw, ih);
+        ctx.drawImage(SNACK_TXT, -iw / 2, -ih / 2 - ih * SNACK_DY, iw, ih);
       } else {
       ctx.font = "900 34px GameFont, Pretendard, NanumBarunGothic, system-ui, sans-serif";
       ctx.lineWidth = 8; ctx.lineJoin = "round";
