@@ -2863,7 +2863,7 @@
   const elTitle = document.getElementById("overTitle");
   const coinNote = document.getElementById("coinNote");
 
-  const GAME_VERSION = "v0.9.406";
+  const GAME_VERSION = "v0.9.407";
   /* 제작사 스플래시(bamhobak friends 로고) — 2026-09-20 끔. 다시 켜려면 true */
   const SPLASH_USE = false;   // 코드를 고칠 때마다 뒤 두 자리를 올린다
   document.getElementById("ver").textContent = GAME_VERSION;
@@ -3013,7 +3013,7 @@
   }
 
   /* 뿅뿅이 전투기 — 원작처럼 흰 몸통에 빨간 무늬, 파란 속날개, 뾰족한 기수 */
-  /* 주먹 총알 — 총알 대신 조그만 주먹이 날아간다.
+  /* 주먹탄 — 총알 대신 조그만 주먹이 날아간다.
      위로 곧게 올라가므로 손등이 위를 보고, 아래에 빨간 소매가 따라붙는다.
      roundRect 는 옛 모바일 브라우저에 없어서 타원만으로 그린다. */
   function drawFist(x, y) {
@@ -4313,7 +4313,7 @@
   const CHR_PERKS = {
     bangul: {
       2: { A: "빠른 거품 — 비누방울 다시 맺히는 시간 -15%", B: "거품 팡 — 비누방울이 터질 때 주변 똥을 밀어낸다" },
-      3: { A: "미끌미끌 — 맞은 뒤 무적 +0.2초", B: "거품 정리 — 스테이지가 바뀔 때마다 내 주변 똥이 거품으로 사라진다" },
+      3: { A: "펫과 함께 A — 뿌잉, 뿅뿅이, 둘기, 찌릿 장어, 노란 오리 중 펫 하나를 랜덤으로 데려간다", B: "펫과 함께 B — 아기 천사, 선물 요정, 코인냥이 중 펫 하나를 랜덤으로 데려간다" },
       4: { A: "이중 거품 — 비누방울 두 겹", B: "대왕 비누방울 — 스킬 버튼(쿨타임 20초), 2초 동안 큰 방울 속에서 무적" }
     },
     fit: {
@@ -4811,10 +4811,10 @@
     dungy: false,       // 벼랑 끝 (하트가 적을수록 모든 점수가 오른다)
     momMeal: false,     // 쉬었음 청년: 엄마는 우리 딸 믿어 (엄마의 밥상이 떨어진다)
     chainZap: false,    // 히든: 연쇄 번개 (뿅뿅이 총알이 옆 똥 두 개로 번진다)
-    wak: false,         // 히든: 주먹 총알 (주먹이 똥을 튕겨 올리고, 부딪히면 같이 터진다)
+    wak: false,         // 히든: 주먹탄 (주먹이 똥을 튕겨 올리고, 부딪히면 같이 터진다)
     scoreMul: 1,        // 모든 점수에 곱해지는 배율
     dash: false,        // 방귀 대시 (두 번 두드리면 짧게 돌진 · 그동안 무적)
-    pierce: false,      // 관통 총알 (뿅뿅이 총알이 똥 하나를 뚫고 지나간다)
+    pierce: false,      // 관통탄 (뿅뿅이 총알이 똥 하나를 뚫고 지나간다)
     fly: false,         // 똥파리 (맞을 때마다 파리 한 마리가 5초 동안 똥을 부순다)
     stone: false,       // 얼음 땡 (1초 가만히 있으면 돌 — 무적, 점수·아이템 없음)
     gacha: false,       // 뽑기 (증강이 물음표로 나오고 절반은 히든)
@@ -5045,7 +5045,7 @@
     { id: "chainZap",   ic: "⛓", nm: "연쇄 번개", ds: "펫이 똥을 부술 때 번개가 튀어서 옆 똥 두 개도 터져요",
       hidden: true, once: true, cond: () => zapOwnN() >= 3 && (petOn.galaga || petOn.helper || petOn.dove || petOn.eel || petOn.gift || petOn.duck),   // v0.9.61 똥을 부수는 펫이면 누구든 · v0.9.161 그 펫 3마리 이상 사 둬야
       go: () => { aug.chainZap = true; } },
-    { id: "wak",        ic: "👊", nm: "주먹 총알", ds: "총알이 주먹으로 바뀌어요. 맞은 똥이 날아가 다른 똥이랑 같이 펑!",
+    { id: "wak",        ic: "👊", nm: "주먹탄", ds: "총알이 주먹으로 바뀌어요. 맞은 똥이 날아가 다른 똥이랑 같이 펑!",
       hidden: true, once: true, cond: () => petOn.galaga && aug.galaga >= 2,   // 뿅뿅이 2대 이상
       go: () => { aug.wak = true; } },
     { id: "clone",      ic: "👯", nm: "꼬마 분신", ds: "작은 분신이 날아가서 똥이랑 같이 펑 터져요",
@@ -5057,7 +5057,7 @@
       max: 3, go: () => { aug.scoreMul *= 1.25; aug.hitboxMul *= 1.15; } },
     /* (☝️ 외줄 타기는 v0.8.58 에 뺐다 — 방어 증강까지 두 배가 되어 우산·잔상·작은 몸으로 사실상 안 죽었다) */
     /* ── v0.9.61 새 증강 ── */
-    { id: "pierce",     ic: "🔩", nm: "관통 총알", ds: "뿅뿅이 총알이 똥 하나를 뚫고 지나가요",
+    { id: "pierce",     ic: "🔩", nm: "관통탄", ds: "뿅뿅이 총알이 똥 하나를 뚫고 지나가요",
       once: true, cond: () => petOn.galaga,
       go: () => { aug.pierce = true; } },
     { id: "fly",        ic: "🪰", nm: "똥파리", ds: "맞을 때마다 똥파리가 나와서 5초 동안 똥을 부숴요",
@@ -8459,7 +8459,7 @@
      놀란 건 캐릭터지 똥이 아니라서, 효과를 똥이 아니라 몸에 붙인다. */
   let sweats = [];
   const SWEAT_MAX = 24;
-  let wakBooms = [];                 // 주먹 총알 — 똥끼리 부딪혀 터진 자리의 고리
+  let wakBooms = [];                 // 주먹탄 — 똥끼리 부딪혀 터진 자리의 고리
   /* 뿅뿅이 한 대가 다시 쏘기까지. 대수가 늘수록 각자 느긋해진다 —
      1대 0.6초 · 2대 0.8초 · 3대 1.0초 … (겹칠수록 총 화력의 상승폭이 줄어든다) */
   // 대수별 발사 간격 0.5 / 0.7 / 0.9 / 1.1 / 1.3 초
@@ -10630,6 +10630,12 @@
     if (runMode === "vs") { aug.hitboxMul *= VS_SCALE; aug.poopMul *= VS_SCALE; vsReset(); }
     if (runMode === "party") { aug.hitboxMul *= VS_SCALE; aug.poopMul *= VS_SCALE; partyReset(); }
     document.body.classList.toggle("partyRun", runMode === "party");   // 여럿이 판 결과에는 1:1 대전 랭킹을 안 띄운다
+    /* v0.9.407 펫과 함께(방울이 Lv3 A·B, 모든 캐릭터) — 판 시작에 펫 하나를 무작위로 데려간다 (그 펫 증강 1단계를 받은 것과 같다) */
+    { const pool = allPerk("bangul", "A") ? ["helper", "galaga", "dove", "eel", "duck"] : allPerk("bangul", "B") ? ["angel", "gift", "coincat"] : null;
+      if (pool && job !== "powerp" && !vsLike() && !partyOn()) {
+        const p = pool[Math.floor(Math.random() * pool.length)], pa = AUGMENTS.find(x => x.id === "pet:" + p);
+        if (pa) augApply(pa);
+      } }
     state = STATE.PLAY;
     startScreen.classList.add("hidden");
     overScreen.classList.add("hidden");
@@ -11367,18 +11373,6 @@
     const lvUp = lvSeen > 0 && level > lvSeen;
     if (level !== lvSeen) lvSeen = level;
     if (lvUp) lvGlow = 1;                    // 레벨이 오를 때마다 테두리가 한 번 반짝인다
-    if (lvUp && allPerk("bangul", "B")) {    // v0.9.84 거품 정리(방울이 Lv3 B) — 모든 캐릭터, 스테이지가 바뀌면 내 주변 똥이 거품으로
-      const bx = player.x, by = player.y + player.hy;
-      for (let k = items.length - 1; k >= 0; k--) {
-        const q = items[k];
-        if (q.type !== "poop" || q.dark || q.gold || q.skin === "fever") continue;
-        if (Math.hypot(q.x - bx, q.y - by) > 170) continue;
-        burst(q.x, q.y, BUB_TONES[k % BUB_TONES.length], 8);
-        items.splice(k, 1);
-      }
-      rings.push({ x: bx, y: by, t: 0, life: 0.5, r1: 170, color: "#bfe9ff" });
-      if (!sfx("bubble")) beep(760, .12, "sine", .05);
-    }
     if (lvUp && zi === zoneShown) {          // 지대 글자가 안 뜨는 레벨(마지막 지대 뒤)에는 작은 소리로
       beep(880, .07, "triangle", .035); beep(1320, .09, "triangle", .03);
     }
@@ -11654,7 +11648,7 @@
         if (q.special === "laser" && !aug.wak) continue;
         if (Math.hypot(q.x - bu.x, q.y - bu.y) > q.r + 6) continue;
         if (aug.wak && !q.gold && q.skin !== "fever") {
-          /* 주먹 총알 — 부수지 않고 위로 튕겨 올린다. 날아가는 똥은 사람을 해치지 않고,
+          /* 주먹탄 — 부수지 않고 위로 튕겨 올린다. 날아가는 똥은 사람을 해치지 않고,
              처음 부딪히는 똥과 함께 반경 50px 로 터진다 (아래 wak 처리).
              무지개똥·간식은 튕기면 먹을 기회가 날아가니 예전처럼 그 자리에서 부순다. */
           q.vx = (q.x - bu.x) * 5 + (Math.random() - .5) * 140;
@@ -11672,7 +11666,7 @@
           burst(bu.x, bu.y, "#9fe8ff", 10);
           if (aug.chainZap) zapChain(bu.x, bu.y, 2, 100, null, 100);   // v0.9.31 번지는 거리 120 → 100   // 히든 '연쇄 번개' — 가까운(120px 안) 똥 두 개까지만 번진다
         }
-        if (bu.pierce > 0) { bu.pierce--; bu.skip = q; }   // 관통 총알 — 하나는 뚫고 계속 날아간다
+        if (bu.pierce > 0) { bu.pierce--; bu.skip = q; }   // 관통탄 — 하나는 뚫고 계속 날아간다
         else hit = true;
         break;
       }
@@ -12468,7 +12462,7 @@
               runHits++; achBump("hit");
               if (aug.fly) spawnFly(player.x, cy);
               noHitSec *= job === "powerp" && myPerk(2, "A") ? 3 / 4 : 1 / 2;           // 무소유 무피격 배율 (v0.9.85 Lv2 A — 1/4 만 잃음) — 맞으면 절반 잃는다 (v0.9.33, 예전 1/4)
-              invUntil = now + 1000 + (allPerk("bangul", "A") ? 200 : 0);   // v0.9.84 미끌미끌(방울이 Lv3 A) — 모든 캐릭터 +0.2초
+              invUntil = now + 1000;   // v0.9.407 미끌미끌(방울이 Lv3 A) 뺌
               hurtUntil = now + 1000;   // 무적 시간 동안 아픈 그림으로
               shake = 22; flash = 1;
               hitStop = Math.max(hitStop, HITSTOP_SEC);   // 아주 잠깐 멈췄다가 흔들린다 (타격감)
@@ -12779,7 +12773,7 @@
   let jugCd = 0, jugCdMax = JUG_CD, vacCd = 0, vacT = 0, closeN = 0, rocketTrails = [], goldFetch = null;   // jugCdMax — 버튼 차오름 기준(다크똥을 쳤으면 두 배)
   /* v0.9.360 아슬아슬 콤보 끊기 — 하트를 잃을 때만이 아니라 몸에 똥이 닿으면(방울·부적·우산·동전 갑옷·버팀으로 막아도) 처음부터 */
   function closeBreak() { touchAt = elapsed; if (aug.closeCall && closeN > 0) { popText(player.x, player.y - 95, "아슬+" + closeN + " 끝", "#c9c9d6", 16); closeN = 0; } }
-  function jugFling(q, hx) {                 // 위로 쓸어 올린다 — 날아가는 똥은 나를 안 다치고, 다른 똥에 닿으면 같이 터진다(주먹 총알과 같은 처리)
+  function jugFling(q, hx) {                 // 위로 쓸어 올린다 — 날아가는 똥은 나를 안 다치고, 다른 똥에 닿으면 같이 터진다(주먹탄과 같은 처리)
     q.vx = (q.x - hx) * 4 + (Math.random() - .5) * 160;
     q.vy = -(560 + Math.random() * 160);
     q.vr = (Math.random() - .5) * 12; q.swayA = 0; q.special = null;
@@ -18879,7 +18873,7 @@
     }
     // 뿅뿅이 — 총알과 뿅뿅이
     if (bullets.length) {
-      if (aug.wak) {                              // 주먹 총알 — 조그만 주먹
+      if (aug.wak) {                              // 주먹탄 — 조그만 주먹
         for (const bu of bullets) drawFist(bu.x, bu.y);
       } else {
         /* v0.9.44 쨍한 노랑 — 하늘·구름 위에서도 잘 보이게 조금 굵히고 짙은 테두리를 두른다 */
