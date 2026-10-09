@@ -1397,7 +1397,7 @@
     background: radial-gradient(120% 90% at 50% 18%, #1f2350, #13153a 70%); box-shadow: inset 0 2px 5px rgba(0,0,0,.55), 0 2px 0 #08091f; }
   #bookList .bk.lock > * { filter: grayscale(1) brightness(.55); opacity: .55; }
   #bookList .bk.lock::after { right: -4px; bottom: -5px; font-size: 12px; }
-  #bookList .bkCat { grid-column: 1 / -1; font-size: 12.5px; font-weight: 800; color: #ffe08a; text-align: left; padding: 6px 2px 0; text-shadow: 0 1px 2px rgba(0,0,0,.5); }   /* v0.9.389 종류 제목 */
+  #bookList .bkCat { grid-column: 1 / -1; font-size: 17px; font-weight: 800; color: #ffe08a; text-align: left; padding: 8px 2px 0; text-shadow: 0 1px 2px rgba(0,0,0,.5); }   /* v0.9.389 종류 제목 */
   #bookList .bkCat:first-child { padding-top: 0; }
   #bookList .bk.sel { outline: 0; border-color: #ffd86b; box-shadow: inset 0 0 0 1px #fff3b0, 0 0 12px rgba(255,200,60,.75), 0 2px 0 #3a2400; }
   #bookDesc { padding: 4px 10px; min-height: 92px; flex-shrink: 0; border-radius: 0; display: block; background: none; border-style: solid; border-width: 24px 20px 24px !important; border-color: transparent;
@@ -2860,7 +2860,7 @@
   const elTitle = document.getElementById("overTitle");
   const coinNote = document.getElementById("coinNote");
 
-  const GAME_VERSION = "v0.9.395";
+  const GAME_VERSION = "v0.9.396";
   /* 제작사 스플래시(bamhobak friends 로고) — 2026-09-20 끔. 다시 켜려면 true */
   const SPLASH_USE = false;   // 코드를 고칠 때마다 뒤 두 자리를 올린다
   document.getElementById("ver").textContent = GAME_VERSION;
@@ -9729,10 +9729,10 @@
   function bookOpen(a) { const p = BOOK_PET[a.id]; if (a.id === "chainZap" && zapOwnN() < 3) return false; return (!p || hasPet(p)) && (!ACH[a.id] || achU.has(a.id)); }   // v0.9.61 업적으로 여는 증강도 잠긴 채 보인다
   let bookSel = null;
   /* v0.9.389 증강 정렬 — 종류별 (도감·개발자 증강 상세). 새 증강을 만들면 여기에도 넣을 것 — 빠진 건 맨 뒤 */
-  const AUG_CATS = [["🍪 간식", ["fever_time", "fever50", "downpour", "giant", "legion", "snackBig"]], ["🧲 아이템·증강", ["star50", "starburst", "magnet", "blackhole", "lucky", "gacha", "twoRand", "toilet", "credit", "cloudVip"]], ["☁️ 하늘·똥", ["slow", "inter", "tinypoop", "gold", "goldLord", "dopa", "bombPoop"]], ["❤️ 생존", ["time2x", "carrot", "dungy", "glass", "closeCall"]], ["🏃 몸·이동", ["small", "roid", "dash", "fartRocket", "afterimage", "stone"]], ["☂️ 방어", ["umbrella3", "steelUmb", "angryUmb", "coinArmor"]], ["👊 공격", ["juggle", "fly", "clone", "zapDance"]], ["🐾 펫", ["pet:helper", "hungry", "pet:galaga", "pierce", "wak", "pet:dove", "doveHome", "doveWhat", "pet:angel", "pet:gift", "pet:coincat", "goldArmor", "pet:duck", "duckFat", "duckMarch", "duckEgg", "pet:eel", "chainZap"]]];
+  const AUG_CATS = [["간식", ["fever_time", "fever50", "downpour", "giant", "legion", "snackBig"]], ["아이템·증강", ["star50", "starburst", "magnet", "blackhole", "lucky", "gacha", "twoRand", "toilet", "credit", "cloudVip"]], ["하늘·똥", ["slow", "inter", "tinypoop", "gold", "goldLord", "dopa", "bombPoop"]], ["생존", ["time2x", "carrot", "dungy", "glass", "closeCall"]], ["몸·이동", ["small", "roid", "dash", "fartRocket", "afterimage", "stone"]], ["방어", ["umbrella3", "steelUmb", "angryUmb", "coinArmor"]], ["공격", ["juggle", "fly", "clone", "zapDance"]], ["펫", ["pet:helper", "hungry", "pet:galaga", "pierce", "wak", "pet:dove", "doveHome", "doveWhat", "pet:angel", "pet:gift", "pet:coincat", "goldArmor", "pet:duck", "duckFat", "duckMarch", "duckEgg", "pet:eel", "chainZap"]]];
   const AUG_RANK = {}; AUG_CATS.forEach(([, l]) => l.forEach(id => AUG_RANK[id] = Object.keys(AUG_RANK).length));
   const augRank = a => a.id in AUG_RANK ? AUG_RANK[a.id] : 1e4;
-  const augCatOf = a => { const c = AUG_CATS.find(([, l]) => l.includes(a.id)); return c ? c[0] : (a.hidden ? "✨ 비밀 증강" : "기타"); };
+  const augCatOf = a => { const c = AUG_CATS.find(([, l]) => l.includes(a.id)); return c ? c[0] : (a.hidden ? "비밀 증강" : "기타"); };
   function renderBook() {
     const list = document.getElementById("bookList"), desc = document.getElementById("bookDesc");
     list.innerHTML = "";
