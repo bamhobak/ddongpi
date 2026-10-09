@@ -2629,7 +2629,7 @@
      data-noi18n 이 붙은 칸(개발자·테스트 창, 남이 지은 이름)은 건드리지 않는다. */
   const LANG = window.GAME_LANG || "ko";
   const SNACK_TXT = new Image(); SNACK_TXT.src = "assets/snacktime_" + (["en", "ja"].includes(LANG) ? LANG : "ko") + ".webp?1";
-  const SNACK_DY = { ko: .095, en: .05, ja: .08 }[LANG] || .095;   // v0.9.401 노란 글자 몸통이 그림 가운데보다 아래라 그만큼 올려 그린다 (아래 두꺼운 테두리·위 별 때문)   // v0.9.399 '간식 타임' 글자 그림
+  const SNACK_DY = { ko: .095, en: -.02, ja: .03 }[LANG] ?? .095;   // v0.9.406 영어 .05 → -.02 · 일본어 .08 → .03 (너무 올라가 있었다) ·   // v0.9.401 노란 글자 몸통이 그림 가운데보다 아래라 그만큼 올려 그린다 (아래 두꺼운 테두리·위 별 때문)   // v0.9.399 '간식 타임' 글자 그림
   const I18N = LANG !== "ko" && window.I18N_DICT ? window.I18N_DICT : null;
   const I18N_HAN = /[가-힣]/;
   const i18nCache = new Map(), i18nMiss = window.__i18nMiss = new Set();
@@ -2863,7 +2863,7 @@
   const elTitle = document.getElementById("overTitle");
   const coinNote = document.getElementById("coinNote");
 
-  const GAME_VERSION = "v0.9.405";
+  const GAME_VERSION = "v0.9.406";
   /* 제작사 스플래시(bamhobak friends 로고) — 2026-09-20 끔. 다시 켜려면 true */
   const SPLASH_USE = false;   // 코드를 고칠 때마다 뒤 두 자리를 올린다
   document.getElementById("ver").textContent = GAME_VERSION;
@@ -4312,12 +4312,12 @@
   };
   const CHR_PERKS = {
     bangul: {
-      2: { A: "비누방울 다시 맺히는 시간 -15%", B: "비누방울이 터질 때 주변 똥을 밀어낸다" },
+      2: { A: "빠른 거품 — 비누방울 다시 맺히는 시간 -15%", B: "거품 팡 — 비누방울이 터질 때 주변 똥을 밀어낸다" },
       3: { A: "미끌미끌 — 맞은 뒤 무적 +0.2초", B: "거품 정리 — 스테이지가 바뀔 때마다 내 주변 똥이 거품으로 사라진다" },
-      4: { A: "비누방울 두 겹", B: "대왕 비누방울 — 스킬 버튼(쿨타임 20초), 2초 동안 큰 방울 속에서 무적" }
+      4: { A: "이중 거품 — 비누방울 두 겹", B: "대왕 비누방울 — 스킬 버튼(쿨타임 20초), 2초 동안 큰 방울 속에서 무적" }
     },
     fit: {
-      2: { A: "하트를 먹으면 1초 무적", B: "하트가 가득일 때 먹는 하트는 큰 점수" },
+      2: { A: "하트 충전 — 하트를 먹으면 1초 무적", B: "과식 보너스 — 하트가 가득일 때 먹는 하트는 큰 점수" },
       3: { A: "단백질 보충 — 하트 등장 +10%", B: "근성 — 마지막 하트일 때 이동 속도 +10%" },
       4: { A: "근육 폭발 — 벌크업이 끝날 때 충격파로 똥 정리", B: "무한 벌크업 — 하트 3개 먹을 때마다 3초 벌크업" }
     },
@@ -4332,9 +4332,9 @@
       4: { A: "축지법 — 화면 좌우 끝이 이어짐", B: "부적 두 장 — 판마다 2장, 타면서 주변 똥도 태움 (2레벨 선택과 무관)" }
     },
     powerp: {
-      2: { A: "맞아도 무피격 배율을 절반 대신 1/4만 잃음", B: "빈손의 힘 — 별 5개마다 3초 무적" },
+      2: { A: "평정심 — 맞아도 무피격 배율을 절반 대신 1/4만 잃음", B: "빈손의 힘 — 별 5개마다 3초 무적" },
       3: { A: "비움의 미학 — 별 등장 +10%", B: "마음 비우기 — 맞은 뒤 2초 동안 똥이 15% 느려짐" },
-      4: { A: "20초 안 맞을 때마다 하트 +1", B: "해탈 — 60초 안 맞으면 2초 동안 똥이 연꽃으로(무적)" }
+      4: { A: "무념무상 — 20초 안 맞을 때마다 하트 +1", B: "해탈 — 60초 안 맞으면 2초 동안 똥이 연꽃으로(무적)" }
     },
     fortune: {
       2: { A: "예지 — 예언이 바뀌기 3초 전 다음 예언 표시", B: "액막이 — 나쁜 예언 확률 절반" },
@@ -9913,7 +9913,7 @@
       const ch = document.createElement("div"); ch.className = "lvChoice" + (cur ? "" : " wait");
       for (const ab of ["A", "B"]) {
         const b = document.createElement("button"); b.className = "lvOpt" + (cur === ab ? " sel" : ""); b.dataset.ab = ab;
-        const t = P[l][ab], k = t.indexOf(" — ");                        // "이름 — 설명" 이면 이름을 크게
+        const t = T(P[l][ab]), k = t.indexOf(" — ");                     // "이름 — 설명" 이면 이름을 크게 (v0.9.406 번역한 뒤에 나눈다 — 나눈 조각은 사전에 없다)
         const md = document.createElement("i"); md.className = "med";
         const pr = PERK_ROW[j], pc = (l - 2) * 2 + (ab === "A" ? 0 : 1);       // v0.9.129 시트 칸: 줄 = 캐릭터, 칸 = 2A 2B 3A 3B …
         if (pr !== undefined) md.style.backgroundPosition = (pc / 5 * 100) + "% " + (pr / 5 * 100) + "%";
@@ -9922,7 +9922,7 @@
         const em = document.createElement("em"); em.textContent = ab; tt.appendChild(em);
         tt.appendChild(document.createTextNode(k > 0 ? t.slice(0, k) : ""));
         const ds = document.createElement("span"); ds.style.whiteSpace = "pre-line";
-        ds.textContent = (k > 0 ? t.slice(k + 3) : t).split(" · ").join("\n").replace(/, /g, "\n");   // v0.9.135 다른 혜택은 줄을 나눈다
+        ds.textContent = (k > 0 ? t.slice(k + 3) : t).split(" · ").join("\n").replace(LANG === "ko" ? /, /g : /(?!)/, "\n");   // 쉼표 줄바꿈은 한국어만 (영어 문장이 쪼개진다)   // v0.9.135 다른 혜택은 줄을 나눈다
         tx.append(tt, ds); b.append(md, tx);
         b.addEventListener("click", () => {
           if (cur === ab) return;
