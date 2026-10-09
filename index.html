@@ -2856,7 +2856,7 @@
   const elTitle = document.getElementById("overTitle");
   const coinNote = document.getElementById("coinNote");
 
-  const GAME_VERSION = "v0.9.389";
+  const GAME_VERSION = "v0.9.390";
   /* 제작사 스플래시(bamhobak friends 로고) — 2026-09-20 끔. 다시 켜려면 true */
   const SPLASH_USE = false;   // 코드를 고칠 때마다 뒤 두 자리를 올린다
   document.getElementById("ver").textContent = GAME_VERSION;
@@ -5308,7 +5308,7 @@
         card.classList.add("hid");
         const badge = document.createElement("span");
         badge.className = "badge";
-        badge.textContent = "히든";
+        badge.textContent = "비밀";
         card.appendChild(badge);
       }
       if (augCount[a.id] && !a.noCount && !blind) {
@@ -5323,7 +5323,7 @@
           augList.style.pointerEvents = "none";
           const cur = document.createElement("span"); cur.className = "gCurtain"; cur.innerHTML = '<img class="qmk" src="assets/ui/qmark.webp" alt="?">';
           ic.textContent = a.ic; nm.textContent = nameOf(a); ds.textContent = a.dsFn ? a.dsFn() : a.ds; tx.append(ds);
-          if (a.hidden) { card.classList.add("hid"); const bd = document.createElement("span"); bd.className = "badge"; bd.textContent = "히든"; card.appendChild(bd); }
+          if (a.hidden) { card.classList.add("hid"); const bd = document.createElement("span"); bd.className = "badge"; bd.textContent = "비밀"; card.appendChild(bd); }
           card.classList.add("gReveal"); card.appendChild(cur);
           if (!sfx("aug")) beep(700, .08, "triangle", .05);
           setTimeout(() => { augList.style.pointerEvents = ""; card.click(); }, 2000);   // v0.9.335 결과를 0.5초 더
