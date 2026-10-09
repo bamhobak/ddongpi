@@ -1077,6 +1077,8 @@
   .lvOpt .ttl em { font-style: normal; font-size: 15px; margin-right: 4px; background: linear-gradient(180deg, #f2b8ff, #a86bff); -webkit-background-clip: text; background-clip: text; color: transparent; }
   .lvOpt[data-ab="B"] .ttl em { background: linear-gradient(180deg, #f4ff8a, #8ee04a); -webkit-background-clip: text; background-clip: text; }
   .lvOpt .txt span { color: #c5cbf2; }
+  button.lvOpt.palOff { opacity: .5; filter: grayscale(.7); }   /* v0.9.408 펫과 함께 — 펫이 모자라 못 고름 */
+  .lvOpt .palNeed { margin-left: 6px; font-size: 11px; font-weight: 700; color: #ffb3b3; }
   button.lvOpt.sel { background: linear-gradient(180deg, #4a3a1a, #241a0c); border-color: #ffd45a;
     box-shadow: inset 0 0 0 1px rgba(255,240,170,.75), 0 0 14px rgba(255,195,50,.6), 0 3px 0 #3a2400; }
   .lvOpt.sel .ttl { color: #fff; } .lvOpt.sel .txt span { color: #ffeccc; }
@@ -2863,7 +2865,7 @@
   const elTitle = document.getElementById("overTitle");
   const coinNote = document.getElementById("coinNote");
 
-  const GAME_VERSION = "v0.9.407";
+  const GAME_VERSION = "v0.9.408";
   /* 제작사 스플래시(bamhobak friends 로고) — 2026-09-20 끔. 다시 켜려면 true */
   const SPLASH_USE = false;   // 코드를 고칠 때마다 뒤 두 자리를 올린다
   document.getElementById("ver").textContent = GAME_VERSION;
@@ -3176,6 +3178,10 @@
   function petPrice(id) { return id === "helper" ? 0 : PET_PRICE; }   // v0.9.193 뿌잉은 0코인
   const petOwned = new Set(["none"]);
   try { for (const id of JSON.parse(localStorage.getItem(LS_PET_OWN) || "[]")) if (PETS[id]) petOwned.add(id); } catch (e) {}
+  /* v0.9.408 펫과 함께(방울이 Lv3) — 묶음마다 상점에서 산 펫이 하나라도 있어야 고를 수 있고, 산 펫 중에서만 데려간다 */
+  const PET_PAL = { A: ["helper", "galaga", "dove", "eel", "duck"], B: ["angel", "gift", "coincat"] };
+  function palOwned(ab) { return PET_PAL[ab].filter(p => petOwned.has(p)); }
+  function palOk(ab) { return palOwned(ab).length >= 1; }
   function hasPet(id) { return id === "none" || petOwned.has(id); }   // v0.9.50 상점에서 산 펫만 게임 중 증강으로 나온다
   let pet = "none";                 // v0.9.45 펫 장착은 없앴다 — 늘 "none". 판에서 증강으로 모은 펫은 petOn
   const petOn = {};
@@ -4313,7 +4319,7 @@
   const CHR_PERKS = {
     bangul: {
       2: { A: "빠른 거품 — 비누방울 다시 맺히는 시간 -15%", B: "거품 팡 — 비누방울이 터질 때 주변 똥을 밀어낸다" },
-      3: { A: "펫과 함께 A — 뿌잉, 뿅뿅이, 둘기, 찌릿 장어, 노란 오리 중 펫 하나를 랜덤으로 데려간다", B: "펫과 함께 B — 아기 천사, 선물 요정, 코인냥이 중 펫 하나를 랜덤으로 데려간다" },
+      3: { A: "펫과 함께 A — 상점에서 산 뿌잉·뿅뿅이·둘기·찌릿 장어·노란 오리 중 하나를 랜덤으로 데려간다 · 이 중 하나는 사야 고를 수 있다", B: "펫과 함께 B — 상점에서 산 아기 천사·선물 요정·코인냥이 중 하나를 랜덤으로 데려간다 · 이 중 하나는 사야 고를 수 있다" },
       4: { A: "이중 거품 — 비누방울 두 겹", B: "대왕 비누방울 — 스킬 버튼(쿨타임 20초), 2초 동안 큰 방울 속에서 무적" }
     },
     fit: {
@@ -9924,7 +9930,10 @@
         const ds = document.createElement("span"); ds.style.whiteSpace = "pre-line";
         ds.textContent = (k > 0 ? t.slice(k + 3) : t).split(" · ").join("\n").replace(LANG === "ko" ? /, /g : /(?!)/, "\n");   // 쉼표 줄바꿈은 한국어만 (영어 문장이 쪼개진다)   // v0.9.135 다른 혜택은 줄을 나눈다
         tx.append(tt, ds); b.append(md, tx);
+        const palLock = j === "bangul" && l === 3 && !palOk(ab);   // v0.9.408 펫과 함께 — 그 묶음 펫이 하나도 없으면 못 고른다
+        if (palLock) { b.classList.add("palOff"); const nt = document.createElement("small"); nt.className = "palNeed"; nt.textContent = "🔒 펫 없음"; tt.appendChild(nt); }
         b.addEventListener("click", () => {
+          if (palLock) { beep(220, .08, "square", .04); return; }
           if (cur === ab) return;
           (lvData.pick[j] = lvData.pick[j] || {})[l] = ab; lvSave();
           beep(900, .05, "triangle", .04); setTimeout(() => beep(1250, .07, "triangle", .04), 60); redraw();
@@ -10631,7 +10640,7 @@
     if (runMode === "party") { aug.hitboxMul *= VS_SCALE; aug.poopMul *= VS_SCALE; partyReset(); }
     document.body.classList.toggle("partyRun", runMode === "party");   // 여럿이 판 결과에는 1:1 대전 랭킹을 안 띄운다
     /* v0.9.407 펫과 함께(방울이 Lv3 A·B, 모든 캐릭터) — 판 시작에 펫 하나를 무작위로 데려간다 (그 펫 증강 1단계를 받은 것과 같다) */
-    { const pool = allPerk("bangul", "A") ? ["helper", "galaga", "dove", "eel", "duck"] : allPerk("bangul", "B") ? ["angel", "gift", "coincat"] : null;
+    { const ab = allPerk("bangul", "A") ? "A" : allPerk("bangul", "B") ? "B" : null, pool = ab && palOk(ab) ? palOwned(ab) : null;   // v0.9.408 산 펫만 · 하나라도 있을 때만
       if (pool && job !== "powerp" && !vsLike() && !partyOn()) {
         const p = pool[Math.floor(Math.random() * pool.length)], pa = AUGMENTS.find(x => x.id === "pet:" + p);
         if (pa) augApply(pa);
