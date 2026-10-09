@@ -2863,7 +2863,7 @@
   const elTitle = document.getElementById("overTitle");
   const coinNote = document.getElementById("coinNote");
 
-  const GAME_VERSION = "v0.9.402";
+  const GAME_VERSION = "v0.9.403";
   /* 제작사 스플래시(bamhobak friends 로고) — 2026-09-20 끔. 다시 켜려면 true */
   const SPLASH_USE = false;   // 코드를 고칠 때마다 뒤 두 자리를 올린다
   document.getElementById("ver").textContent = GAME_VERSION;
@@ -3784,7 +3784,7 @@
   function helperAspect() { return (inSpace() && helperSpaceImg) ? HELPER_ASPECT_SPACE : HELPER_ASPECT; }
   const HELPER_H = 99;           // 화면에 그릴 높이 (110에서 10% 축소)
   const HELPER_R = 35;   // v0.9.45 39 → 35 (펫 여러 마리 동시)           // v0.9.31 43 → 39 (피지컬 쪽으로 — 똥 없애는 증강 살짝 너프)           // 똥을 부수는 반경 (48 → 43, 면적 20% 감소)
-  function helperScale() { return 1 + 0.12 * Math.max(0, aug.helper - 1); }   // v0.9.62 처음(펫만) 1배, '도와줘 뿌잉' 하나마다 +0.12 (4개 1.48배) — 대폭주는 없앰
+  function helperScale() { return 0.9 * (1 + 0.12 * Math.max(0, aug.helper - 1)); }   // v0.9.403 기본 크기 0.9배 (그림·부수는 범위 함께)   // v0.9.62 처음(펫만) 1배, '도와줘 뿌잉' 하나마다 +0.12 (4개 1.48배) — 대폭주는 없앰
   let helpers = [];
   let helperTimer = 0;
   let fetchers = [];        // 배고픈 뿌잉 — 아이템을 대신 먹으러 가는 뿌잉
@@ -3923,7 +3923,7 @@
   /* 무지개똥 — 똥 몸통에 비스듬한 무지개 띠를 깔고, 그 띠가 몸통을 따라 흘러간다.
      똥 그림에서 갈색 몸통만 골라 밝기(입체 그림자)를 남기고, 눈·입은 원래 그대로 얹는다.
      캔버스 필터를 쓰지 않아 아이폰(사파리)에서도 똑같이 보인다. */
-  const RB_COLORS = ["#fe6448", "#fea74b", "#fee665", "#aaf064", "#68bbfd", "#a154fd"];   // 원색 쪽으로, 파스텔기 조금만
+  const RB_COLORS = ["#fe5536", "#fe9e39", "#fee456", "#a3f056", "#59b4fd", "#9843fd"];   // v0.9.403 채도 +10% (HSV) · 이전 ["#fe6448", "#fea74b", "#fee665", "#aaf064", "#68bbfd", "#a154fd"]
   /* v0.8.21 무지개똥 표정 7가지(기본 + 행복한 얼굴 6: 웃음·반짝눈·이 드러낸 웃음·메롱·신남·흐뭇) — 갈색 몸통 그림(Codex)을
      한 줄 시트(7칸)에 모아 두고, 칸마다 아래 준비를 따로 해 둔다(RB_CACHE). 시트가 오기 전엔 기본 똥 그림으로. */
   const RB_FACES = [];
@@ -4959,9 +4959,8 @@
       go: () => { petOn.coincat = true; catT = CAT_EVERY * 0.5; } },
     { id: "pet:duck",    ic: "🦆", nm: "펫 노란 오리", max: 5, w: 0.7, cond: () => hasPet("duck"),   // v0.9.348 단계형 — 2마리에서 단계마다 +1
       nmFn: () => augCount["pet:duck"] ? "펫 노란 오리 " + (augCount["pet:duck"] + 1) + "단계" : "펫 노란 오리",
-      ds: "가끔 조그만 오리 떼가 방귀로 부릉! 화면 가운데를 가로지르며 한 마리가 똥 하나씩 부숴요",
-      dsFn: () => augCount["pet:duck"] ? "오리가 한 마리 더 날아가요" : "가끔 조그만 오리 떼가 방귀로 부릉! 화면 가운데를 가로지르며 한 마리가 똥 하나씩 부숴요",
-      go: () => { if (petOn.duck) aug.duck++; else { petOn.duck = true; aug.duck = 2; duckT = DUCK_EVERY * 0.5; } } },
+      ds: "노란 오리 떼가 날아다녀요",   // v0.9.403 도감에서 고침 (단계 설명 없이 한 줄)
+      go: () => { if (petOn.duck) aug.duck = (aug.duck || 4) + 2; else { petOn.duck = true; aug.duck = 4; duckT = DUCK_EVERY * 0.5; } } },   // v0.9.403 4마리에서 단계마다 +2 (최대 12)
     { id: "duckFat",    ic: "🐥", nm: "통통 오리", ds: "오리가 1.25배 통통해지고, 똥을 부수는 범위는 1.5배 넓어져요",   // v0.9.348
       once: true, cond: () => petOn.duck, go: () => { aug.duckFat = true; } },
     { id: "duckMarch",  ic: "🎺", nm: "오리 행진곡", ds: "방귀 대시를 쓰면 그 자리에서 오리 떼가 대각선 위로 출동해요",   // v0.9.348
@@ -4993,12 +4992,12 @@
       go: () => { aug.starburst = true; } },
     { id: "blackhole",  ic: "🕳️", nm: "블랙홀",     ds: "아이템을 더 세게 끌어당겨요. 간식도 조금 끌려와요",
       hidden: true, once: true, cond: () => aug.magnet > 0,
-      go: () => { aug.blackhole = true; aug.magnet = 390; } },   // 자석 220 → 390 으로 확장
+      go: () => { aug.blackhole = true; aug.magnet = 390; } },   // 자석 160 → 390 으로 확장
     { id: "legion",     ic: "🍰", nm: "간식 군단", ds: "대왕 간식이 우르르 몰려와요",
       hidden: true, once: true, cond: () => aug.giant > 0,
       go: () => { aug.legion = true; } },
     { id: "magnet",     ic: "🧲", nm: "자석",       ds: "근처의 아이템이 끌려와요",
-      once: true, go: () => { aug.magnet = 220; } },   // 끌어당기는 반지름(px) · 구름 상점은 무엇으로도 끌려오지 않는다(v0.9.208)
+      once: true, go: () => { aug.magnet = 160; } },   // v0.9.403 220 → 160   // 끌어당기는 반지름(px) · 구름 상점은 무엇으로도 끌려오지 않는다(v0.9.208)
     /* 조작이 끌기 하나뿐이라 실력을 드러낼 통로가 좁다. 기본 기능으로 넣지 않고 증강으로만 둔다 —
        조작이 복잡해지는 건 원하는 사람만 지게. 부양사는 이미 두 배 반으로 빠르니 안 나온다. */
     { id: "dash",       ic: "💨", nm: "방귀 대시",   ds: "화면을 두 번 톡톡 누르면 그 자리로 대시 (쿨타임 10초)",
@@ -5518,7 +5517,7 @@
   let cats = [], catT = 0, catN = 0;
   let eelT = 0, bolts = [];
   /* v0.9.343 노란 오리 — DUCK_EVERY 초마다 화면 높이 45~55% 한 줄을 가로로 1.2초에 날아가며 닿는 똥을 부순다(다크똥 제외) */
-  const DUCK_EVERY = 3, DUCK_SEC = 1.8, DUCK_R = 20;   // v0.9.348 3초마다 · 마리 수 = aug.duck (2 + 단계-1)
+  const DUCK_EVERY = 4, DUCK_SEC = 1.8, DUCK_R = 20;   // v0.9.403 3 → 4초 · 마리 4(+2씩)   // v0.9.348 3초마다 · 마리 수 = aug.duck (2 + 단계-1)
   let duckT = 0, ducks = [], duckSide = 1;
   /* 오리 떼 출발 — (ox,oy) 에서 (ux,uy) 쪽으로. 가로로 날 때는 화면을 다 지나가고, 행진곡(대각선)은 화면 밖으로 나갈 때까지 */
   function duckLaunch(ox, oy, dx, dy, n, march) {
@@ -11836,7 +11835,7 @@
         duckT = DUCK_EVERY;
         duckSide = -duckSide;                 // 왼쪽에서, 다음엔 오른쪽에서
         const y = H * (0.45 + Math.random() * 0.1);
-        duckLaunch(duckSide > 0 ? -30 : W + 30, y, duckSide, 0, aug.duck || 2, false);
+        duckLaunch(duckSide > 0 ? -30 : W + 30, y, duckSide, 0, aug.duck || 4, false);
         popText(duckSide > 0 ? 125 : W - 125, y - 46, "🦆 오리 떼가 부릉!", "#ffe066", 20, 1.3);   // v0.9.346 나올 때 글자
         if (!sfx("dash", 0.7)) { beep(140, .18, "sawtooth", .05); beep(90, .22, "square", .03); }   // 방귀 대시 소리 재사용
       }
@@ -12226,7 +12225,7 @@
       const magF = prophIs("magnet") ? 1.8 : aug.magnet > 0 ? 1 : 0.45;   // 복이 굴러온다 — 화면 어디서든 끌려온다
       /* 코인은 자석이 없어도 늘 끌려온다 — 자석 증강의 절반(반경 110 · 힘 0.5).
          자석·복이 굴러온다가 있으면 둘 중 센 쪽을 쓴다. */
-      const COIN_R0 = 110 * gMag(), COIN_F0 = 0.5;
+      const COIN_R0 = 60 * gMag(), COIN_F0 = 0.5;   // v0.9.403 110 → 60
       const coinBase = !(job === "powerp" && !fullOwn);   // v0.9.32 무무(무소유)는 코인이 저절로 끌려오지 않는다 (자석 증강·풀소유면 끌려온다)
       if (!stoneOn && it.type !== "cloud" && ((magR > 0 && (it.type !== "poop" || it.gold)) || (it.type === "coin" && (coinBase || magR > 0)))) {
         const d = Math.hypot(dx, dy);
@@ -13009,7 +13008,7 @@
     dashCd = DASH_CD;
     if (aug.duckMarch && petOn.duck) {               // v0.9.348 오리 행진곡 — 출발한 자리에서 대각선 위로 (대시한 쪽)
       const sx = nx >= x0 ? 1 : -1;
-      duckLaunch(x0, cy, sx, -1.1, aug.duck || 2, true);
+      duckLaunch(x0, cy, sx, -1.1, aug.duck || 4, true);
       popText(x0, cy - 60, "🎺 오리 행진곡!", "#ffe066", 20, 1);
     }
     if (partyOn()) {                                 // 여럿이 — 로블록스판처럼 3번 · 4초마다 · 도착 뒤 1초 무적
