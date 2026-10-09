@@ -2863,7 +2863,7 @@
   const elTitle = document.getElementById("overTitle");
   const coinNote = document.getElementById("coinNote");
 
-  const GAME_VERSION = "v0.9.403";
+  const GAME_VERSION = "v0.9.404";
   /* 제작사 스플래시(bamhobak friends 로고) — 2026-09-20 끔. 다시 켜려면 true */
   const SPLASH_USE = false;   // 코드를 고칠 때마다 뒤 두 자리를 올린다
   document.getElementById("ver").textContent = GAME_VERSION;
@@ -9812,8 +9812,8 @@
   function gGreed() { return grOn() ? 1 + 0.10 * gl("greed") : 1; }          // 단계마다 +10%
   function gScore() { return grOn() ? 1 + 0.03 * gl("score") : 1; }          // 단계마다 +3%
   function gSnackMs() { return grOn() ? 500 * gl("snack") : 0; }             // 단계마다 +0.5초
-  /* 달맞이 — 달이 뜰 때 보름달일 확률. 기본 6.7%(초승달 92.4 : 보름달 6.6), 단계마다 +1%p */
-  function gFullShare() { return grOn() ? 0.0667 + 0.01 * gl("fmoon") : 0.0667; }
+  /* 달맞이 — 달이 뜰 때 보름달일 확률. 기본 5% (v0.9.404 6.7% → 5%), 단계마다 +1%p */
+  function gFullShare() { return grOn() ? 0.05 + 0.01 * gl("fmoon") : 0.05; }
   function gPet()   { return (grOn() ? 1 + 0.05 * gl("pet") : 1) * (prophIs("petrush") ? 2 : 1); }   // 단계마다 +5% · v0.9.231 펫 신바람 2배
   let reviveUsed = false;
   function reviveSave(now) {                  // 성장 '부활' — 한 판에 한 번
@@ -11040,7 +11040,7 @@
      아래는 전체를 10% 올리고, 하트·우산만 20% 올린 값이다. */
   const BONUS = [
     { type: "moon",     emoji: "🌙", w: 92.4 },  // 84 x1.1 — 증강 선택, 가장 자주 나온다
-    { type: "fullmoon", emoji: "🌕", w: 6.6 },   // 6 x1.1 — 증강 3연속. 초승달의 10%
+    { type: "fullmoon", emoji: "🌕", w: 6.6 },   // 6 x1.1 — 증강 3연속. (달이 뜨면 보름달인지는 gFullShare 가 정한다 — 기본 5%)
     { type: "paper",    emoji: "🧻", w: 27.17 }, // 26 x1.1 후 5% 하향
     { type: "umbrella", emoji: "☂️", w: 26.4 },  // 22 x1.2
     { type: "star",     emoji: "⭐", w: 72.52 }, // 69.4 x1.1 후 5% 하향
