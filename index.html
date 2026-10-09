@@ -1393,6 +1393,8 @@
     background: radial-gradient(120% 90% at 50% 18%, #1f2350, #13153a 70%); box-shadow: inset 0 2px 5px rgba(0,0,0,.55), 0 2px 0 #08091f; }
   #bookList .bk.lock > * { filter: grayscale(1) brightness(.55); opacity: .55; }
   #bookList .bk.lock::after { right: -4px; bottom: -5px; font-size: 12px; }
+  #bookList .bkCat { grid-column: 1 / -1; font-size: 12.5px; font-weight: 800; color: #ffe08a; text-align: left; padding: 6px 2px 0; text-shadow: 0 1px 2px rgba(0,0,0,.5); }   /* v0.9.389 종류 제목 */
+  #bookList .bkCat:first-child { padding-top: 0; }
   #bookList .bk.sel { outline: 0; border-color: #ffd86b; box-shadow: inset 0 0 0 1px #fff3b0, 0 0 12px rgba(255,200,60,.75), 0 2px 0 #3a2400; }
   #bookDesc { padding: 4px 10px; min-height: 92px; flex-shrink: 0; border-radius: 0; display: block; background: none; border-style: solid; border-width: 24px 20px 24px !important; border-color: transparent;
     border-image: url(assets/ui/panel_navy.webp) 66 fill / 30px / 0 stretch; color: #eef0ff; text-shadow: 0 1px 2px rgba(0,0,0,.5); }
@@ -2854,7 +2856,7 @@
   const elTitle = document.getElementById("overTitle");
   const coinNote = document.getElementById("coinNote");
 
-  const GAME_VERSION = "v0.9.388";
+  const GAME_VERSION = "v0.9.389";
   /* 제작사 스플래시(bamhobak friends 로고) — 2026-09-20 끔. 다시 켜려면 true */
   const SPLASH_USE = false;   // 코드를 고칠 때마다 뒤 두 자리를 올린다
   document.getElementById("ver").textContent = GAME_VERSION;
@@ -9722,11 +9724,16 @@
   function zapOwnN() { return ZAP_PETS.filter(p => hasPet(p)).length; }
   function bookOpen(a) { const p = BOOK_PET[a.id]; if (a.id === "chainZap" && zapOwnN() < 3) return false; return (!p || hasPet(p)) && (!ACH[a.id] || achU.has(a.id)); }   // v0.9.61 업적으로 여는 증강도 잠긴 채 보인다
   let bookSel = null;
+  /* v0.9.389 증강 정렬 — 종류별 (도감·개발자 증강 상세). 새 증강을 만들면 여기에도 넣을 것 — 빠진 건 맨 뒤 */
+  const AUG_CATS = [["🍪 간식", ["fever_time", "fever50", "downpour", "giant"]], ["⭐ 점수", ["star50", "gold", "time2x", "dopa", "carrot", "dungy", "glass", "closeCall"]], ["🧲 아이템·증강", ["magnet", "lucky", "gacha", "twoRand", "credit"]], ["☁️ 하늘·똥", ["slow", "tinypoop", "bombPoop"]], ["🏃 몸·이동", ["small", "roid", "dash", "afterimage", "stone"]], ["☂️ 방어", ["umbrella3", "coinArmor"]], ["👊 공격", ["juggle", "fly"]], ["🐾 펫", ["pet:helper", "pet:galaga", "pierce", "pet:dove", "doveHome", "pet:angel", "pet:gift", "pet:coincat", "goldArmor", "pet:duck", "duckFat", "pet:eel"]], ["✨ 비밀 증강", ["legion", "snackBig", "starburst", "goldLord", "blackhole", "cloudVip", "inter", "steelUmb", "angryUmb", "clone", "toilet", "fartRocket", "zapDance", "chainZap", "wak", "hungry", "doveWhat", "duckMarch", "duckEgg"]]];
+  const AUG_RANK = {}; AUG_CATS.forEach(([, l]) => l.forEach(id => AUG_RANK[id] = Object.keys(AUG_RANK).length));
+  const augRank = a => a.id in AUG_RANK ? AUG_RANK[a.id] : 1e4;
+  const augCatOf = a => { const c = AUG_CATS.find(([, l]) => l.includes(a.id)); return c ? c[0] : (a.hidden ? "✨ 비밀 증강" : "기타"); };
   function renderBook() {
     const list = document.getElementById("bookList"), desc = document.getElementById("bookDesc");
     list.innerHTML = "";
     const live = AUGMENTS.filter(a => !a.gone);
-    const all = live.filter(a => !a.hidden).concat(live.filter(a => a.hidden));   // v0.9.54 히든 증강은 아래쪽으로 몰아 둔다(각 묶음 안 순서는 그대로)
+    const all = live.filter(a => !a.hidden).concat(live.filter(a => a.hidden)).sort((p, q) => augRank(p) - augRank(q) || p.hidden - q.hidden);   // v0.9.389 종류별 · v0.9.54 히든은 아래쪽
     let open = 0;
     const show = (a, ok) => {
       desc.innerHTML = "";
@@ -9747,14 +9754,17 @@
       desc.style.fontSize = "";                    // v0.9.292 말풍선은 크기 고정 — 넘치면 글자를 조금씩 줄인다
       for (let f = 12.5; desc.scrollHeight > desc.clientHeight + 1 && f >= 10; f -= .5) desc.style.fontSize = f + "px";
     };
+    let lastCat = "";
     for (const a of all) {
       const ok = bookOpen(a); if (ok) open++;
+      const cat = augCatOf(a);
+      if (cat !== lastCat) { lastCat = cat; const hd = document.createElement("div"); hd.className = "bkCat"; hd.textContent = cat; list.appendChild(hd); }   // v0.9.389 묶음 제목
       const el = document.createElement("div");
       el.className = "bk" + (a.hidden ? " hid" : "") + (ok ? "" : " lock") + (bookSel === a.id ? " sel" : "");
       const ic = document.createElement("span"); ic.textContent = a.ic; el.appendChild(ic);   // v0.9.136 그림 시트에 없는 이모지(똥파리 등)도 잠기면 회색이 되게 — 글자도 한 칸에 담는다
       el.addEventListener("click", () => {
         bookSel = a.id;
-        for (const q of list.children) q.classList.remove("sel");
+        for (const q of list.querySelectorAll(".bk")) q.classList.remove("sel");
         el.classList.add("sel");
         show(a, ok);
       });
