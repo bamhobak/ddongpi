@@ -2735,7 +2735,7 @@
   const ICON_RE = ICON_KEYS.length ? new RegExp("(" + ICON_KEYS.slice().sort((a, b) => b.length - a.length)
     .map(k => k.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")).join("|") + ")\\uFE0F?", "gu") : null;
   let iconSheet = null;
-  const ICON_V = 7;   // v0.9.385 이름 바뀐 증강 19개 새 그림 · v0.9.384 둘기 모이(모이 자루) · v0.9.374 무지개 수집가·선물 요정 새 그림 · v0.9.341 그림만 바뀌어도 새로 받게 — 아이콘을 다시 그리면 1 올린다
+  const ICON_V = 8;   // v0.9.387 근육 펌핑·다이어트 성공 · v0.9.385 이름 바뀐 증강 19개 새 그림 · v0.9.384 둘기 모이(모이 자루) · v0.9.374 무지개 수집가·선물 요정 새 그림 · v0.9.341 그림만 바뀌어도 새로 받게 — 아이콘을 다시 그리면 1 올린다
   const ICON_URL = "assets/icons.webp?k=" + ICON_KEYS.length + "-" + ICON_KEYS.join("").length + "-" + ICON_V;   // v0.9.78 칸 순서가 바뀌면 옛 그림을 쓰지 않게
   if (ICON_RE) {
     const im = new Image();
@@ -2854,7 +2854,7 @@
   const elTitle = document.getElementById("overTitle");
   const coinNote = document.getElementById("coinNote");
 
-  const GAME_VERSION = "v0.9.386";
+  const GAME_VERSION = "v0.9.387";
   /* 제작사 스플래시(bamhobak friends 로고) — 2026-09-20 끔. 다시 켜려면 true */
   const SPLASH_USE = false;   // 코드를 고칠 때마다 뒤 두 자리를 올린다
   document.getElementById("ver").textContent = GAME_VERSION;
@@ -4913,9 +4913,9 @@
       go: () => { aug.feverScoreMul += 0.20; } },   // 먹을 때마다 +20%, 감쇠 없음
     { id: "slow",       ic: "🐢", nm: "느림보 하늘",   ds: "똥이 느릿느릿 떨어져요",
       go: () => { aug.fallMul *= 1 - 0.12 * dim("slow"); } },
-    { id: "small",      ic: "🐜", nm: "개미 변신", ds: "몸이 작아져서 똥을 피하기 쉬워요",
+    { id: "small",      ic: "🐜", nm: "다이어트 성공", ds: "몸이 작아져서 똥을 피하기 쉬워요",
       cond: () => job !== "fit",   // 헬스걸은 벌크업이 정체성 — 마운자로를 맞지 않는다
-      nmFn: () => "개미 변신 " + ((augCount["small"] || 0) + 1) + "단계",
+      nmFn: () => "다이어트 성공 " + ((augCount["small"] || 0) + 1) + "단계",
       go: () => { aug.hitboxMul *= 1 - 0.12 * dim("small"); } },
     { id: "tinypoop",   ic: "🟤", nm: "꼬마 똥",   ds: "떨어지는 똥이 작아져요",
       go: () => { aug.poopMul *= 1 - 0.12 * dim("tinypoop"); } },
@@ -4968,7 +4968,7 @@
     { id: "hungry",     ic: "😋", nm: "먹보 뿌잉", ds: "뿌잉이 아이템을 대신 먹어 줘요",
       hidden: true, once: true, cond: () => petOn.helper && aug.magnet > 0,   // 뿌잉 펫 + 자석
       go: () => { aug.hungry = true; } },
-    { id: "roid",       ic: "🦾", nm: "근육 거인", ds: "6초 동안 몸이 2배로 커지고, 닿는 똥을 모두 튕겨 내요",   // v0.9.40 옛 이름 '스테로이드 과다 복용' 
+    { id: "roid",       ic: "🦾", nm: "근육 펌핑", ds: "6초 동안 몸이 2배로 커지고, 닿는 똥을 모두 튕겨 내요",   // v0.9.40 옛 이름 '스테로이드 과다 복용' 
       max: 99, noCount: true, cond: () => job === "fit" && level >= 7,   // 헬스걸 전용 — 우산 꾸러미 자리
       go: () => { roidT = 6; } },   // v0.9.31 7 → 6초
     { id: "doveWhat",   ic: "🦢", nm: "왕 둘기", ds: "둘기가 더 크고 빨라지고, 더 자주 날아와요",
@@ -11524,7 +11524,7 @@
     // ---- 스테로이드 과다 복용: 약발이 도는 동안 몸이 2배, 똥이 튕겨 나간다 ----
     if (roidT > 0) {
       roidT -= dt;
-      if (Math.random() < dt * 14) burst(player.x + (Math.random() - .5) * player.r * 2.2, player.y + player.hy + player.r * 0.6, "#ffb347", 1);   // v0.9.279 근육 거인 — 불꽃 튀어 오르기
+      if (Math.random() < dt * 14) burst(player.x + (Math.random() - .5) * player.r * 2.2, player.y + player.hy + player.r * 0.6, "#ffb347", 1);   // v0.9.279 근육 펌핑 — 불꽃 튀어 오르기
       if (roidT <= 0) {
         roidT = 0;
         if (job === "fit" && myPerk(4, "A")) {   // v0.9.85 근육 폭발 (v0.9.385 Lv4 A) — 충격파
@@ -17659,7 +17659,7 @@
         ctx.restore();
       }
 
-      if (roidT > 0) {                      // 근육 거인 — v0.9.279 빨간 테두리 대신 몸에서 피어오르는 주황·금빛 기운 (테두리 없이)
+      if (roidT > 0) {                      // 근육 펌핑 — v0.9.279 빨간 테두리 대신 몸에서 피어오르는 주황·금빛 기운 (테두리 없이)
         const R0 = player.r * hitMul() + 22, pu = Math.sin(now / 110);
         const og = ctx.createRadialGradient(0, player.hy, R0 * 0.35, 0, player.hy, R0 * (1.08 + pu * 0.04));
         og.addColorStop(0, "rgba(255,190,90,0)");
