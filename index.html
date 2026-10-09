@@ -2856,7 +2856,7 @@
   const elTitle = document.getElementById("overTitle");
   const coinNote = document.getElementById("coinNote");
 
-  const GAME_VERSION = "v0.9.390";
+  const GAME_VERSION = "v0.9.391";
   /* 제작사 스플래시(bamhobak friends 로고) — 2026-09-20 끔. 다시 켜려면 true */
   const SPLASH_USE = false;   // 코드를 고칠 때마다 뒤 두 자리를 올린다
   document.getElementById("ver").textContent = GAME_VERSION;
@@ -15806,7 +15806,7 @@
       const nm = savedName();
       /* 이름이 있으면 전체 TOP 10에 못 들어도 등록한다 — 직업별 순위표는 전체와 별개라서
          전체 기준으로만 걸러 버리면 직업별 판이 비게 된다. 이름이 없으면 예전처럼 진입했을 때만 묻는다. */
-      if (!(nm ? canSubmit(s) : qualifies(s))) return;
+      if (!(nm || overFirst ? canSubmit(s) : qualifies(s))) return;   // v0.9.391 이름이 없어도 첫 판이면 점수와 상관없이 이름을 묻는다 (순위판이 차 있으면 첫 판에 안 묻던 문제)
       const r = topList.findIndex(v => s > v.score);
       const rank = (r < 0 ? topList.length + 1 : r + 1);
       if (nm) {
