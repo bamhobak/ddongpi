@@ -2889,7 +2889,7 @@
   const elTitle = document.getElementById("overTitle");
   const coinNote = document.getElementById("coinNote");
 
-  const GAME_VERSION = "v0.9.414";
+  const GAME_VERSION = "v0.9.415";
   /* 제작사 스플래시(bamhobak friends 로고) — 2026-09-20 끔. 다시 켜려면 true */
   const SPLASH_USE = false;   // 코드를 고칠 때마다 뒤 두 자리를 올린다
   document.getElementById("ver").textContent = GAME_VERSION;
@@ -9731,6 +9731,57 @@
       hs.appendChild(b);
     }
     seg.after(hl, hs);
+    /* v0.9.415 기기 옮기기(인계 코드) — 옛 기기에서 [코드 받기](비밀번호 4자리를 정하면 8자리 코드), 새 기기에서 [코드 입력].
+       코드는 한 번만 쓰이고, 쓰는 순간 순위판 이름 주인도 새 기기로 넘어간다(서버 sql/supabase_transfer.sql) */
+    const xl = document.createElement("div"); xl.className = "setLbl"; xl.textContent = "기기 옮기기";
+    const xs = document.createElement("div"); xs.className = "langSeg handSeg";
+    const xb1 = document.createElement("button"); xb1.textContent = "코드 받기";
+    const xb2 = document.createElement("button"); xb2.textContent = "코드 입력";
+    xs.append(xb1, xb2);
+    const pinOk = v => /^\d{4}$/.test(v) ? "" : "숫자 4자리로 넣어 주세요";
+    const codeFmt = c => c.slice(0, 4) + "-" + c.slice(4);
+    const netErr = () => alertBox("연결이 안 돼요\n잠시 뒤에 다시 해 주세요");
+    xb1.addEventListener("click", () => {
+      beep(700, .04, "triangle", .04);
+      if (!SB_ON) { netErr(); return; }
+      askInput("새 폰에서 함께 넣을 비밀번호를 정해 주세요\n숫자 4자리", "숫자 4자리", pinOk, async pin => {
+        let r = null;
+        try { r = await cloudRpc("ddongpi_xfer_make", { dev: deviceId, pin, d: saveSnapshot(), a: Date.now() }); } catch (e) {}
+        if (!r || typeof r !== "string") { netErr(); return; }
+        if (r === "slow") { alertBox("코드를 너무 자주 만들었어요\n잠시 뒤에 다시 해 주세요"); return; }
+        if (r.length !== 8) { netErr(); return; }
+        let copied = false; try { await navigator.clipboard.writeText(codeFmt(r)); copied = true; } catch (e) {}
+        alertBox("코드 " + codeFmt(r) + " · 비밀번호 " + pin + "\n새 폰의 옵션 → 기기 옮기기 → 코드 입력에 넣어 주세요\n한 번만 쓸 수 있어요" + (copied ? "\n(코드를 복사해 뒀어요)" : ""));
+      }, { num: true, max: 4 });
+    });
+    xb2.addEventListener("click", () => {
+      beep(700, .04, "triangle", .04);
+      if (!SB_ON) { netErr(); return; }
+      const clean = v => v.toUpperCase().replace(/[^A-Z0-9]/g, "");
+      askInput("옛 폰에서 받은 코드를 넣어 주세요", "코드 8자리", v => clean(v).length === 8 ? "" : "코드 8자리를 넣어 주세요", code => {
+        setTimeout(() => askInput("비밀번호 숫자 4자리를 넣어 주세요", "숫자 4자리", pinOk, pin => {
+          setTimeout(() => askYesNo("이 기기로 기록을 옮겨 올까요?\n지금 이 기기의 기록은 옮겨 온 기록으로 바뀌어요", async () => {
+            let r = null;
+            try { r = await cloudRpc("ddongpi_xfer_use", { c: clean(code), pin, dev: deviceId }); } catch (e) {}
+            if (!r || !r.r) { netErr(); return; }
+            if (r.r === "ok" && r.data) {
+              try {
+                for (const k of Object.keys(saveSnapshot())) if (k !== LS_DEV) localStorage.removeItem(k);
+                for (const k in r.data) if (k !== LS_DEV && k !== LS_SAVE_AT) localStorage.setItem(k, r.data[k]);   // 이 기기 식별값은 그대로 (서버가 이름 주인을 이 기기로 옮겼다)
+                localStorage.setItem(LS_DEV, deviceId);
+                localStorage.setItem(LS_SAVE_AT, String(Date.now()));   // 토스 안이면 이 기록이 더 새것으로 올라간다
+              } catch (e) {}
+              alertBox("기록을 옮겨 왔어요!", () => location.reload());
+              return;
+            }
+            alertBox(r.r === "used" ? "이미 사용된 코드예요" : r.r === "same" ? "코드를 만든 기기에서는 쓸 수 없어요"
+              : r.r === "pin" ? "비밀번호가 맞지 않아요\n(남은 기회 " + r.left + "번)" : r.r === "locked" ? "비밀번호를 5번 틀려서 코드가 막혔어요\n옛 폰에서 코드를 다시 받아 주세요"
+              : "없는 코드예요\n코드를 다시 확인해 주세요");
+          }), 60);
+        }, { num: true, max: 4 }), 60);
+      }, { max: 9, upper: true });
+    });
+    hs.after(xl, xs);
   }
   {                                            // v0.9.130 개발자 통계 · 테스트 모드 — 메인 로고 속 숨은 버튼에서 옵션 탭으로
     const d = document.createElement("div"); d.id = "optDev";
@@ -10385,10 +10436,11 @@
     return true;
   }
   /* v0.9.413 글자를 받아 확인하는 창 — check(값) 가 오류 문구를 주면 창을 닫지 않고 보여 준다 */
-  function askInput(msg, ph, check, onOk) {
+  function askInput(msg, ph, check, onOk, opt) {
     askYesNo(msg, () => {});
     const box = document.getElementById("askBox"), inp = box.querySelector(".askInp"), er = box.querySelector(".askErr");
     inp.style.display = ""; inp.value = ""; inp.placeholder = ph || ""; er.textContent = "";
+    inp.inputMode = opt && opt.num ? "numeric" : "text"; inp.maxLength = opt && opt.max || 12; inp.style.textTransform = opt && opt.upper ? "uppercase" : "";   // v0.9.415
     const go = () => {
       const v = inp.value.trim(), e = check(v);
       if (e) { er.textContent = e; beep(220, .08, "square", .04); inp.focus(); inp.select(); return; }
