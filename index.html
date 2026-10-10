@@ -593,6 +593,12 @@
     font-size: 27px; opacity: .75;
   }
   #btnPause.on { display: block; }
+  /* v0.9.411 버튼 위치 바꾸기(옵션) — 일시정지·태그는 오른쪽, 스킬·액티브는 왼쪽으로 */
+  body.swapHand #btnPause { left: auto; right: calc(12px + var(--lbx, 0px)); }
+  body.swapHand #tagBox { left: auto; right: calc(12px + var(--lbx, 0px)); flex-direction: row-reverse; }
+  body.swapHand #btnSkill { right: auto; left: 12px; }
+  body.swapHand #actBox { right: auto; left: calc(14px + var(--lbx, 0px)); }
+  .handSeg button { font-size: 14px; }
   /* v0.9.16 여럿이 — 오른쪽 아래 2×2: 위 아이템 칸 두 개(회색), 아래 어퍼컷·점프(파랑) */
   #partyPad {
     position: absolute; z-index: 4; display: none;
@@ -2865,7 +2871,7 @@
   const elTitle = document.getElementById("overTitle");
   const coinNote = document.getElementById("coinNote");
 
-  const GAME_VERSION = "v0.9.410";
+  const GAME_VERSION = "v0.9.411";
   /* 제작사 스플래시(bamhobak friends 로고) — 2026-09-20 끔. 다시 켜려면 true */
   const SPLASH_USE = false;   // 코드를 고칠 때마다 뒤 두 자리를 올린다
   document.getElementById("ver").textContent = GAME_VERSION;
@@ -9689,6 +9695,24 @@
       seg.appendChild(b);
     }
     document.getElementById("nameEdit").after(ll, seg);
+    /* v0.9.411 버튼 위치 — 일시정지(왼쪽)·스킬(오른쪽)을 서로 바꿀 수 있다. 기기에 기억 */
+    const LS_HAND = "epjpddongpi_hand";
+    let swap = false; try { swap = localStorage.getItem(LS_HAND) === "swap"; } catch (e) {}
+    document.body.classList.toggle("swapHand", swap);
+    const hl = document.createElement("div"); hl.className = "setLbl"; hl.textContent = "일시정지 버튼 위치";
+    const hs = document.createElement("div"); hs.className = "langSeg handSeg";
+    for (const [v, t] of [[false, "⏸ 왼쪽"], [true, "⏸ 오른쪽"]]) {   // 일시정지 버튼 자리 (스킬은 반대쪽)
+      const b = document.createElement("button"); b.textContent = t; if (v === swap) b.className = "on";
+      b.addEventListener("click", () => {
+        if (v === swap) return;
+        swap = v; beep(700, .04, "triangle", .04);
+        try { localStorage.setItem(LS_HAND, v ? "swap" : ""); } catch (e) {}
+        document.body.classList.toggle("swapHand", v);
+        for (const q of hs.children) q.classList.toggle("on", q === b);
+      });
+      hs.appendChild(b);
+    }
+    seg.after(hl, hs);
   }
   {                                            // v0.9.130 개발자 통계 · 테스트 모드 — 메인 로고 속 숨은 버튼에서 옵션 탭으로
     const d = document.createElement("div"); d.id = "optDev";
