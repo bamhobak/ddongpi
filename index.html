@@ -2865,7 +2865,7 @@
   const elTitle = document.getElementById("overTitle");
   const coinNote = document.getElementById("coinNote");
 
-  const GAME_VERSION = "v0.9.409";
+  const GAME_VERSION = "v0.9.410";
   /* 제작사 스플래시(bamhobak friends 로고) — 2026-09-20 끔. 다시 켜려면 true */
   const SPLASH_USE = false;   // 코드를 고칠 때마다 뒤 두 자리를 올린다
   document.getElementById("ver").textContent = GAME_VERSION;
@@ -4319,8 +4319,8 @@
   const CHR_PERKS = {
     bangul: {
       2: { A: "빠른 거품 — 비누방울 다시 맺히는 시간 -15%", B: "거품 팡 — 비누방울이 터질 때 주변 똥을 밀어낸다" },
-      3: { A: "펫과 함께 A — 상점에서 산 뿌잉·뿅뿅이·둘기·찌릿 장어·노란 오리 중 하나를 랜덤으로 데려간다 · 이 중 하나는 사야 고를 수 있다", B: "펫과 함께 B — 상점에서 산 아기 천사·선물 요정·코인냥이 중 하나를 랜덤으로 데려간다 · 이 중 하나는 사야 고를 수 있다" },
-      4: { A: "이중 거품 — 비누방울 두 겹", B: "대왕 비누방울 — 스킬 버튼(쿨타임 20초), 2초 동안 큰 방울 속에서 무적" }
+      3: { A: "공격펫과 함께 — 상점에서 산 뿌잉·뿅뿅이·둘기·찌릿 장어·노란 오리 중 하나를 랜덤으로 데려간다", B: "도움펫과 함께 — 상점에서 산 아기 천사·선물 요정·코인냥이 중 하나를 랜덤으로 데려간다" },
+      4: { A: "이중 거품 — 비누방울 두 겹", B: "대왕 비누방울 — 비누방울이 대왕 비누방울 스킬로 바뀐다 · 사용하면 대왕 비누방울 속에서 2초간 무적 (쿨타임 15초)" }
     },
     fit: {
       2: { A: "하트 충전 — 하트를 먹으면 1초 무적", B: "과식 보너스 — 하트가 가득일 때 먹는 하트는 큰 점수" },
@@ -4335,7 +4335,7 @@
     levitator: {
       2: { A: "부적 — 판마다 한 번 똥 하나를 대신 막음", B: "상투 회오리 — 위로 치솟을 때 머리 위 똥을 날려 버림" },
       3: { A: "가벼운 기운 — 아이템이 15% 빨리 떨어짐", B: "가벼운 발걸음 — 이동 속도 +3%" },
-      4: { A: "축지법 — 화면 좌우 끝이 이어짐", B: "부적 두 장 — 판마다 2장, 타면서 주변 똥도 태움 (2레벨 선택과 무관)" }
+      4: { A: "축지법 — 화면 좌우 끝이 이어짐", B: "부적 두 장 — 판마다 2장, 타면서 주변 똥도 태움" }
     },
     powerp: {
       2: { A: "평정심 — 맞아도 무피격 배율을 절반 대신 1/4만 잃음", B: "빈손의 힘 — 별 5개마다 3초 무적" },
@@ -8504,7 +8504,7 @@
   let bubbleOn = false, bubbleT = 0;
   /* v0.9.84 방울이 레벨 — 두 겹·집콕·대왕 비누방울(스킬) */
   let bubLayers = 1, bangIdle = 0, bangPX = 0, skillCd = 0, skillUntil = 0;
-  const SKILL_CD = 20, SKILL_SEC = 2;
+  const SKILL_CD = 15, SKILL_SEC = 2;   // v0.9.410 쿨타임 20 → 15초
   const btnSkill = document.getElementById("btnSkill");
   function skillReady() { return job === "bangul" && myPerk(4, "B") && !vsLike(); }
   function syncSkill(now) {
@@ -10556,7 +10556,7 @@
     momMsg = (job === "none" && gameMode !== "vs") ? MOM_SEC : 0;   // 쉬었음 청년에게만 (대전모드는 빼고)
     scoreShown = 0; scorePunch = 0; prevScore = 0; rings = []; bubPops = [];
     scoreSrc = {};
-    bubbleOn = (job === "bangul" && !jobLocked()); bubbleT = 0;
+    bubbleOn = (job === "bangul" && !jobLocked() && !myPerk(4, "B")); bubbleT = 0;   // v0.9.410 대왕 비누방울(Lv4 B)을 고르면 평소 방울 대신 스킬만
     bubLayers = bubbleOn && myPerk(4, "A") ? 2 : 1;   // 방울이는 방울을 두르고 시작한다 (맨몸대결·똥탑등반은 방울 없이)
     zoneShown = -1;
     lvSeen = 0; lvGlow = 0; specSeen = {}; fairLog = []; dying = 0; hitStop = 0; readyBeat = false;
@@ -11307,7 +11307,7 @@
     syncSkill(now);
     if (state === STATE.PLAY) lvTick(dt, now);   // v0.9.85 캐릭터 레벨 보상(시간으로 도는 것)
     // 방울이 — 터진 방울이 다시 맺힌다
-    if (job === "bangul" && state === STATE.PLAY && !bubbleOn && !itemsOff()) {   // 맨몸대결·똥탑등반은 방울이 다시 맺히지 않는다
+    if (job === "bangul" && state === STATE.PLAY && !bubbleOn && !itemsOff() && !myPerk(4, "B")) {   // v0.9.410 대왕 비누방울이면 다시 맺히지 않는다   // 맨몸대결·똥탑등반은 방울이 다시 맺히지 않는다
       bubbleT += dt;   // v0.9.385 집콕 뺌
       if (bubbleT >= bubbleSec()) {
         bubbleT = 0; bubbleOn = true; bubLayers = myPerk(4, "A") ? 2 : 1;
