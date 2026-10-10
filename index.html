@@ -1249,6 +1249,12 @@
   #askBox .askIn { width: min(84vw, 320px); padding: 22px 18px 18px; border-radius: 16px; background: #fff8e6; border: 3px solid #8a5a2b; box-shadow: 0 6px 0 #6b4520, 0 10px 30px rgba(0,0,0,.45); text-align: center; }
   #askBox .askMsg { color: #4a3322; font-size: 16px; font-weight: 800; line-height: 1.5; white-space: pre-line; margin-bottom: 16px; }
   #askBox .askRow { display: flex; gap: 10px; justify-content: center; }
+  #askBox .askMsg, #askBox .askSub { word-break: keep-all; }
+  #askBox .askSub { display: block; margin-top: 6px; font-size: 13.5px; font-weight: 600; color: #7a5a3a; line-height: 1.45; }   /* v0.9.413 설명 줄 */
+  #askBox .askInp { display: block; width: 100%; box-sizing: border-box; height: 44px; margin: -4px 0 6px; padding: 0 12px; border-radius: 10px; border: 2px solid #c9a46a; background: #fff; color: #4a3322; font: inherit; font-size: 16px; font-weight: 700; text-align: center; }
+  #askBox .askInp:focus { outline: none; border-color: #ffb21e; box-shadow: 0 0 0 3px rgba(255,190,60,.35); }
+  #askBox .askErr { min-height: 18px; margin-bottom: 8px; color: #d2462f; font-size: 13px; font-weight: 700; }
+  #askBox .askErr:empty { min-height: 0; margin: 0; }
   #askBox button { --bh: 44px; flex: 1; height: var(--bh); font-size: 16px; font-weight: 800; border-style: solid; border-color: transparent; border-width: 0 calc(var(--bh) / 2); background: none; padding: 0 4px calc(var(--bh) * .08); }
   #askBox .askYes { border-image: url(assets/ui/btn_yellow.webp) 0 60 fill / 0 calc(var(--bh) / 2) / 0 stretch; color: #6b3300; text-shadow: 0 1px 0 rgba(255,255,255,.55); }
   #askBox .askNo { border-image: url(assets/ui/btn_gray.webp) 0 60 fill / 0 calc(var(--bh) / 2) / 0 stretch; color: #3f3560; text-shadow: 0 1px 0 rgba(255,255,255,.6); }
@@ -2871,7 +2877,7 @@
   const elTitle = document.getElementById("overTitle");
   const coinNote = document.getElementById("coinNote");
 
-  const GAME_VERSION = "v0.9.412";
+  const GAME_VERSION = "v0.9.413";
   /* 제작사 스플래시(bamhobak friends 로고) — 2026-09-20 끔. 다시 켜려면 true */
   const SPLASH_USE = false;   // 코드를 고칠 때마다 뒤 두 자리를 올린다
   document.getElementById("ver").textContent = GAME_VERSION;
@@ -9718,9 +9724,11 @@
     const d = document.createElement("div"); d.id = "optDev";
     {                                          // v0.9.165 초기화 — 비밀번호 없이, 처음 접속한 상태로
       const r = document.createElement("button"); r.id = "btnReset"; r.textContent = "🔄 초기화";
-      r.addEventListener("click", () => { beep(700, .04, "triangle", .04); askYesNo("정말 초기화 하겠습니까?", () => {
-        try { for (const k of t2Keys()) localStorage.removeItem(k); localStorage.removeItem(LS_T2BAK); } catch (e) {}
-        location.reload();
+      const doReset = () => { try { for (const k of t2Keys()) localStorage.removeItem(k); localStorage.removeItem(LS_T2BAK); } catch (e) {} location.reload(); };
+      r.addEventListener("click", () => { beep(700, .04, "triangle", .04); askYesNo("정말 초기화하겠습니까?\n초기화하면 캐릭터, 펫, 증강, 코인 등이 모두 처음 상태로 돌아갑니다", () => {
+        const nm = savedName();   // v0.9.413 실수로 지우지 않게 — 지금 이름을 똑같이 입력해야 초기화
+        if (!nm) { doReset(); return; }
+        setTimeout(() => askInput("확인을 위해 지금 이름을 입력해 주세요", nm.replace(/./g, "•").slice(0, 0) || "지금 이름", v => v === nm ? "" : "이름이 맞지 않아요", doReset), 60);
       }); });
       document.getElementById("pgOpt").appendChild(r);
     }
@@ -10355,14 +10363,32 @@
     alertBox("🚫 " + err + "\n다른 이름으로 지어 주세요", () => { try { inp.focus(); inp.select(); } catch (e) {} });
     return true;
   }
+  /* v0.9.413 글자를 받아 확인하는 창 — check(값) 가 오류 문구를 주면 창을 닫지 않고 보여 준다 */
+  function askInput(msg, ph, check, onOk) {
+    askYesNo(msg, () => {});
+    const box = document.getElementById("askBox"), inp = box.querySelector(".askInp"), er = box.querySelector(".askErr");
+    inp.style.display = ""; inp.value = ""; inp.placeholder = ph || ""; er.textContent = "";
+    const go = () => {
+      const v = inp.value.trim(), e = check(v);
+      if (e) { er.textContent = e; beep(220, .08, "square", .04); inp.focus(); inp.select(); return; }
+      box.classList.remove("on"); onOk(v);
+    };
+    box.querySelector(".askYes").onclick = go;
+    inp.onkeydown = e => { e.stopPropagation(); if (e.key === "Enter") { e.preventDefault(); go(); } };
+    setTimeout(() => { try { inp.focus(); } catch (e) {} }, 120);
+  }
   function askYesNo(msg, onYes) {
     let box = document.getElementById("askBox");
     if (!box) {
       box = document.createElement("div"); box.id = "askBox";
-      box.innerHTML = '<div class="askIn"><div class="askMsg"></div><div class="askRow"><button class="askNo">아니오</button><button class="askYes">예</button></div></div>';
+      box.innerHTML = '<div class="askIn"><div class="askMsg"></div><input class="askInp" type="text" maxlength="12" autocomplete="off" autocorrect="off" spellcheck="false"><div class="askErr"></div><div class="askRow"><button class="askNo">아니오</button><button class="askYes">예</button></div></div>';
       document.body.appendChild(box);
     }
-    box.querySelector(".askMsg").textContent = msg;
+    /* v0.9.413 첫 줄은 질문(크게), 둘째 줄부터는 설명(작게) */
+    const mm = box.querySelector(".askMsg"), [m1, ...mr] = String(msg).split("\n");
+    mm.textContent = ""; const s1 = document.createElement("span"); s1.textContent = m1; mm.appendChild(s1);
+    if (mr.length) { const s2 = document.createElement("small"); s2.className = "askSub"; s2.textContent = mr.join("\n"); mm.appendChild(s2); }
+    box.querySelector(".askInp").style.display = "none"; box.querySelector(".askErr").textContent = "";
     box.querySelector(".askNo").style.display = ""; box.querySelector(".askYes").textContent = "예";   // v0.9.380 alertBox 가 바꿔 둔 걸 되돌린다
     const close = () => { box.classList.remove("on"); };
     box.querySelector(".askYes").onclick = () => { close(); onYes(); };
