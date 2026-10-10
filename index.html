@@ -2889,7 +2889,7 @@
   const elTitle = document.getElementById("overTitle");
   const coinNote = document.getElementById("coinNote");
 
-  const GAME_VERSION = "v0.9.415";
+  const GAME_VERSION = "v0.9.416";
   /* 제작사 스플래시(bamhobak friends 로고) — 2026-09-20 끔. 다시 켜려면 true */
   const SPLASH_USE = false;   // 코드를 고칠 때마다 뒤 두 자리를 올린다
   document.getElementById("ver").textContent = GAME_VERSION;
@@ -9758,8 +9758,12 @@
       beep(700, .04, "triangle", .04);
       if (!SB_ON) { netErr(); return; }
       const clean = v => v.toUpperCase().replace(/[^A-Z0-9]/g, "");
-      askInput("옛 폰에서 받은 코드를 넣어 주세요", "코드 8자리", v => clean(v).length === 8 ? "" : "코드 8자리를 넣어 주세요", code => {
-        setTimeout(() => askInput("비밀번호 숫자 4자리를 넣어 주세요", "숫자 4자리", pinOk, pin => {
+      const why = r => !r || !r.r ? "연결이 안 돼요" : r.r === "ok" ? "" : r.r === "used" ? "이미 사용된 코드예요" : r.r === "same" ? "코드를 만든 기기에서는 쓸 수 없어요"
+        : r.r === "locked" ? "비밀번호를 5번 틀려서 막힌 코드예요" : r.r === "pin" ? "비밀번호가 맞지 않아요 (남은 기회 " + r.left + "번)" : "없는 코드예요";
+      const codeCheck = async v => { if (clean(v).length !== 8) return "코드 8자리를 넣어 주세요"; return why(await cloudRpc("ddongpi_xfer_check", { c: clean(v), pin: null, dev: deviceId })); };
+      askInput("옛 폰에서 받은 코드를 넣어 주세요", "코드 8자리", codeCheck, code => {
+        const pinCheck = async v => { const e = pinOk(v); if (e) return e; return why(await cloudRpc("ddongpi_xfer_check", { c: clean(code), pin: v, dev: deviceId })); };
+        setTimeout(() => askInput("비밀번호 숫자 4자리를 넣어 주세요", "숫자 4자리", pinCheck, pin => {
           setTimeout(() => askYesNo("이 기기로 기록을 옮겨 올까요?\n지금 이 기기의 기록은 옮겨 온 기록으로 바뀌어요", async () => {
             let r = null;
             try { r = await cloudRpc("ddongpi_xfer_use", { c: clean(code), pin, dev: deviceId }); } catch (e) {}
@@ -10441,8 +10445,13 @@
     const box = document.getElementById("askBox"), inp = box.querySelector(".askInp"), er = box.querySelector(".askErr");
     inp.style.display = ""; inp.value = ""; inp.placeholder = ph || ""; er.textContent = "";
     inp.inputMode = opt && opt.num ? "numeric" : "text"; inp.maxLength = opt && opt.max || 12; inp.style.textTransform = opt && opt.upper ? "uppercase" : "";   // v0.9.415
-    const go = () => {
-      const v = inp.value.trim(), e = check(v);
+    let busy = false;
+    const go = async () => {
+      if (busy) return;
+      const v = inp.value.trim(), yes = box.querySelector(".askYes");
+      busy = true; yes.disabled = true;
+      let e = ""; try { e = await check(v); } catch (x) { e = "연결이 안 돼요"; }   // v0.9.416 서버에 묻는 확인도 기다린다
+      busy = false; yes.disabled = false;
       if (e) { er.textContent = e; beep(220, .08, "square", .04); inp.focus(); inp.select(); return; }
       box.classList.remove("on"); onOk(v);
     };
