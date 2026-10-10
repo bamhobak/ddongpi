@@ -2871,7 +2871,7 @@
   const elTitle = document.getElementById("overTitle");
   const coinNote = document.getElementById("coinNote");
 
-  const GAME_VERSION = "v0.9.411";
+  const GAME_VERSION = "v0.9.412";
   /* 제작사 스플래시(bamhobak friends 로고) — 2026-09-20 끔. 다시 켜려면 true */
   const SPLASH_USE = false;   // 코드를 고칠 때마다 뒤 두 자리를 올린다
   document.getElementById("ver").textContent = GAME_VERSION;
@@ -9699,9 +9699,9 @@
     const LS_HAND = "epjpddongpi_hand";
     let swap = false; try { swap = localStorage.getItem(LS_HAND) === "swap"; } catch (e) {}
     document.body.classList.toggle("swapHand", swap);
-    const hl = document.createElement("div"); hl.className = "setLbl"; hl.textContent = "일시정지 버튼 위치";
+    const hl = document.createElement("div"); hl.className = "setLbl"; hl.textContent = "스킬 버튼 위치";
     const hs = document.createElement("div"); hs.className = "langSeg handSeg";
-    for (const [v, t] of [[false, "⏸ 왼쪽"], [true, "⏸ 오른쪽"]]) {   // 일시정지 버튼 자리 (스킬은 반대쪽)
+    for (const [v, t] of [[true, "왼쪽"], [false, "오른쪽"]]) {   // v0.9.412 스킬 버튼 자리 기준 (일시정지는 반대쪽) — 기본은 오른쪽
       const b = document.createElement("button"); b.textContent = t; if (v === swap) b.className = "on";
       b.addEventListener("click", () => {
         if (v === swap) return;
