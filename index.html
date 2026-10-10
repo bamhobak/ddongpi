@@ -1511,7 +1511,19 @@
   #pgOpt #optRow { display: flex; flex-direction: column; align-items: center; gap: 14px; }
   #pgOpt .setLbl { font-size: 13px; color: #9fb4d0; margin-bottom: -6px; }
   .nm .flag, .nmt .flag { margin-right: 3px; font-size: .92em; font-family: "Apple Color Emoji", "Segoe UI Emoji", "Noto Color Emoji", sans-serif; }   /* v0.9.379 국기 */
-  #privLink { font-size: 12px; color: #9fb4d0; text-decoration: underline; margin-top: 2px; }
+  /* v0.9.414 개인정보처리방침 — 옵션 맨 아래(돌아가기 아래, 버전 위) 회색 버튼 · 게임 안 팝업 */
+  #pgOpt #btnPriv { order: 98; }
+  #btnPriv { --bh: 40px; height: var(--bh); box-sizing: border-box; min-width: 170px; margin-top: 14px; border-style: solid; border-color: transparent; border-radius: 0; box-shadow: none; background: none;
+    border-width: 0 calc(var(--bh) / 2); border-image: url(assets/ui/btn_gray.webp) 0 60 fill / 0 calc(var(--bh) / 2) / 0 stretch;
+    padding: 0 4px calc(var(--bh) * .08); font-size: 14.5px; font-weight: 800; color: #3f3560; text-shadow: 0 1px 0 rgba(255,255,255,.6); }
+  #privPop { position: fixed; inset: 0; z-index: 10001; display: none; align-items: center; justify-content: center; background: rgba(8,8,16,.7); padding: max(14px, env(safe-area-inset-top)) 12px max(14px, env(safe-area-inset-bottom)); box-sizing: border-box; }
+  #privPop.on { display: flex; }
+  #privPop .pvIn { width: min(100%, 460px); height: 100%; max-height: 760px; display: flex; flex-direction: column; gap: 10px; padding: 10px; box-sizing: border-box;
+    border-radius: 16px; background: #fff8e6; border: 3px solid #8a5a2b; box-shadow: 0 6px 0 #6b4520, 0 10px 30px rgba(0,0,0,.45); }
+  #privPop iframe { flex: 1; width: 100%; border: 0; border-radius: 10px; background: #fff; }
+  #privPop .pvClose { --bh: 44px; flex: none; align-self: center; height: var(--bh); min-width: 160px; box-sizing: border-box; border-style: solid; border-color: transparent; border-radius: 0; box-shadow: none; background: none;
+    border-width: 0 calc(var(--bh) / 2); border-image: url(assets/ui/btn_yellow.webp) 0 60 fill / 0 calc(var(--bh) / 2) / 0 stretch;
+    padding: 0 4px calc(var(--bh) * .08); font-size: 16px; font-weight: 800; color: #6b3300; text-shadow: 0 1px 0 rgba(255,255,255,.55); }
   /* v0.9.367 언어 고르기 — 네모 칸 나란히, 고른 것은 노랑 */
   .langSeg { display: flex; gap: 8px; width: 100%; max-width: 260px; }
   .langSeg button { flex: 1; height: 38px; border-radius: 8px; border: 1px solid rgba(255,255,255,.28); background: rgba(255,255,255,.1); color: #fff; font-size: 15px; font-weight: 800; letter-spacing: 0; padding: 0; }
@@ -2877,7 +2889,7 @@
   const elTitle = document.getElementById("overTitle");
   const coinNote = document.getElementById("coinNote");
 
-  const GAME_VERSION = "v0.9.413";
+  const GAME_VERSION = "v0.9.414";
   /* 제작사 스플래시(bamhobak friends 로고) — 2026-09-20 끔. 다시 켜려면 true */
   const SPLASH_USE = false;   // 코드를 고칠 때마다 뒤 두 자리를 올린다
   document.getElementById("ver").textContent = GAME_VERSION;
@@ -9734,9 +9746,18 @@
     }
 
     document.getElementById("pgOpt").appendChild(document.getElementById("ver"));   // v0.9.314 버전은 옵션 맨 아래
-    {   /* v0.9.377 개인정보처리방침 — 언어마다 그 언어 판으로 (앱 안에서도 찾을 수 있게) */
-      const pv = document.createElement("a"); pv.id = "privLink"; pv.target = "_blank"; pv.rel = "noopener";
-      pv.href = LANG === "ko" ? "privacy.html" : "privacy_" + LANG + ".html"; pv.textContent = "개인정보처리방침";
+    {   /* v0.9.377 개인정보처리방침 — 언어마다 그 언어 판으로
+         v0.9.414 옵션 맨 아래 또렷한 버튼 → 게임 안 팝업(같은 페이지를 iframe 으로) · 닫기로 돌아온다. 심사용 웹 주소는 그대로 privacy*.html */
+      const url = LANG === "ko" ? "privacy.html" : "privacy_" + LANG + ".html";
+      const pv = document.createElement("button"); pv.id = "btnPriv"; pv.textContent = "개인정보처리방침";
+      const pop = document.createElement("div"); pop.id = "privPop";
+      pop.innerHTML = '<div class="pvIn"><iframe title="privacy"></iframe><button class="pvClose">닫기</button></div>';
+      document.body.appendChild(pop);
+      const fr = pop.querySelector("iframe");
+      const close = () => { pop.classList.remove("on"); };
+      pv.addEventListener("click", () => { beep(700, .04, "triangle", .04); if (!fr.getAttribute("src")) fr.src = url; pop.classList.add("on"); });
+      pop.querySelector(".pvClose").addEventListener("click", () => { beep(600, .04, "triangle", .04); close(); });
+      pop.addEventListener("click", e => { if (e.target === pop) close(); });
       document.getElementById("pgOpt").appendChild(pv);
     }
   }
