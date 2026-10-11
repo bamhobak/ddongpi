@@ -545,8 +545,9 @@
   .augCard .nm2 { font-size: 15px; font-weight: 700; color: #ffd23f; }
   /* v0.9.417 증강 품질 — 설명 끝 (효과량) 색: 낮음 빨강 · 보통 · 높음 노랑 → 주황 */
   .augQ { font-weight: 800; white-space: nowrap; }
-  .augQ.q-2 { color: #ff7b7b; } .augQ.q-1 { color: #ffb0a0; } .augQ.q0 { color: #dfe4ff; }
-  .augQ.q1 { color: #ffe066; } .augQ.q2 { color: #ffb52e; text-shadow: 0 0 6px rgba(255,180,40,.7); }
+  /* v0.9.423 낮은 것부터 회색 · 하얀 · 노랑 · 주황 · 빨강 (-20 · -10 · 0 · +10 · +20) */
+  .augQ.q-2 { color: #9aa0b4; } .augQ.q-1 { color: #ffffff; } .augQ.q0 { color: #ffe066; }
+  .augQ.q1 { color: #ff9f2e; } .augQ.q2 { color: #ff4d4d; text-shadow: 0 0 6px rgba(255,70,70,.65); }
   .augCard .ds { font-size: 13px; color: #c8cbd6; margin-top: 2px; }
   .augCard .cnt {
     flex: none; font-size: 11px; font-weight: 700; color: #12131a;
@@ -2893,7 +2894,7 @@
   const elTitle = document.getElementById("overTitle");
   const coinNote = document.getElementById("coinNote");
 
-  const GAME_VERSION = "v0.9.422";
+  const GAME_VERSION = "v0.9.423";
   /* 제작사 스플래시(bamhobak friends 로고) — 2026-09-20 끔. 다시 켜려면 true */
   const SPLASH_USE = false;   // 코드를 고칠 때마다 뒤 두 자리를 올린다
   document.getElementById("ver").textContent = GAME_VERSION;
