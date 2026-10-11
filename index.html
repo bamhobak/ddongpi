@@ -2910,7 +2910,7 @@
   const elTitle = document.getElementById("overTitle");
   const coinNote = document.getElementById("coinNote");
 
-  const GAME_VERSION = "v0.9.430";
+  const GAME_VERSION = "v0.9.431";
   /* 제작사 스플래시(bamhobak friends 로고) — 2026-09-20 끔. 다시 켜려면 true */
   const SPLASH_USE = false;   // 코드를 고칠 때마다 뒤 두 자리를 올린다
   document.getElementById("ver").textContent = GAME_VERSION;
@@ -3839,7 +3839,7 @@
   let helpers = [];
   let helperTimer = 0;
   let fetchers = [];        // 배고픈 뿌잉 — 아이템을 대신 먹으러 가는 뿌잉
-  const FETCH_DELAY = 1.2;  // 아이템이 보이고 몇 초 뒤에 출발하는지
+  const FETCH_DELAY = 2.5;   // v0.9.431 도감에서 2.5초로  // 아이템이 보이고 몇 초 뒤에 출발하는지
   const FETCH_SPEED = 500;   // v0.9.36 714 → 500 (뿌잉 30% 느리게)
   let helperQueue = 0;      // 이번 차례에 아직 안 나온 인원
   let helperGap = 0;        // 다음 한 명까지 남은 시간
@@ -4902,7 +4902,7 @@
     bombPoop:   { t: "레벨 12까지 가면" },
     fartRocket: { t: "초승달 쓸기를 20번 성공하면", key: "juggleOk", n: 20 },
     zapDance:   { t: "아슬! 을 150번 하면", key: "graze", n: 150 },
-    goldArmor:  { t: "동전 갑옷으로 10번 막으면", key: "carmor", n: 10 }
+    goldArmor:  { t: "코인냥이가 준 코인 50개 먹으면", key: "catcoin", n: 50 }   // v0.9.431
   };
   let achData = { c: {}, u: [] }, achDirty = false, achFlushT = 0;
   try { const d = JSON.parse(localStorage.getItem(LS_ACH) || "null"); if (d && d.c && Array.isArray(d.u)) achData = d; } catch (e) {}
@@ -5146,8 +5146,8 @@
       hidden: true, once: true, cond: () => aug.dash && aug.juggle, go: () => { aug.fartRocket = true; } },
     { id: "zapDance",   ic: "🕺", nm: "번개 춤", ds: "아슬하게 피할 때마다 몸에서 찌릿! 그 똥이랑 위쪽 똥 두 개가 번개로 터져요",
       hidden: true, once: true, cond: () => aug.closeCall && petOn.eel, go: () => { aug.zapDance = true; } },
-    { id: "goldArmor",  ic: "🏵", nm: "냥이의 보은", ds: "동전 갑옷이 생기고, 막을 때마다 코인냥이가 새 코인 1~2개를 위에서 떨어뜨려 줘요",
-      once: true,   /* v0.9.330 황금 갑옷 → 냥이의 보은, 숨은 증강 → 일반 증강 */ cond: () => petOn.coincat && job !== "powerp", go: () => { aug.goldArmor = true; aug.coinArmor = true; } },   // v0.9.331 코인냥이만 있으면 — 동전 갑옷이 없으면 함께 생긴다
+    { id: "goldArmor",  ic: "🏵", nm: "냥이의 보은", ds: "맞을 때마다 코인냥이가 코인 1~2개를 위에서 떨어뜨려 줘요",
+      once: true,   /* v0.9.330 황금 갑옷 → 냥이의 보은, 숨은 증강 → 일반 증강 */ cond: () => petOn.coincat && catCoinRun >= 3 && job !== "powerp", go: () => { aug.goldArmor = true; } },   // v0.9.431 동전 갑옷과 떼어 냄 · 이번 판에 냥이 코인 3개 먹으면 등장   // v0.9.331 코인냥이만 있으면 — 동전 갑옷이 없으면 함께 생긴다
     { id: "twoRand",    ic: "🎊", nm: "깜짝 선물", ds: "일반 증강 두 개를 아무거나 받아요",
       go: () => {
         const got = []; twoRandObjs = [];
@@ -5600,7 +5600,7 @@
   // 건너가는 동안 머리 위로 떠오르는 높이 — 목표에서 멀수록 높이
   function petArc() { return -Math.min(26, Math.abs(petGoal()[0] - petFx) * 0.4); }
   let fairies = [], giftT = 0;
-  let cats = [], catT = 0, catN = 0;
+  let cats = [], catT = 0, catN = 0, catCoinRun = 0;   // catCoinRun — 이번 판에 먹은 냥이 코인 수
   let eelT = 0, bolts = [];
   /* v0.9.343 노란 오리 — DUCK_EVERY 초마다 화면 높이 45~55% 한 줄을 가로로 1.2초에 날아가며 닿는 똥을 부순다(다크똥 제외) */
   const DUCK_EVERY = 4, DUCK_SEC = 1.8, DUCK_R = 20;   // v0.9.403 3 → 4초 · 마리 4(+2씩)   // v0.9.348 3초마다 · 마리 수 = aug.duck (2 + 단계-1)
@@ -9949,7 +9949,7 @@
     chainZap: "똥을 부수는 펫(뿌잉·뿅뿅이·둘기·선물 요정·찌릿 장어)을 게임 중에 먹으면 나와요", pierce: "게임 중에 '펫 뿅뿅이'를 먼저 먹으면 나와요",
     snackBig: "간식 증강을 4개 넘게 먹으면 나와요", cloudVip: "구름 상점이 오는 판에 나와요 (무무는 빼고)",
     fartRocket: "'방귀 대시'랑 '초승달 쓸기'를 같이 가지고 있으면 나와요", duckMarch: "'펫 노란 오리'랑 '방귀 대시'를 같이 가지고 있으면 나와요", duckEgg: "'펫 노란 오리'랑 '펫 코인냥이'를 같이 가지고 있으면 나와요", zapDance: "'외줄 타기'랑 '펫 찌릿 장어'를 같이 가지고 있으면 나와요",
-    goldArmor: "'펫 코인냥이'가 있으면 나와요 (동전 갑옷도 함께 생겨요)", credit: "구름 상점이 오는 판에 나와요", coinArmor: "무무는 빼고 나와요",
+    goldArmor: "'펫 코인냥이'가 있고 코인냥이가 떨어뜨린 코인을 3개 먹으면 나와요", credit: "구름 상점이 오는 판에 나와요", coinArmor: "무무는 빼고 나와요",
  toilet: "하트가 3개 넘고 레벨 7 아래일 때 나와요", wak: "뿅뿅이가 2대 넘게 있으면 나와요",
     clone: "레벨 7부터 · 하트가 2개 아래일 때 나와요"
   };
@@ -10845,7 +10845,7 @@
     if (runMode !== "item") augCount["mode:" + runMode] = 1;   // 통계(판 기록)에서 똥탑등반·맨몸대결 판을 가려낼 수 있게
     angelUsed = false; angelAura = 0; angelFx = 0; petFon = false; reviveUsed = false;
     fairies = []; giftT = GIFT_EVERY * 0.6;
-    cats = []; catT = CAT_EVERY * 0.7; catN = 0;
+    cats = []; catT = CAT_EVERY * 0.7; catN = 0; catCoinRun = 0;
     eelT = EEL_EVERY * 0.6; bolts = []; duckT = DUCK_EVERY * 0.5; ducks = []; aug.duck = 0; aug.duckFat = false; aug.duckMarch = false; aug.duckEgg = false;
     bullets = []; shipClock = 0; aug.galaga = 0;
     coinRun = 0; coinDebt = 0; coinSeen = 0; coinGot = 0; touchAt = 0; coinSeenV = 0; coinGotV = 0;
@@ -12065,7 +12065,7 @@
       c.t += dt;
       if (!c.dropped && c.t >= 0.45) {
         c.dropped = true;
-        makeCoinAt(c.x, 70, c.v);
+        makeCoinAt(c.x, 70, c.v); items[items.length - 1].catCoin = true;   // v0.9.431 냥이가 준 코인 (냥이의 보은 등장·해금 셈)
         if (!sfx("coin", 0.7)) beep(1500, .06, "triangle", .04);
       }
       if (c.t >= 1.4) cats.splice(k, 1);
@@ -12698,12 +12698,12 @@
                 popText(player.x, player.y - 60, "🛡 동전 갑옷! -" + caCost, "#ffd23f", 20);
                 if (it.bomb) bombBoom(it.x, it.y);
                 coinSpendFx(player.x, cy, caCost);   // v0.9.430 쓴 코인이 깜박이며 퍼지다 사라진다 (먹을 수 없다)
-                if (aug.goldArmor) goldFetch = { t: 0.7, n: 1 + Math.floor(Math.random() * 2) };   // 냥이의 보은 — 냥이가 새 코인 1~2개를 위에서 떨어뜨려 준다
                 if (!sfx("coin")) beep(1200, .08, "triangle", .05);
                 items.splice(i, 1);
                 continue;
               }
               lastHitAt = elapsed; monkHeartN = 0; lotusDone = false;
+              if (aug.goldArmor) goldFetch = { t: 0.7, n: 1 + Math.floor(Math.random() * 2) };   // v0.9.431 냥이의 보은 — 맞을 때마다 냥이가 코인 1~2개를 위에서 떨어뜨려 준다
               if (stoneOn) { stoneOn = false; stoneT = -1; burst(player.x, player.y + player.hy, "#b9b9b9", 14); }   // v0.9.206 다크똥에 맞으면 돌이 깨진다
               if (allPerk("powerp", "B")) mindSlowUntil = now + 2000;   // 마음 비우기
               if (!testMode) {             // 테스트 모드는 맞아도 줄지 않는다
@@ -12898,6 +12898,7 @@
       /* 이번 판 점수와는 아무 상관이 없다 — 판을 넘어 쌓이기만 한다. */
       const v = it.coin || 1;
       addCoins(v);
+      if (it.catCoin) { catCoinRun++; achBump("catcoin", v); }   // v0.9.431
       coinGot++; coinGotV += v;
       if (job === "powerp" && !fullOwn) {
         /* 무소유 — 쥐는 순간 코인 값만큼 점수가 깎인다 (1코인 1%, 3코인 3%, 5코인 5%).
