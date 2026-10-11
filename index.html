@@ -1075,14 +1075,14 @@
   @keyframes lvReady { 50% { box-shadow: inset 0 0 0 1.5px #ffe48a, 0 0 22px rgba(255,200,60,.6); } }
   .lvPick.pop { animation: lvPopIn .55s ease-out; }
   @keyframes lvPopIn { 0% { transform: scale(.93); box-shadow: 0 0 0 0 rgba(255,216,107,.9); } 55% { transform: scale(1.03); box-shadow: 0 0 28px 6px rgba(255,216,107,.55); } 100% { transform: none; } }
-  .lvChoice { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+  .lvChoice { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 8px; }   /* v0.9.425 긴 글이 있어도 두 칸 너비 같게 */
   /* v0.9.128 고르기 카드 — 왼쪽 동그란 아이콘(A 보라 · B 파랑), 오른쪽 'A 이름' + 설명. 고른 쪽은 금빛 테두리 + 별 배지 */
   button.lvOpt { position: relative; display: flex; align-items: center; gap: 6px; min-height: 74px; box-sizing: border-box; padding: 7px 7px 7px 6px; border-radius: 14px;
     text-align: left; font-size: 11px; font-weight: 700; line-height: 1.32; letter-spacing: -.2px; word-break: keep-all; color: var(--pnText);
     background: linear-gradient(180deg, #2b3290 0%, #1d2068 55%, #171a52 100%); border: 1.5px solid rgba(120,150,255,.55);
     box-shadow: inset 0 1px 0 rgba(170,190,255,.35), 0 3px 0 #0a0c2a; }
   button.lvOpt:active { transform: translateY(2px); box-shadow: inset 0 1px 0 rgba(170,190,255,.35), 0 1px 0 #0a0c2a; }
-  .lvOpt .med { flex-shrink: 0; width: 42px; height: 42px; background: url(assets/ui/perks.webp?v=2) 0 0 / 600% 600% no-repeat; filter: drop-shadow(0 2px 3px rgba(0,0,0,.5)); }   /* v0.9.129 능력마다 그린 아이콘(Codex, 8칸×6줄) — 테두리 없이 */
+  .lvOpt .med { flex-shrink: 0; width: 42px; height: 42px; background: url(assets/ui/perks.webp?v=3) 0 0 / 600% 600% no-repeat; filter: drop-shadow(0 2px 3px rgba(0,0,0,.5)); }   /* v0.9.129 능력마다 그린 아이콘(Codex, 8칸×6줄) — 테두리 없이 */
   .lvOpt .txt { display: flex; flex-direction: column; gap: 2px; min-width: 0; }
   .lvOpt .ttl { font-size: 13.5px; letter-spacing: -.3px; font-weight: 900; color: #fff; line-height: 1.2; }
   .lvOpt .ttl em { font-style: normal; font-size: 15px; margin-right: 4px; background: linear-gradient(180deg, #f2b8ff, #a86bff); -webkit-background-clip: text; background-clip: text; color: transparent; }
@@ -2894,7 +2894,7 @@
   const elTitle = document.getElementById("overTitle");
   const coinNote = document.getElementById("coinNote");
 
-  const GAME_VERSION = "v0.9.424";
+  const GAME_VERSION = "v0.9.425";
   /* 제작사 스플래시(bamhobak friends 로고) — 2026-09-20 끔. 다시 켜려면 true */
   const SPLASH_USE = false;   // 코드를 고칠 때마다 뒤 두 자리를 올린다
   document.getElementById("ver").textContent = GAME_VERSION;
@@ -4373,7 +4373,7 @@
     },
     fortune: {
       2: { A: "예지 — 예언이 바뀌기 3초 전 다음 예언 표시", B: "액막이 — 나쁜 예언 확률 절반" },
-      3: { A: "오늘의 운세 — 날마다 바뀌는 작은 행운 하나", B: "감정사 — 증강 품질이 다섯 단계로 나뉜다 (-20%·-10%·0·+10%·+20%)" },
+      3: { A: "오늘의 운세 — 날마다 바뀌는 작은 행운 하나", B: "감정사 — 증강 품질이 다섯 단계로 나뉜다 (-20% -10% 0 +10% +20%)" },
       4: { A: "대길 — 판마다 한 번, 좋은 예언 둘을 동시에 10초", B: "전화위복 — 나쁜 예언 동안 점수 +30%" }
     }
   };
