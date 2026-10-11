@@ -2894,7 +2894,7 @@
   const elTitle = document.getElementById("overTitle");
   const coinNote = document.getElementById("coinNote");
 
-  const GAME_VERSION = "v0.9.423";
+  const GAME_VERSION = "v0.9.424";
   /* 제작사 스플래시(bamhobak friends 로고) — 2026-09-20 끔. 다시 켜려면 true */
   const SPLASH_USE = false;   // 코드를 고칠 때마다 뒤 두 자리를 올린다
   document.getElementById("ver").textContent = GAME_VERSION;
@@ -5151,7 +5151,7 @@
   ];
   /* v0.9.417 수치형 증강 품질 — 카드에 뜰 때 -10%·0·+10% 중 하나(루나 Lv3 B '감정사'면 -20·-10·0·+10·+20 다섯 단계).
      고르면 그 값으로 효과량에 (1 + 품질)을 곱한다. 펫·1회성·우산 꾸러미(개수라 안 바뀜)는 빼고 */
-  const AUG_ROLL = new Set(["fever_time", "star50", "fever50", "slow", "small", "tinypoop", "roid", "lucky", "downpour", "afterimage", "glass"]);   // v0.9.420 끈기 대장·과속 질주·무지개 똥·하트 거래는 품질 없이 고정
+  const AUG_ROLL = new Set(["fever_time", "star50", "fever50", "slow", "small", "tinypoop", "roid", "lucky", "downpour", "gold", "carrot", "afterimage", "glass"]);   // v0.9.424 끈기 대장·과속 질주는 품질 없이 고정 (무지개 똥·하트 거래는 다시 랜덤)
   let augQ = 0;
   function AQ() { return 1 + augQ; }
   function rollQ() { const t = allPerk("fortune", "B") ? [-0.2, -0.1, 0, 0.1, 0.2] : [-0.1, 0, 0.1]; return t[Math.floor(Math.random() * t.length)]; }
