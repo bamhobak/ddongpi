@@ -2910,7 +2910,7 @@
   const elTitle = document.getElementById("overTitle");
   const coinNote = document.getElementById("coinNote");
 
-  const GAME_VERSION = "v0.9.431";
+  const GAME_VERSION = "v0.9.432";
   /* 제작사 스플래시(bamhobak friends 로고) — 2026-09-20 끔. 다시 켜려면 true */
   const SPLASH_USE = false;   // 코드를 고칠 때마다 뒤 두 자리를 올린다
   document.getElementById("ver").textContent = GAME_VERSION;
@@ -3203,7 +3203,7 @@
     duck:   { nm: "노란 오리", ic: "🦆", img: "assets/pet_duck.png", ui: "assets/pet_duck_shop.png?2",   // v0.9.343 · v0.9.372 상점·고르기 그림은 방귀 뺀 것(ui)
               ds: "가끔 조그만 오리 떼가 방귀로 부릉! 화면 가운데를 가로지르며 한 마리가 똥 하나씩 부숴요" },
     angel:  { nm: "아기 천사", ic: "👼", img: "assets/pet_angel.png",
-              ds: "쓰러지면 한 번 다시 일으켜 주고, 다가오는 똥을 밀어내요" },
+              ds: "쓰러지면 한 번 다시 일으켜 주고, 그 뒤 6초 동안 다가오는 똥을 밀어내요" },
     gift:   { nm: "선물 요정", ic: "🧚", img: "assets/pet_fairy.png?2",
               ds: "가끔 날아가서 똥을 펑! 하트·우산·별·달로 바꿔요" },
     coincat: { nm: "코인냥이", ic: "🐈", img: "assets/pet_cat.png", ui: "assets/pet_cat_shop.png?1",   // v0.9.373 상점 그림은 꼬리 말고 몸 기준 가운데
@@ -5001,7 +5001,7 @@
       ds: "많이 움직이면 둘기가 날아올라 똥을 터뜨려요",
       dsFn: () => augCount["pet:dove"] ? "날아갈 때 둘기가 한 마리 더 날아요" : "많이 움직이면 둘기가 날아올라 똥을 터뜨려요",
       go: () => { if (petOn.dove) aug.doveFlock++; else petOn.dove = true; } },
-    { id: "pet:angel",   ic: "👼", nm: "펫 아기 천사", ds: "쓰러지면 한 번 다시 일으켜 주고, 다가오는 똥을 밀어내요", once: true, w: 0.6,
+    { id: "pet:angel",   ic: "👼", nm: "펫 아기 천사", ds: "쓰러지면 한 번 다시 일으켜 주고, 그 뒤 6초 동안 다가오는 똥을 밀어내요", once: true, w: 0.6,
       cond: () => hasPet("angel") && level >= 4,
       go: () => { petOn.angel = true; } },
     { id: "pet:gift",    ic: "🧚", nm: "펫 선물 요정", ds: "가끔 날아가서 떨어지는 똥을 아이템으로 바꿔요", once: true, w: 0.7, cond: () => hasPet("gift"),
@@ -5144,7 +5144,7 @@
       once: true, go: () => { aug.bombPoop = true; aug.bombR = 80 * AQ(); } },   // v0.9.429 품질 — 폭발 반경
     { id: "fartRocket", ic: "🧨", nm: "방귀 로켓", ds: "방귀 대시가 지나간 자리에 1초 동안 바람이 남아, 닿는 똥을 위로 통 튕겨 내요",
       hidden: true, once: true, cond: () => aug.dash && aug.juggle, go: () => { aug.fartRocket = true; } },
-    { id: "zapDance",   ic: "🕺", nm: "번개 춤", ds: "아슬하게 피할 때마다 몸에서 찌릿! 그 똥이랑 위쪽 똥 두 개가 번개로 터져요",
+    { id: "zapDance",   ic: "🕺", nm: "번개 춤", ds: "아슬하게 피하면 몸에서 찌릿! 그 똥이랑 위쪽 똥 두 개가 번개로 터져요 (쿨타임 1.1초)",
       hidden: true, once: true, cond: () => aug.closeCall && petOn.eel, go: () => { aug.zapDance = true; } },
     { id: "goldArmor",  ic: "🏵", nm: "냥이의 보은", ds: "맞을 때마다 코인냥이가 코인 1~2개를 위에서 떨어뜨려 줘요",
       once: true,   /* v0.9.330 황금 갑옷 → 냥이의 보은, 숨은 증강 → 일반 증강 */ cond: () => petOn.coincat && catCoinRun >= 3 && job !== "powerp", go: () => { aug.goldArmor = true; } },   // v0.9.431 동전 갑옷과 떼어 냄 · 이번 판에 냥이 코인 3개 먹으면 등장   // v0.9.331 코인냥이만 있으면 — 동전 갑옷이 없으면 함께 생긴다
@@ -9941,17 +9941,17 @@
     "pet:angel": "레벨 4부터 나와요",
     doveHome: "게임 중에 '펫 둘기'를 먼저 먹으면 나와요",
     hungry: "뿌잉이랑 자석을 같이 가지고 있으면 나와요",
-    roid: "버피만 · 레벨 7부터 나와요", doveWhat: "둘기 강화나 둘기 모이를 2개 넘게 먹으면 나와요",
+    roid: "버피만 · 레벨 7부터 나와요", doveWhat: "둘기 강화나 둘기 모이를 2개 이상 먹으면 나와요",
     steelUmb: "'우산 꾸러미'를 먹으면 나와요 (버피는 빼고)", starburst: "'별 사냥꾼'을 먹으면 나와요", blackhole: "'자석'을 먹으면 나와요",
-    legion: "'대왕 간식'을 먹으면 나와요", angryUmb: "우산이 5개 넘게 있으면 나와요 (버피는 빼고)",
-    carrot: "하트가 2개 넘게 있으면 나와요",
+    legion: "'대왕 간식'을 먹으면 나와요", angryUmb: "우산이 5개 이상 있으면 나와요 (버피는 빼고)",
+    carrot: "하트가 2개 이상 있으면 나와요",
     goldLord: "'무지개 똥'이랑 '자석'을 같이 가지고 있으면 나와요", inter: "'느림보 하늘'을 2개 먹으면 나와요",
     chainZap: "똥을 부수는 펫(뿌잉·뿅뿅이·둘기·선물 요정·찌릿 장어)을 게임 중에 먹으면 나와요", pierce: "게임 중에 '펫 뿅뿅이'를 먼저 먹으면 나와요",
-    snackBig: "간식 증강을 4개 넘게 먹으면 나와요", cloudVip: "구름 상점이 오는 판에 나와요 (무무는 빼고)",
+    snackBig: "간식 증강을 4개 이상 먹으면 나와요", cloudVip: "구름 상점이 오는 판에 나와요 (무무는 빼고)",
     fartRocket: "'방귀 대시'랑 '초승달 쓸기'를 같이 가지고 있으면 나와요", duckMarch: "'펫 노란 오리'랑 '방귀 대시'를 같이 가지고 있으면 나와요", duckEgg: "'펫 노란 오리'랑 '펫 코인냥이'를 같이 가지고 있으면 나와요", zapDance: "'외줄 타기'랑 '펫 찌릿 장어'를 같이 가지고 있으면 나와요",
     goldArmor: "'펫 코인냥이'가 있고 코인냥이가 떨어뜨린 코인을 3개 먹으면 나와요", credit: "구름 상점이 오는 판에 나와요", coinArmor: "무무는 빼고 나와요",
- toilet: "하트가 3개 넘고 레벨 7 아래일 때 나와요", wak: "뿅뿅이가 2대 넘게 있으면 나와요",
-    clone: "레벨 7부터 · 하트가 2개 아래일 때 나와요"
+ toilet: "하트가 3개 이상이고 레벨 7 이하일 때 나와요", wak: "뿅뿅이가 2대 이상 있으면 나와요",
+    clone: "레벨 7부터 · 하트가 2개 이하일 때 나와요", gacha: "제이는 빼고 나와요"
   };
   /* v0.9.161 연쇄 번개 — 똥을 부수는 펫 다섯 중 3마리 이상 사 두면 열린다 */
   const ZAP_PETS = ["helper", "galaga", "dove", "gift", "eel", "duck"];
