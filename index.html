@@ -2894,7 +2894,7 @@
   const elTitle = document.getElementById("overTitle");
   const coinNote = document.getElementById("coinNote");
 
-  const GAME_VERSION = "v0.9.425";
+  const GAME_VERSION = "v0.9.426";
   /* 제작사 스플래시(bamhobak friends 로고) — 2026-09-20 끔. 다시 켜려면 true */
   const SPLASH_USE = false;   // 코드를 고칠 때마다 뒤 두 자리를 올린다
   document.getElementById("ver").textContent = GAME_VERSION;
@@ -4871,7 +4871,7 @@
     legion:     { t: "대왕 간식 10개 먹으면", key: "giant", n: 10 },
     inter:      { t: "레벨 15까지 가면" },
     clone:      { t: "하트 1개로 30초 버티면" },
-    afterimage: { t: "한 번도 안 맞고 레벨 6까지 가면" },
+    afterimage: { t: "한 번도 안 맞고 레벨 8까지 가면" },
     steelUmb:   { t: "우산으로 똥 30번 막으면", key: "block", n: 30 },
     fly:        { t: "똥에 50번 맞으면", key: "hit", n: 50 },
     gacha:      { t: "증강 50개 고르면", key: "pick", n: 50 },
@@ -4930,7 +4930,7 @@
     if (elapsed - touchAt >= 60) jobUnlock("fit");              // v0.9.386 버피 — 똥이 몸에 60초 동안 안 닿기 (우산·방울·부적·동전 갑옷으로 막아도 닿은 것)
     if (level >= 15) jobUnlock("levitator");                    // v0.9.386 도도 — 15스테이지 도달 (예전 7)
     if (level >= 15) achUnlock("inter");
-    if (level >= 6 && runHits === 0) achUnlock("afterimage");
+    if (level >= 8 && runHits === 0) achUnlock("afterimage");   // v0.9.426 6 → 8
     if (level >= 12) achUnlock("bombPoop");   // v0.9.249
     if (lives === 1) { lowT += dt; if (lowT >= 30) achUnlock("clone"); if (lowT >= 50) achUnlock("dungy"); }
     if (achDirty && (achFlushT -= dt) <= 0) { achSave(); achFlushT = 3; }
@@ -4963,7 +4963,7 @@
       go: () => { aug.hitboxMul *= 1 - 0.12 * dim("small") * AQ(); } },
     { id: "tinypoop",   ic: "🟤", nm: "꼬마 똥",   ds: "떨어지는 똥이 작아져요",
       go: () => { aug.poopMul *= 1 - 0.12 * dim("tinypoop") * AQ(); } },
-    { id: "umbrella3",  ic: "🎀", nm: "우산 꾸러미", ds: "우산을 3개 받아요. 우산이 똥을 막아 줘요",
+    { id: "umbrella3",  ic: "🎀", nm: "우산 꾸러미", ds: "우산을 3개 받아요",
       max: 99,                    // 조건이 막아주므로 보유 상한은 사실상 없음
       cond: () => job !== "fit" && shields < 10,   // 헬스걸은 방패가 없는 직업 — 미등장
       noCount: true,              // 방패 수는 화면에 우산으로 보이니 보유 뱃지는 생략
@@ -5054,7 +5054,7 @@
       go: () => { aug.goldChance += (augCount["gold"] ? 0.07 : 0.08) * AQ(); } },
     { id: "dopa",       ic: "⏩", nm: "과속 질주",  ds: "똥이 빨라지는 대신, 버티는 점수가 많이 올라요",
       go: () => { aug.fallMul *= 1 + 0.10 * dim("dopa"); aug.timeMul *= 1 + 0.5 * dim("dopa") * AQ(); } },
-    { id: "carrot",     ic: "💞", nm: "하트 거래", ds: "하트 1개를 주고, 앞으로 받는 점수가 20% 늘어나요",
+    { id: "carrot",     ic: "💞", nm: "하트 거래", ds: "하트 1개를 주고, 앞으로 받는 점수가 늘어나요",
       // 목숨을 파는 증강이라, 목숨 대신 오염도로 버티는 방울이에게는 나오지 않는다
       max: 5, cond: () => !dirtJob() && lives >= 2,
       go: () => { lives = Math.max(1, lives - 1); aug.scoreMul *= 1 + 0.2 * AQ(); } },
@@ -5076,7 +5076,7 @@
       dsFn: () => (augCount["afterimage"] || 0)
         ? "더 자주 쏙 피해요"
         : "맞을 때 가끔 그림자만 남기고 쏙 피해요",
-      go: () => { aug.dodge += (augCount["afterimage"] ? 0.05 : 0.10) * AQ(); } },
+      go: () => { aug.dodge += (augCount["afterimage"] ? 0.05 : 0.15) * AQ(); } },   // v0.9.426 첫 개 10 → 15%
     { id: "chainZap",   ic: "⛓", nm: "연쇄 번개", ds: "펫이 똥을 부술 때 번개가 튀어서 옆 똥 두 개도 터져요",
       hidden: true, once: true, cond: () => zapOwnN() >= 3 && (petOn.galaga || petOn.helper || petOn.dove || petOn.eel || petOn.gift || petOn.duck),   // v0.9.61 똥을 부수는 펫이면 누구든 · v0.9.161 그 펫 3마리 이상 사 둬야
       go: () => { aug.chainZap = true; } },
@@ -5168,7 +5168,7 @@
       case "roid": return n(6 * m) + S;
       case "lucky": return "+" + p(0.15 * d * m);
       case "gold": return "+" + p((c ? 0.07 : 0.08) * m);
-      case "afterimage": return "+" + p((c ? 0.05 : 0.10) * m);
+      case "afterimage": return "+" + p((c ? 0.05 : 0.15) * m);
       case "glass": return "+" + p(0.25 * m);
     }
     return "";
@@ -12545,10 +12545,9 @@
               continue;
             }
             /* 잔상 회피 — 똥은 잔상을 뚫고 그냥 지나간다.
-               우산보다 먼저 굴리므로, 피하면 우산이 그대로 남는다. 방울(방울이 전용)은
-               저절로 다시 차니 위에서 먼저 터뜨리고, 주워야 생기는 우산부터 아낀다.
+               v0.9.426 우산(·부적)보다 나중에 굴린다 — 막을 우산·부적이 있으면 그쪽이 먼저 막고, 없을 때만 잔상으로 피한다.
                이 똥은 다시 판정하지 않는다 (다음 프레임에 또 걸리지 않게). */
-            if (aug.dodge > 0 && !fbHard(it) && Math.random() < aug.dodge) {   // v0.9.92 끝판왕 똥은 잔상·부적·우산을 뚫는다
+            if (aug.dodge > 0 && !fbHard(it) && shields <= 0 && charms <= 0 && Math.random() < aug.dodge) {   // v0.9.92 끝판왕 똥은 잔상·부적·우산을 뚫는다
               it.ghost = true;
               const spr = currentSprite(now), fl = sprFlipped(now), dir = fl ? 1 : -1;
               for (let k = 0; k < 3; k++)
