@@ -1254,6 +1254,22 @@
   #askBox .askIn { width: min(84vw, 320px); padding: 22px 18px 18px; border-radius: 16px; background: #fff8e6; border: 3px solid #8a5a2b; box-shadow: 0 6px 0 #6b4520, 0 10px 30px rgba(0,0,0,.45); text-align: center; }
   #askBox .askMsg { color: #4a3322; font-size: 16px; font-weight: 800; line-height: 1.5; white-space: pre-line; margin-bottom: 16px; }
   #askBox .askRow { display: flex; gap: 10px; justify-content: center; }
+  /* v0.9.427 프로필 창 */
+  #profPop { position: fixed; inset: 0; z-index: 10000; display: none; align-items: center; justify-content: center; background: rgba(8,8,16,.62); }
+  #profPop.on { display: flex; }
+  #profPop .pfIn { width: min(86vw, 330px); padding: 18px 16px 16px; border-radius: 16px; background: #fff8e6; border: 3px solid #8a5a2b; box-shadow: 0 6px 0 #6b4520, 0 10px 30px rgba(0,0,0,.45); text-align: center; }
+  #profPop .pfHead { display: flex; align-items: center; justify-content: center; gap: 6px; margin-bottom: 12px; }
+  #profPop .pfName { font-size: 21px; font-weight: 900; color: #4a3322; }
+  #profPop .pfFlag .flag { font-size: 20px; }
+  #profPop .pfBody { display: flex; flex-direction: column; gap: 6px; margin-bottom: 14px; }
+  #profPop .pfRow { display: flex; align-items: center; justify-content: space-between; gap: 10px; padding: 8px 12px; border-radius: 10px; background: rgba(138,90,43,.1); }
+  #profPop .pfL { font-size: 14px; font-weight: 700; color: #7a5a3a; text-align: left; }
+  #profPop .pfV { font-size: 16px; font-weight: 900; color: #4a3322; white-space: nowrap; }
+  #profPop .pfJob { display: flex; align-items: center; gap: 4px; } #profPop .pfJob img { width: 26px; height: 26px; object-fit: contain; }
+  #profPop .pfWait { padding: 18px 0; color: #7a5a3a; font-weight: 700; }
+  #profPop .pfClose { --bh: 44px; height: var(--bh); min-width: 150px; box-sizing: border-box; border-style: solid; border-color: transparent; border-radius: 0; box-shadow: none; background: none;
+    border-width: 0 calc(var(--bh) / 2); border-image: url(assets/ui/btn_yellow.webp) 0 60 fill / 0 calc(var(--bh) / 2) / 0 stretch;
+    padding: 0 4px calc(var(--bh) * .08); font-size: 16px; font-weight: 800; color: #6b3300; text-shadow: 0 1px 0 rgba(255,255,255,.55); }
   #askBox .askMsg, #askBox .askSub { word-break: keep-all; }
   #askBox .askSub { display: block; margin-top: 6px; font-size: 13.5px; font-weight: 600; color: #7a5a3a; line-height: 1.45; }   /* v0.9.413 설명 줄 */
   #askBox .askInp { display: block; width: 100%; box-sizing: border-box; height: 44px; margin: -4px 0 6px; padding: 0 12px; border-radius: 10px; border: 2px solid #c9a46a; background: #fff; color: #4a3322; font: inherit; font-size: 16px; font-weight: 700; text-align: center; }
@@ -2894,7 +2910,7 @@
   const elTitle = document.getElementById("overTitle");
   const coinNote = document.getElementById("coinNote");
 
-  const GAME_VERSION = "v0.9.426";
+  const GAME_VERSION = "v0.9.427";
   /* 제작사 스플래시(bamhobak friends 로고) — 2026-09-20 끔. 다시 켜려면 true */
   const SPLASH_USE = false;   // 코드를 고칠 때마다 뒤 두 자리를 올린다
   document.getElementById("ver").textContent = GAME_VERSION;
@@ -8859,6 +8875,50 @@
      같은 이름은 한 기기에서 한 번만 (서버도 이름·기기 짝으로 한 번) */
   const LS_REPORTED = "epjpddongpi_reported";
   function reportedSet() { try { return new Set(JSON.parse(localStorage.getItem(LS_REPORTED) || "[]")); } catch (e) { return new Set(); } }
+  /* v0.9.427 프로필 창 — 서버 ddongpi_profile(이름) 요약: 최고 점수·가장 오래 버틴 시간·도감·판 수·자주 쓰는 캐릭터 */
+  async function openProfile(name) {
+    let pop = document.getElementById("profPop");
+    if (!pop) {
+      pop = document.createElement("div"); pop.id = "profPop";
+      pop.innerHTML = '<div class="pfIn"><div class="pfHead"><span class="pfFlag" data-noi18n></span><b class="pfName" data-noi18n></b></div><div class="pfBody"></div><button class="pfClose">닫기</button></div>';
+      document.body.appendChild(pop);
+      pop.querySelector(".pfClose").addEventListener("click", () => pop.classList.remove("on"));
+      pop.addEventListener("click", e => { if (e.target === pop) pop.classList.remove("on"); });
+    }
+    const body = pop.querySelector(".pfBody"), fl = pop.querySelector(".pfFlag");
+    pop.querySelector(".pfName").textContent = name; fl.textContent = "";
+    body.innerHTML = '<div class="pfWait">불러오는 중…</div>';
+    pop.classList.add("on"); beep(700, .04, "triangle", .04);
+    let p = null;
+    try { p = await cloudRpc("ddongpi_profile", { nm: name }); } catch (e) {}
+    if (!pop.classList.contains("on") || pop.querySelector(".pfName").textContent !== name) return;
+    if (!p || !p.games) { body.innerHTML = '<div class="pfWait">' + (p ? "아직 기록이 없어요" : "불러오지 못했어요") + '</div>'; return; }
+    if (p.country) { const f2 = flagEl(p.country); if (f2) fl.appendChild(f2); }
+    const S = { en: ["m ", "s"], ja: ["分", "秒"] }[LANG] || ["분 ", "초"];
+    const secs = n => n >= 60 ? Math.floor(n / 60) + S[0] + (n % 60) + S[1] : n + S[1];
+    const [, bt] = bookCount();
+    const rows = [
+      ["🏆", "최고 점수", p.best != null ? Number(p.best).toLocaleString() : "-"],
+      ["⏱️", "가장 오래 버틴 시간", p.secs != null ? secs(p.secs) : "-"],
+      ["📖", "도감", p.book != null ? p.book + " / " + bt : "-"],
+      ["🎮", "플레이한 판", Number(p.games).toLocaleString()],
+    ];
+    body.innerHTML = "";
+    for (const [ic, lb, v] of rows) {
+      const r = document.createElement("div"); r.className = "pfRow";
+      const a = document.createElement("span"); a.className = "pfL"; a.textContent = ic + " " + lb;
+      const b = document.createElement("b"); b.className = "pfV"; b.setAttribute("data-noi18n", ""); b.textContent = v;
+      r.append(a, b); body.appendChild(r);
+    }
+    if (p.job && JOBS[p.job]) {
+      const r = document.createElement("div"); r.className = "pfRow";
+      const a = document.createElement("span"); a.className = "pfL"; a.textContent = "🐾 자주 쓰는 캐릭터";
+      const b = document.createElement("b"); b.className = "pfV pfJob";
+      const im = document.createElement("img"); im.src = jobPic(p.job); im.alt = "";
+      const t2 = document.createElement("span"); t2.textContent = JOBS[p.job].nm;
+      b.append(im, t2); r.append(a, b); body.appendChild(r);
+    }
+  }
   async function reportName(nm) {
     const set = reportedSet();
     if (set.has(nm)) { popHint("🚩 이미 신고한 이름이에요"); return; }
@@ -8875,13 +8935,21 @@
   {
     const BOARD_SEL = "#boardStart, #boardOver, #boardLast, .vsbList";
     let t = 0, x0 = 0, y0 = 0, on = false;
+    let tapName = "", tapAt = 0;
     document.addEventListener("pointerdown", e => {
-      const nm = e.target.closest && e.target.closest(".nm, .nmt");
-      if (!nm || !nm.closest(BOARD_SEL) || !SB_ON) return;
+      if (!e.target.closest || !SB_ON) return;
+      /* v0.9.427 이름뿐 아니라 그 줄·칸 어디를 눌러도 — 짧게 누르면 프로필, 꾹(0.6초) 누르면 신고 */
+      let nm = e.target.closest(".nm, .nmt");
+      if (!nm) { const row = e.target.closest("li, .mini, .lp"); nm = row && row.querySelector(".nm[data-name], .nmt[data-name]"); }
+      if (!nm || !nm.closest(BOARD_SEL)) return;
       const name = (nm.dataset.name || nm.textContent).trim();   // v0.9.379 국기 빼고 이름만
-      if (!name || name === "-" || name === savedName()) return;
-      x0 = e.clientX; y0 = e.clientY; on = true; clearTimeout(t);
-      t = setTimeout(() => { on = false; askYesNo("'" + name + "' 이름을 신고할까요?\n(나쁜 말·불쾌한 이름)", () => reportName(name)); }, 600);
+      if (!name || name === "-") return;
+      x0 = e.clientX; y0 = e.clientY; on = true; clearTimeout(t); tapName = name; tapAt = performance.now();
+      if (name !== savedName()) t = setTimeout(() => { on = false; tapName = ""; askYesNo("'" + name + "' 이름을 신고할까요?\n(나쁜 말·불쾌한 이름)", () => reportName(name)); }, 600);
+    });
+    document.addEventListener("pointerup", e => {
+      if (on && tapName && performance.now() - tapAt < 600 && Math.hypot(e.clientX - x0, e.clientY - y0) < 10) { const n = tapName; setTimeout(() => openProfile(n), 0); }
+      tapName = "";
     });
     const stop = e => { if (on && e.type === "pointermove" && Math.hypot(e.clientX - x0, e.clientY - y0) < 10) return; on = false; clearTimeout(t); };
     for (const ev of ["pointerup", "pointercancel", "pointermove"]) document.addEventListener(ev, stop);
@@ -9881,6 +9949,7 @@
   /* v0.9.161 연쇄 번개 — 똥을 부수는 펫 다섯 중 3마리 이상 사 두면 열린다 */
   const ZAP_PETS = ["helper", "galaga", "dove", "gift", "eel", "duck"];
   function zapOwnN() { return ZAP_PETS.filter(p => hasPet(p)).length; }
+  function bookCount() { const live = AUGMENTS.filter(a => !a.gone); return [live.filter(bookOpen).length, live.length]; }   // v0.9.427 [쓸 수 있는 증강, 전체]
   function bookOpen(a) { const p = BOOK_PET[a.id]; if (a.id === "chainZap" && zapOwnN() < 3) return false; return (!p || hasPet(p)) && (!ACH[a.id] || achU.has(a.id)); }   // v0.9.61 업적으로 여는 증강도 잠긴 채 보인다
   let bookSel = null;
   /* v0.9.389 증강 정렬 — 종류별 (도감·개발자 증강 상세). 새 증강을 만들면 여기에도 넣을 것 — 빠진 건 맨 뒤 */
@@ -16680,6 +16749,7 @@
        400 이 오면 칸을 하나씩 빼며 다시 보낸다. */
     const withName = o => (nm ? Object.assign({ name: nm }, o) : o);
     const tries = [
+      withName(Object.assign({ job: job, src: srcPct, coins: coinGot, fullown: fullOwn, book: bookCount()[0] }, base)),   // v0.9.427 도감 개수 (프로필용)
       // 주운 코인 개수 + 풀소유까지 갔는지
       withName(Object.assign({ job: job, src: srcPct, coins: coinGot, fullown: fullOwn }, base)),
       withName(Object.assign({ job: job, src: srcPct }, base)),   // 코인 칸이 없는 서버
