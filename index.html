@@ -2910,7 +2910,7 @@
   const elTitle = document.getElementById("overTitle");
   const coinNote = document.getElementById("coinNote");
 
-  const GAME_VERSION = "v0.9.429";
+  const GAME_VERSION = "v0.9.430";
   /* 제작사 스플래시(bamhobak friends 로고) — 2026-09-20 끔. 다시 켜려면 true */
   const SPLASH_USE = false;   // 코드를 고칠 때마다 뒤 두 자리를 올린다
   document.getElementById("ver").textContent = GAME_VERSION;
@@ -5146,7 +5146,7 @@
       hidden: true, once: true, cond: () => aug.dash && aug.juggle, go: () => { aug.fartRocket = true; } },
     { id: "zapDance",   ic: "🕺", nm: "번개 춤", ds: "아슬하게 피할 때마다 몸에서 찌릿! 그 똥이랑 위쪽 똥 두 개가 번개로 터져요",
       hidden: true, once: true, cond: () => aug.closeCall && petOn.eel, go: () => { aug.zapDance = true; } },
-    { id: "goldArmor",  ic: "🏵", nm: "냥이의 보은", ds: "동전 갑옷이 생기고, 막을 때 코인이 사방으로 튀면 코인냥이가 1~2개를 물어 와서 위에서 다시 떨어뜨려요",
+    { id: "goldArmor",  ic: "🏵", nm: "냥이의 보은", ds: "동전 갑옷이 생기고, 막을 때마다 코인냥이가 새 코인 1~2개를 위에서 떨어뜨려 줘요",
       once: true,   /* v0.9.330 황금 갑옷 → 냥이의 보은, 숨은 증강 → 일반 증강 */ cond: () => petOn.coincat && job !== "powerp", go: () => { aug.goldArmor = true; aug.coinArmor = true; } },   // v0.9.331 코인냥이만 있으면 — 동전 갑옷이 없으면 함께 생긴다
     { id: "twoRand",    ic: "🎊", nm: "깜짝 선물", ds: "일반 증강 두 개를 아무거나 받아요",
       go: () => {
@@ -10835,7 +10835,7 @@
     noHitSec = 0;
     clones = []; cloneTimer = 0;
     aug.cloudVip = false; aug.juggle = false; aug.vacuum = false; aug.closeCall = false; aug.coinArmor = false; coinArmorN = 0; aug.credit = false; aug.bombPoop = false; aug.bombR = 80;
-    aug.fartRocket = false; aug.zapDance = false; aug.goldArmor = false; jugCd = 0; vacCd = 0; vacT = 0; vacHeld = 0; closeN = 0; jugSlash = null; jugFreeze = 0; rocketTrails = []; goldFetch = null;
+    aug.fartRocket = false; aug.zapDance = false; aug.goldArmor = false; jugCd = 0; vacCd = 0; vacT = 0; vacHeld = 0; closeN = 0; jugSlash = null; jugFreeze = 0; rocketTrails = []; spentCoins = []; goldFetch = null;
     aug.pierce = false; aug.fly = false; aug.stone = false; aug.gacha = false; aug.snackBig = false; aug.toilet = false;
     flies = []; stoneT = 0; stoneOn = false; mvPX = W / 2; mvPY = 0;
     runUmb = 0; runHits = 0; dirtHiT = 0; lowT = 0;
@@ -12697,7 +12697,8 @@
                 burst(it.x, it.y, "#ffd23f", 22);
                 popText(player.x, player.y - 60, "🛡 동전 갑옷! -" + caCost, "#ffd23f", 20);
                 if (it.bomb) bombBoom(it.x, it.y);
-                if (aug.goldArmor) goldArmorFx(cy);
+                coinSpendFx(player.x, cy, caCost);   // v0.9.430 쓴 코인이 깜박이며 퍼지다 사라진다 (먹을 수 없다)
+                if (aug.goldArmor) goldFetch = { t: 0.7, n: 1 + Math.floor(Math.random() * 2) };   // 냥이의 보은 — 냥이가 새 코인 1~2개를 위에서 떨어뜨려 준다
                 if (!sfx("coin")) beep(1200, .08, "triangle", .05);
                 items.splice(i, 1);
                 continue;
@@ -13085,13 +13086,14 @@
     shake = Math.max(shake, 14);
     if (!sfx("wakboom")) beep(160, .14, "square", .06);
   }
-  function goldArmorFx(cy) {                 // v0.9.249 황금 갑옷 — 코인이 사방으로, 야옹이가 몇 개 물어 온다
-    for (let k = 0; k < 5; k++) {
-      makeCoinAt(player.x, cy, 1);
-      const c = items[items.length - 1], a = -Math.PI / 2 + (k - 2) * 0.55;
-      c.vx = Math.cos(a) * 260; c.vy = Math.sin(a) * 300; c.goldFly = true;
+  /* v0.9.430 동전 갑옷 — 쓴 코인(그림만, 못 먹음)이 사방으로 튀며 깜박이다 사라진다. 위치는 시간으로 바로 셈한다 */
+  let spentCoins = [];
+  function coinSpendFx(x, y, n) {
+    const t0 = performance.now(), k = Math.min(8, Math.max(4, n));
+    for (let i = 0; i < k; i++) {
+      const a = -Math.PI / 2 + (i - (k - 1) / 2) * (2.4 / k) + (Math.random() - .5) * 0.2, sp = 220 + Math.random() * 120;
+      spentCoins.push({ x, y, vx: Math.cos(a) * sp, vy: Math.sin(a) * sp * 1.1, t0, life: 0.9 + Math.random() * 0.2 });
     }
-    goldFetch = { t: 0.7, n: 1 + Math.floor(Math.random() * 2) };   // v0.9.330 1~2개
   }
   function actTick(dt, now) {                // 매 프레임(판 진행 중) — 쿨타임·청소기·방귀 로켓·황금 갑옷
     if (jugSlash) { jugSlash.t += dt; if (jugSlash.t > 0.36) jugSlash = null; }
@@ -13141,10 +13143,8 @@
     if (goldFetch) {
       goldFetch.t -= dt;
       if (goldFetch.t <= 0) {
-        const want = goldFetch.n; goldFetch = null;
-        let n = 0;
-        for (let i = items.length - 1; i >= 0 && n < want; i--) if (items[i].goldFly) { burst(items[i].x, items[i].y, "#ffd23f", 8); items.splice(i, 1); n++; }
-        if (n) {   // v0.9.429 바로 주지 않고, 코인냥이가 화면 위에서 고개를 내밀어 하나씩 다시 떨어뜨린다 (둘이면 첫 개를 떨어뜨리자마자 다른 자리에서)
+        const n = goldFetch.n; goldFetch = null;   // v0.9.430 쓴 코인을 주워 오는 게 아니라, 냥이가 새 코인을 떨어뜨려 준다
+        {   // v0.9.429 바로 주지 않고, 코인냥이가 화면 위에서 고개를 내밀어 하나씩 다시 떨어뜨린다 (둘이면 첫 개를 떨어뜨리자마자 다른 자리에서)
           popText(player.x, player.y - 100, "🐈 냥!", "#ffd23f", 20); petSfx("cat");
           let px = 40 + Math.random() * (W - 80);
           for (let m = 0; m < n; m++) {
@@ -19206,6 +19206,17 @@
 
     ctx.textAlign = "center";
     ctx.textBaseline = "middle";
+    // v0.9.430 동전 갑옷에 쓴 코인 — 깜박이며 퍼지다 사라진다 (먹을 수 없는 그림)
+    if (spentCoins.length) {
+      const nowT = performance.now(), ci = ITEM_IMG.coin, sz = COIN_R * 2;
+      spentCoins = spentCoins.filter(c => (nowT - c.t0) / 1000 < c.life);
+      for (const c of spentCoins) {
+        const t = (nowT - c.t0) / 1000, x = c.x + c.vx * t, y = c.y + c.vy * t + 380 * t * t;
+        ctx.save(); ctx.globalAlpha = (Math.floor(t * 14) % 2 ? 0.25 : 0.95) * Math.max(0, 1 - t / c.life * 0.6);
+        if (ci) ctx.drawImage(ci, x - sz / 2, y - sz / 2, sz, sz); else { ctx.font = sz + "px sans-serif"; ctx.fillText("🪙", x, y); }
+        ctx.restore();
+      }
+    }
     // 터진 비누방울 — 테두리가 얇아지며 퍼지고, 물방울이 사방으로 튄다
     for (const bp of bubPops) {
       const k = bp.t / bp.life;
