@@ -2910,7 +2910,7 @@
   const elTitle = document.getElementById("overTitle");
   const coinNote = document.getElementById("coinNote");
 
-  const GAME_VERSION = "v0.9.432";
+  const GAME_VERSION = "v0.9.433";
   /* 제작사 스플래시(bamhobak friends 로고) — 2026-09-20 끔. 다시 켜려면 true */
   const SPLASH_USE = false;   // 코드를 고칠 때마다 뒤 두 자리를 올린다
   document.getElementById("ver").textContent = GAME_VERSION;
@@ -5093,7 +5093,7 @@
         ? "더 자주 쏙 피해요"
         : "맞을 때 가끔 그림자만 남기고 쏙 피해요",
       go: () => { aug.dodge += (augCount["afterimage"] ? 0.05 : 0.15) * AQ(); } },   // v0.9.426 첫 개 10 → 15%
-    { id: "chainZap",   ic: "⛓", nm: "연쇄 번개", ds: "펫이 똥을 부술 때 번개가 튀어서 옆 똥 두 개도 터져요",
+    { id: "chainZap",   ic: "⛓", nm: "연쇄 번개", ds: "펫이 똥을 부술 때 번개가 튀어서 옆 똥 1개(절반 확률로 2개)도 터져요",
       hidden: true, once: true, cond: () => zapOwnN() >= 3 && (petOn.galaga || petOn.helper || petOn.dove || petOn.eel || petOn.gift || petOn.duck),   // v0.9.61 똥을 부수는 펫이면 누구든 · v0.9.161 그 펫 3마리 이상 사 둬야
       go: () => { aug.chainZap = true; } },
     { id: "wak",        ic: "👊", nm: "주먹탄", ds: "총알이 주먹으로 바뀌어요. 맞은 똥이 날아가 다른 똥이랑 같이 펑!",
@@ -9937,7 +9937,7 @@
                      "pet:dove": "dove", doveHome: "dove", doveWhat: "dove",
                      "pet:angel": "angel", "pet:gift": "gift", "pet:coincat": "coincat", "pet:eel": "eel", "pet:duck": "duck", duckFat: "duck", duckMarch: "duck", duckEgg: "duck" };
   const BOOK_COND = {   // v0.9.163 꼬마·강아지 눈높이 말투
-    small: "버피는 못 먹어요", umbrella3: "버피는 못 먹어요", dash: "도도는 못 먹어요",
+    small: "버피는 못 먹어요", umbrella3: "버피는 못 먹어요",
     "pet:angel": "레벨 4부터 나와요",
     doveHome: "게임 중에 '펫 둘기'를 먼저 먹으면 나와요",
     hungry: "뿌잉이랑 자석을 같이 가지고 있으면 나와요",
@@ -9946,7 +9946,7 @@
     legion: "'대왕 간식'을 먹으면 나와요", angryUmb: "우산이 5개 이상 있으면 나와요 (버피는 빼고)",
     carrot: "하트가 2개 이상 있으면 나와요",
     goldLord: "'무지개 똥'이랑 '자석'을 같이 가지고 있으면 나와요", inter: "'느림보 하늘'을 2개 먹으면 나와요",
-    chainZap: "똥을 부수는 펫(뿌잉·뿅뿅이·둘기·선물 요정·찌릿 장어)을 게임 중에 먹으면 나와요", pierce: "게임 중에 '펫 뿅뿅이'를 먼저 먹으면 나와요",
+    chainZap: "똥을 부수는 펫(뿌잉·뿅뿅이·둘기·선물 요정·찌릿 장어·노란 오리)을 게임 중에 먹으면 나와요", pierce: "게임 중에 '펫 뿅뿅이'를 먼저 먹으면 나와요",
     snackBig: "간식 증강을 4개 이상 먹으면 나와요", cloudVip: "구름 상점이 오는 판에 나와요 (무무는 빼고)",
     fartRocket: "'방귀 대시'랑 '초승달 쓸기'를 같이 가지고 있으면 나와요", duckMarch: "'펫 노란 오리'랑 '방귀 대시'를 같이 가지고 있으면 나와요", duckEgg: "'펫 노란 오리'랑 '펫 코인냥이'를 같이 가지고 있으면 나와요", zapDance: "'외줄 타기'랑 '펫 찌릿 장어'를 같이 가지고 있으면 나와요",
     goldArmor: "'펫 코인냥이'가 있고 코인냥이가 떨어뜨린 코인을 3개 먹으면 나와요", credit: "구름 상점이 오는 판에 나와요", coinArmor: "무무는 빼고 나와요",
@@ -9977,7 +9977,7 @@
       const pid = BOOK_PET[a.id];
       if (!ok) {                                   // v0.9.52 잠긴 것은 해금 조건이 맨 윗줄 (자물쇠와 함께)
         const lk = document.createElement("span"); lk.className = "how lockHow top";
-        lk.textContent = a.id === "chainZap" ? "🔒 뿌잉·뿅뿅이·둘기·선물 요정·찌릿 장어 중 3개 이상 구매하면 해금 (" + zapOwnN() + "/3)"
+        lk.textContent = a.id === "chainZap" ? "🔒 뿌잉·뿅뿅이·둘기·선물 요정·찌릿 장어·노란 오리 중 3개 이상 구매하면 해금 (" + zapOwnN() + "/3)"
           : ACH[a.id] && !achU.has(a.id) ? "🔒 " + ACH[a.id].t + " 해금" + achProg(a.id)
           : "🔒 상점에서 '" + PETS[pid].nm + "'를 사면 해금 (" + petPrice(pid) + "코인" + ")";
         desc.appendChild(lk);
@@ -11921,7 +11921,7 @@
              지그재그똥은 방향이 뒤집힌다 (예전에는 전부 통째로 사라졌다). */
           smashPoopsAround(bu.x, bu.y, 8);
           burst(bu.x, bu.y, "#9fe8ff", 10);
-          if (aug.chainZap) zapChain(bu.x, bu.y, 2, 100, null, 100);   // v0.9.31 번지는 거리 120 → 100   // 히든 '연쇄 번개' — 가까운(120px 안) 똥 두 개까지만 번진다
+          if (aug.chainZap) zapChain(bu.x, bu.y, zapN(), 100, null, 100);   // v0.9.31 번지는 거리 120 → 100   // 히든 '연쇄 번개' — 가까운(120px 안) 똥 두 개까지만 번진다
         }
         if (bu.pierce > 0) { bu.pierce--; bu.skip = q; }   // 관통탄 — 하나는 뚫고 계속 날아간다
         else hit = true;
@@ -11963,7 +11963,7 @@
       if (bump || (alive && d2 < (c.t.r || 20) + 14 * dm) || c.y < -40) {
         // 비둘기가 부순 똥은 똥점수 5배
         smashPoopsAround(c.x, c.y, 50 * dm, true, 5);
-        if (aug.chainZap) zapChain(c.x, c.y, 2, 100, null, 100);   // 연쇄 번개 — 비둘기
+        if (aug.chainZap) zapChain(c.x, c.y, zapN(), 100, null, 100);   // 연쇄 번개 — 비둘기
           // 폭발 반경 50px
         burst(c.x, c.y, "#eaf6ff", 18);
         shake = Math.max(shake, 6);
@@ -12035,7 +12035,7 @@
           const q = f.t, ix = items.indexOf(q);
           if (ix >= 0) items.splice(ix, 1);
           giftItemAt(q.x, q.y);
-          if (aug.chainZap) zapChain(q.x, q.y, 2, 100, null, 100);   // 연쇄 번개 — 선물 요정
+          if (aug.chainZap) zapChain(q.x, q.y, zapN(), 100, null, 100);   // 연쇄 번개 — 선물 요정
           burst(q.x, q.y, "#ffd6f5", 16); burst(q.x, q.y, "#fff3a8", 12); burst(q.x, q.y, "#9fe8ff", 10);
           rings.push({ x: q.x, y: q.y, t: 0, life: 0.45, r1: 70, color: "#ffc2ec" });
           popText(q.x, q.y - 34, "펑!", "#ffc2ec", 20);
@@ -12075,7 +12075,7 @@
       eelT -= dt * tsc * gPet();   // v0.9.72 성장 펫 훈련
       if (eelT <= 0) {
         const ex = petFx, ey = petFy + petArc() + 4;     // 번개는 찌릿 장어가 있는 자리에서
-        const n = zapChain(ex, ey, EEL_CHAIN + (aug.chainZap ? 2 : 0), 9999, true);
+        const n = zapChain(ex, ey, EEL_CHAIN + (aug.chainZap ? zapN() : 0), 9999, true);
         eelT = n ? EEL_EVERY : 0.5;          // 똥이 없으면 잠깐 뒤 다시
       }
     }
@@ -12112,6 +12112,7 @@
           if (items.length < before) {
             m.dead = true; burst(mx, my, "#ffe066", 10); burst(mx, my, "#ffffff", 5); shake = Math.max(shake, 3);
             if (aug.duckEgg && Math.random() < 0.3) { makeCoinAt(mx, my, 1); popText(mx, my - 20, "🥚", "#ffe066", 18, 0.8); }   // v0.9.348 황금 오리알
+            if (aug.chainZap) zapChain(mx, my, zapN(), 100, null, 100);   // v0.9.433 연쇄 번개 — 노란 오리도
           }
         }
       }
@@ -12202,7 +12203,7 @@
       const nb4 = items.length;
       if (hp.zapCd > 0) hp.zapCd -= dt;
       smashPoopsAround(hp.x, hp.y, HELPER_R * helperScale());
-      if (aug.chainZap && items.length !== nb4 && !(hp.zapCd > 0)) { zapChain(hp.x, hp.y, 2, 100, null, 100); hp.zapCd = 0.35; }   // 연쇄 번개 — 뿌잉   // 지나가는 자리의 똥
+      if (aug.chainZap && items.length !== nb4 && !(hp.zapCd > 0)) { zapChain(hp.x, hp.y, zapN(), 100, null, 100); hp.zapCd = 0.35; }   // 연쇄 번개 — 뿌잉   // 지나가는 자리의 똥
       if (hp.y < -HELPER_H - 40 || hp.x < -160 || hp.x > W + 160) helpers.splice(k, 1);
     }
 
@@ -13079,6 +13080,7 @@
     popText(player.x, player.y - 90, "🧹 쓰으읍~", "#cfe8ff", 22);
     if (!sfx("magnet")) beep(180, .3, "sawtooth", .04);
   }
+  function zapN() { return Math.random() < 0.5 ? 2 : 1; }   // v0.9.433 연쇄 번개 — 기본 1개, 절반 확률로 2개 (예전엔 늘 2개)
   function bombBoom(x, y) {                  // v0.9.249 폭탄 똥 폭발 — 둘레 똥을 함께 부순다(다크 제외)
     const R = aug.bombR || 80;               // v0.9.429 품질로 반경이 달라진다
     smashPoopsAround(x, y, R, true);
