@@ -2910,7 +2910,7 @@
   const elTitle = document.getElementById("overTitle");
   const coinNote = document.getElementById("coinNote");
 
-  const GAME_VERSION = "v0.9.428";
+  const GAME_VERSION = "v0.9.429";
   /* 제작사 스플래시(bamhobak friends 로고) — 2026-09-20 끔. 다시 켜려면 true */
   const SPLASH_USE = false;   // 코드를 고칠 때마다 뒤 두 자리를 올린다
   document.getElementById("ver").textContent = GAME_VERSION;
@@ -4882,7 +4882,7 @@
     blackhole:  { t: "블랙홀까지 처음 가면" },
     angryUmb:   { t: "한 판에 우산 5개 주우면" },
     dungy:      { t: "하트 1개로 50초 버티면" },
-    goldLord:   { t: "무지개 똥 20개 먹으면", key: "gold", n: 20 },
+    goldLord:   { t: "무지개 똥 50개 먹으면", key: "gold", n: 50 },   // v0.9.429 20 → 50
     starburst:  { t: "한 판에 별 5개 먹으면" },
     legion:     { t: "대왕 간식 10개 먹으면", key: "giant", n: 10 },
     inter:      { t: "레벨 15까지 가면" },
@@ -4966,7 +4966,7 @@
     { id: "fever_time", ic: "⏳", nm: "간식 연장", ds: "간식 타임이 더 길어져요",
       go: () => { aug.feverBonus += 1500 * AQ(); } },   // 먹을 때마다 +1.5초, 감쇠 없음
     { id: "star50",     ic: "🏹", nm: "별 사냥꾼",   ds: "별을 먹으면 점수를 더 많이 받아요",
-      go: () => { aug.starMul += 0.25 * dim("star50") * AQ(); } },
+      go: () => { aug.starMul += 0.20 * dim("star50") * AQ(); } },   // v0.9.429 0.25 → 0.20
     { id: "time2x",     ic: "🎖", nm: "끈기 대장",   ds: "오래 버틸수록 점수가 더 빨리 쌓여요",
       go: () => { aug.timeMul *= 1 + 0.5 * dim("time2x") * AQ(); } },
     { id: "fever50",    ic: "🍪", nm: "꿀맛 간식", ds: "간식 타임에 먹는 간식 점수가 올라요",
@@ -5004,7 +5004,7 @@
     { id: "pet:angel",   ic: "👼", nm: "펫 아기 천사", ds: "쓰러지면 한 번 다시 일으켜 주고, 다가오는 똥을 밀어내요", once: true, w: 0.6,
       cond: () => hasPet("angel") && level >= 4,
       go: () => { petOn.angel = true; } },
-    { id: "pet:gift",    ic: "🧚", nm: "펫 선물 요정", ds: "가끔 날아가서 떨어지는 똥을 선물로 바꿔요", once: true, w: 0.7, cond: () => hasPet("gift"),
+    { id: "pet:gift",    ic: "🧚", nm: "펫 선물 요정", ds: "가끔 날아가서 떨어지는 똥을 아이템으로 바꿔요", once: true, w: 0.7, cond: () => hasPet("gift"),
       go: () => { petOn.gift = true; giftT = GIFT_EVERY * 0.5; } },
     { id: "pet:coincat", ic: "🐈", nm: "펫 코인냥이", ds: "가끔 코인을 물어다 줘요", once: true, w: 0.7, cond: () => hasPet("coincat"),
       go: () => { petOn.coincat = true; catT = CAT_EVERY * 0.5; } },
@@ -5023,7 +5023,7 @@
     /* ── 펫 전용 증강 — 그 펫을 데리고 있을 때만 후보에 나온다 ── */
     { id: "doveHome",   ic: "🪺", nm: "둘기 모이", ds: "둘기가 더 자주 날아와요",
       max: 3, cond: () => petOn.dove,
-      go: () => { aug.doveFreq *= 1 - 0.2 * dim("doveHome"); } },   // 80m → 64m → 53m …
+      go: () => { aug.doveFreq *= 1 - 0.25 * dim("doveHome"); } },   // v0.9.429 -20 → -25%   // 80m → 64m → 53m …
     { id: "hungry",     ic: "😋", nm: "먹보 뿌잉", ds: "뿌잉이 아이템을 대신 먹어 줘요",
       hidden: true, once: true, cond: () => petOn.helper && aug.magnet > 0,   // 뿌잉 펫 + 자석
       go: () => { aug.hungry = true; } },
@@ -5043,12 +5043,12 @@
       go: () => { aug.starburst = true; } },
     { id: "blackhole",  ic: "🕳️", nm: "블랙홀",     ds: "아이템을 더 세게 끌어당겨요. 간식도 조금 끌려와요",
       hidden: true, once: true, cond: () => aug.magnet > 0,
-      go: () => { aug.blackhole = true; aug.magnet = 390; } },   // 자석 160 → 390 으로 확장
+      go: () => { aug.blackhole = true; aug.magnet = 350; } },   // v0.9.429 자석 150 → 350 으로 확장
     { id: "legion",     ic: "🍰", nm: "간식 군단", ds: "대왕 간식이 우르르 몰려와요",
       hidden: true, once: true, cond: () => aug.giant > 0,
       go: () => { aug.legion = true; } },
     { id: "magnet",     ic: "🧲", nm: "자석",       ds: "근처의 아이템이 끌려와요",
-      once: true, go: () => { aug.magnet = 160; } },   // v0.9.403 220 → 160   // 끌어당기는 반지름(px) · 구름 상점은 무엇으로도 끌려오지 않는다(v0.9.208)
+      once: true, go: () => { aug.magnet = 150; } },   // v0.9.429 160 → 150 · v0.9.403 220 → 160   // 끌어당기는 반지름(px) · 구름 상점은 무엇으로도 끌려오지 않는다(v0.9.208)
     /* 조작이 끌기 하나뿐이라 실력을 드러낼 통로가 좁다. 기본 기능으로 넣지 않고 증강으로만 둔다 —
        조작이 복잡해지는 건 원하는 사람만 지게. 부양사는 이미 두 배 반으로 빠르니 안 나온다. */
     { id: "dash",       ic: "💨", nm: "방귀 대시",   ds: "화면을 두 번 톡톡 누르면 그 자리로 대시 (쿨타임 10초)",
@@ -5056,7 +5056,7 @@
       go: () => { aug.dash = true; dashCd = 0; dashT = 0; } },
     { id: "lucky",      ic: "🍀", nm: "네잎클로버",       ds: "아이템이 더 자주 나와요",
       // 첫 개는 +15%, 겹칠수록 0.85배씩 덜 먹는다 (5개 누적 +69%, 실측 +65%)
-      go: () => { aug.itemRateMul /= 1 + 0.15 * dim("lucky") * AQ(); } },
+      go: () => { aug.itemRateMul /= 1 + 0.12 * dim("lucky") * AQ(); } },   // v0.9.429 0.15 → 0.12
     { id: "giant",      ic: "🎂", nm: "대왕 간식", ds: "커다란 대왕 간식이 나와요",
       once: true, go: () => { aug.giant = 1; } },
     { id: "downpour",   ic: "🌧️", nm: "간식 세일", ds: "간식이 더 많이 쏟아져요",
@@ -5136,19 +5136,19 @@
       gone: true, once: true, cond: () => false, go: () => { aug.vacuum = true; vacCd = 0; } },   // v0.9.342 뺐다 — 증강·도감·테스트 목록에 안 나온다
     { id: "closeCall",  ic: "😅", nm: "외줄 타기", ds: "똥을 아슬하게 피할수록 점수가 점점 커져요. 한 대 맞으면 처음부터!",
       once: true, go: () => { aug.closeCall = true; closeN = 0; } },
-    { id: "coinArmor",  ic: "🛡", nm: "동전 갑옷", ds: "맞을 때 이번 판 코인이 대신 막아 줘요 (5개부터, 막을 때마다 1개씩 더)",
+    { id: "coinArmor",  ic: "🛡", nm: "동전 갑옷", ds: "맞을 때 이번 판 코인이 대신 막아 줘요",
       once: true, cond: () => job !== "powerp" && !aug.coinArmor, go: () => { aug.coinArmor = true; } },   // v0.9.331 냥이의 보은으로 이미 생겼으면 안 나온다
     { id: "credit",     ic: "📝", nm: "외상 장부", ds: "구름 상점에서 모아 둔 코인도 쓸 수 있어요",
       once: true, cond: () => accOn(5) && !testMode, go: () => { aug.credit = true; } },
     { id: "bombPoop",   ic: "💣", nm: "폭탄 똥", ds: "가끔 폭탄 똥이 떨어져요. 다른 똥에 부딪히면 펑! 주변 똥도 같이 터져요. 나한테 맞으면 아파요",
-      once: true, go: () => { aug.bombPoop = true; } },
+      once: true, go: () => { aug.bombPoop = true; aug.bombR = 80 * AQ(); } },   // v0.9.429 품질 — 폭발 반경
     { id: "fartRocket", ic: "🧨", nm: "방귀 로켓", ds: "방귀 대시가 지나간 자리에 1초 동안 바람이 남아, 닿는 똥을 위로 통 튕겨 내요",
       hidden: true, once: true, cond: () => aug.dash && aug.juggle, go: () => { aug.fartRocket = true; } },
     { id: "zapDance",   ic: "🕺", nm: "번개 춤", ds: "아슬하게 피할 때마다 몸에서 찌릿! 그 똥이랑 위쪽 똥 두 개가 번개로 터져요",
       hidden: true, once: true, cond: () => aug.closeCall && petOn.eel, go: () => { aug.zapDance = true; } },
-    { id: "goldArmor",  ic: "🏵", nm: "냥이의 보은", ds: "동전 갑옷이 생기고, 막을 때 코인이 사방으로 튀면 코인냥이가 1~2개를 냉큼 물어 와요",
+    { id: "goldArmor",  ic: "🏵", nm: "냥이의 보은", ds: "동전 갑옷이 생기고, 막을 때 코인이 사방으로 튀면 코인냥이가 1~2개를 물어 와서 위에서 다시 떨어뜨려요",
       once: true,   /* v0.9.330 황금 갑옷 → 냥이의 보은, 숨은 증강 → 일반 증강 */ cond: () => petOn.coincat && job !== "powerp", go: () => { aug.goldArmor = true; aug.coinArmor = true; } },   // v0.9.331 코인냥이만 있으면 — 동전 갑옷이 없으면 함께 생긴다
-    { id: "twoRand",    ic: "🎊", nm: "깜짝 선물", ds: "증강 두 개를 아무거나 받아요",
+    { id: "twoRand",    ic: "🎊", nm: "깜짝 선물", ds: "일반 증강 두 개를 아무거나 받아요",
       go: () => {
         const got = []; twoRandObjs = [];
         for (let k = 0; k < 2; k++) {
@@ -5167,7 +5167,7 @@
   ];
   /* v0.9.417 수치형 증강 품질 — 카드에 뜰 때 -10%·0·+10% 중 하나(루나 Lv3 B '감정사'면 -20·-10·0·+10·+20 다섯 단계).
      고르면 그 값으로 효과량에 (1 + 품질)을 곱한다. 펫·1회성·우산 꾸러미(개수라 안 바뀜)는 빼고 */
-  const AUG_ROLL = new Set(["fever_time", "star50", "fever50", "slow", "small", "tinypoop", "roid", "lucky", "downpour", "gold", "carrot", "afterimage", "glass"]);   // v0.9.424 끈기 대장·과속 질주는 품질 없이 고정 (무지개 똥·하트 거래는 다시 랜덤)
+  const AUG_ROLL = new Set(["fever_time", "star50", "fever50", "slow", "small", "tinypoop", "roid", "lucky", "downpour", "gold", "carrot", "afterimage", "glass", "bombPoop"]);   // v0.9.429 폭탄 똥 추가 ·   // v0.9.424 끈기 대장·과속 질주는 품질 없이 고정 (무지개 똥·하트 거래는 다시 랜덤)
   let augQ = 0;
   function AQ() { return 1 + augQ; }
   function rollQ() { const t = allPerk("fortune", "B") ? [-0.2, -0.1, 0, 0.1, 0.2] : [-0.1, 0, 0.1]; return t[Math.floor(Math.random() * t.length)]; }
@@ -5177,15 +5177,16 @@
     const p = x => { const v = x * 100; return (v < 10 ? Math.round(v * 10) / 10 : Math.round(v)) + "%"; };
     switch (a.id) {
       case "fever_time": return "+" + n(1.5 * m) + S;
-      case "star50": return "+" + p(0.25 * d * m);
+      case "star50": return "+" + p(0.20 * d * m);
       case "time2x": case "dopa": return "+" + p(0.5 * d * m);
       case "fever50": case "downpour": case "carrot": return "+" + p(0.2 * m);
       case "slow": case "small": case "tinypoop": return "-" + p(0.12 * d * m);
       case "roid": return n(6 * m) + S;
-      case "lucky": return "+" + p(0.15 * d * m);
+      case "lucky": return "+" + p(0.12 * d * m);
       case "gold": return "+" + p((c ? 0.07 : 0.08) * m);
       case "afterimage": return "+" + p((c ? 0.05 : 0.15) * m);
       case "glass": return "+" + p(0.25 * m);
+      case "bombPoop": return Math.round(80 * m) + "px";   // v0.9.429 폭발 반경
     }
     return "";
   }
@@ -5561,7 +5562,7 @@
   let invUntil = 0, powerUntil = 0;
   let magNear = 0;                 // 자석에 끌리는 정도 (0~1) — 소리 크기에 쓴다
   let shields = 0;                 // 남은 방패 수 — 우산 아이템은 최대 1, 증강으로만 여러 개
-  const UMB_SEC = 6.5;             // 우산 택배: 방패가 없을 때 몇 초마다 하나씩 오는지
+  const UMB_SEC = 6;   // v0.9.429 6.5 → 6초             // 우산 택배: 방패가 없을 때 몇 초마다 하나씩 오는지
   let shieldTimer = UMB_SEC;       // 다음 하나까지 남은 시간
   let spawnHold = 0;               // 별똥별·화난 우산: 똥 생성이 멈춰 있는 남은 시간
   let umbBlast = null;             // 화난 우산 폭발 파동 {x, y, r, t}
@@ -10833,7 +10834,7 @@
     grazeFxCd = 0; grazeCount = 0;
     noHitSec = 0;
     clones = []; cloneTimer = 0;
-    aug.cloudVip = false; aug.juggle = false; aug.vacuum = false; aug.closeCall = false; aug.coinArmor = false; coinArmorN = 0; aug.credit = false; aug.bombPoop = false;
+    aug.cloudVip = false; aug.juggle = false; aug.vacuum = false; aug.closeCall = false; aug.coinArmor = false; coinArmorN = 0; aug.credit = false; aug.bombPoop = false; aug.bombR = 80;
     aug.fartRocket = false; aug.zapDance = false; aug.goldArmor = false; jugCd = 0; vacCd = 0; vacT = 0; vacHeld = 0; closeN = 0; jugSlash = null; jugFreeze = 0; rocketTrails = []; goldFetch = null;
     aug.pierce = false; aug.fly = false; aug.stone = false; aug.gacha = false; aug.snackBig = false; aug.toilet = false;
     flies = []; stoneT = 0; stoneOn = false; mvPX = W / 2; mvPY = 0;
@@ -12462,7 +12463,7 @@
       if ((aug.blackhole || job === "levitator") && it.type === "poop" && it.skin === "fever") {
         // 간식 낙하물은 가까이 왔을 때만 끌어당긴다 (전부 빨아들이면 너무 세다)
         // 부양사 기본치는 블랙홀의 절반 반경·45% 힘
-        const d = Math.hypot(dx, dy), R = aug.blackhole ? 195 : 98;
+        const d = Math.hypot(dx, dy), R = aug.blackhole ? 130 : 98;   // v0.9.429 블랙홀 간식 195 → 130
         if (d < R && d > 1) {
           const pull = (aug.blackhole ? 481 : 216) * dt * (1 - d / R);
           it.x -= dx / d * pull;
@@ -12475,7 +12476,7 @@
       const magF = prophIs("magnet") ? 1.8 : aug.magnet > 0 ? 1 : 0.45;   // 복이 굴러온다 — 화면 어디서든 끌려온다
       /* 코인은 자석이 없어도 늘 끌려온다 — 자석 증강의 절반(반경 110 · 힘 0.5).
          자석·복이 굴러온다가 있으면 둘 중 센 쪽을 쓴다. */
-      const COIN_R0 = 60 * gMag(), COIN_F0 = 0.5;   // v0.9.403 110 → 60
+      const COIN_R0 = 50 * gMag(), COIN_F0 = 0.5;   // v0.9.429 60 → 50 · v0.9.403 110 → 60
       const coinBase = !(job === "powerp" && !fullOwn);   // v0.9.32 무무(무소유)는 코인이 저절로 끌려오지 않는다 (자석 증강·풀소유면 끌려온다)
       if (!stoneOn && it.type !== "cloud" && ((magR > 0 && (it.type !== "poop" || it.gold)) || (it.type === "coin" && (coinBase || magR > 0)))) {
         const d = Math.hypot(dx, dy);
@@ -13077,9 +13078,10 @@
     if (!sfx("magnet")) beep(180, .3, "sawtooth", .04);
   }
   function bombBoom(x, y) {                  // v0.9.249 폭탄 똥 폭발 — 둘레 똥을 함께 부순다(다크 제외)
-    smashPoopsAround(x, y, 80, true);
+    const R = aug.bombR || 80;               // v0.9.429 품질로 반경이 달라진다
+    smashPoopsAround(x, y, R, true);
     burst(x, y, "#ff963c", 24); burst(x, y, "#ffb347", 12);
-    rings.push({ x: x, y: y, t: 0, life: 0.4, r1: 90, color: "#ffb35a" });
+    rings.push({ x: x, y: y, t: 0, life: 0.4, r1: R + 10, color: "#ffb35a" });
     shake = Math.max(shake, 14);
     if (!sfx("wakboom")) beep(160, .14, "square", .06);
   }
@@ -13142,7 +13144,14 @@
         const want = goldFetch.n; goldFetch = null;
         let n = 0;
         for (let i = items.length - 1; i >= 0 && n < want; i--) if (items[i].goldFly) { burst(items[i].x, items[i].y, "#ffd23f", 8); items.splice(i, 1); n++; }
-        if (n) { addCoins(n); popText(player.x, player.y - 100, "🐈 냥! +" + n, "#ffd23f", 20); }
+        if (n) {   // v0.9.429 바로 주지 않고, 코인냥이가 화면 위에서 고개를 내밀어 하나씩 다시 떨어뜨린다 (둘이면 첫 개를 떨어뜨리자마자 다른 자리에서)
+          popText(player.x, player.y - 100, "🐈 냥!", "#ffd23f", 20); petSfx("cat");
+          let px = 40 + Math.random() * (W - 80);
+          for (let m = 0; m < n; m++) {
+            if (m) { let x2; do { x2 = 40 + Math.random() * (W - 80); } while (Math.abs(x2 - px) < W * 0.3); px = x2; }
+            cats.push({ x: px, t: -m * 0.45, v: 1, dropped: false });
+          }
+        }
       }
     }
   }
