@@ -2910,7 +2910,7 @@
   const elTitle = document.getElementById("overTitle");
   const coinNote = document.getElementById("coinNote");
 
-  const GAME_VERSION = "v0.9.435";
+  const GAME_VERSION = "v0.9.436";
   /* 제작사 스플래시(bamhobak friends 로고) — 2026-09-20 끔. 다시 켜려면 true */
   const SPLASH_USE = false;   // 코드를 고칠 때마다 뒤 두 자리를 올린다
   document.getElementById("ver").textContent = GAME_VERSION;
@@ -5121,7 +5121,7 @@
       hidden: true, once: true,
       cond: () => (augCount["fever_time"] || 0) + (augCount["fever50"] || 0) + (augCount["downpour"] || 0) + (augCount["giant"] || 0) + (augCount["legion"] || 0) >= 4,   // 간식 증강 4개 이상
       go: () => { aug.snackBig = true; } },
-    { id: "toilet",     ic: "🚽", nm: "변기 모자", ds: "모든 증강을 두 개씩 골라요. 대신 맞으면 절반의 확률로 게임 오버",
+    { id: "toilet",     ic: "🚽", nm: "변기 모자", ds: "달을 먹으면 절반의 확률로 증강을 두 번 골라요. 대신 맞으면 절반의 확률로 게임 오버",
       hidden: true, once: true,
       cond: () => !dirtJob() && lives >= 3 && level <= 7,   // 하트 3개 이상 + 레벨 7 이하 (방울이는 하트가 없어 제외)
       go: () => { aug.toilet = true; } },
@@ -11329,7 +11329,7 @@
     /* 레벨은 아이템 등장에 전혀 관여하지 않는다 — 처음부터 끝까지 같은 확률.
        예전에는 레벨이 오를수록 잦아지고(최대 2배), 대신 Lv15부터 달만 뜸해졌다. */
     let mean = BONUS_BASE / (b.w / BONUS_W_TOTAL) * aug.itemRateMul;
-    if (b.type === "heart" && job === "fit") mean /= 4.5;  // 헬스걸 — 하트 4.5배 (v0.9.435 5 → 4.5)
+    if (b.type === "heart" && job === "fit") mean /= 4;  // 헬스걸 — 하트 4배 (v0.9.435 5 → 4.5 · v0.9.436 → 4)
     if (isMoonT(b) && loopOn) mean *= LOOP_MOON;   // v0.9.238 2회차 — 달(초승달·보름달)은 1/3
     if ((b.type === "moon" || b.type === "fullmoon") && job === "powerj") mean /= 1.5;  // 파워J — 달 1.5배 (v0.9.434 1.8 → 1.5)
     if (b.type === "star" && job === "powerp") mean /= 1.5;  // 무소유 — 별 1.5배
@@ -12893,7 +12893,7 @@
       burst(it.x, it.y, full ? "#ffe9a8" : "#cfe4ff", full ? 40 : 20);
       if (full) { flash = 0; feverFlash = 1; shake = Math.max(shake, 14); }
       achBump("moon");
-      openAugment((full ? 3 : 1) * (aug.toilet ? 2 : 1));     // 보름달은 3연속 선택 · 변기 모자면 두 배
+      openAugment((full ? 3 : 1) * (aug.toilet && Math.random() < 0.5 ? 2 : 1));     // 보름달은 3연속 선택 · 변기 모자면 절반 확률로 두 배 (v0.9.436 늘 두 배 → 50%, 점수 +127% 너프)
       return true;
     }
     if (it.type === "coin") {
