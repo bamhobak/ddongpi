@@ -2910,7 +2910,7 @@
   const elTitle = document.getElementById("overTitle");
   const coinNote = document.getElementById("coinNote");
 
-  const GAME_VERSION = "v0.9.436";
+  const GAME_VERSION = "v0.9.437";
   /* 제작사 스플래시(bamhobak friends 로고) — 2026-09-20 끔. 다시 켜려면 true */
   const SPLASH_USE = false;   // 코드를 고칠 때마다 뒤 두 자리를 올린다
   document.getElementById("ver").textContent = GAME_VERSION;
@@ -5122,8 +5122,7 @@
       cond: () => (augCount["fever_time"] || 0) + (augCount["fever50"] || 0) + (augCount["downpour"] || 0) + (augCount["giant"] || 0) + (augCount["legion"] || 0) >= 4,   // 간식 증강 4개 이상
       go: () => { aug.snackBig = true; } },
     { id: "toilet",     ic: "🚽", nm: "변기 모자", ds: "달을 먹으면 절반의 확률로 증강을 두 번 골라요. 대신 맞으면 절반의 확률로 게임 오버",
-      hidden: true, once: true,
-      cond: () => !dirtJob() && lives >= 3 && level <= 7,   // 하트 3개 이상 + 레벨 7 이하 (방울이는 하트가 없어 제외)
+      hidden: true, once: true, gone: true, cond: () => false,   // v0.9.437 뺐다 — 증강·도감·테스트 목록에 안 나온다 (점수 +127%로 너무 셌음)
       go: () => { aug.toilet = true; } },
     { id: "cloudVip",   ic: "🏪", nm: "구름 단골", ds: "구름 상점에 증강이 하나 더 나와요",   // v0.9.226 히든 — 구름 상점에서 10번 사면 열린다
       hidden: true, once: true,
