@@ -2910,7 +2910,7 @@
   const elTitle = document.getElementById("overTitle");
   const coinNote = document.getElementById("coinNote");
 
-  const GAME_VERSION = "v0.9.434";
+  const GAME_VERSION = "v0.9.435";
   /* 제작사 스플래시(bamhobak friends 로고) — 2026-09-20 끔. 다시 켜려면 true */
   const SPLASH_USE = false;   // 코드를 고칠 때마다 뒤 두 자리를 올린다
   document.getElementById("ver").textContent = GAME_VERSION;
@@ -8208,6 +8208,7 @@
      닿기까지 0.95초라 움직이면 피할 수 있다. 보스를 거듭 만날수록 더 자주 던진다. */
   let bossThrowT = 0;
   /* ── v0.9.87 끝판왕 — 싱글플레이 22레벨부터 3레벨 동안. 깰 수는 없고, 버티면 대왕 방구로 지상에 돌려보낸다 ── */
+  const FB_EASE = 1.1;   // v0.9.435 끝판왕 10% 쉽게 — 공격 사이 간격·회오리 줄기 간격 ×1.1 (쏘는 똥 약 10% 줄어듦)
   const FB_LV = 22, FB_LEN = 4;   // v1.0.05 3 → 4단계
   let fbQueue = [], fbSweepAcc = 0, clearLT = 0;
   /* v0.9.238 클리어 뒤 이어 하기 — 화면에 붙었던 얼굴이 아래로 미끄러져 사라지면 밑에서 다시 올라와 판이 이어진다.
@@ -8271,7 +8272,7 @@
       fbSweep -= dt;
       fbSweepA += dt * [2.6, 3.6, 4.3, 4.9][ph];
       fbSweepAcc += dt;
-      const sg = [0.085, 0.073, 0.064, 0.056][ph] / 0.87 * 1.15 * 1.2;   // v0.9.101 회오리 줄기 간격 더   // v1.0.02 회오리 더 성기게
+      const sg = [0.085, 0.073, 0.064, 0.056][ph] / 0.87 * 1.15 * 1.2 * FB_EASE;   // v0.9.101 회오리 줄기 간격 더   // v1.0.02 회오리 더 성기게
       while (fbSweepAcc >= sg) {
         fbSweepAcc -= sg;
         const a = Math.sin(fbSweepA) * 0.85;
@@ -8355,7 +8356,7 @@
     ][ph];
     P[fbStep % P.length]();
     fbStep++;
-    fbShotT = Math.max(wallHold, [0.86, 0.6, 0.52, 0.40][ph] / 0.87 * 1.15 + (fbQueue.length ? 0.35 : 0));   // 겹벽·연속 탄 뒤엔 숨 돌릴 틈 · v1.0.05 단계별
+    fbShotT = Math.max(wallHold, [0.86, 0.6, 0.52, 0.40][ph] / 0.87 * 1.15 * FB_EASE + (fbQueue.length ? 0.35 : 0));   // 겹벽·연속 탄 뒤엔 숨 돌릴 틈 · v1.0.05 단계별
     burst(bx, by + 10, "#7a3cff", 8);
     if (!sfx("boing", 0.4)) beep(220, .05, "square", .03);
   }
@@ -11328,7 +11329,7 @@
     /* 레벨은 아이템 등장에 전혀 관여하지 않는다 — 처음부터 끝까지 같은 확률.
        예전에는 레벨이 오를수록 잦아지고(최대 2배), 대신 Lv15부터 달만 뜸해졌다. */
     let mean = BONUS_BASE / (b.w / BONUS_W_TOTAL) * aug.itemRateMul;
-    if (b.type === "heart" && job === "fit") mean /= 5;  // 헬스걸 — 하트 5배
+    if (b.type === "heart" && job === "fit") mean /= 4.5;  // 헬스걸 — 하트 4.5배 (v0.9.435 5 → 4.5)
     if (isMoonT(b) && loopOn) mean *= LOOP_MOON;   // v0.9.238 2회차 — 달(초승달·보름달)은 1/3
     if ((b.type === "moon" || b.type === "fullmoon") && job === "powerj") mean /= 1.5;  // 파워J — 달 1.5배 (v0.9.434 1.8 → 1.5)
     if (b.type === "star" && job === "powerp") mean /= 1.5;  // 무소유 — 별 1.5배
