@@ -1954,10 +1954,20 @@
   #augList .augPh { visibility: hidden; pointer-events: none; animation: none; }   /* 제이 보름달 — 아직 안 나온 카드 자리 */
   #btnAugOk { margin-top: 6px; animation: okIn .2s ease-out both, glowY 3.4s ease-in-out .2s infinite; }   /* v0.9.398 확대·회전 없이 떠오르기 — 세 조각 버튼 그림이 커지는 동안 이음새가 세로 검은 줄로 보였다 */
   /* v0.9.438 깜짝 선물·제이 확인 — 글자 폭에 맞춘 버튼이 통통 튄다 (확대 없이 위아래만 — 세 조각 이음새가 안 보이게) */
-  #btnAugOk.gift, #btnAugOk.plan { min-width: 0 !important; padding: 0 26px calc(var(--bh) * .08); font-size: 18px !important; letter-spacing: .5px !important;
-    animation: okIn .2s ease-out both, okBob 1.3s ease-in-out .2s infinite, glowY 3.4s ease-in-out .2s infinite; }
-  #btnAugOk.gift:active, #btnAugOk.plan:active { animation: none; transform: translateY(3px); }
-  @keyframes okBob { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-5px); } }
+  /* v0.9.441 깜짝 선물 — 색동 보자기(묶임 → 풀림)에서 카드가 위로 튀어나온다. --fy = 보자기까지의 거리 */
+  #augList .bjStage { position: relative; height: 128px; margin-top: 6px; pointer-events: none; }
+  .bjStage img { position: absolute; left: 50%; bottom: 0; height: 128px; transform: translateX(-50%); transform-origin: 50% 100%; }
+  .bjStage .bjC { animation: bjWob .55s ease-in-out both, bjOut .14s ease-in .5s forwards; }
+  .bjStage .bjO { opacity: 0; animation: bjIn .32s cubic-bezier(.2,1.6,.4,1) .5s forwards; }
+  .bjStage.ready .bjO { opacity: 1; animation: bjGlow 1.3s ease-in-out infinite; }
+  @keyframes bjWob { 0%, 100% { transform: translateX(-50%) rotate(0); } 20% { transform: translateX(-50%) rotate(-9deg); } 40% { transform: translateX(-50%) rotate(8deg); }
+                     60% { transform: translateX(-50%) rotate(-6deg); } 80% { transform: translateX(-50%) rotate(4deg) translateY(-4px); } }
+  @keyframes bjOut { to { opacity: 0; transform: translateX(-50%) scale(1.12); } }
+  @keyframes bjIn { 0% { opacity: 0; transform: translateX(-50%) scale(.8, .7); } 100% { opacity: 1; transform: translateX(-50%); } }
+  @keyframes bjGlow { 0%, 100% { filter: drop-shadow(0 0 4px rgba(255,230,140,.35)); } 50% { filter: drop-shadow(0 0 16px rgba(255,230,140,.9)); } }
+  .augCard.bjPop { opacity: 0; animation: bjPop .5s cubic-bezier(.2,1.35,.4,1) both; }
+  @keyframes bjPop { 0% { opacity: 0; transform: translateY(var(--fy, 120px)) scale(.15); } 35% { opacity: 1; }
+                     70% { transform: translateY(-8px) scale(1.04); } 100% { opacity: 1; transform: none; } }
   /* v0.9.438 제이 자동 받기 — 받은 증강을 파일철(투명 파일·클립) 하나에 줄줄이. 위·아래 그림은 그대로, 가운데 종이만 늘어난다.
      줄마다 체크칸 안에 아이콘, 다 나오면 '눌러서 체크!' — 누르면 빨간 펜 체크 */
   #augList .pjFile { position: relative; width: 100%; display: flex; flex-direction: column; filter: drop-shadow(0 4px 6px rgba(0,0,0,.35)); }
@@ -2936,7 +2946,7 @@
   const elTitle = document.getElementById("overTitle");
   const coinNote = document.getElementById("coinNote");
 
-  const GAME_VERSION = "v0.9.440";
+  const GAME_VERSION = "v0.9.441";
   /* 제작사 스플래시(bamhobak friends 로고) — 2026-09-20 끔. 다시 켜려면 true */
   const SPLASH_USE = false;   // 코드를 고칠 때마다 뒤 두 자리를 올린다
   document.getElementById("ver").textContent = GAME_VERSION;
@@ -5300,11 +5310,11 @@
   const btnAugOk = document.getElementById("btnAugOk");
   let augOkFn = null;
   /* v0.9.438 확인 버튼 말 — 깜짝 선물·제이 자동 받기는 화면에 맞는 말로 (예전엔 둘 다 '확인') */
-  const AUG_OK_TXT = { gift: "🎉 앗싸! 챙기기" };
+  const BJ_OPEN = 0.55, BJ_GAP = 0.45;   // v0.9.441 깜짝 선물 보자기 — 풀리는 때 · 카드 사이 (초)
   function augConfirm(fn, ms, kind) {
-    btnAugOk.className = kind || ""; btnAugOk.textContent = AUG_OK_TXT[kind] || "확인";
-    const show = kind === "plan"
-      ? () => { augAutoFn = null; augOkFn = fn; const fl = augList.querySelector(".pjFile"); if (fl) fl.classList.add("ready"); }   // v0.9.438 제이 — 버튼 없이, 화면을 누르면 체크
+    btnAugOk.className = ""; btnAugOk.textContent = "확인";
+    const show = kind === "plan" || kind === "gift"
+      ? () => { augAutoFn = null; augOkFn = fn; const fl = augList.querySelector(".pjFile, .bjStage"); if (fl) fl.classList.add("ready"); }   // v0.9.438 제이 · v0.9.441 깜짝 선물 — 버튼 없이, 화면을 누르면 넘어감
       : () => { augAutoFn = null; augOkFn = fn; btnAugOk.hidden = false; btnAugOk.classList.remove("rsv"); };
     if (augSkipping) { show(); return; }
     augAutoFn = show; augAutoT = setTimeout(show, ms);
@@ -5331,9 +5341,10 @@
   }
   document.addEventListener("pointerdown", e => {   // 화면 어디를 눌러도(안내 말풍선이 덮고 있어도) — 그래서 문서에 건다
     if (augOkFn && state === STATE.AUG && augList.querySelector(".pjFile.ready")) { pjCheckGo(); liftWait = true; return; }   // v0.9.438 제이 체크
+    if (augOkFn && state === STATE.AUG && augList.querySelector(".bjStage.ready")) { const f = augOkFn; augOkReset(); f(); liftWait = true; return; }   // v0.9.441 깜짝 선물
     if (!augAutoFn || state !== STATE.AUG || e.target === btnAugOk) return;
     clearTimeout(augAutoT); const f = augAutoFn; augAutoFn = null; augSkipping = true; f();
-    augList.querySelectorAll(".augCard").forEach(c => { c.style.animationDelay = "0s"; });   // 아직 안 나온 카드도 바로
+    augList.querySelectorAll(".augCard, .bjStage img").forEach(c => { c.style.animationDelay = "0s"; });   // 아직 안 나온 카드도 바로 (v0.9.441 보자기도 바로 풀림)
     liftWait = true;   // 건너뛰려고 누른 이 손가락도 떼기 전엔 조작이 아니다
   }, true);
   let augPickedSeq = [], pjSeq = [], pjT0 = 0, pjQuiet = false;   // pjSeq: 제이 자동 받기 — 보름달 앞 차례 카드들
@@ -5492,20 +5503,27 @@
         /* v0.9.337 깜짝 선물 — 받은 두 증강을 카드로 펼쳐 2.2초 보여 준 뒤 넘어간다 (떠오르는 글자만으론 놓치기 쉬웠다) */
         if (a.id === "twoRand" && twoRandObjs.length) {
           augList.innerHTML = ""; augList.style.pointerEvents = "none";
-          btnReroll.style.display = "none"; augOkReserve();   // v0.9.366 자리 고정
+          btnReroll.style.display = "none";
+          /* v0.9.441 색동 보자기 — 흔들흔들하다 풀리고, 안에서 증강이 한 장씩 위로 튀어나온다 (확인 버튼 없이 화면을 눌러 넘어감) */
           twoRandObjs.forEach(([b, nm2, tg], ti) => {
-            const c = document.createElement("div"); c.className = "augCard gReveal trGot";
-            c.style.animationDelay = (0.04 + ti * AUTO_GAP / 1000) + "s";   // v0.9.338 한 장씩 통! 하고 뒤집혀 나온다 (v0.9.359 간격 1초)
-            setTimeout(() => { if (state !== STATE.AUG || augSkipping) return; if (!sfx("aug")) { beep(880 + ti * 220, .07, "square", .05); beep(1320 + ti * 220, .1, "triangle", .04); } }, (40 + ti * AUTO_GAP));
+            const c = document.createElement("div"); c.className = "augCard gReveal bjPop";
+            c.style.animationDelay = (BJ_OPEN + ti * BJ_GAP) + "s";
+            setTimeout(() => { if (state !== STATE.AUG || augSkipping) return; if (!sfx("aug")) { beep(880 + ti * 220, .07, "square", .05); beep(1320 + ti * 220, .1, "triangle", .04); } }, (BJ_OPEN + ti * BJ_GAP) * 1000);
             c.innerHTML = '<span class="ic"></span><span class="tx"><div class="nm2"></div><div class="ds"></div></span>';
             c.querySelector(".ic").textContent = b.ic; c.querySelector(".nm2").textContent = nm2;
             c.querySelector(".ds").textContent = b.dsFn ? b.dsFn() : b.ds;
             if (tg) c.querySelector(".ds").appendChild(tg);
             augList.appendChild(c);
           });
+          const bj = document.createElement("div"); bj.className = "bjStage";
+          bj.innerHTML = '<img class="bjO" src="assets/ui/bj_open.webp" alt=""><img class="bjC" src="assets/ui/bj_closed.webp" alt="">';
+          augList.appendChild(bj);
+          setTimeout(() => { if (state === STATE.AUG && !augSkipping) beep(520, .06, "triangle", .05); }, BJ_OPEN * 1000 - 60);   // 풀리는 소리
+          { const cy = bj.offsetTop + bj.offsetHeight * 0.45;   // 카드는 보자기 속에서 출발 (offsetTop 은 애니메이션 변형과 무관)
+            augList.querySelectorAll(".bjPop").forEach(c => c.style.setProperty("--fy", Math.round(cy - (c.offsetTop + c.offsetHeight / 2)) + "px")); }
           augAnchor();   // v0.9.366 위치 고정
           const t = document.getElementById("augTitle"); if (t) t.dataset.keep = t.textContent, t.textContent = "🎲 이 두 개를 받았어요!"; t.classList.remove("trTtl"); void t.offsetWidth; t.classList.add("trTtl");
-          augConfirm(() => { augList.style.pointerEvents = ""; if (t) { t.classList.remove("trTtl"); if (t.dataset.keep) t.textContent = t.dataset.keep; } finishPick(); }, 500 + AUTO_GAP * (twoRandObjs.length - 1), "gift");   // v0.9.365 마지막 카드가 나오면 확인 버튼
+          augConfirm(() => { augList.style.pointerEvents = ""; if (t) { t.classList.remove("trTtl"); if (t.dataset.keep) t.textContent = t.dataset.keep; } finishPick(); }, (BJ_OPEN + BJ_GAP * (twoRandObjs.length - 1)) * 1000 + 450, "gift");   // v0.9.441 다 나오면 화면을 눌러 넘어간다 (확인 버튼 없음)
           return;
         }
         finishPick();
