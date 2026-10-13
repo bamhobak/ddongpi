@@ -1953,6 +1953,35 @@
   #btnAugOk.rsv { visibility: hidden; animation: none; pointer-events: none; }   /* v0.9.366 자리만 미리 잡아 둔다 — 버튼이 나타날 때 카드가 위로 밀려 올라가지 않게 */
   #augList .augPh { visibility: hidden; pointer-events: none; animation: none; }   /* 제이 보름달 — 아직 안 나온 카드 자리 */
   #btnAugOk { margin-top: 6px; animation: okIn .2s ease-out both, glowY 3.4s ease-in-out .2s infinite; }   /* v0.9.398 확대·회전 없이 떠오르기 — 세 조각 버튼 그림이 커지는 동안 이음새가 세로 검은 줄로 보였다 */
+  /* v0.9.438 깜짝 선물·제이 확인 — 글자 폭에 맞춘 버튼이 통통 튄다 (확대 없이 위아래만 — 세 조각 이음새가 안 보이게) */
+  #btnAugOk.gift, #btnAugOk.plan { min-width: 0 !important; padding: 0 26px calc(var(--bh) * .08); font-size: 18px !important; letter-spacing: .5px !important;
+    animation: okIn .2s ease-out both, okBob 1.3s ease-in-out .2s infinite, glowY 3.4s ease-in-out .2s infinite; }
+  #btnAugOk.gift:active, #btnAugOk.plan:active { animation: none; transform: translateY(3px); }
+  @keyframes okBob { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-5px); } }
+  /* v0.9.438 제이 자동 받기 — 받은 증강을 파일철(투명 파일·클립) 하나에 줄줄이. 위·아래 그림은 그대로, 가운데 종이만 늘어난다.
+     줄마다 체크칸 안에 아이콘, 다 나오면 '눌러서 체크!' — 누르면 빨간 펜 체크 */
+  #augList .pjFile { position: relative; width: 100%; display: flex; flex-direction: column; filter: drop-shadow(0 4px 6px rgba(0,0,0,.35)); }
+  #augList .pjFile.pjIn { animation: trPop .26s cubic-bezier(.2,1.5,.4,1) both; }
+  .pjFile::before { content: ""; display: block; aspect-ratio: 900 / 112; background: url(assets/ui/jf_top.webp) 0 0 / 100% 100% no-repeat; }
+  .pjFile::after  { content: ""; display: block; aspect-ratio: 900 / 79;  background: url(assets/ui/jf_bot.webp) 0 0 / 100% 100% no-repeat; margin-top: -1px; }
+  .pjFile .pjBody { display: flex; flex-direction: column; margin-top: -1px; padding: 0 6% 0 6.5%; background: url(assets/ui/jf_mid.webp) 0 0 / 100% 100% no-repeat; }
+  .pjFile .augCard, .pjFile .augCard:hover { position: relative; background: none; border: 0; border-radius: 0; padding: 7px 0; gap: 11px; box-shadow: none !important; overflow: visible !important; }
+  .pjFile .augCard + .augCard { border-top: 2px dashed rgba(31,58,104,.16); }
+  .pjFile .augCard.trGot { animation: trPop .26s cubic-bezier(.2,1.5,.4,1) both; }
+  .pjFile .augCard .ic { position: relative; width: 50px; height: 50px; flex: none; display: grid; place-items: center; font-size: 27px;
+    background: url(assets/ui/jay_box.webp) center / 100% 100% no-repeat; }
+  .pjFile .nm2 { color: #1f3a68; font-size: 15px; text-shadow: none; }
+  .pjFile .ds { color: #5a4c38; font-size: 12.5px; line-height: 1.3; }
+  .pjFile .augQ.q-2 { color: #a0a4b0; } .pjFile .augQ.q-1 { color: #5d5d5d; } .pjFile .augQ.q0 { color: #c99500; }
+  .pjFile .augQ.q1 { color: #e07800; } .pjFile .augQ.q2 { color: #e03030; text-shadow: none; }
+  .pjFile .pjHint { align-self: center; margin: 2px 0 -4px; font-size: 13px; font-weight: 800; color: #c0392b; visibility: hidden; }
+  .pjFile.ready .pjHint { visibility: visible; animation: pjHint 1s ease-in-out infinite; }
+  @keyframes pjHint { 0%, 100% { opacity: .45; transform: translateY(0); } 50% { opacity: 1; transform: translateY(-2px); } }
+  .pjFile.ready .augCard:not(.augPh) .ic { animation: pjBox 1s ease-in-out infinite; }
+  @keyframes pjBox { 0%, 100% { filter: none; } 50% { filter: drop-shadow(0 0 5px rgba(224,48,48,.75)); } }
+  .pjFile .pjChk { position: absolute; left: -8%; top: -32%; width: 130%; pointer-events: none; z-index: 3;
+    clip-path: inset(0 100% 0 0); animation: pjChk .26s ease-out forwards; filter: drop-shadow(0 1px 1px rgba(120,0,0,.35)); }
+  @keyframes pjChk { to { clip-path: inset(0 0 0 0); } }
   @keyframes okIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: none; } }   /* v0.9.365 받은 증강을 다 보여 준 뒤 확인으로 재개 */
   /* ── v0.9.140 게임오버·일시정지 — 캐릭터 성장 창과 같은 남색 금테 판 + 금색 리본 제목 · 버튼은 큰 주요 하나 + 보조·나가기 나란히 ── */
   #overScreen, #pauseScreen { gap: 14px; }
@@ -2910,7 +2939,7 @@
   const elTitle = document.getElementById("overTitle");
   const coinNote = document.getElementById("coinNote");
 
-  const GAME_VERSION = "v0.9.437";
+  const GAME_VERSION = "v0.9.438";
   /* 제작사 스플래시(bamhobak friends 로고) — 2026-09-20 끔. 다시 켜려면 true */
   const SPLASH_USE = false;   // 코드를 고칠 때마다 뒤 두 자리를 올린다
   document.getElementById("ver").textContent = GAME_VERSION;
@@ -5273,12 +5302,17 @@
      카드가 나오는 중에 화면을 누르면 남은 카드를 한꺼번에 펼치고 확인 버튼을 바로 띄운다. */
   const btnAugOk = document.getElementById("btnAugOk");
   let augOkFn = null;
-  function augConfirm(fn, ms) {
-    const show = () => { augAutoFn = null; augOkFn = fn; btnAugOk.hidden = false; btnAugOk.classList.remove("rsv"); };
+  /* v0.9.438 확인 버튼 말 — 깜짝 선물·제이 자동 받기는 화면에 맞는 말로 (예전엔 둘 다 '확인') */
+  const AUG_OK_TXT = { gift: "🎉 앗싸! 챙기기" };
+  function augConfirm(fn, ms, kind) {
+    btnAugOk.className = kind || ""; btnAugOk.textContent = AUG_OK_TXT[kind] || "확인";
+    const show = kind === "plan"
+      ? () => { augAutoFn = null; augOkFn = fn; const fl = augList.querySelector(".pjFile"); if (fl) fl.classList.add("ready"); }   // v0.9.438 제이 — 버튼 없이 '눌러서 체크!'
+      : () => { augAutoFn = null; augOkFn = fn; btnAugOk.hidden = false; btnAugOk.classList.remove("rsv"); };
     if (augSkipping) { show(); return; }
     augAutoFn = show; augAutoT = setTimeout(show, ms);
   }
-  function augOkReset() { augOkFn = null; btnAugOk.hidden = true; btnAugOk.classList.remove("rsv"); augScreen.style.justifyContent = augScreen.style.paddingTop = ""; }
+  function augOkReset() { augOkFn = null; btnAugOk.hidden = true; btnAugOk.className = ""; btnAugOk.textContent = "확인"; augScreen.style.justifyContent = augScreen.style.paddingTop = ""; }
   /* v0.9.366 위치 고정 — 가운데 정렬이라 카드 높이(한 줄·두 줄 설명)가 바뀔 때마다 제목·카드가 들썩였다.
      카드가 나오기 시작할 때의 제목 자리에서 위쪽을 못 박아 두고, 그 뒤 생기는 높이 차이는 아래로만 흘려보낸다 */
   function augAnchor() {
@@ -5288,7 +5322,18 @@
   }
   function augOkReserve() { btnAugOk.hidden = false; btnAugOk.classList.add("rsv"); }   // v0.9.366 카드가 나오기 시작할 때 확인 버튼 자리를 먼저 잡는다
   btnAugOk.addEventListener("click", () => { if (!augOkFn) return; const f = augOkFn; augOkReset(); f(); });
+  /* v0.9.438 제이 — 파일철이 다 채워진 뒤 화면을 누르면 체크칸마다 빨간 펜 체크가 쓱 그어지고 넘어간다 */
+  function pjCheckGo() {
+    const f = augOkFn, fl = augList.querySelector(".pjFile"); augOkReset();
+    const rows = fl ? [...fl.querySelectorAll(".augCard:not(.augPh) .ic")] : [];
+    if (fl) fl.classList.remove("ready");
+    rows.forEach((ic, i) => { const k = document.createElement("img"); k.className = "pjChk"; k.src = "assets/ui/check_red.webp"; k.alt = "";
+      k.style.animationDelay = (i * 0.12) + "s"; ic.appendChild(k);
+      setTimeout(() => beep(1700 + i * 150, .04, "triangle", .05), i * 120); });   // 펜으로 쓱
+    setTimeout(f, 420 + rows.length * 120);
+  }
   document.addEventListener("pointerdown", e => {   // 화면 어디를 눌러도(안내 말풍선이 덮고 있어도) — 그래서 문서에 건다
+    if (augOkFn && state === STATE.AUG && augList.querySelector(".pjFile.ready")) { pjCheckGo(); liftWait = true; return; }   // v0.9.438 제이 체크
     if (!augAutoFn || state !== STATE.AUG || e.target === btnAugOk) return;
     clearTimeout(augAutoT); const f = augAutoFn; augAutoFn = null; augSkipping = true; f();
     augList.querySelectorAll(".augCard").forEach(c => { c.style.animationDelay = "0s"; });   // 아직 안 나온 카드도 바로
@@ -5463,7 +5508,7 @@
           });
           augAnchor();   // v0.9.366 위치 고정
           const t = document.getElementById("augTitle"); if (t) t.dataset.keep = t.textContent, t.textContent = "🎲 이 두 개를 받았어요!"; t.classList.remove("trTtl"); void t.offsetWidth; t.classList.add("trTtl");
-          augConfirm(() => { augList.style.pointerEvents = ""; if (t) { t.classList.remove("trTtl"); if (t.dataset.keep) t.textContent = t.dataset.keep; } finishPick(); }, 500 + AUTO_GAP * (twoRandObjs.length - 1));   // v0.9.365 마지막 카드가 나오면 확인 버튼
+          augConfirm(() => { augList.style.pointerEvents = ""; if (t) { t.classList.remove("trTtl"); if (t.dataset.keep) t.textContent = t.dataset.keep; } finishPick(); }, 500 + AUTO_GAP * (twoRandObjs.length - 1), "gift");   // v0.9.365 마지막 카드가 나오면 확인 버튼
           return;
         }
         finishPick();
@@ -5482,18 +5527,24 @@
       if (!k) pjT0 = performance.now();
       pjSeq.forEach(c => augList.insertBefore(c, card));   // 앞 차례에 받은 카드는 그대로 둔다
       for (let n = 1; n < augRemain; n++) { const ph = card.cloneNode(true); ph.className = "augCard augPh"; ph.removeAttribute("style"); augList.appendChild(ph); }   // v0.9.366 남은 카드 자리를 미리 — 쌓일 때 위로 밀리지 않게
-      augOkReserve(); augAnchor();
-      card.classList.add("gReveal", "trGot"); card.style.animationDelay = "0.04s";
+      /* v0.9.438 제이 — 받은 증강을 파일철 하나에 줄줄이 적는다 (보름달이면 세 줄). 확인 버튼 없이, 다 나오면 화면을 눌러 체크 */
+      const file = document.createElement("div"); file.className = "pjFile" + (k ? "" : " pjIn");
+      const body = document.createElement("div"); body.className = "pjBody";
+      const hint = document.createElement("div"); hint.className = "pjHint"; hint.textContent = "✔ 눌러서 체크!";
+      [...augList.querySelectorAll(".augCard")].forEach(c => body.appendChild(c));
+      body.appendChild(hint); file.appendChild(body); augList.appendChild(file);
+      augAnchor();
+      card.classList.add("trGot"); card.style.animationDelay = k ? "0.04s" : "0.12s";
       if (t) { t.textContent = "📋 계획대로 되고 있어요!"; if (!k) { t.classList.remove("trTtl"); void t.offsetWidth; t.classList.add("trTtl"); } }
       if (!augSkipping) setTimeout(() => { if (state !== STATE.AUG || augSkipping) return; if (!sfx("aug")) { beep(880 + k * 220, .07, "square", .05); beep(1320 + k * 220, .1, "triangle", .04); } }, 40);
       if (augRemain > 1) augAutoWait(() => {   // 다음 차례로 — 이 카드는 멈춘 모양 그대로 복사해 둔다
-        const c = card.cloneNode(true); c.classList.remove("trGot"); c.style.animation = "trGlow 1.2s ease-in-out infinite alternate";
+        const c = card.cloneNode(true); c.classList.remove("trGot"); c.style.animation = "none";
         pjSeq.push(c); card.classList.remove("trGot"); pjQuiet = true; card.click(); pjQuiet = false;
       }, AUTO_GAP);
       else augConfirm(() => {   // v0.9.365 마지막 카드가 나오면 확인 버튼 — 눌러야 받고 이어 간다
         augList.style.pointerEvents = ""; if (rr) rr.style.visibility = ""; if (t) t.classList.remove("trTtl");
         pjSeq = []; card.classList.remove("trGot"); pjQuiet = true; card.click(); pjQuiet = false;
-      }, 500);   // v0.9.398 0.75 → 0.5초
+      }, 500, "plan");   // v0.9.398 0.75 → 0.5초
     }
   }
   let state = STATE.READY;
