@@ -2957,7 +2957,7 @@
   const elTitle = document.getElementById("overTitle");
   const coinNote = document.getElementById("coinNote");
 
-  const GAME_VERSION = "v0.9.443";
+  const GAME_VERSION = "v0.9.444";
   /* 제작사 스플래시(bamhobak friends 로고) — 2026-09-20 끔. 다시 켜려면 true */
   const SPLASH_USE = false;   // 코드를 고칠 때마다 뒤 두 자리를 올린다
   document.getElementById("ver").textContent = GAME_VERSION;
@@ -5176,7 +5176,7 @@
       cond: () => accOn(5) && !testMode && job !== "powerp",   // 구름 상점이 오는 판에만 (무무는 상점에 증강이 안 나온다)
       go: () => { aug.cloudVip = true; } },
     /* ── v0.9.249 새 증강 — 액티브 스킬(방귀 대시·초승달 쓸기·똥 청소기)은 두 가지까지만 ── */
-    { id: "juggle",     ic: "🤹", nm: "초승달 쓸기", ds: "초승달 쓸기로 똥을 튕겨 내요. 튕긴 똥은 다른 똥이랑 같이 펑 (쿨타임 3초 · 다크똥을 치면 6초)",
+    { id: "juggle",     ic: "🤹", nm: "초승달 쓸기", ds: "초승달 쓸기로 똥을 튕겨 내요. 튕긴 똥은 다른 똥이랑 같이 펑 (쿨타임 3초)",
       once: true, cond: () => actOk(), go: () => { aug.juggle = true; jugCd = 0; for (const k in UPPER_PAD) if (k.startsWith(upperKey().split("_")[0])) { const im = new Image(); im.src = "assets/upper_" + k + ".webp"; UPPER_IMG[k] = im; } } },   // 어퍼컷 그림 미리 불러 둔다
     { id: "vacuum",     ic: "🧹", nm: "똥 청소기", ds: "버튼을 누르면 머리 위 똥이랑 아이템을 쓰읍 빨아들여요 (15초마다)",
       gone: true, once: true, cond: () => false, go: () => { aug.vacuum = true; vacCd = 0; } },   // v0.9.342 뺐다 — 증강·도감·테스트 목록에 안 나온다
@@ -18092,14 +18092,7 @@
         ctx.lineWidth = 3; ctx.strokeStyle = "rgba(255,255,255,.95)"; ctx.beginPath(); ctx.arc(0, 0, R2, 0, 6.283); ctx.stroke();
         ctx.restore();
       }
-      if (now < powerUntil) {
-        ctx.beginPath();
-        ctx.arc(0, player.hy, player.r * hitMul() + 14 + Math.sin(now / 90) * 3, 0, 6.283);
-        ctx.strokeStyle = "rgba(255,255,255,.85)";
-        ctx.lineWidth = 4; ctx.setLineDash([10, 8]);
-        ctx.lineDashOffset = -now / 20;
-        ctx.stroke();
-        ctx.setLineDash([]);
+      if (now < powerUntil) {   // v0.9.444 간식 타임 — 흰 점선 테두리는 뺐다 (은은한 빛만)
         ctx.globalAlpha = .22 + feverT * .18;
         ctx.fillStyle = "#fff";
         ctx.beginPath(); ctx.arc(0, player.hy, player.r * hitMul() + 14, 0, 6.283); ctx.fill();
@@ -18158,14 +18151,7 @@
     ctx.stroke();
 
     if (now < powerUntil) {
-      const t = feverT;
-      ctx.beginPath();
-      ctx.arc(0, 6, R + 16 + Math.sin(now / 90) * 3, 0, 6.283);
-      ctx.strokeStyle = "rgba(255,255,255,.85)";
-      ctx.lineWidth = 4; ctx.setLineDash([10, 8]);
-      ctx.lineDashOffset = -now / 20;
-      ctx.stroke();
-      ctx.setLineDash([]);
+      const t = feverT;   // v0.9.444 흰 점선 테두리는 뺐다
       ctx.globalAlpha = .25 + t * .2;
       ctx.fillStyle = "#fff";
       ctx.beginPath(); ctx.arc(0, 6, R + 16, 0, 6.283); ctx.fill();
