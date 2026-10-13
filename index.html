@@ -2957,7 +2957,7 @@
   const elTitle = document.getElementById("overTitle");
   const coinNote = document.getElementById("coinNote");
 
-  const GAME_VERSION = "v0.9.444";
+  const GAME_VERSION = "v0.9.445";
   /* 제작사 스플래시(bamhobak friends 로고) — 2026-09-20 끔. 다시 켜려면 true */
   const SPLASH_USE = false;   // 코드를 고칠 때마다 뒤 두 자리를 올린다
   document.getElementById("ver").textContent = GAME_VERSION;
@@ -11554,7 +11554,8 @@
       vx: (Math.random() - Math.random()) * 14
     });
     if (tier >= 1 && !noRing) {
-      rings.push({ x, y, t: 0, life: 0.46 + tier * 0.14,
+      if (text === "⭐") rings.push({ x, y, t: 0, life: 0.42 + tier * 0.08, r1: 60 + tier * 20, img: true, rot: Math.random() * 6.283 });   // v0.9.445 별 — 금가루 고리 그림(Codex), 작고 은은하게
+      else rings.push({ x, y, t: 0, life: 0.46 + tier * 0.14,
                    r1: 74 + tier * 62, color: color || "#ffd23f" });
       shake = Math.max(shake, 6 + tier * 6);
     }
@@ -17802,6 +17803,7 @@
   const FALL_FACE = { bangul: [0.66, 0.68, 0.52], powerj: [0.72, 0.67, 0.48], fortune: [0.66, 0.62, 0.45], levitator: [0.68, 0.66, 0.46],
                       fit: [0.72, 0.67, 0.44], monk: [0.60, 0.66, 0.52], full: [0.62, 0.67, 0.50] }   // [얼굴 가로, 세로, 헬멧 폭/그림 폭]   // v1.0.00 방울이·버피·루나는 번지 자세(얼굴이 아래쪽 가운데)
   let landT0 = 0, landBump = false, landDone = false;
+  const starRingImg = new Image(); starRingImg.src = "assets/ui/star_ring.webp";   // v0.9.445 별 먹을 때 퍼지는 금가루 고리
   const sightImg = new Image(); sightImg.src = "assets/ui/sight_dots.webp";   // v0.9.266 천리안 구슬
   function drawActFx(now) {                  // v0.9.249 청소기 부채꼴 · 방귀 로켓 바람
     ctx.save();
@@ -19313,6 +19315,14 @@
     for (const rg of rings) {
       const k = rg.t / rg.life;
       const rr = rg.r1 * (0.14 + 0.86 * (1 - Math.pow(1 - k, 2)));
+      if (rg.img) {                      // v0.9.445 별 고리 — 그림 바깥 가장자리가 반지름의 0.875 자리
+        if (starRingImg.complete && starRingImg.naturalWidth) {
+          const s = rr * 2 / 0.875;
+          ctx.save(); ctx.globalAlpha = Math.pow(1 - k, 1.5) * 0.6; ctx.translate(rg.x, rg.y); ctx.rotate(rg.rot + k * 0.6);
+          ctx.drawImage(starRingImg, -s / 2, -s / 2, s, s); ctx.restore();
+        }
+        continue;
+      }
       ctx.globalAlpha = (1 - k) * 0.7;
       ctx.strokeStyle = rg.color;
       ctx.lineWidth = 1 + 5 * (1 - k);
