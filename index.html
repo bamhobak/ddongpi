@@ -2946,7 +2946,7 @@
   const elTitle = document.getElementById("overTitle");
   const coinNote = document.getElementById("coinNote");
 
-  const GAME_VERSION = "v0.9.441";
+  const GAME_VERSION = "v0.9.442";
   /* 제작사 스플래시(bamhobak friends 로고) — 2026-09-20 끔. 다시 켜려면 true */
   const SPLASH_USE = false;   // 코드를 고칠 때마다 뒤 두 자리를 올린다
   document.getElementById("ver").textContent = GAME_VERSION;
@@ -5516,7 +5516,7 @@
             augList.appendChild(c);
           });
           const bj = document.createElement("div"); bj.className = "bjStage";
-          bj.innerHTML = '<img class="bjO" src="assets/ui/bj_open.webp" alt=""><img class="bjC" src="assets/ui/bj_closed.webp" alt="">';
+          bj.innerHTML = '<img class="bjO" src="assets/ui/bj_open.webp?2" alt=""><img class="bjC" src="assets/ui/bj_closed.webp" alt="">';
           augList.appendChild(bj);
           setTimeout(() => { if (state === STATE.AUG && !augSkipping) beep(520, .06, "triangle", .05); }, BJ_OPEN * 1000 - 60);   // 풀리는 소리
           { const cy = bj.offsetTop + bj.offsetHeight * 0.45;   // 카드는 보자기 속에서 출발 (offsetTop 은 애니메이션 변형과 무관)
