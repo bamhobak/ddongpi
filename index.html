@@ -1964,7 +1964,7 @@
   #augList .pjFile.pjIn { animation: trPop .26s cubic-bezier(.2,1.5,.4,1) both; }
   .pjFile::before { content: ""; display: block; aspect-ratio: 900 / 112; background: url(assets/ui/jf_top.webp) 0 0 / 100% 100% no-repeat; }
   .pjFile::after  { content: ""; display: block; aspect-ratio: 900 / 79;  background: url(assets/ui/jf_bot.webp) 0 0 / 100% 100% no-repeat; margin-top: -1px; }
-  .pjFile .pjBody { display: flex; flex-direction: column; margin-top: -1px; padding: 0 6% 0 6.5%; background: url(assets/ui/jf_mid.webp) 0 0 / 100% 100% no-repeat; }
+  .pjFile .pjBody { display: flex; flex-direction: column; margin-top: -1px; padding: 7px 6% 0 6.5%;   /* v0.9.440 설명을 서류 가운데로 살짝 내림 */ background: url(assets/ui/jf_mid.webp) 0 0 / 100% 100% no-repeat; }
   .pjFile .augCard, .pjFile .augCard:hover { position: relative; background: none; border: 0; border-radius: 0; padding: 7px 0; gap: 11px; box-shadow: none !important; overflow: visible !important; }
   .pjFile .augCard + .augCard { border-top: 2px dashed rgba(31,58,104,.16); }
   .pjFile .augCard.trGot { animation: trPop .26s cubic-bezier(.2,1.5,.4,1) both; }
@@ -2936,7 +2936,7 @@
   const elTitle = document.getElementById("overTitle");
   const coinNote = document.getElementById("coinNote");
 
-  const GAME_VERSION = "v0.9.439";
+  const GAME_VERSION = "v0.9.440";
   /* 제작사 스플래시(bamhobak friends 로고) — 2026-09-20 끔. 다시 켜려면 true */
   const SPLASH_USE = false;   // 코드를 고칠 때마다 뒤 두 자리를 올린다
   document.getElementById("ver").textContent = GAME_VERSION;
