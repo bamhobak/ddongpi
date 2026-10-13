@@ -1974,9 +1974,6 @@
   .pjFile .ds { color: #5a4c38; font-size: 12.5px; line-height: 1.3; }
   .pjFile .augQ.q-2 { color: #a0a4b0; } .pjFile .augQ.q-1 { color: #5d5d5d; } .pjFile .augQ.q0 { color: #c99500; }
   .pjFile .augQ.q1 { color: #e07800; } .pjFile .augQ.q2 { color: #e03030; text-shadow: none; }
-  .pjFile .pjHint { align-self: center; margin: 2px 0 -4px; font-size: 13px; font-weight: 800; color: #c0392b; visibility: hidden; }
-  .pjFile.ready .pjHint { visibility: visible; animation: pjHint 1s ease-in-out infinite; }
-  @keyframes pjHint { 0%, 100% { opacity: .45; transform: translateY(0); } 50% { opacity: 1; transform: translateY(-2px); } }
   .pjFile.ready .augCard:not(.augPh) .ic { animation: pjBox 1s ease-in-out infinite; }
   @keyframes pjBox { 0%, 100% { filter: none; } 50% { filter: drop-shadow(0 0 5px rgba(224,48,48,.75)); } }
   .pjFile .pjChk { position: absolute; left: -8%; top: -32%; width: 130%; pointer-events: none; z-index: 3;
@@ -2939,7 +2936,7 @@
   const elTitle = document.getElementById("overTitle");
   const coinNote = document.getElementById("coinNote");
 
-  const GAME_VERSION = "v0.9.438";
+  const GAME_VERSION = "v0.9.439";
   /* 제작사 스플래시(bamhobak friends 로고) — 2026-09-20 끔. 다시 켜려면 true */
   const SPLASH_USE = false;   // 코드를 고칠 때마다 뒤 두 자리를 올린다
   document.getElementById("ver").textContent = GAME_VERSION;
@@ -5307,7 +5304,7 @@
   function augConfirm(fn, ms, kind) {
     btnAugOk.className = kind || ""; btnAugOk.textContent = AUG_OK_TXT[kind] || "확인";
     const show = kind === "plan"
-      ? () => { augAutoFn = null; augOkFn = fn; const fl = augList.querySelector(".pjFile"); if (fl) fl.classList.add("ready"); }   // v0.9.438 제이 — 버튼 없이 '눌러서 체크!'
+      ? () => { augAutoFn = null; augOkFn = fn; const fl = augList.querySelector(".pjFile"); if (fl) fl.classList.add("ready"); }   // v0.9.438 제이 — 버튼 없이, 화면을 누르면 체크
       : () => { augAutoFn = null; augOkFn = fn; btnAugOk.hidden = false; btnAugOk.classList.remove("rsv"); };
     if (augSkipping) { show(); return; }
     augAutoFn = show; augAutoT = setTimeout(show, ms);
@@ -5527,12 +5524,11 @@
       if (!k) pjT0 = performance.now();
       pjSeq.forEach(c => augList.insertBefore(c, card));   // 앞 차례에 받은 카드는 그대로 둔다
       for (let n = 1; n < augRemain; n++) { const ph = card.cloneNode(true); ph.className = "augCard augPh"; ph.removeAttribute("style"); augList.appendChild(ph); }   // v0.9.366 남은 카드 자리를 미리 — 쌓일 때 위로 밀리지 않게
-      /* v0.9.438 제이 — 받은 증강을 파일철 하나에 줄줄이 적는다 (보름달이면 세 줄). 확인 버튼 없이, 다 나오면 화면을 눌러 체크 */
+      /* v0.9.438 제이 — 받은 증강을 파일철 하나에 줄줄이 적는다 (보름달이면 세 줄). 확인 버튼 없이, 다 나오면 화면을 눌러 체크 (v0.9.439 '눌러서 체크!' 글자는 뺐다 — 체크칸만 빛난다) */
       const file = document.createElement("div"); file.className = "pjFile" + (k ? "" : " pjIn");
       const body = document.createElement("div"); body.className = "pjBody";
-      const hint = document.createElement("div"); hint.className = "pjHint"; hint.textContent = "✔ 눌러서 체크!";
       [...augList.querySelectorAll(".augCard")].forEach(c => body.appendChild(c));
-      body.appendChild(hint); file.appendChild(body); augList.appendChild(file);
+      file.appendChild(body); augList.appendChild(file);
       augAnchor();
       card.classList.add("trGot"); card.style.animationDelay = k ? "0.04s" : "0.12s";
       if (t) { t.textContent = "📋 계획대로 되고 있어요!"; if (!k) { t.classList.remove("trTtl"); void t.offsetWidth; t.classList.add("trTtl"); } }
