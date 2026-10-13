@@ -1954,16 +1954,24 @@
   #augList .augPh { visibility: hidden; pointer-events: none; animation: none; }   /* 제이 보름달 — 아직 안 나온 카드 자리 */
   #btnAugOk { margin-top: 6px; animation: okIn .2s ease-out both, glowY 3.4s ease-in-out .2s infinite; }   /* v0.9.398 확대·회전 없이 떠오르기 — 세 조각 버튼 그림이 커지는 동안 이음새가 세로 검은 줄로 보였다 */
   /* v0.9.438 깜짝 선물·제이 확인 — 글자 폭에 맞춘 버튼이 통통 튄다 (확대 없이 위아래만 — 세 조각 이음새가 안 보이게) */
-  /* v0.9.441 깜짝 선물 — 색동 보자기(묶임 → 풀림)에서 카드가 위로 튀어나온다. --fy = 보자기까지의 거리 */
+  /* v0.9.443 깜짝 선물 — 가챠 캡슐(데굴데굴 → 뚜껑 톡)에서 카드가 위로 튀어나온다. --fy = 캡슐까지의 거리
+     (v0.9.441 색동 보자기를 캡슐로 교체 — 이름만 옛 bj 그대로 쓴다) */
   #augList .bjStage { position: relative; height: 128px; margin-top: 6px; pointer-events: none; }
-  .bjStage img { position: absolute; left: 50%; bottom: 0; height: 128px; transform: translateX(-50%); transform-origin: 50% 100%; }
-  .bjStage .bjC { animation: bjWob .55s ease-in-out both, bjOut .14s ease-in .5s forwards; }
-  .bjStage .bjO { opacity: 0; animation: bjIn .32s cubic-bezier(.2,1.6,.4,1) .5s forwards; }
+  .bjStage img { position: absolute; left: 50%; bottom: 0; height: 128px; transform: translateX(-50%); transform-origin: 50% 85%; }
+  .bjStage .bjC { animation: bjWob .55s cubic-bezier(.4,0,.5,1) both, bjOut .14s ease-in .5s forwards; }
+  .bjStage .bjO { opacity: 0; animation: bjIn .34s cubic-bezier(.2,1.7,.4,1) .5s forwards; }
   .bjStage.ready .bjO { opacity: 1; animation: bjGlow 1.3s ease-in-out infinite; }
-  @keyframes bjWob { 0%, 100% { transform: translateX(-50%) rotate(0); } 20% { transform: translateX(-50%) rotate(-9deg); } 40% { transform: translateX(-50%) rotate(8deg); }
-                     60% { transform: translateX(-50%) rotate(-6deg); } 80% { transform: translateX(-50%) rotate(4deg) translateY(-4px); } }
-  @keyframes bjOut { to { opacity: 0; transform: translateX(-50%) scale(1.12); } }
-  @keyframes bjIn { 0% { opacity: 0; transform: translateX(-50%) scale(.8, .7); } 100% { opacity: 1; transform: translateX(-50%); } }
+  /* 캡슐은 접힌 천이 아니라 공이다 — 좌우로 데굴데굴 구르다 가운데서 멈추고 한 번 눌렸다 튄다 */
+  @keyframes bjWob { 0%   { transform: translateX(-50%) rotate(0); }
+                     18%  { transform: translateX(calc(-50% - 13px)) rotate(-15deg); }
+                     38%  { transform: translateX(calc(-50% + 12px)) rotate(14deg); }
+                     56%  { transform: translateX(calc(-50% - 7px)) rotate(-8deg); }
+                     72%  { transform: translateX(calc(-50% + 4px)) rotate(4deg); }
+                     86%  { transform: translateX(-50%) rotate(0) scale(1.05, .9); }
+                     100% { transform: translateX(-50%) rotate(0) translateY(-5px) scale(.97, 1.05); } }
+  /* 뚜껑이 튕겨 열리는 순간 — 닫힌 캡슐은 위로 살짝 솟으며 사라진다 */
+  @keyframes bjOut { to { opacity: 0; transform: translateX(-50%) translateY(-12px) scale(1.14); } }
+  @keyframes bjIn { 0% { opacity: 0; transform: translateX(-50%) translateY(-10px) scale(1.1, .82); } 100% { opacity: 1; transform: translateX(-50%); } }
   @keyframes bjGlow { 0%, 100% { filter: drop-shadow(0 0 4px rgba(255,230,140,.35)); } 50% { filter: drop-shadow(0 0 16px rgba(255,230,140,.9)); } }
   .augCard.bjPop { opacity: 0; animation: bjPop .5s cubic-bezier(.2,1.35,.4,1) both; }
   @keyframes bjPop { 0% { opacity: 0; transform: translateY(var(--fy, 120px)) scale(.15); } 35% { opacity: 1; }
@@ -1984,9 +1992,12 @@
   .pjFile .ds { color: #5a4c38; font-size: 12.5px; line-height: 1.3; }
   .pjFile .augQ.q-2 { color: #a0a4b0; } .pjFile .augQ.q-1 { color: #5d5d5d; } .pjFile .augQ.q0 { color: #c99500; }
   .pjFile .augQ.q1 { color: #e07800; } .pjFile .augQ.q2 { color: #e03030; text-shadow: none; }
-  .pjFile.ready .augCard:not(.augPh) .ic { animation: pjBox 1s ease-in-out infinite; }
+  /* v0.9.443 체크칸을 줄 오른쪽 끝으로 — 왼쪽은 증강 그림, 오른쪽은 체크하는 자리 */
+  .pjFile .pjSlot { position: relative; width: 40px; height: 40px; flex: none; margin-left: auto; align-self: center;
+    border: 2px solid rgba(31,58,104,.42); border-radius: 4px; background: rgba(255,255,255,.45); }
+  .pjFile.ready .augCard:not(.augPh) .pjSlot { animation: pjBox 1s ease-in-out infinite; }
   @keyframes pjBox { 0%, 100% { filter: none; } 50% { filter: drop-shadow(0 0 5px rgba(224,48,48,.75)); } }
-  .pjFile .pjChk { position: absolute; left: -8%; top: -32%; width: 130%; pointer-events: none; z-index: 3;
+  .pjFile .pjChk { position: absolute; left: -26%; top: -40%; width: 152%; pointer-events: none; z-index: 3;
     clip-path: inset(0 100% 0 0); animation: pjChk .26s ease-out forwards; filter: drop-shadow(0 1px 1px rgba(120,0,0,.35)); }
   @keyframes pjChk { to { clip-path: inset(0 0 0 0); } }
   @keyframes okIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: none; } }   /* v0.9.365 받은 증강을 다 보여 준 뒤 확인으로 재개 */
@@ -2946,7 +2957,7 @@
   const elTitle = document.getElementById("overTitle");
   const coinNote = document.getElementById("coinNote");
 
-  const GAME_VERSION = "v0.9.442";
+  const GAME_VERSION = "v0.9.443";
   /* 제작사 스플래시(bamhobak friends 로고) — 2026-09-20 끔. 다시 켜려면 true */
   const SPLASH_USE = false;   // 코드를 고칠 때마다 뒤 두 자리를 올린다
   document.getElementById("ver").textContent = GAME_VERSION;
@@ -5332,7 +5343,7 @@
   /* v0.9.438 제이 — 파일철이 다 채워진 뒤 화면을 누르면 체크칸마다 빨간 펜 체크가 쓱 그어지고 넘어간다 */
   function pjCheckGo() {
     const f = augOkFn, fl = augList.querySelector(".pjFile"); augOkReset();
-    const rows = fl ? [...fl.querySelectorAll(".augCard:not(.augPh) .ic")] : [];
+    const rows = fl ? [...fl.querySelectorAll(".augCard:not(.augPh) .pjSlot")] : [];   // v0.9.443 체크는 줄 오른쪽 칸에
     if (fl) fl.classList.remove("ready");
     rows.forEach((ic, i) => { const k = document.createElement("img"); k.className = "pjChk"; k.src = "assets/ui/check_red.webp"; k.alt = "";
       k.style.animationDelay = (i * 0.12) + "s"; ic.appendChild(k);
@@ -5516,7 +5527,7 @@
             augList.appendChild(c);
           });
           const bj = document.createElement("div"); bj.className = "bjStage";
-          bj.innerHTML = '<img class="bjO" src="assets/ui/bj_open.webp?2" alt=""><img class="bjC" src="assets/ui/bj_closed.webp" alt="">';
+          bj.innerHTML = '<img class="bjO" src="assets/ui/cap_open.webp" alt=""><img class="bjC" src="assets/ui/cap_closed.webp" alt="">';   // v0.9.443 보자기 → 가챠 캡슐
           augList.appendChild(bj);
           setTimeout(() => { if (state === STATE.AUG && !augSkipping) beep(520, .06, "triangle", .05); }, BJ_OPEN * 1000 - 60);   // 풀리는 소리
           { const cy = bj.offsetTop + bj.offsetHeight * 0.45;   // 카드는 보자기 속에서 출발 (offsetTop 은 애니메이션 변형과 무관)
@@ -5545,7 +5556,10 @@
       /* v0.9.438 제이 — 받은 증강을 파일철 하나에 줄줄이 적는다 (보름달이면 세 줄). 확인 버튼 없이, 다 나오면 화면을 눌러 체크 (v0.9.439 '눌러서 체크!' 글자는 뺐다 — 체크칸만 빛난다) */
       const file = document.createElement("div"); file.className = "pjFile" + (k ? "" : " pjIn");
       const body = document.createElement("div"); body.className = "pjBody";
-      [...augList.querySelectorAll(".augCard")].forEach(c => body.appendChild(c));
+      [...augList.querySelectorAll(".augCard")].forEach(c => {
+        if (!c.querySelector(".pjSlot")) { const s = document.createElement("span"); s.className = "pjSlot"; c.appendChild(s); }   // v0.9.443 줄 오른쪽 체크칸
+        body.appendChild(c);
+      });
       file.appendChild(body); augList.appendChild(file);
       augAnchor();
       card.classList.add("trGot"); card.style.animationDelay = k ? "0.04s" : "0.12s";
