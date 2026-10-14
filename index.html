@@ -2987,7 +2987,7 @@
   const elTitle = document.getElementById("overTitle");
   const coinNote = document.getElementById("coinNote");
 
-  const GAME_VERSION = "v0.9.453";
+  const GAME_VERSION = "v0.9.454";
   /* 제작사 스플래시(bamhobak friends 로고) — 2026-09-20 끔. 다시 켜려면 true */
   const SPLASH_USE = false;   // 코드를 고칠 때마다 뒤 두 자리를 올린다
   document.getElementById("ver").textContent = GAME_VERSION;
@@ -10250,7 +10250,7 @@
     { id: "mag",    ic: "🧲", nm: "자석",     ds: "아이템 끌어오는 범위 +10%", max: 5, cost: n => 15 * (n + 1) },
     { id: "luck",   ic: "🍀", nm: "행운",     ds: "아이템 나올 확률 +5%",     max: 5, cost: n => 15 * (n + 1) },
     { id: "fmoon",  ic: "🌕", nm: "달맞이",   ds: "보름달이 나올 확률 +1%",    max: 5, cost: n => 20 * (n + 1) },   // v0.9.73
-    { id: "greed",  ic: "💰", nm: "탐욕",     ds: "코인 나올 확률 +10%",      max: 5, cost: n => Math.ceil(12.5 * (n + 1)) },
+    { id: "greed",  ic: "💰", nm: "탐욕",     ds: "코인 나올 확률 +10%",      max: 5, cost: n => 15 * (n + 1) },
     { id: "score",  ic: "✨", nm: "성장",     ds: "점수 +3%",                max: 5, cost: n => 20 * (n + 1) },
     { id: "snack",  ic: "🍖", nm: "간식 시간", ds: "간식 타임 +0.5초",         max: 5, cost: n => 10 * (n + 1) },
     { id: "umb",    ic: "☂️", nm: "준비성",   ds: "우산 1개 들고 시작",        max: 1, cost: n => 30 },
