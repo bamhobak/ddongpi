@@ -545,9 +545,13 @@
   .augCard .nm2 { font-size: 15px; font-weight: 700; color: #ffd23f; }
   /* v0.9.417 증강 품질 — 설명 끝 (효과량) 색: 낮음 빨강 · 보통 · 높음 노랑 → 주황 */
   .augQ { font-weight: 800; white-space: nowrap; }
-  /* v0.9.423 낮은 것부터 회색 · 하얀 · 노랑 · 주황 · 빨강 (-20 · -10 · 0 · +10 · +20) */
+  /* v0.9.423 낮은 것부터 회색 · 하얀 · 노랑 · 주황 · 빨강 (-20 · -10 · 0 · +10 · +20)
+     v0.9.448 회색 · 하양 · 노랑 · 초록 · 금박 — 최고(+20)는 금박(유니크) — 노랑(0)과 헷갈리지 않게 그라데이션 + 금빛 번짐 + 반짝 훑기 */
   .augQ.q-2 { color: #9aa0b4; } .augQ.q-1 { color: #ffffff; } .augQ.q0 { color: #ffe066; }
-  .augQ.q1 { color: #ff9f2e; } .augQ.q2 { color: #ff4d4d; text-shadow: 0 0 6px rgba(255,70,70,.65); }
+  .augQ.q1 { color: #5fe07a; text-shadow: 0 0 5px rgba(60,200,90,.45); } .augQ.q2 { color: #ffc400; background: linear-gradient(180deg, #fffbe2 0%, #ffe680 30%, #ffbf00 55%, #c98100 80%, #ffd75a 100%);
+    -webkit-background-clip: text; background-clip: text; -webkit-text-fill-color: transparent;
+    filter: drop-shadow(0 0 .6px #5a3300) drop-shadow(0 0 .6px #5a3300) drop-shadow(0 0 5px rgba(255,180,20,.9)); animation: augGold 1.8s ease-in-out infinite; }
+  @keyframes augGold { 0%, 100% { filter: drop-shadow(0 0 .6px #5a3300) drop-shadow(0 0 .6px #5a3300) drop-shadow(0 0 3px rgba(255,180,20,.6)); } 50% { filter: drop-shadow(0 0 .6px #5a3300) drop-shadow(0 0 .6px #5a3300) drop-shadow(0 0 8px rgba(255,200,40,1)); } }
   .augCard .ds { font-size: 13px; color: #c8cbd6; margin-top: 2px; }
   .augCard .cnt {
     flex: none; font-size: 11px; font-weight: 700; color: #12131a;
@@ -1991,7 +1995,7 @@
   .pjFile .nm2 { color: #1f3a68; font-size: 15px; text-shadow: none; }
   .pjFile .ds { color: #5a4c38; font-size: 12.5px; line-height: 1.3; }
   .pjFile .augQ.q-2 { color: #a0a4b0; } .pjFile .augQ.q-1 { color: #5d5d5d; } .pjFile .augQ.q0 { color: #c99500; }
-  .pjFile .augQ.q1 { color: #e07800; } .pjFile .augQ.q2 { color: #e03030; text-shadow: none; }
+  .pjFile .augQ.q1 { color: #23964a; text-shadow: none; } .pjFile .augQ.q2 { background-image: linear-gradient(180deg, #ffe680 0%, #f0b000 45%, #a86a00 85%, #e0a420 100%); }   /* 종이 위 — 진한 금박 */
   /* v0.9.443 체크칸을 줄 오른쪽 끝으로 — 왼쪽은 증강 그림, 오른쪽은 체크하는 자리 */
   .pjFile .pjSlot { position: relative; width: 40px; height: 40px; flex: none; margin-left: auto; align-self: center;
     border: 2px solid rgba(31,58,104,.42); border-radius: 4px; background: rgba(255,255,255,.45); }
@@ -2957,7 +2961,7 @@
   const elTitle = document.getElementById("overTitle");
   const coinNote = document.getElementById("coinNote");
 
-  const GAME_VERSION = "v0.9.447";
+  const GAME_VERSION = "v0.9.448";
   /* 제작사 스플래시(bamhobak friends 로고) — 2026-09-20 끔. 다시 켜려면 true */
   const SPLASH_USE = false;   // 코드를 고칠 때마다 뒤 두 자리를 올린다
   document.getElementById("ver").textContent = GAME_VERSION;
