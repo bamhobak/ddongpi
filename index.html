@@ -2987,7 +2987,7 @@
   const elTitle = document.getElementById("overTitle");
   const coinNote = document.getElementById("coinNote");
 
-  const GAME_VERSION = "v0.9.455";
+  const GAME_VERSION = "v0.9.456";
   /* 제작사 스플래시(bamhobak friends 로고) — 2026-09-20 끔. 다시 켜려면 true */
   const SPLASH_USE = false;   // 코드를 고칠 때마다 뒤 두 자리를 올린다
   document.getElementById("ver").textContent = GAME_VERSION;
@@ -4960,9 +4960,8 @@
     angryUmb:   { t: "한 판에 우산 5개 주우면" },
     dungy:      { t: "하트 1개로 50초 버티면" },
     goldLord:   { t: "무지개 똥 50개 먹으면", key: "gold", n: 50 },   // v0.9.429 20 → 50
-    starburst:  { t: "한 판에 별 5개 먹으면" },
-    legion:     { t: "대왕 간식 10개 먹으면", key: "giant", n: 10 },
-    inter:      { t: "레벨 15까지 가면" },
+    starburst:  { t: "한 판에 별 10개 먹으면" },   // v0.9.456 5 → 10
+    legion:     { t: "대왕 간식 증강을 세 번 먹으면", key: "giantAug", n: 3 },   // v0.9.456 대왕 간식 10개 → 증강 3번(누적)
     clone:      { t: "하트 1개로 30초 버티면" },
     afterimage: { t: "한 번도 안 맞고 레벨 8까지 가면" },
     steelUmb:   { t: "우산으로 똥 30번 막으면", key: "block", n: 30 },
@@ -4971,10 +4970,9 @@
     snackBig:   { t: "간식 타임 20번 열면", key: "fever", n: 20 },
     toilet:     { t: "달 30개 먹으면", key: "moon", n: 30 },
     cloudVip:   { t: "구름 상점에서 10번 사면", key: "cshop", n: 10 },   // v0.9.226
-    juggle:     { t: "방귀 대시를 10번 쓰면", key: "dashUse", n: 10 },        // v0.9.249
     vacuum:     { t: "아이템을 100개 먹으면", key: "item", n: 100 },
     closeCall:  { t: "아슬! 을 50번 하면", key: "graze", n: 50 },
-    coinArmor:  { t: "코인을 300개 모으면", key: "coin", n: 300 },
+    coinArmor:  { t: "코인을 누적 200개 모으면", key: "coin", n: 200 },   // v0.9.456 300 → 200
     credit:     { t: "구름 상점에서 5번 사면", key: "cshop", n: 5 },
     bombPoop:   { t: "레벨 12까지 가면" },
     fartRocket: { t: "초승달 쓸기를 20번 성공하면", key: "juggleOk", n: 20 },
@@ -5021,7 +5019,6 @@
     if (!achLive()) return;
     if (elapsed >= 60 && coinGot === 0) jobUnlock("powerp");   // v0.9.455 100 → 60초   // 무무 — 100초 넘게 코인을 하나도 안 먹기
     if (elapsed - touchAt >= 50) jobUnlock("fit");   // v0.9.455 60 → 50초              // v0.9.386 버피 — 똥이 몸에 60초 동안 안 닿기 (우산·방울·부적·동전 갑옷으로 막아도 닿은 것)
-    if (level >= 15) achUnlock("inter");
     if (level >= 8 && runHits === 0) achUnlock("afterimage");   // v0.9.426 6 → 8
     if (level >= 12) achUnlock("bombPoop");   // v0.9.249
     if (lives === 1) { lowT += dt; if (lowT >= 30) achUnlock("clone"); if (lowT >= 50) achUnlock("dungy"); }
@@ -5217,7 +5214,7 @@
       once: true, cond: () => accOn(5) && !testMode, go: () => { aug.credit = true; } },
     { id: "bombPoop",   ic: "💣", nm: "폭탄 똥", ds: "가끔 폭탄 똥이 떨어져요. 다른 똥에 부딪히면 펑! 주변 똥도 같이 터져요. 나한테 맞으면 아파요",
       once: true, go: () => { aug.bombPoop = true; aug.bombR = 80 * AQ(); } },   // v0.9.429 품질 — 폭발 반경
-    { id: "fartRocket", ic: "🧨", nm: "방귀 로켓", ds: "방귀 대시가 지나간 자리에 1초 동안 바람이 남아, 닿는 똥을 위로 통 튕겨 내요",
+    { id: "fartRocket", ic: "🧨", nm: "방귀 쓸기", ds: "방귀 대시가 지나간 자리에 1초 동안 바람이 남아, 닿는 똥을 위로 통 튕겨 내요",
       hidden: true, once: true, cond: () => aug.dash && aug.juggle, go: () => { aug.fartRocket = true; } },
     { id: "zapDance",   ic: "🕺", nm: "번개 춤", ds: "아슬하게 피하면 몸에서 찌릿! 그 똥이랑 위쪽 똥 두 개가 번개로 터져요 (쿨타임 1.1초)",
       hidden: true, once: true, cond: () => aug.closeCall && petOn.eel, go: () => { aug.zapDance = true; } },
@@ -5273,6 +5270,7 @@
   }
   // 증강 걸기 (q 를 안 주면 수치형은 새로 굴린다 — 깜짝 선물·구름 상점·정시 퇴근·몰빵)
   function augApply(a, q) {
+    if (a.id === "giant") achBump("giantAug");   // v0.9.456 간식 군단 해금 — 대왕 간식 증강을 먹은 횟수(누적)
     augQ = AUG_ROLL.has(a.id) ? (q === undefined ? rollQ() : q) : 0;
     try { a.go(); } finally { augQ = 0; }
     augCount[a.id] = (augCount[a.id] || 0) + 1;
@@ -5317,7 +5315,7 @@
     // 먹은 개수에 비례: 1번째 1,500 → 2번째 3,000 → 3번째 4,500 …
     starCount++;
     achBump("star");                         // v0.9.154 루나 해금(별 30개 누적)
-    if (starCount >= 5) achUnlock("starburst");
+    if (starCount >= 10) achUnlock("starburst");   // v0.9.456 5 → 10
     const gain = Math.round(2000 * starCount * aug.starMul * scoreMul() * (dailyIs(0) ? 1.1 : 1));
     if (job === "powerp" && myPerk(2, "B") && starCount % 5 === 0) { invUntil = Math.max(invUntil, performance.now() + 3000); popText(player.x, player.y - 100, "🙏 빈손의 힘", "#ffe9a8", 20); }
     score += sc("별", gain);
