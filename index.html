@@ -2987,7 +2987,7 @@
   const elTitle = document.getElementById("overTitle");
   const coinNote = document.getElementById("coinNote");
 
-  const GAME_VERSION = "v0.9.454";
+  const GAME_VERSION = "v0.9.455";
   /* 제작사 스플래시(bamhobak friends 로고) — 2026-09-20 끔. 다시 켜려면 true */
   const SPLASH_USE = false;   // 코드를 고칠 때마다 뒤 두 자리를 올린다
   document.getElementById("ver").textContent = GAME_VERSION;
@@ -3016,15 +3016,15 @@
                ds: "힘들때마다 차려지는 엄마의 따뜻한 밥상 · 코인이 2배로 나온다" },
     /* 점술가 — 도박사 자리를 이어받았다. 가끔 떨어지는 수정 구슬(옛 포춘쿠키)을 먹으면 10초 동안 예언 하나가 이뤄진다.
        (옛 도박사 기록은 순위표에 도박사로 그대로 남는다 — JOB_NAMES·JOB_IMG 에만 남겨 두었다) */
-    fortune: { nm: "루나 · 점술가", ic: "🔮", needUnlock: "별 50개 먹으면 해금", ds: "수정 구슬로 10초마다 앞날을 점쳐요 · 어떤 일들이 생길까요?" },
-    levitator: { nm: "도도 · 부양사", ic: "☁️", needUnlock: "15스테이지 도달", ds: "하늘 어디든 날아다닐 수 있어요 · 높이 날수록 점수가 올라요" },
-    fit: { nm: "버피 · 헬스견", ic: "💪", needUnlock: "똥 60초 동안 안 맞기", ds: "하트 5개로 시작해요 · 근육이 빵빵해요" },
+    fortune: { nm: "루나 · 점술가", ic: "🔮", needUnlock: "별 30개 먹기", ds: "수정 구슬로 10초마다 앞날을 점쳐요 · 어떤 일들이 생길까요?" },
+    levitator: { nm: "도도 · 부양사", ic: "☁️", needUnlock: "먹구름 대왕 물리치기", ds: "하늘 어디든 날아다닐 수 있어요 · 높이 날수록 점수가 올라요" },
+    fit: { nm: "버피 · 헬스견", ic: "💪", needUnlock: "똥 50초 동안 안 맞기", ds: "하트 5개로 시작해요 · 근육이 빵빵해요" },
     powerj: { nm: "제이 · 계획러", ic: "📋", needUnlock: "달 누적 50개", ds: "달이 잘 나와요 · 증강 고를 계획이 다 짜여 있어요" },
     /* 파워P — 파워J 의 거울. 달은 남들만큼 오는데, 올 때마다 네 장을 펼쳐 놓고 고른다.
        아이디가 powerp2 인 것은, powerp 는 무소유가 예전에 파워P 였을 때 쓰던 이름이라
        이미 차 있기 때문이다 (옛 기록과 순위표가 그 이름을 쓴다). */
     powerp2: { nm: "파워P", ic: "🎯", gone: true, ds: "증강을 4개 중에서 고른다" },
-    powerp: { nm: "무무 · 무소유", ic: "🙏", needUnlock: "코인 안 먹고 100초",   // v0.9.62 잠긴 캐릭터
+    powerp: { nm: "무무 · 무소유", ic: "🙏", needUnlock: "코인 안 먹고 60초",   // v0.9.62 잠긴 캐릭터
               ds: "달이 안 나와요 · 안 맞을수록 점수가 쑥쑥 올라요" },
     bangul: { nm: "방울이 · 집순이", ic: "🫧", ds: "비누방울이 똥을 대신 막아 줘요" }
   };
@@ -5019,9 +5019,8 @@
   }
   function achTick(dt) {                     // 매 프레임 — 버티기·레벨 업적, 쌓인 횟수 저장
     if (!achLive()) return;
-    if (elapsed >= 100 && coinGot === 0) jobUnlock("powerp");   // 무무 — 100초 넘게 코인을 하나도 안 먹기
-    if (elapsed - touchAt >= 60) jobUnlock("fit");              // v0.9.386 버피 — 똥이 몸에 60초 동안 안 닿기 (우산·방울·부적·동전 갑옷으로 막아도 닿은 것)
-    if (level >= 15) jobUnlock("levitator");                    // v0.9.386 도도 — 15스테이지 도달 (예전 7)
+    if (elapsed >= 60 && coinGot === 0) jobUnlock("powerp");   // v0.9.455 100 → 60초   // 무무 — 100초 넘게 코인을 하나도 안 먹기
+    if (elapsed - touchAt >= 50) jobUnlock("fit");   // v0.9.455 60 → 50초              // v0.9.386 버피 — 똥이 몸에 60초 동안 안 닿기 (우산·방울·부적·동전 갑옷으로 막아도 닿은 것)
     if (level >= 15) achUnlock("inter");
     if (level >= 8 && runHits === 0) achUnlock("afterimage");   // v0.9.426 6 → 8
     if (level >= 12) achUnlock("bombPoop");   // v0.9.249
@@ -8409,6 +8408,7 @@
     if (Math.random() < 0.5) burst(g.bx, g.by, ph ? "#ffe066" : "#b8b0d8", 6);
   }
   function mbClear(now) {
+    if (achLive()) jobUnlock("levitator");   // v0.9.455 도도 — 먹구름 대왕을 물리치면 해금 (예전 15스테이지 도달)
     mbDone = true; mbOut = 0; mbRew = 0; mbQueue = [];
     for (let k = items.length - 1; k >= 0; k--) if (items[k].mb) { burst(items[k].x, items[k].y, "#d8d0ff", 6); items.splice(k, 1); }
     for (let k = warns.length - 1; k >= 0; k--) warns.splice(k, 1);
@@ -9550,7 +9550,7 @@
     achData.j = [...jobUnlocked]; achData.jv = 1; achSave();
   }
   /* 누적 조건은 진행도도 보여 준다 */
-  const JOB_UNLOCK_N = { fortune: ["star", 50], powerj: ["moon", 50] };   // v0.9.386 별 30 → 50 · 달 15 → 50 (누적)
+  const JOB_UNLOCK_N = { fortune: ["star", 30], powerj: ["moon", 50] };   // v0.9.455 별 50 → 30   // v0.9.386 별 30 → 50 · 달 15 → 50 (누적)
   function unlockHow(id) {
     const u = JOB_UNLOCK_N[id], t = JOBS[id].needUnlock;
     return u ? t + " (" + Math.min(u[1], achData.c[u[0]] || 0) + "/" + u[1] + ")" : t;
