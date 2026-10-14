@@ -2957,7 +2957,7 @@
   const elTitle = document.getElementById("overTitle");
   const coinNote = document.getElementById("coinNote");
 
-  const GAME_VERSION = "v0.9.445";
+  const GAME_VERSION = "v0.9.446";
   /* 제작사 스플래시(bamhobak friends 로고) — 2026-09-20 끔. 다시 켜려면 true */
   const SPLASH_USE = false;   // 코드를 고칠 때마다 뒤 두 자리를 올린다
   document.getElementById("ver").textContent = GAME_VERSION;
@@ -8287,6 +8287,99 @@
   let bossThrowT = 0;
   /* ── v0.9.87 끝판왕 — 싱글플레이 22레벨부터 3레벨 동안. 깰 수는 없고, 버티면 대왕 방구로 지상에 돌려보낸다 ── */
   const FB_EASE = 1.1;   // v0.9.435 끝판왕 10% 쉽게 — 공격 사이 간격·회오리 줄기 간격 ×1.1 (쏘는 똥 약 10% 줄어듦)
+  /* v0.9.446 중간 보스 '먹구름 대왕' — 우주복 입기 전 5·6스테이지(약 27초). 그동안 보통 똥·아이템은 멈추고
+     구름이 좌우로 떠다니며 똥비를 뿌린다. 6스테이지엔 화가 나서 번개 똥(예고선)·틈 있는 벽까지.
+     7스테이지가 되면 구름이 걷히고 달(증강)과 하트가 차례로 떨어진다. 끝판왕보다 느리고 틈이 넓다 */
+  const MB_LV = 5, MB_LEN = 2;
+  let mbStarted = false, mbIn = 0, mbShotT = 0, mbStep = 0, mbPhase = -1, mbDone = false, mbOut = -1, mbX = 0, mbRew = 0, mbQueue = [];
+  const mbImg = new Image(); mbImg.src = "assets/ui/mb_cloud.webp";
+  function mbOn() { return runMode === "item" && !dogMode && !loopOn && !mbDone && clearT < 0 && level >= MB_LV && level < MB_LV + MB_LEN; }
+  function bossOn() { return fbOn() || mbOn() || mbOut >= 0; }   // 보스 동안(구름이 걷히는 중 포함)은 보통 똥·아이템·코인이 멈춘다
+  function mbGeom(now) {
+    const w = W * 0.66, h = w * (mbImg.naturalWidth ? mbImg.naturalHeight / mbImg.naturalWidth : 0.5);
+    const shake = mbPhase >= 1 ? Math.sin(now / 37) * 2 : 0;
+    const y = 46 + Math.sin(now / 420) * 5 - (1 - Math.min(1, mbIn)) * (h + 46) * 1.2 - (mbOut >= 0 ? mbOut * h * 0.9 : 0);
+    return { x: mbX - w / 2 + shake, y, w, h, bx: mbX + shake, by: y + h * 0.78 };
+  }
+  function mbShot(x, y, vx, vy, r) {
+    r = r || 15;
+    items.push({ type: "poop", emoji: "💩", x: x, y: y, r: r * 0.82, vx: vx, vy: vy, rot: 0, vr: (Math.random() - 0.5) * 6,
+                 swayA: 0, swayW: 1, swayP: 0, size: r * 2, sz: r, fast: true, thrown: true, mb: true, skin: "poop", space: false,
+                 gold: false, dark: false, special: null, bumpCd: 0, phase: 0, splitAt: 1e9, sz0: 0, pv: 1, gain: 0, giant: false });
+  }
+  function mbUpdate(dt, now) {
+    if (mbOut >= 0) {                                  // 구름이 걷히는 중 — 보상을 차례로
+      mbOut += dt;
+      const steps = [[0.45, "moon"], [1.05, "heart"]];
+      while (mbRew < steps.length && mbOut >= steps[mbRew][0]) {
+        const n0 = items.length, b = BONUS.find(q => q.type === steps[mbRew][1]);
+        if (b) spawnBonus(b);
+        if (items.length > n0) { const it = items[items.length - 1]; it.x = Math.max(it.r, Math.min(W - it.r, mbX + (mbRew ? 40 : -40))); it.y = 60; it.vx = 0; it.vy = 105 * (H / BASE_H); it.hold = 0; }
+        mbRew++;
+      }
+      if (mbOut > 1.9) mbOut = -1;
+      return;
+    }
+    if (!mbOn()) { if (mbStarted && !mbDone && level >= MB_LV + MB_LEN) mbClear(now); return; }
+    if (!mbStarted) {
+      mbStarted = true; mbIn = 0; mbShotT = 1.5; mbStep = 0; mbPhase = -1; mbQueue = []; mbX = W / 2;
+      powerUntil = 0;                                   // 간식 타임도 끝
+      shake = Math.max(shake, 14);
+      popText(W / 2, H * 0.47, "⛈️ 먹구름 대왕 등장! 2스테이지만 버텨라!", "#e6e0ff", 17, 2.6);
+      if (!sfx("angry")) beep(140, .45, "sawtooth", .06);
+      if (navigator.vibrate) navigator.vibrate([40, 50, 80]);
+    }
+    mbIn = Math.min(1, mbIn + dt / 1.2);
+    const ph = Math.min(MB_LEN - 1, level - MB_LV);
+    if (ph !== mbPhase) {
+      if (mbPhase >= 0) {
+        popText(W / 2, H * 0.40, "⚡ 먹구름 대왕이 화났다!", "#ffd34d", 22, 2);
+        shake = Math.max(shake, 14); if (!sfx("angry")) beep(160, .3, "sawtooth", .06);
+      }
+      mbPhase = ph; mbStep = 0; mbShotT = Math.max(mbShotT, 1.0);
+    }
+    mbX = W / 2 + Math.sin(elapsed * (ph ? 0.85 : 0.6)) * W * 0.26;   // 좌우로 둥실둥실
+    if (mbIn < 1) return;
+    for (let k = mbQueue.length - 1; k >= 0; k--) { mbQueue[k].t -= dt; if (mbQueue[k].t <= 0) { const q = mbQueue[k]; mbQueue.splice(k, 1); q.f(); } }
+    mbShotT -= dt;
+    if (mbShotT > 0) return;
+    const g = mbGeom(now), V = H * [0.33, 0.40][ph], r = 14;
+    const rain = (n) => { for (let k = 0; k < n; k++) { const x = g.bx + (Math.random() - 0.5) * g.w * 0.8;
+      mbShot(x, g.by - Math.random() * 20, (Math.random() - 0.5) * 50, V * (0.85 + Math.random() * 0.3), r); } };
+    const aimed = (n) => { for (let k = 0; k < n; k++) { const tx = player.x + (k - (n - 1) / 2) * 60, ty = groundY, d = Math.hypot(tx - g.bx, ty - g.by);
+      mbShot(g.bx, g.by, (tx - g.bx) / d * V, (ty - g.by) / d * V, r); } };
+    const trail = (n) => { for (let k = 0; k < n; k++) mbQueue.push({ t: k * 0.16, f: () => { const gg = mbGeom(performance.now()); mbShot(gg.bx, gg.by, 0, V, r); } }); };   // 구름을 따라 줄줄이
+    const bolt = (n) => { for (let k = 0; k < n; k++) {                // 번개 똥 — 예고선 뒤 곧게 내리꽂힌다
+      const x = 30 + Math.random() * (W - 60); warns.push({ x, ang: 0, t: 1.25, t0: 1.25, dark: false }); fairNote(elapsed + 1.25, x, 20); }
+      if (!sfx("laser")) beep(1500, .06, "sine", .03); };
+    const wall = () => {                                                // 틈 있는 벽 — 틈은 지금 자리에서 닿을 만큼 넓게
+      const gapW = player.r * 5.2, gx = Math.max(gapW / 2, Math.min(W - gapW / 2, player.x + (Math.random() - 0.5) * W * 0.5));
+      for (let x = r; x < W; x += r * 2.7) if (Math.abs(x - gx) > gapW / 2) mbShot(x, g.by, 0, V * 0.8, r); };
+    const P = [
+      [() => rain(3), () => aimed(1), () => trail(3), () => { rain(2); aimed(1); }],
+      [() => rain(4), () => bolt(2), () => { trail(3); aimed(1); }, () => wall(), () => { rain(3); bolt(1); }, () => aimed(2)]
+    ][ph];
+    P[mbStep % P.length](); mbStep++;
+    mbShotT = [1.4, 1.15][ph];   // v0.9.446 초보 실측(5~6스테이지 사망 21%)으로 약 25% 쉽게
+    if (Math.random() < 0.5) burst(g.bx, g.by, ph ? "#ffe066" : "#b8b0d8", 6);
+  }
+  function mbClear(now) {
+    mbDone = true; mbOut = 0; mbRew = 0; mbQueue = [];
+    for (let k = items.length - 1; k >= 0; k--) if (items[k].mb) { burst(items[k].x, items[k].y, "#d8d0ff", 6); items.splice(k, 1); }
+    for (let k = warns.length - 1; k >= 0; k--) warns.splice(k, 1);
+    invUntil = Math.max(invUntil, now + 1500);
+    feverFlash = Math.max(feverFlash, 0.5); shake = Math.max(shake, 16);
+    popText(W / 2, H * 0.26, "☀️ 먹구름이 걷혔다!", "#fff3b0", 26, 2);
+    if (!sfx("gold")) { beep(880, .12, "triangle", .06); beep(1320, .2, "triangle", .05); }
+  }
+  function drawMidBoss(now) {
+    if (!mbStarted || !(mbOn() || mbOut >= 0)) return;
+    const g = mbGeom(now);
+    ctx.save(); ctx.globalAlpha = mbOut >= 0 ? Math.max(0, 1 - mbOut / 1.1) : 1;
+    if (mbImg.complete && mbImg.naturalWidth) ctx.drawImage(mbImg, g.x, g.y, g.w, g.h);
+    else { ctx.font = Math.round(g.h) + "px sans-serif"; ctx.textAlign = "center"; ctx.textBaseline = "top"; ctx.fillText("⛈️", g.bx, g.y); }
+    ctx.restore();
+  }
   const FB_LV = 22, FB_LEN = 4;   // v1.0.05 3 → 4단계
   let fbQueue = [], fbSweepAcc = 0, clearLT = 0;
   /* v0.9.238 클리어 뒤 이어 하기 — 화면에 붙었던 얼굴이 아래로 미끄러져 사라지면 밑에서 다시 올라와 판이 이어진다.
@@ -10897,6 +10990,7 @@
     heartEat = 0; lastHitAt = 0; monkHeartN = 0; lotusDone = false; lotusUntil = 0; mindSlowUntil = 0;
     topT = 0; topGiven = false; riseCd = 0; prevPY = 0; pjMoonN = 0; pjPicks = 0; todoDone = false;
     prophecy2 = null; proph2T = 0; daegilUsed = false; nextProph = null; nextShown = false;
+    mbStarted = false; mbIn = 0; mbDone = false; mbOut = -1; mbRew = 0; mbQueue = []; mbPhase = -1;   // v0.9.446 중간 보스
     fbStarted = false; fbIn = 0; fbSweep = 0; fbPhase = -1; clearT = -1; clearHome = false; gameCleared = false; loopOn = false; loopShift = 0; riseT = -1; clearedOnce = false; fbQueue = []; fbSweepAcc = 0; clearLT = 0; landT0 = 0; landBump = false; landDone = false; fallX0 = null;
     tagCd = 0; tagJob0 = job; jobSecs = {}; tagCharms = (job === "levitator"); tagBox.classList.remove("open");   // v0.9.225 태그 교대
     startAugPending = accOn(3) && !testMode; startAugNow = false; startAugWait = false; cloudT = 5 + Math.random() * 55;   /* v0.9.263 레벨 6부터 세기 시작 — 6에 바로일 수도, 한참 뒤일 수도 (5~60초) */ skillCd = 0; skillUntil = 0; bangIdle = 0;
@@ -11067,7 +11161,7 @@
   const FULL_FX = 0.7;            // 변신 번쩍임이 이어지는 시간(초)
   let monkStreak = 0, fullOwn = false, fullBanner = 0, fullFx = 0;
   function spawnCoin() {
-    if (fbOn()) return;                        // v0.9.87 끝판왕 동안은 코인도 멈춘다
+    if (bossOn()) return;                      // v0.9.87 끝판왕 (v0.9.446 중간 보스도) 동안은 코인도 멈춘다
     if (vsLike()) return;          // 대전모드는 코인도 없다 (한쪽만 주워 가면 불공평)
     let tot = 0;
     for (const c of COIN_KINDS) tot += c.w;
@@ -12363,9 +12457,10 @@
     if (beatPulse > 0) beatPulse = Math.max(0, beatPulse - dt * 4);
     if (noItem()) { patTick(); bossTick(dt); }   // 노템전 — 똥은 공통 패턴대로, 8레벨마다 보스
     if (fbOn() && state === STATE.PLAY) fbTick(dt, now);   // v0.9.87 끝판왕
+    if (state === STATE.PLAY && runMode === "item") mbUpdate(dt, now);   // v0.9.446 중간 보스 먹구름 대왕
     if (riseT >= 0 && state === STATE.PLAY) { riseT += dt; if (riseT > 0.9) riseT = -1; }   // v0.9.238 2회차 올라오기
     else spawnTimer -= dt * tsc;
-    if (!noItem() && !fbOn() && spawnTimer <= 0) {   // 끝판왕 동안은 보통 똥이 안 나온다
+    if (!noItem() && !bossOn() && spawnTimer <= 0) {   // 끝판왕·중간 보스 동안은 보통 똥이 안 나온다
       if (powered) {
         // 간식 타임: 똥이 폭포처럼 쏟아지고 속도도 2배 이상
         const n = 3 + Math.floor(Math.random() * 4);   // 스폰당 3~6개 (평균 4.5개)
@@ -12422,7 +12517,7 @@
     if (!powered) {
       /* v0.8.96 똥대잔치 — 운이 아무리 나빠도 판 시작 9초엔 첫 달이 떨어지기 시작한다
          (첫 타이머는 평균의 25~85%라 보통 4~13초, 바꿔치기에 걸리면 20초 넘게도 안 왔다). 무소유는 원래 달이 없다 */
-      if (fbOn()) { /* 끝판왕 — 아이템·달·구름 모두 멈춘다 */ } else {
+      if (bossOn()) { /* 끝판왕·중간 보스 — 아이템·달·구름 모두 멈춘다 */ } else {
       if (runMode === "item" && lastMoonAt < 0 && elapsed >= FIRST_MOON_BY && job !== "powerp") {
         const mb = BONUS.find(b => b.type === "moon");
         spawnBonus(mb); mb.t = bonusInterval(mb);
@@ -15809,7 +15904,7 @@
   }
   // 점술가의 수정 구슬(type 은 옛 이름 fortune 그대로) — 다른 아이템처럼 위에서 떨어진다
   function spawnFortune() {
-    if (fbOn()) return;
+    if (bossOn()) return;
     const r = 22 * ITEM_SCALE;
     const vy = (110 + level * 6) * (H / BASE_H) * (0.6 + Math.random() * 0.4);
     items.push({ type: "fortune", emoji: "🔮", x: r + Math.random() * (W - r * 2), y: -r - 10, r,
@@ -19531,7 +19626,7 @@
       }
       drawWarnings(now);
       if (state !== STATE.OVER) drawProphGround(now);   // 천리안 예고선 · 명당 자리 (똥 뒤)
-      if (state !== STATE.OVER) { drawBoss(now); drawFinalBoss(now); }   // 보스는 똥 뒤에
+      if (state !== STATE.OVER) { drawBoss(now); drawFinalBoss(now); drawMidBoss(now); }   // 보스는 똥 뒤에
       drawItems(now);
       drawHelpers();
       if (state !== STATE.OVER) drawPetsBack(now);
