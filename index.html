@@ -595,15 +595,15 @@
   /* 일시정지 — 왼쪽 가장자리, 반투명이라 게임을 가리지 않는다 */
   #btnPause {
     position: absolute; z-index: 4; display: none;
-    left: calc(12px + var(--lbx, 0px));
-    top: calc(50% - 32px);   /* v0.9.459 아래 구석 말고 가장자리 가운데 */
+    right: calc(12px + var(--lbx, 0px));
+    top: calc(50% - 32px);   /* v0.9.459 아래 구석 말고 가장자리 가운데 · v0.9.460 스킬 버튼과 같은 쪽 */
     width: 64px; height: 64px; padding: 0; border-radius: 50%;   /* v0.8.78 1.5배 (46 → 64, 아이콘 18 → 27px) */
     background: rgba(255,255,255,.22); color: #fff;
     font-size: 27px; opacity: .75;
   }
   #btnPause.on { display: block; }
   /* v0.9.411 버튼 위치 바꾸기(옵션) — 일시정지·태그는 오른쪽, 스킬·액티브는 왼쪽으로 */
-  body.swapHand #btnPause { left: auto; right: calc(12px + var(--lbx, 0px)); }
+  body.swapHand #btnPause { right: auto; left: calc(12px + var(--lbx, 0px)); }   /* v0.9.460 스킬과 같이 왼쪽으로 */
   body.swapHand #tagBox { left: auto; right: calc(12px + var(--lbx, 0px)); flex-direction: row-reverse; }
   body.swapHand #btnSkill { right: auto; left: 12px; }
   body.swapHand #actBox { right: auto; left: calc(14px + var(--lbx, 0px)); }
@@ -2990,7 +2990,7 @@
   const elTitle = document.getElementById("overTitle");
   const coinNote = document.getElementById("coinNote");
 
-  const GAME_VERSION = "v0.9.459";
+  const GAME_VERSION = "v0.9.460";
   /* 제작사 스플래시(bamhobak friends 로고) — 2026-09-20 끔. 다시 켜려면 true */
   const SPLASH_USE = false;   // 코드를 고칠 때마다 뒤 두 자리를 올린다
   document.getElementById("ver").textContent = GAME_VERSION;
@@ -10077,7 +10077,7 @@
     document.body.classList.toggle("swapHand", swap);
     const hl = document.createElement("div"); hl.className = "setLbl"; hl.textContent = "스킬 버튼 위치";
     const hs = document.createElement("div"); hs.className = "langSeg handSeg";
-    for (const [v, t] of [[true, "왼쪽"], [false, "오른쪽"]]) {   // v0.9.412 스킬 버튼 자리 기준 (일시정지는 반대쪽) — 기본은 오른쪽
+    for (const [v, t] of [[true, "왼쪽"], [false, "오른쪽"]]) {   // v0.9.412 스킬 버튼 자리 기준 — 기본은 오른쪽 (v0.9.460 일시정지도 같은 쪽 가운데)
       const b = document.createElement("button"); b.textContent = t; if (v === swap) b.className = "on";
       b.addEventListener("click", () => {
         if (v === swap) return;
