@@ -2990,7 +2990,7 @@
   const elTitle = document.getElementById("overTitle");
   const coinNote = document.getElementById("coinNote");
 
-  const GAME_VERSION = "v0.9.460";
+  const GAME_VERSION = "v0.9.461";
   /* 제작사 스플래시(bamhobak friends 로고) — 2026-09-20 끔. 다시 켜려면 true */
   const SPLASH_USE = false;   // 코드를 고칠 때마다 뒤 두 자리를 올린다
   document.getElementById("ver").textContent = GAME_VERSION;
@@ -4427,7 +4427,8 @@
   /* v0.9.458 Lv2·Lv4 는 캐릭터마다 능력 하나로 고정 — 해금하면 바로 켜진다 (Lv3 공통은 둘 중 고르기 그대로). 도감에서 고른 쪽 */
   const PERK_FIX = { bangul: { 2: "A", 4: "A" }, fit: { 2: "A", 4: "B" }, powerj: { 2: "A", 4: "A" },
                      levitator: { 2: "A", 4: "B" }, powerp: { 2: "B", 4: "A" }, fortune: { 2: "A", 4: "A" } };
-  function perkFixed(j, l) { return l !== 3 && PERK_FIX[j] ? PERK_FIX[j][l] : null; }
+  const PERK_FIX_ON = false;   // v0.9.461 고정을 끄고 다시 A/B 둘 중 고르기 (예전에 고른 것은 그대로 남아 있다)
+  function perkFixed(j, l) { return PERK_FIX_ON && l !== 3 && PERK_FIX[j] ? PERK_FIX[j][l] : null; }
   function pickOf(j, l) {
     const fx = perkFixed(j, l);
     if (fx) return perkOpen(j, l) ? fx : null;
