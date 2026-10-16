@@ -2987,7 +2987,7 @@
   const elTitle = document.getElementById("overTitle");
   const coinNote = document.getElementById("coinNote");
 
-  const GAME_VERSION = "v0.9.456";
+  const GAME_VERSION = "v0.9.457";
   /* 제작사 스플래시(bamhobak friends 로고) — 2026-09-20 끔. 다시 켜려면 true */
   const SPLASH_USE = false;   // 코드를 고칠 때마다 뒤 두 자리를 올린다
   document.getElementById("ver").textContent = GAME_VERSION;
@@ -8446,6 +8446,7 @@
   fbButt.src = "assets/boss_butt.webp"; fbTail.src = "assets/boss_tail.webp";
   const fbTailSheet = new Image(); fbTailSheet.src = "assets/boss_tail_sheet.webp";   // v0.9.88 Ludo 꼬리 흔들기 49장 (7x7)
   function fbHard(it) { return it.thrown && it.dark && fbOn(); }   // v0.9.92 끝판왕이 뿌린 다크똥
+  function petsAway() { return clearT >= 0 || riseT >= 0; }   // v0.9.457 끝판왕을 깨고 내려가는 동안·2회차 올라오는 동안은 펫이 안 나온다
   function fbOn() { return runMode === "item" && !dogMode && !loopOn && (level >= FB_LV || clearT >= 0); }
   function fbGeom(now) {                       // 엉덩이 자리 — 화면 폭을 꽉 채우고 위에서 내려와 좌우로 살짝 씰룩
     const w = W * 1.06, h = w * (fbButt.naturalWidth ? fbButt.naturalHeight / fbButt.naturalWidth : 0.34);
@@ -8588,6 +8589,7 @@
   }
   function startClear(now) {                   // 3레벨을 버텼다 — 대왕 방구
     clearT = 0;
+    bullets = []; helpers = []; doves = []; fairies = []; cats = []; ducks = [];   // v0.9.457 내려가는 동안 펫은 쉰다 — 날던 것도 치운다
     const g = fbGeom(now);
     for (let k = items.length - 1; k >= 0; k--) { burst(items[k].x, items[k].y, "#b9e08a", 6); }
     items.length = 0;
@@ -11959,7 +11961,7 @@
     }
     if (dashCd > 0) dashCd -= dt;
     if (dashT > 0) dashT = Math.max(0, dashT - dt);   // 자리는 tryDash 에서 이미 옮겼다 (순간이동)
-    if (petOn.dove && state === STATE.PLAY) {
+    if (petOn.dove && state === STATE.PLAY && !petsAway()) {
       moveDist += Math.abs(player.x - prev) * gPet();
       const need = doveEvery();
       if (moveDist >= need) {
@@ -12110,7 +12112,7 @@
     }
 
       // ---- 뿅뿅이 — 땅에 늘어선 뿅뿅이가 저마다 제 주기로 총알을 쏘아 올린다 ----
-    if (aug.galaga > 0) {
+    if (aug.galaga > 0 && !petsAway()) {
       /* 뿅뿅이마다 제 박자가 있다 — 다 같이 쏘면 여러 대라도 한 발처럼 보인다.
          한 대는 shipGap(n) 마다 쏘되, k 번째는 그 주기를 n 등분한 만큼 늦게 쏜다.
          시계 하나로 재기 때문에 대수가 바뀌어도 박자가 저절로 다시 갈린다. */
@@ -12225,7 +12227,7 @@
       }
     }
     // ---- 선물 요정 — 떨어지는 똥에 날아가 펑! 아이템으로 바꾼다 ----
-    if (petOn.gift && state === STATE.PLAY) {
+    if (petOn.gift && state === STATE.PLAY && !petsAway()) {
       giftT -= dt * tsc * gPet();   // v0.9.72 성장 펫 훈련
       if (giftT <= 0) {
         const busy = new Set(fairies.map(f => f.t));
@@ -12281,7 +12283,7 @@
       }
     }
     // ---- 야옹이 — 위에서 고개를 내밀어 코인을 떨어뜨린다 ----
-    if (petOn.coincat && state === STATE.PLAY) {
+    if (petOn.coincat && state === STATE.PLAY && !petsAway()) {
       catT -= dt * tsc * gPet();   // v0.9.72 성장 펫 훈련
       if (catT <= 0) {
         catT = CAT_EVERY;
@@ -12302,7 +12304,7 @@
       if (c.t >= 1.4) cats.splice(k, 1);
     }
     // ---- 찌릿 장어 — 가까운 똥에 번개, 옆 똥으로 옮겨붙는다 ----
-    if (petOn.eel && state === STATE.PLAY) {
+    if (petOn.eel && state === STATE.PLAY && !petsAway()) {
       eelT -= dt * tsc * gPet();   // v0.9.72 성장 펫 훈련
       if (eelT <= 0) {
         const ex = petFx, ey = petFy + petArc() + 4;     // 번개는 찌릿 장어가 있는 자리에서
@@ -12311,7 +12313,7 @@
       }
     }
     // ---- 노란 오리 — 떼로 휭 지나가며 한 마리가 똥 하나씩 부순다 ----
-    if (petOn.duck && state === STATE.PLAY) {
+    if (petOn.duck && state === STATE.PLAY && !petsAway()) {
       duckT -= dt * tsc * gPet();
       if (duckT <= 0) {
         duckT = DUCK_EVERY;
@@ -12394,7 +12396,7 @@
     }
 
     // ---- 도와줘 뿌잉 ----
-    if (aug.helper > 0) {
+    if (aug.helper > 0 && !petsAway()) {
       // 1명이면 4.5초, 2명이면 5.5초, 3명이면 6.5초… 인원이 늘수록 주기가 1초씩 길어진다
       const cycle = 6.5 * Math.pow(0.88, aug.helper - 1);   // v0.9.59 늘 한 마리씩, 단계마다 12% 자주 (6.5 → 5.7 → 5.0 → 4.4 → 3.9초)   // 예전: 5.5 + 1.0 * aug.helper;   // v0.9.45 4.5 → 5.5   // v0.9.31 4.0 → 4.5   // 3.5 → 4.0, 출격이 조금 뜸해진다
       helperTimer -= dt * tsc * gPet();   // v0.9.72 성장 펫 훈련
@@ -19376,7 +19378,7 @@
       ctx.beginPath(); ctx.arc(b.x, b.y, 50 * (0.3 + 0.7 * k), 0, 6.283); ctx.stroke();
     }
     ctx.globalAlpha = 1;
-    if (aug.galaga > 0) {
+    if (aug.galaga > 0 && !petsAway()) {   // v0.9.457 클리어 뒤 내려가는 동안은 뿅뿅이도 안 보인다
       const sy = shipY(), tn = performance.now();   // drawEffects 에는 now 가 없다
       for (let k = 0; k < aug.galaga; k++) drawShip(shipX(k, aug.galaga), sy, tn + k * 137);
     }
@@ -19685,8 +19687,8 @@
       if (state !== STATE.OVER) drawProphGround(now);   // 천리안 예고선 · 명당 자리 (똥 뒤)
       if (state !== STATE.OVER) { drawBoss(now); drawFinalBoss(now); drawMidBoss(now); }   // 보스는 똥 뒤에
       drawItems(now);
-      drawHelpers();
-      if (state !== STATE.OVER) drawPetsBack(now);
+      if (!petsAway()) drawHelpers();
+      if (state !== STATE.OVER && !petsAway()) drawPetsBack(now);
       if (vsOn() && state !== STATE.OVER && state !== STATE.READY) drawVsWorld(now);   // 얼음·껍질·구름·비둘기
       if (partyNow) { drawPartyBodies(now); drawPartyUpper(now); }
       if (state !== STATE.OVER || gameCleared) {
@@ -19706,7 +19708,7 @@
     drawEffects();
     { const nt = performance.now(); drawHitFx(Math.min(0.05, (nt - (window.__hitLast || nt)) / 1000)); window.__hitLast = nt; }   // v0.9.351 맞음 이펙트
     if (partyNow) { drawPartyTags(now); ctx.restore(); W = VW; }
-    if (state === STATE.PLAY || state === STATE.PAUSE) { drawPetsFront(now); drawProphecy(); }
+    if (state === STATE.PLAY || state === STATE.PAUSE) { if (!petsAway()) drawPetsFront(now); drawProphecy(); }
     ctx.restore();
     if (state === STATE.PLAY || state === STATE.PAUSE) { drawHud(); drawDashGauge(now); }
     tagSync();   // v0.9.225 태그 교대 버튼 — 판 밖에서는 숨긴다
