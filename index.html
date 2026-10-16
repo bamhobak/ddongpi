@@ -2990,7 +2990,7 @@
   const elTitle = document.getElementById("overTitle");
   const coinNote = document.getElementById("coinNote");
 
-  const GAME_VERSION = "v0.9.461";
+  const GAME_VERSION = "v0.9.462";
   /* 제작사 스플래시(bamhobak friends 로고) — 2026-09-20 끔. 다시 켜려면 true */
   const SPLASH_USE = false;   // 코드를 고칠 때마다 뒤 두 자리를 올린다
   document.getElementById("ver").textContent = GAME_VERSION;
@@ -3279,15 +3279,15 @@
     dove:   { nm: "둘기", ic: "🕊️", img: "assets/dove.png",
               ds: "많이 움직이면 날아올라 똥을 터뜨려요" },
     eel:    { nm: "찌릿 장어", ic: "⚡", img: "assets/pet_eel.png",
-              ds: "가끔 가까운 똥에 찌릿! 번개를 쏘고, 옆 똥까지 번져요" },
+              ds: "찌릿 장어가 번개를 쏴요" },
     duck:   { nm: "노란 오리", ic: "🦆", img: "assets/pet_duck.png", ui: "assets/pet_duck_shop.png?2",   // v0.9.343 · v0.9.372 상점·고르기 그림은 방귀 뺀 것(ui)
               ds: "가끔 조그만 오리 떼가 방귀로 부릉! 화면 가운데를 가로지르며 한 마리가 똥 하나씩 부숴요" },
     angel:  { nm: "아기 천사", ic: "👼", img: "assets/pet_angel.png",
-              ds: "쓰러지면 한 번 다시 일으켜 주고, 그 뒤 6초 동안 다가오는 똥을 밀어내요" },
+              ds: "아기 천사가 한 번 다시 일으켜 주고, 6초 동안 똥을 밀어내요" },
     gift:   { nm: "선물 요정", ic: "🧚", img: "assets/pet_fairy.png?2",
               ds: "가끔 날아가서 똥을 펑! 하트·우산·별·달로 바꿔요" },
     coincat: { nm: "코인냥이", ic: "🐈", img: "assets/pet_cat.png", ui: "assets/pet_cat_shop.png?1",   // v0.9.373 상점 그림은 꼬리 말고 몸 기준 가운데
-              ds: "가끔 코인을 물어다 줘요" }
+              ds: "코인냥이가 코인을 물어다 줘요" }
   };
   // 게임 화면에 그릴 펫 그림 (카드 그림과 같은 파일)
   const PET_IMG = {};
@@ -5051,21 +5051,21 @@
   function nameOf(a) { return a.nmFn ? a.nmFn() : a.nm; }
 
   const AUGMENTS = [
-    { id: "fever_time", ic: "⏳", nm: "간식 연장", ds: "간식 타임이 더 길어져요",
+    { id: "fever_time", ic: "⏳", nm: "간식 연장", ds: "간식 타임이 길어져요",
       go: () => { aug.feverBonus += 1500 * AQ(); } },   // 먹을 때마다 +1.5초, 감쇠 없음
-    { id: "star50",     ic: "🏹", nm: "별 사냥꾼",   ds: "별을 먹으면 점수를 더 많이 받아요",
+    { id: "star50",     ic: "🏹", nm: "별 사냥꾼",   ds: "별 점수를 더 많이 받아요",
       go: () => { aug.starMul += 0.20 * dim("star50") * AQ(); } },   // v0.9.429 0.25 → 0.20
     { id: "time2x",     ic: "🎖", nm: "끈기 대장",   ds: "오래 버틸수록 점수가 더 빨리 쌓여요",
       go: () => { aug.timeMul *= 1 + 0.5 * dim("time2x") * AQ(); } },
-    { id: "fever50",    ic: "🍪", nm: "꿀맛 간식", ds: "간식 타임에 먹는 간식 점수가 올라요",
+    { id: "fever50",    ic: "🍪", nm: "꿀맛 간식", ds: "간식 점수가 올라요",
       go: () => { aug.feverScoreMul += 0.20 * AQ(); } },   // 먹을 때마다 +20%, 감쇠 없음
     { id: "slow",       ic: "🐢", nm: "느림보 하늘",   ds: "똥이 느릿느릿 떨어져요",
       go: () => { aug.fallMul *= 1 - 0.12 * dim("slow") * AQ(); } },
-    { id: "small",      ic: "🐜", nm: "다이어트 성공", ds: "몸이 작아져서 똥을 피하기 쉬워요",
+    { id: "small",      ic: "🐜", nm: "다이어트 성공", ds: "몸이 작아져요",
       cond: () => job !== "fit",   // 헬스걸은 벌크업이 정체성 — 마운자로를 맞지 않는다
       nmFn: () => "다이어트 성공 " + ((augCount["small"] || 0) + 1) + "단계",
       go: () => { aug.hitboxMul *= 1 - 0.12 * dim("small") * AQ(); } },
-    { id: "tinypoop",   ic: "🟤", nm: "꼬마 똥",   ds: "떨어지는 똥이 작아져요",
+    { id: "tinypoop",   ic: "🟤", nm: "꼬마 똥",   ds: "똥이 작아져요",
       go: () => { aug.poopMul *= 1 - 0.12 * dim("tinypoop") * AQ(); } },
     { id: "umbrella3",  ic: "🎀", nm: "우산 꾸러미", ds: "우산을 3개 받아요",
       max: 99,                    // 조건이 막아주므로 보유 상한은 사실상 없음
@@ -5076,8 +5076,8 @@
     /* v0.9.76 펫과 그 펫을 키우는 증강(도와줘 뿌잉·뿅뿅이 편대·비둘기 떼)을 한 증강으로 묶었다 — 처음 먹으면 펫이 오고, 또 먹으면 한 단계씩 (최대 5단계) */
     { id: "pet:helper",  ic: "🐹", nm: "펫 뿌잉", max: 5, w: 0.7, cond: () => hasPet("helper"),
       nmFn: () => augCount["pet:helper"] ? "펫 뿌잉 " + (augCount["pet:helper"] + 1) + "단계" : "펫 뿌잉",
-      ds: "로켓 햄스터가 가끔 슝 날아와서 지나간 자리의 똥을 부숴요",
-      dsFn: () => augCount["pet:helper"] ? "뿌잉이 더 커지고 더 자주 날아와요" : "로켓 햄스터가 가끔 슝 날아와서 지나간 자리의 똥을 부숴요",
+      ds: "뿌잉이 날아가 똥을 부숴요",
+      dsFn: () => augCount["pet:helper"] ? "뿌잉이 더 커지고 더 자주 날아와요" : "뿌잉이 날아가 똥을 부숴요",
       go: () => { if (petOn.helper) aug.helper++; else { petOn.helper = true; aug.helper = Math.max(aug.helper, 1); } helperTimer = Math.min(helperTimer, 0.6); } },
     { id: "pet:galaga",  ic: "🚀", nm: "펫 뿅뿅이", max: 5, w: 0.7, cond: () => hasPet("galaga"),
       nmFn: () => augCount["pet:galaga"] ? "펫 뿅뿅이 " + (augCount["pet:galaga"] + 1) + "단계" : "펫 뿅뿅이",
@@ -5086,36 +5086,36 @@
       go: () => { if (petOn.galaga) aug.galaga++; else { petOn.galaga = true; aug.galaga = Math.max(aug.galaga, 1); } } },
     { id: "pet:dove",    ic: "🕊️", nm: "펫 둘기", max: 5, w: 0.7, cond: () => hasPet("dove"),
       nmFn: () => augCount["pet:dove"] ? "펫 둘기 " + (augCount["pet:dove"] + 1) + "단계" : "펫 둘기",
-      ds: "많이 움직이면 둘기가 날아올라 똥을 터뜨려요",
-      dsFn: () => augCount["pet:dove"] ? "날아갈 때 둘기가 한 마리 더 날아요" : "많이 움직이면 둘기가 날아올라 똥을 터뜨려요",
+      ds: "움직임이 쌓이면 둘기가 날아가요",
+      dsFn: () => augCount["pet:dove"] ? "날아갈 때 둘기가 한 마리 더 날아요" : "움직임이 쌓이면 둘기가 날아가요",
       go: () => { if (petOn.dove) aug.doveFlock++; else petOn.dove = true; } },
-    { id: "pet:angel",   ic: "👼", nm: "펫 아기 천사", ds: "쓰러지면 한 번 다시 일으켜 주고, 그 뒤 6초 동안 다가오는 똥을 밀어내요", once: true, w: 0.6,
+    { id: "pet:angel",   ic: "👼", nm: "펫 아기 천사", ds: "아기 천사가 한 번 다시 일으켜 주고, 6초 동안 똥을 밀어내요", once: true, w: 0.6,
       cond: () => hasPet("angel") && level >= 4,
       go: () => { petOn.angel = true; } },
-    { id: "pet:gift",    ic: "🧚", nm: "펫 선물 요정", ds: "가끔 날아가서 떨어지는 똥을 아이템으로 바꿔요", once: true, w: 0.7, cond: () => hasPet("gift"),
+    { id: "pet:gift",    ic: "🧚", nm: "펫 선물 요정", ds: "선물 요정이 똥을 아이템으로 바꿔 줘요", once: true, w: 0.7, cond: () => hasPet("gift"),
       go: () => { petOn.gift = true; giftT = GIFT_EVERY * 0.5; } },
-    { id: "pet:coincat", ic: "🐈", nm: "펫 코인냥이", ds: "가끔 코인을 물어다 줘요", once: true, w: 0.7, cond: () => hasPet("coincat"),
+    { id: "pet:coincat", ic: "🐈", nm: "펫 코인냥이", ds: "코인냥이가 코인을 물어다 줘요", once: true, w: 0.7, cond: () => hasPet("coincat"),
       go: () => { petOn.coincat = true; catT = CAT_EVERY * 0.5; } },
     { id: "pet:duck",    ic: "🦆", nm: "펫 노란 오리", max: 5, w: 0.7, cond: () => hasPet("duck"),   // v0.9.348 단계형 — 2마리에서 단계마다 +1
       nmFn: () => augCount["pet:duck"] ? "펫 노란 오리 " + (augCount["pet:duck"] + 1) + "단계" : "펫 노란 오리",
       ds: "노란 오리 떼가 날아다녀요",   // v0.9.403 도감에서 고침 (단계 설명 없이 한 줄)
       go: () => { if (petOn.duck) aug.duck = (aug.duck || 4) + 2; else { petOn.duck = true; aug.duck = 4; duckT = DUCK_EVERY * 0.5; } } },   // v0.9.403 4마리에서 단계마다 +2 (최대 12)
-    { id: "duckFat",    ic: "🐥", nm: "통통 오리", ds: "오리가 1.25배 통통해지고, 똥을 부수는 범위는 1.5배 넓어져요",   // v0.9.348
+    { id: "duckFat",    ic: "🐥", nm: "통통 오리", ds: "오리들이 통통해지고, 똥을 부수는 범위도 넓어져요",   // v0.9.348
       once: true, cond: () => petOn.duck, go: () => { aug.duckFat = true; } },
-    { id: "duckMarch",  ic: "🎺", nm: "오리 행진곡", ds: "방귀 대시를 쓰면 그 자리에서 오리 떼가 대각선 위로 출동해요",   // v0.9.348
+    { id: "duckMarch",  ic: "🎺", nm: "오리 행진곡", ds: "방귀 대시를 쓰면 오리 떼가 출동해요",   // v0.9.348
       hidden: true, once: true, cond: () => petOn.duck && aug.dash, go: () => { aug.duckMarch = true; } },
-    { id: "duckEgg",    ic: "🥚", nm: "황금 오리알", ds: "오리가 똥을 부술 때 가끔(30%) 코인을 떨어뜨려요",   // v0.9.348
+    { id: "duckEgg",    ic: "🥚", nm: "황금 오리알", ds: "오리가 똥을 부술 때 코인을 떨어뜨려요",   // v0.9.348
       hidden: true, once: true, cond: () => petOn.duck && petOn.coincat, go: () => { aug.duckEgg = true; } },
-    { id: "pet:eel",     ic: "🐍", nm: "펫 찌릿 장어", ds: "가끔 가까운 똥에 찌릿! 번개를 쏘고, 옆 똥까지 번져요", once: true, w: 0.7, cond: () => hasPet("eel"),
+    { id: "pet:eel",     ic: "🐍", nm: "펫 찌릿 장어", ds: "찌릿 장어가 번개를 쏴요", once: true, w: 0.7, cond: () => hasPet("eel"),
       go: () => { petOn.eel = true; eelT = EEL_EVERY * 0.5; } },
     /* ── 펫 전용 증강 — 그 펫을 데리고 있을 때만 후보에 나온다 ── */
     { id: "doveHome",   ic: "🪺", nm: "둘기 모이", ds: "둘기가 더 자주 날아와요",
       max: 3, cond: () => petOn.dove,
-      go: () => { aug.doveFreq *= 1 - 0.25 * dim("doveHome"); } },   // v0.9.429 -20 → -25%   // 80m → 64m → 53m …
+      go: () => { aug.doveFreq *= 1 - 0.20 * dim("doveHome"); } },   // v0.9.429 -20 → -25% · v0.9.462 다시 -20%   // 80m → 64m → 53m …
     { id: "hungry",     ic: "😋", nm: "먹보 뿌잉", ds: "뿌잉이 아이템을 대신 먹어 줘요",
       hidden: true, once: true, cond: () => petOn.helper && aug.magnet > 0,   // 뿌잉 펫 + 자석
       go: () => { aug.hungry = true; } },
-    { id: "roid",       ic: "🦾", nm: "근육 펌핑", ds: "6초 동안 몸이 2배로 커지고, 닿는 똥을 모두 튕겨 내요",   // v0.9.40 옛 이름 '스테로이드 과다 복용' 
+    { id: "roid",       ic: "🦾", nm: "근육 펌핑", ds: "6초 동안 몸이 2배로 커지고, 똥을 모두 튕겨 내요",   // v0.9.40 옛 이름 '스테로이드 과다 복용' 
       max: 99, noCount: true, cond: () => job === "fit" && level >= 7,   // 헬스걸 전용 — 우산 꾸러미 자리
       go: () => { roidT = 6 * AQ(); } },   // v0.9.31 7 → 6초
     { id: "doveWhat",   ic: "🦢", nm: "왕 둘기", ds: "둘기가 더 크고 빨라지고, 더 자주 날아와요",
@@ -5126,7 +5126,7 @@
       hidden: true, once: true,
       cond: () => augCount["umbrella3"] > 0 && job !== "fit",   // 헬스걸은 하트 자동재생이 돼버려 제외
       go: () => { aug.steelUmb = true; shieldTimer = UMB_SEC; } },
-    { id: "starburst",  ic: "🌠", nm: "별똥별",     ds: "별을 먹으면 하늘의 똥을 싹 쓸어 줘요",
+    { id: "starburst",  ic: "🌠", nm: "별똥별",     ds: "별을 먹으면 똥을 싹 쓸어 줘요",
       hidden: true, once: true, cond: () => augCount["star50"] > 0,
       go: () => { aug.starburst = true; } },
     { id: "blackhole",  ic: "🕳️", nm: "블랙홀",     ds: "아이템을 더 세게 끌어당겨요. 간식도 조금 끌려와요",
@@ -5139,7 +5139,7 @@
       once: true, go: () => { aug.magnet = 150; } },   // v0.9.429 160 → 150 · v0.9.403 220 → 160   // 끌어당기는 반지름(px) · 구름 상점은 무엇으로도 끌려오지 않는다(v0.9.208)
     /* 조작이 끌기 하나뿐이라 실력을 드러낼 통로가 좁다. 기본 기능으로 넣지 않고 증강으로만 둔다 —
        조작이 복잡해지는 건 원하는 사람만 지게. 부양사는 이미 두 배 반으로 빠르니 안 나온다. */
-    { id: "dash",       ic: "💨", nm: "방귀 대시",   ds: "화면을 두 번 톡톡 누르면 그 자리로 대시 (쿨타임 10초)",
+    { id: "dash",       ic: "💨", nm: "방귀 대시",   ds: "두 번 톡톡 누르면 그 자리로 대시 (쿨타임 10초)",
       once: true, cond: () => actOk(),   // v0.9.210 부양사도 나온다 · v0.9.249 액티브 스킬은 두 가지까지
       go: () => { aug.dash = true; dashCd = 0; dashT = 0; } },
     { id: "lucky",      ic: "🍀", nm: "네잎클로버",       ds: "아이템이 더 자주 나와요",
@@ -5147,63 +5147,63 @@
       go: () => { aug.itemRateMul /= 1 + 0.12 * dim("lucky") * AQ(); } },   // v0.9.429 0.15 → 0.12
     { id: "giant",      ic: "🎂", nm: "대왕 간식", ds: "커다란 대왕 간식이 나와요",
       once: true, go: () => { aug.giant = 1; } },
-    { id: "downpour",   ic: "🌧️", nm: "간식 세일", ds: "간식이 더 많이 쏟아져요",
+    { id: "downpour",   ic: "🌧️", nm: "간식 세일", ds: "간식이 많이 떨어져요",
       go: () => { aug.feverRateMul = 1 / (1 / aug.feverRateMul + 0.20 * AQ()); } },   // 먹을 때마다 양 +20%, 감쇠 없음
-    { id: "angryUmb",   ic: "🌂", nm: "화난 우산",   ds: "우산이 깨질 때 펑! 터져서 주변 똥을 멀리 날려요",
+    { id: "angryUmb",   ic: "🌂", nm: "화난 우산",   ds: "우산이 터질 때 주변 똥을 멀리 날려요",
       hidden: true, once: true,
       cond: () => job !== "fit" && shields >= 5,   // 헬스걸은 방패가 없어 의미가 없다
       go: () => { aug.angryUmb = true; } },
-    { id: "gold",       ic: "🌈", nm: "무지개 똥", ds: "똥이 가끔 무지개 똥으로 바뀌어요. 먹으면 점수!",
+    { id: "gold",       ic: "🌈", nm: "무지개 똥", ds: "똥이 가끔 무지개 똥으로 바뀌어요",
       // 1개째는 8%, 그 뒤로는 7%p 씩 (감쇠 없음) — 쌓을수록 값을 한다
       go: () => { aug.goldChance += (augCount["gold"] ? 0.07 : 0.08) * AQ(); } },
-    { id: "dopa",       ic: "⏩", nm: "과속 질주",  ds: "똥이 빨라지는 대신, 버티는 점수가 많이 올라요",
+    { id: "dopa",       ic: "⏩", nm: "과속 질주",  ds: "똥이 빨라지지만, 생존 점수가 많이 올라요",
       go: () => { aug.fallMul *= 1 + 0.10 * dim("dopa"); aug.timeMul *= 1 + 0.5 * dim("dopa") * AQ(); } },
     { id: "carrot",     ic: "💞", nm: "하트 거래", ds: "하트 1개를 주고, 앞으로 받는 점수가 늘어나요",
       // 목숨을 파는 증강이라, 목숨 대신 오염도로 버티는 방울이에게는 나오지 않는다
       max: 5, cond: () => !dirtJob() && lives >= 2,
       go: () => { lives = Math.max(1, lives - 1); aug.scoreMul *= 1 + 0.2 * AQ(); } },
-    { id: "dungy",      ic: "🧗", nm: "벼랑 끝", ds: "하트가 적을수록 점수가 올라요 · 하트 1개면 2배",
+    { id: "dungy",      ic: "🧗", nm: "벼랑 끝", ds: "하트가 적을수록 점수가 올라요",
       once: true,                               // v0.9.65 모든 캐릭터 공통 (예전엔 방울이 전용 · 오염도 기준)
       go: () => { aug.dungy = true; } },
-    { id: "goldLord",   ic: "🦄", nm: "무지개 수집가", ds: "무지개 똥이 멀리서도 쌩 끌려오고, 점수가 2배",
+    { id: "goldLord",   ic: "🦄", nm: "무지개 수집가", ds: "무지개 똥이 끌려오고, 점수 2배",
       // 무지개 똥 + 자석 — 무지개똥을 만들 수 있고, 끌어올 수 있어야 뜻이 산다
       hidden: true, once: true,
       cond: () => (augCount["gold"] || 0) >= 1 && aug.magnet > 0,
       go: () => { aug.goldLord = true; } },
-    { id: "inter",      ic: "🕰️", nm: "느린 세상", ds: "가끔 세상이 느려져요. 점수 시계는 그대로 가요",
+    { id: "inter",      ic: "🕰️", nm: "느린 세상", ds: "가끔 세상이 느려져요",
       hidden: true, once: true, cond: () => augCount["slow"] >= 2,
       go: () => { aug.inter = true; interTimer = 8; bulletT = 2; } },
     /* 회피 확률은 일부러 안 적는다 — 숫자를 세는 것보다 '가끔 스르륵 피해진다'는
        느낌으로 두는 게 낫다. 안쪽 값은 10% 로 시작해 한 장마다 5%p 씩 (최대 30%). */
-    { id: "afterimage", ic: "👥", nm: "잔상 회피", ds: "맞을 때 가끔 그림자만 남기고 쏙 피해요",
+    { id: "afterimage", ic: "👥", nm: "잔상 회피", ds: "똥을 가끔씩 쏙 피해요",
       max: 5,
       dsFn: () => (augCount["afterimage"] || 0)
         ? "더 자주 쏙 피해요"
-        : "맞을 때 가끔 그림자만 남기고 쏙 피해요",
+        : "똥을 가끔씩 쏙 피해요",
       go: () => { aug.dodge += (augCount["afterimage"] ? 0.05 : 0.15) * AQ(); } },   // v0.9.426 첫 개 10 → 15%
-    { id: "chainZap",   ic: "⛓", nm: "연쇄 번개", ds: "펫이 똥을 부술 때 번개가 튀어서 옆 똥 1개(절반 확률로 2개)도 터져요",
+    { id: "chainZap",   ic: "⛓", nm: "연쇄 번개", ds: "펫이 똥을 부술 때 번개가 튀어요",
       hidden: true, once: true, cond: () => zapOwnN() >= 3 && (petOn.galaga || petOn.helper || petOn.dove || petOn.eel || petOn.gift || petOn.duck),   // v0.9.61 똥을 부수는 펫이면 누구든 · v0.9.161 그 펫 3마리 이상 사 둬야
       go: () => { aug.chainZap = true; } },
-    { id: "wak",        ic: "👊", nm: "주먹탄", ds: "총알이 주먹으로 바뀌어요. 맞은 똥이 날아가 다른 똥이랑 같이 펑!",
+    { id: "wak",        ic: "👊", nm: "주먹탄", ds: "뿅뿅이 총알이 주먹으로 바뀌어요",
       hidden: true, once: true, cond: () => petOn.galaga && aug.galaga >= 2,   // 뿅뿅이 2대 이상
       go: () => { aug.wak = true; } },
-    { id: "clone",      ic: "👯", nm: "꼬마 분신", ds: "작은 분신이 날아가서 똥이랑 같이 펑 터져요",
+    { id: "clone",      ic: "👯", nm: "꼬마 분신", ds: "작은 분신이 날아가요",
       hidden: true, once: true,
       cond: () => level >= 7 && (dirtJob() ? dirt >= DIRT_HIT * 2 : lives <= 2),
       go: () => { aug.clone = true; cloneTimer = 1.5; } },
     /* ── v0.8.49 새 증강 셋 ── */
-    { id: "glass",      ic: "🫙", nm: "배짱 승부",   /* v0.9.248 아슬아슬 → 배짱 승부 (스침 '아슬!'과 헷갈려서) */ ds: "점수가 25% 올라요. 대신 몸이 조금 커져요",
+    { id: "glass",      ic: "🫙", nm: "배짱 승부",   /* v0.9.248 아슬아슬 → 배짱 승부 (스침 '아슬!'과 헷갈려서) */ ds: "몸이 커지는 대신 받는 점수가 많이 올라요",
       max: 3, go: () => { aug.scoreMul *= 1 + 0.25 * AQ(); aug.hitboxMul *= 1.15; } },
     /* (☝️ 외줄 타기는 v0.8.58 에 뺐다 — 방어 증강까지 두 배가 되어 우산·잔상·작은 몸으로 사실상 안 죽었다) */
     /* ── v0.9.61 새 증강 ── */
     { id: "pierce",     ic: "🔩", nm: "관통탄", ds: "뿅뿅이 총알이 똥 하나를 뚫고 지나가요",
       once: true, cond: () => petOn.galaga,
       go: () => { aug.pierce = true; } },
-    { id: "fly",        ic: "🪰", nm: "똥파리", ds: "맞을 때마다 똥파리가 나와서 5초 동안 똥을 부숴요",
+    { id: "fly",        ic: "🪰", nm: "똥파리", ds: "맞을 때마다 똥파리가 5초 동안 나와요",
       once: true, go: () => { aug.fly = true; } },
     { id: "stone",      ic: "🗿", nm: "돌부처", ds: "1초 가만히 있으면 돌이 돼요 (최대 5초)",
       once: true, go: () => { aug.stone = true; stoneT = 0; } },
-    { id: "gacha",      ic: "🪀", nm: "뽑기", ds: "증강이 물음표로 나와서 뭔지 알 수 없어요 · 에픽 증강일 확률이 올라요",
+    { id: "gacha",      ic: "🪀", nm: "뽑기", ds: "무슨 증강인지 알 수 없지만 에픽 증강일 확률이 올라요",
       once: true, cond: () => job !== "powerj", go: () => { aug.gacha = true; } },   // v0.9.352 제이는 카드가 1장이라 물음표가 의미 없다
     { id: "snackBig",   ic: "🍩", nm: "배불뚝이", ds: "간식 타임에 몸이 커져서 간식을 더 많이 받아먹어요",
       hidden: true, once: true,
@@ -5217,25 +5217,25 @@
       cond: () => accOn(5) && !testMode && job !== "powerp",   // 구름 상점이 오는 판에만 (무무는 상점에 증강이 안 나온다)
       go: () => { aug.cloudVip = true; } },
     /* ── v0.9.249 새 증강 — 액티브 스킬(방귀 대시·초승달 쓸기·똥 청소기)은 두 가지까지만 ── */
-    { id: "juggle",     ic: "🤹", nm: "초승달 쓸기", ds: "초승달 쓸기로 똥을 튕겨 내요. 튕긴 똥은 다른 똥이랑 같이 펑 (쿨타임 3초)",
+    { id: "juggle",     ic: "🤹", nm: "초승달 쓸기", ds: "똥을 위로 튕겨 내요 (쿨타임 3초)",
       once: true, cond: () => actOk(), go: () => { aug.juggle = true; jugCd = 0; for (const k in UPPER_PAD) if (k.startsWith(upperKey().split("_")[0])) { const im = new Image(); im.src = "assets/upper_" + k + ".webp"; UPPER_IMG[k] = im; } } },   // 어퍼컷 그림 미리 불러 둔다
     { id: "vacuum",     ic: "🧹", nm: "똥 청소기", ds: "버튼을 누르면 머리 위 똥이랑 아이템을 쓰읍 빨아들여요 (15초마다)",
       gone: true, once: true, cond: () => false, go: () => { aug.vacuum = true; vacCd = 0; } },   // v0.9.342 뺐다 — 증강·도감·테스트 목록에 안 나온다
-    { id: "closeCall",  ic: "😅", nm: "외줄 타기", ds: "똥을 아슬하게 피할수록 점수가 점점 커져요. 한 대 맞으면 처음부터!",
+    { id: "closeCall",  ic: "😅", nm: "외줄 타기", ds: "똥을 아슬하게 피할수록 점수가 점점 쌓여요",
       once: true, go: () => { aug.closeCall = true; closeN = 0; } },
-    { id: "coinArmor",  ic: "🛡", nm: "동전 갑옷", ds: "맞을 때 이번 판 코인이 대신 막아 줘요",
+    { id: "coinArmor",  ic: "🛡", nm: "동전 갑옷", ds: "맞을 때 코인이 대신 막아 줘요",
       once: true, cond: () => job !== "powerp" && !aug.coinArmor, go: () => { aug.coinArmor = true; } },   // v0.9.331 냥이의 보은으로 이미 생겼으면 안 나온다
     { id: "credit",     ic: "📝", nm: "외상 장부", ds: "구름 상점에서 모아 둔 코인도 쓸 수 있어요",
       once: true, cond: () => accOn(5) && !testMode, go: () => { aug.credit = true; } },
-    { id: "bombPoop",   ic: "💣", nm: "폭탄 똥", ds: "가끔 폭탄 똥이 떨어져요. 다른 똥에 부딪히면 펑! 주변 똥도 같이 터져요. 나한테 맞으면 아파요",
+    { id: "bombPoop",   ic: "💣", nm: "폭탄 똥", ds: "가끔 폭탄 똥이 떨어져요",
       once: true, go: () => { aug.bombPoop = true; aug.bombR = 80 * AQ(); } },   // v0.9.429 품질 — 폭발 반경
-    { id: "fartRocket", ic: "🧨", nm: "방귀 쓸기", ds: "방귀 대시가 지나간 자리에 1초 동안 바람이 남아, 닿는 똥을 위로 통 튕겨 내요",
+    { id: "fartRocket", ic: "🧨", nm: "방귀 쓸기", ds: "방귀 대시가 지나간 자리에 닿은 똥이 위로 튕겨 나가요",
       hidden: true, once: true, cond: () => aug.dash && aug.juggle, go: () => { aug.fartRocket = true; } },
-    { id: "zapDance",   ic: "🕺", nm: "번개 춤", ds: "아슬하게 피하면 몸에서 찌릿! 그 똥이랑 위쪽 똥 두 개가 번개로 터져요 (쿨타임 1.1초)",
+    { id: "zapDance",   ic: "🕺", nm: "번개 춤", ds: "아슬하게 피하면 몸에서 번개가 나가요 (쿨타임 1초)",
       hidden: true, once: true, cond: () => aug.closeCall && petOn.eel, go: () => { aug.zapDance = true; } },
-    { id: "goldArmor",  ic: "🏵", nm: "냥이의 보은", ds: "맞을 때마다 코인냥이가 코인 1~2개를 위에서 떨어뜨려 줘요",
+    { id: "goldArmor",  ic: "🏵", nm: "냥이의 보은", ds: "똥을 맞을 때마다 코인냥이가 위에서 코인을 떨어뜨려 줘요",
       once: true,   /* v0.9.330 황금 갑옷 → 냥이의 보은, 숨은 증강 → 일반 증강 */ cond: () => petOn.coincat && catCoinRun >= 3 && job !== "powerp", go: () => { aug.goldArmor = true; } },   // v0.9.431 동전 갑옷과 떼어 냄 · 이번 판에 냥이 코인 3개 먹으면 등장   // v0.9.331 코인냥이만 있으면 — 동전 갑옷이 없으면 함께 생긴다
-    { id: "twoRand",    ic: "🎊", nm: "깜짝 선물", ds: "일반 증강 두 개를 아무거나 받아요",
+    { id: "twoRand",    ic: "🎊", nm: "깜짝 선물", ds: "일반 증강 두 개를 받아요",
       go: () => {
         const got = []; twoRandObjs = [];
         for (let k = 0; k < 2; k++) {
@@ -8796,7 +8796,7 @@
   // 대수별 발사 간격 0.5 / 0.7 / 0.9 / 1.1 / 1.3 초
   const SHIP_GAP = 0.7, SHIP_GAP_STEP = 0.25;   // v0.9.45 0.56/0.22 → 0.7/0.25   // v0.9.31 0.5/0.2 → 0.56/0.22 (뿅뿅이 화력 약 10%↓)
   function shipGap(n) { return SHIP_GAP + SHIP_GAP_STEP * (n - 1); }
-  const M_PX = 12, DOVE_EVERY = 110 * M_PX;   // v0.9.45 90m → 110m   // v0.9.31 80m → 90m   // 100m 에서 20% 줄여 80m 마다
+  const M_PX = 12, DOVE_EVERY = 130 * M_PX;   // v0.9.462 110m → 130m · v0.9.45 90m → 110m   // v0.9.31 80m → 90m   // 100m 에서 20% 줄여 80m 마다
   // 히든 '왕 비둘기' — 속도·크기·폭발은 1.5배, 출격은 3/4 거리마다
   function doveMul()   { return aug.doveWhat ? 1.5 : 1; }
   function doveEvery() { return DOVE_EVERY * (aug.doveWhat ? 0.75 : 1) * aug.doveFreq; }
@@ -13408,7 +13408,7 @@
       }
     }
   }
-  const ZAPDANCE_CD = 1100;   // v0.9.324 번개 춤 쿨타임(ms) — 실측에서 너무 강했다(버틴 시간 +160%)
+  const ZAPDANCE_CD = 1000;   // v0.9.462 1.1 → 1초   // v0.9.324 번개 춤 쿨타임(ms) — 실측에서 너무 강했다(버틴 시간 +160%)
   let zapDanceAt = 0;
   function onGraze(it) {
     grazeCount++;
