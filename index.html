@@ -1079,7 +1079,10 @@
   @keyframes lvReady { 50% { box-shadow: inset 0 0 0 1.5px #ffe48a, 0 0 22px rgba(255,200,60,.6); } }
   .lvPick.pop { animation: lvPopIn .55s ease-out; }
   @keyframes lvPopIn { 0% { transform: scale(.93); box-shadow: 0 0 0 0 rgba(255,216,107,.9); } 55% { transform: scale(1.03); box-shadow: 0 0 28px 6px rgba(255,216,107,.55); } 100% { transform: none; } }
-  .lvChoice { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 8px; }   /* v0.9.425 긴 글이 있어도 두 칸 너비 같게 */
+  .lvChoice { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 8px; }
+  .lvChoice.fix { grid-template-columns: minmax(0, 1fr); }   /* v0.9.458 고정 능력 — 한 칸 넓게, A/B 글자·별 없이 */
+  .lvChoice.fix .lvOpt .ttl em, .lvChoice.fix .lvOpt::after { display: none; }
+  .lvChoice.fix .lvOpt { cursor: default; min-height: 60px; }   /* v0.9.425 긴 글이 있어도 두 칸 너비 같게 */
   /* v0.9.128 고르기 카드 — 왼쪽 동그란 아이콘(A 보라 · B 파랑), 오른쪽 'A 이름' + 설명. 고른 쪽은 금빛 테두리 + 별 배지 */
   button.lvOpt { position: relative; display: flex; align-items: center; gap: 6px; min-height: 74px; box-sizing: border-box; padding: 7px 7px 7px 6px; border-radius: 14px;
     text-align: left; font-size: 11px; font-weight: 700; line-height: 1.32; letter-spacing: -.2px; word-break: keep-all; color: var(--pnText);
@@ -2987,7 +2990,7 @@
   const elTitle = document.getElementById("overTitle");
   const coinNote = document.getElementById("coinNote");
 
-  const GAME_VERSION = "v0.9.457";
+  const GAME_VERSION = "v0.9.458";
   /* 제작사 스플래시(bamhobak friends 로고) — 2026-09-20 끔. 다시 켜려면 true */
   const SPLASH_USE = false;   // 코드를 고칠 때마다 뒤 두 자리를 올린다
   document.getElementById("ver").textContent = GAME_VERSION;
@@ -4421,7 +4424,15 @@
   function chrLv(j) { return lvOf(lvData.cx[j] || 0, CHR_XP); }   // v0.9.127 공통 Lv 2 문턱 없앰 — 처음부터 쌓인다
   function lvSingle() { return typeof runMode === "undefined" || runMode === "item"; }    // 레벨 보상은 싱글플레이에서만
   function accOn(l) { return lvSingle() && accLv() >= l; }
-  function pickOf(j, l) { return chrLv(j) >= l ? ((lvData.pick[j] || {})[l] || null) : null; }
+  /* v0.9.458 Lv2·Lv4 는 캐릭터마다 능력 하나로 고정 — 해금하면 바로 켜진다 (Lv3 공통은 둘 중 고르기 그대로). 도감에서 고른 쪽 */
+  const PERK_FIX = { bangul: { 2: "A", 4: "A" }, fit: { 2: "A", 4: "B" }, powerj: { 2: "A", 4: "A" },
+                     levitator: { 2: "A", 4: "B" }, powerp: { 2: "B", 4: "A" }, fortune: { 2: "A", 4: "A" } };
+  function perkFixed(j, l) { return l !== 3 && PERK_FIX[j] ? PERK_FIX[j][l] : null; }
+  function pickOf(j, l) {
+    const fx = perkFixed(j, l);
+    if (fx) return perkOpen(j, l) ? fx : null;
+    return chrLv(j) >= l ? ((lvData.pick[j] || {})[l] || null) : null;
+  }
   function perkOpen(j, l) { return chrLv(j) >= l && !!(((lvData.un || {})[j] || {})[l] || (lvData.pick[j] || {})[l]); }   // 해금했나
   function perkTodo(j) {                       // 해금하거나 고를 게 남았나 — 카드 '상세'에 ! 표시
     if (!CHR_PERKS[j]) return false;
@@ -10349,7 +10360,8 @@
       if (lvJustOpen === j + ":" + l) { row.classList.add("pop"); lvJustOpen = ""; }
       const h = document.createElement("div"); h.className = "lvPN";            // v0.9.126 Lv 숫자 · 꼬리표 · (잠김이면) 남은 경험치
       const hb = document.createElement("b"); hb.textContent = "Lv" + l + (l === 3 ? " ⭐" : "");   // v0.9.165 별은 모든 캐릭터에 적용되는 Lv3 에 h.appendChild(hb);
-      if (cl >= l && open) { const t = document.createElement("i"); t.className = "pk"; t.textContent = "Lv" + l + " 능력 선택";   /* v0.9.216 앞에 레벨 */ h.appendChild(t); }
+      const fixAb = perkFixed(j, l);   // v0.9.458 Lv2·4 는 고정 — 고르기 없이 그 능력만
+      if (cl >= l && open) { const t = document.createElement("i"); t.className = "pk"; t.textContent = "Lv" + l + (fixAb ? " 능력" : " 능력 선택");   /* v0.9.216 앞에 레벨 */ h.appendChild(t); }
       if (l === 3) { const t = document.createElement("small"); t.textContent = "모든 캐릭터에 적용"; h.appendChild(t); }
       row.appendChild(h);
       if (cl >= l && !open) {                    // 레벨은 됐다 — 해금 버튼
@@ -10369,8 +10381,8 @@
       } else if (!cur) {
         const n = document.createElement("span"); n.className = "lvWait"; n.textContent = "하나를 골라줘!"; h.appendChild(n);
       }
-      const ch = document.createElement("div"); ch.className = "lvChoice" + (cur ? "" : " wait");
-      for (const ab of ["A", "B"]) {
+      const ch = document.createElement("div"); ch.className = "lvChoice" + (cur ? "" : " wait") + (fixAb ? " fix" : "");
+      for (const ab of (fixAb ? [fixAb] : ["A", "B"])) {
         const b = document.createElement("button"); b.className = "lvOpt" + (cur === ab ? " sel" : ""); b.dataset.ab = ab;
         const t = T(P[l][ab]), k = t.indexOf(" — ");                     // "이름 — 설명" 이면 이름을 크게 (v0.9.406 번역한 뒤에 나눈다 — 나눈 조각은 사전에 없다)
         const md = document.createElement("i"); md.className = "med";
@@ -10387,7 +10399,7 @@
         if (palLock) { b.classList.add("palOff"); const nt = document.createElement("small"); nt.className = "palNeed"; nt.textContent = "🔒 펫 없음"; tt.appendChild(nt); }
         b.addEventListener("click", () => {
           if (palLock) { beep(220, .08, "square", .04); return; }
-          if (cur === ab) return;
+          if (fixAb || cur === ab) return;
           (lvData.pick[j] = lvData.pick[j] || {})[l] = ab; lvSave();
           beep(900, .05, "triangle", .04); setTimeout(() => beep(1250, .07, "triangle", .04), 60); redraw();
         });
