@@ -2994,7 +2994,7 @@
   const elTitle = document.getElementById("overTitle");
   const coinNote = document.getElementById("coinNote");
 
-  const GAME_VERSION = "v0.9.466";
+  const GAME_VERSION = "v0.9.467";
   /* 제작사 스플래시(bamhobak friends 로고) — 2026-09-20 끔. 다시 켜려면 true */
   const SPLASH_USE = false;   // 코드를 고칠 때마다 뒤 두 자리를 올린다
   document.getElementById("ver").textContent = GAME_VERSION;
@@ -5291,8 +5291,9 @@
   function augQTag(a, q) {                     // 설명 뒤에 붙일 (효과량) — 품질 색
     if (!AUG_ROLL.has(a.id)) return null;   // v0.9.449 품질 랜덤이 아닌 증강(끈기 대장·과속 질주)은 괄호를 안 붙인다
     const e = augEff(a, q); if (!e) return null;
-    const gr = qGrade(q), s = document.createElement("span"); s.className = "augQ" + (gr ? " " + gr : ""); s.setAttribute("data-noi18n", "");
-    s.textContent = " (" + e + (gr ? " · " + T(gr === "leg" ? "레전드" : "레어") : "") + ")"; return s;   // v0.9.466 등급 글자
+    const gr = qGrade(q); if (!gr) return null;   // v0.9.467 효과량 숫자는 안 쓰고 등급만 — 보통이면 괄호 없음
+    const s = document.createElement("span"); s.className = "augQ " + gr; s.setAttribute("data-noi18n", "");
+    s.textContent = " (" + T(gr === "leg" ? "레전드" : "레어") + ")"; return s;
   }
   // 증강 걸기 (q 를 안 주면 수치형은 새로 굴린다 — 깜짝 선물·구름 상점·정시 퇴근·몰빵)
   function augApply(a, q) {
