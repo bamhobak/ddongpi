@@ -2990,7 +2990,7 @@
   const elTitle = document.getElementById("overTitle");
   const coinNote = document.getElementById("coinNote");
 
-  const GAME_VERSION = "v0.9.464";
+  const GAME_VERSION = "v0.9.465";
   /* 제작사 스플래시(bamhobak friends 로고) — 2026-09-20 끔. 다시 켜려면 true */
   const SPLASH_USE = false;   // 코드를 고칠 때마다 뒤 두 자리를 올린다
   document.getElementById("ver").textContent = GAME_VERSION;
@@ -8833,6 +8833,7 @@
   const btnSkill = document.getElementById("btnSkill");
   function skillReady() { return job === "bangul" && myPerk(4, "B") && !vsLike(); }
   function syncSkill(now) {
+    if (typeof btnPause !== "undefined") btnPause.style.visibility = state === STATE.AUG ? "hidden" : "";   // v0.9.465 증강 고를 때(구름 상점 포함)는 일시정지 버튼을 숨긴다
     const on = skillReady() && (state === STATE.PLAY || state === STATE.PAUSE || state === STATE.AUG);
     btnSkill.classList.toggle("on", on);
     if (!on) return;
