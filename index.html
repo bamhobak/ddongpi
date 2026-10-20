@@ -2994,7 +2994,7 @@
   const elTitle = document.getElementById("overTitle");
   const coinNote = document.getElementById("coinNote");
 
-  const GAME_VERSION = "v0.9.469";
+  const GAME_VERSION = "v0.9.470";
   /* 제작사 스플래시(bamhobak friends 로고) — 2026-09-20 끔. 다시 켜려면 true */
   const SPLASH_USE = false;   // 코드를 고칠 때마다 뒤 두 자리를 올린다
   document.getElementById("ver").textContent = GAME_VERSION;
@@ -9432,7 +9432,7 @@
     ctx.scale(scale, scale);
     const wi = WORD_IMG[text];
     if (wi && wi.complete && wi.naturalWidth) {
-      const w = Math.min(W * (text === "GO!" ? 0.62 : 0.82), 420), h = w * wi.naturalHeight / wi.naturalWidth;
+      const w = Math.min(W * (text === "GO!" ? 0.62 : 0.82), 420) * 0.9, h = w * wi.naturalHeight / wi.naturalWidth;   // v0.9.470 READY·GO 그림 10% 작게
       ctx.drawImage(wi, -w / 2, -h / 2, w, h);
       ctx.restore();
       return;
