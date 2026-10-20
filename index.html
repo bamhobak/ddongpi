@@ -2994,7 +2994,7 @@
   const elTitle = document.getElementById("overTitle");
   const coinNote = document.getElementById("coinNote");
 
-  const GAME_VERSION = "v0.9.468";
+  const GAME_VERSION = "v0.9.469";
   /* 제작사 스플래시(bamhobak friends 로고) — 2026-09-20 끔. 다시 켜려면 true */
   const SPLASH_USE = false;   // 코드를 고칠 때마다 뒤 두 자리를 올린다
   document.getElementById("ver").textContent = GAME_VERSION;
@@ -9421,7 +9421,8 @@
      dim 은 뒤를 살짝 어둡게 까는 정도 (0 이면 안 깐다) */
   /* v0.9.89 READY · GO! 글자 그림(Codex) — 아직 안 왔으면 예전처럼 글자로 */
   const WORD_IMG = { "READY": new Image(), "GO!": new Image() };
-  WORD_IMG["READY"].src = "assets/ui/word_ready.webp"; WORD_IMG["GO!"].src = "assets/ui/word_go.webp";
+  { const wl = LANG === "ko" || LANG === "ja" ? "_" + LANG : "";   // v0.9.469 한국어 준비·시작! / 일본어 よーい·ドン! (목소리와 짝)
+    WORD_IMG["READY"].src = "assets/ui/word_ready" + wl + ".webp"; WORD_IMG["GO!"].src = "assets/ui/word_go" + wl + ".webp"; }
   function drawBigWord(text, scale, alpha, color, dim) {
     ctx.save();
     ctx.setTransform(baseScale, 0, 0, baseScale, 0, 0);
