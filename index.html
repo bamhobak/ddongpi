@@ -2994,7 +2994,7 @@
   const elTitle = document.getElementById("overTitle");
   const coinNote = document.getElementById("coinNote");
 
-  const GAME_VERSION = "v0.9.467";
+  const GAME_VERSION = "v0.9.468";
   /* 제작사 스플래시(bamhobak friends 로고) — 2026-09-20 끔. 다시 켜려면 true */
   const SPLASH_USE = false;   // 코드를 고칠 때마다 뒤 두 자리를 올린다
   document.getElementById("ver").textContent = GAME_VERSION;
@@ -4568,7 +4568,8 @@
     if (sfxAsked || !ac) return;
     sfxAsked = true;
     for (const k in SFX_GAIN) {
-      fetch("assets/sfx/" + k + ".mp3" + (k.startsWith("pet_eel") ? "?v5" : k.startsWith("pet_") ? "?v4" : k === "moon" ? "?v2" : k === "zap" ? "?v2" : "")   /* v0.9.215 둘기 소리 새로(진짜 비둘기 구구) */)
+      const fk = (k === "vo_ready" || k === "vo_go") && (LANG === "ko" || LANG === "ja") ? k + "_" + LANG : k;   // v0.9.468 레디·고 목소리는 한국어(준비~? 시작!)·일본어(よーい? ドン!) 따로 (영어는 그대로)
+      fetch("assets/sfx/" + fk + ".mp3" + (k.startsWith("pet_eel") ? "?v5" : k.startsWith("pet_") ? "?v4" : k === "moon" ? "?v2" : k === "zap" ? "?v2" : "")   /* v0.9.215 둘기 소리 새로(진짜 비둘기 구구) */)
         .then(r => r.arrayBuffer())
         .then(b => ac.decodeAudioData(b))
         .then(buf => { sfxBuf[k] = buf; })
