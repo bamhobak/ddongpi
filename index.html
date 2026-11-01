@@ -555,7 +555,6 @@
   .augCard.qrare { border-color: rgba(255,210,63,.8) !important; box-shadow: 0 0 10px rgba(255,210,63,.3); }
   .augCard.qleg { border-color: #ff9a2e !important; box-shadow: 0 0 14px rgba(255,150,40,.55); }
   .pjFile .augCard.qrare, .pjFile .augCard.qleg { border-color: rgba(31,58,104,.16) !important; box-shadow: none !important; }   /* 파일철 줄 점선은 그대로 */
-  @keyframes augGold { 0%, 100% { filter: drop-shadow(0 0 .6px #5a3300) drop-shadow(0 0 .6px #5a3300) drop-shadow(0 0 3px rgba(255,180,20,.6)); } 50% { filter: drop-shadow(0 0 .6px #5a3300) drop-shadow(0 0 .6px #5a3300) drop-shadow(0 0 8px rgba(255,200,40,1)); } }
   .augCard .ds { font-size: 13px; color: #c8cbd6; margin-top: 2px; }
   .augCard .cnt {
     flex: none; font-size: 11px; font-weight: 700; color: #12131a;
@@ -1290,10 +1289,6 @@
   #askBox button { --bh: 44px; flex: 1; height: var(--bh); font-size: 16px; font-weight: 800; border-style: solid; border-color: transparent; border-width: 0 calc(var(--bh) / 2); background: none; padding: 0 4px calc(var(--bh) * .08); }
   #askBox .askYes { border-image: url(assets/ui/btn_yellow.webp) 0 60 fill / 0 calc(var(--bh) / 2) / 0 stretch; color: #6b3300; text-shadow: 0 1px 0 rgba(255,255,255,.55); }
   #askBox .askNo { border-image: url(assets/ui/btn_gray.webp) 0 60 fill / 0 calc(var(--bh) / 2) / 0 stretch; color: #3f3560; text-shadow: 0 1px 0 rgba(255,255,255,.6); }
-  #achToast { position: fixed; left: 50%; top: 13%; transform: translateX(-50%); z-index: 9999; padding: 10px 18px; border-radius: 12px;
-    background: rgba(44,26,8,.94); border: 2px solid #ffd23f; box-shadow: 0 0 18px rgba(255,210,63,.45); color: #ffe9a8; font-weight: 800; font-size: 15px;
-    text-align: center; white-space: nowrap; pointer-events: none; opacity: 0; transition: opacity .3s; }
-  #achToast.on { opacity: 1; }
   #homeJobs .carDots { display: none !important; }
   #homeJobs #jobList.car .lvMini { display: flex; align-items: center; justify-content: center; gap: 6px; margin-top: -2px; }
   #homeJobs #jobList.car .lvMini b { font-size: 13px; font-weight: 900; color: #ffd23f; text-shadow: 0 1px 0 #4a2a10, 0 0 4px rgba(40,20,0,.8), 1px 0 0 #4a2a10, -1px 0 0 #4a2a10; }
@@ -2994,7 +2989,7 @@
   const elTitle = document.getElementById("overTitle");
   const coinNote = document.getElementById("coinNote");
 
-  const GAME_VERSION = "v0.9.470";
+  const GAME_VERSION = "v0.9.472";
   /* 제작사 스플래시(bamhobak friends 로고) — 2026-09-20 끔. 다시 켜려면 true */
   const SPLASH_USE = false;   // 코드를 고칠 때마다 뒤 두 자리를 올린다
   document.getElementById("ver").textContent = GAME_VERSION;
@@ -3689,75 +3684,10 @@
      쉬었음 청년 퍼그 · 점술가 도베르만 · 부양사 파피용 · 헬스걸 복서 · 파워J 보더콜리 ·
      파워P 비글 · 무소유 진돗개. 방울이는 원래 강아지라 그대로 둔다.
      머리 중심(cx·cy)은 실루엣에서 가장 두꺼운 자리로 잰 값이고, 그림 크기 비율은 방울이와 같다. */
-  let dogMode = false;               // 이번 판이 강아지로 뛰는 판인가
-  const DOG_SPRS = {
-    none: {
-      ground: { right: { img: null, aspect: 0.9406, head: 0.512, cx: 0.681, cy: 0.272, adj: 0.6656 },
-                hurt:  { img: null, aspect: 0.8063, head: 0.577, cx: 0.512, cy: 0.359, adj: 0.6520 } },
-      space:  { right: { img: null, aspect: 0.8375, head: 0.602, cx: 0.604, cy: 0.300, adj: 0.8127 },
-                hurt:  { img: null, aspect: 0.7344, head: 0.570, cx: 0.489, cy: 0.372, adj: 0.7125 } } },
-    fortune: {
-      ground: { right: { img: null, aspect: 0.9250, head: 0.526, cx: 0.662, cy: 0.412, adj: 0.6833 },
-                hurt:  { img: null, aspect: 0.6062, head: 0.531, cx: 0.495, cy: 0.469, adj: 0.6003 } },
-      // 우주 달리기는 망토가 몸통을 두껍게 해서, 헬멧 자리를 도박사 우주 그림 값으로 잡았다 (같은 자세)
-      space:  { right: { img: null, aspect: 0.9594, head: 0.640, cx: 0.600, cy: 0.310, adj: 0.8640 },
-                hurt:  { img: null, aspect: 0.8281, head: 0.610, cx: 0.479, cy: 0.362, adj: 0.7619 } } },
-    levitator: {
-      ground: { right: { img: null, aspect: 0.6188, head: 0.316, cx: 0.720, cy: 0.520, adj: 0.4108 },
-                hurt:  { img: null, aspect: 0.9125, head: 0.338, cx: 0.514, cy: 0.591, adj: 0.3819 } },
-      space:  { right: { img: null, aspect: 0.9500, head: 0.538, cx: 0.562, cy: 0.416, adj: 0.7263 },
-                hurt:  { img: null, aspect: 0.8969, head: 0.552, cx: 0.533, cy: 0.422, adj: 0.6900 } } },
-    fit: {
-      ground: { right: { img: null, aspect: 0.8688, head: 0.458, cx: 0.691, cy: 0.253, adj: 0.5954 },
-                hurt:  { img: null, aspect: 0.8656, head: 0.581, cx: 0.498, cy: 0.300, adj: 0.6565 } },
-      space:  { right: { img: null, aspect: 0.8281, head: 0.611, cx: 0.592, cy: 0.306, adj: 0.8248 },
-                hurt:  { img: null, aspect: 0.6813, head: 0.576, cx: 0.482, cy: 0.288, adj: 0.7200 } } },
-    powerj: {
-      ground: { right: { img: null, aspect: 0.9844, head: 0.558, cx: 0.584, cy: 0.325, adj: 0.7254 },
-                hurt:  { img: null, aspect: 0.8719, head: 0.581, cx: 0.513, cy: 0.319, adj: 0.6565 } },
-      space:  { right: { img: null, aspect: 0.9469, head: 0.644, cx: 0.604, cy: 0.325, adj: 0.8694 },
-                hurt:  { img: null, aspect: 0.7906, head: 0.586, cx: 0.518, cy: 0.294, adj: 0.7325 } } },
-    powerp2: {
-      ground: { right: { img: null, aspect: 0.8625, head: 0.515, cx: 0.630, cy: 0.325, adj: 0.6695 },
-                hurt:  { img: null, aspect: 0.8031, head: 0.575, cx: 0.537, cy: 0.350, adj: 0.6497 } },
-      space:  { right: { img: null, aspect: 0.8281, head: 0.601, cx: 0.608, cy: 0.300, adj: 0.8114 },
-                hurt:  { img: null, aspect: 0.7656, head: 0.601, cx: 0.416, cy: 0.300, adj: 0.7512 } } },
-    powerp: {
-      ground: { right: { img: null, aspect: 0.9313, head: 0.515, cx: 0.688, cy: 0.338, adj: 0.6695 },
-                hurt:  { img: null, aspect: 0.7063, head: 0.560, cx: 0.518, cy: 0.366, adj: 0.6328 } },
-      space:  { right: { img: null, aspect: 0.8219, head: 0.645, cx: 0.574, cy: 0.322, adj: 0.8708 },
-                hurt:  { img: null, aspect: 0.7906, head: 0.651, cx: 0.498, cy: 0.362, adj: 0.8138 } } }
-  };
-  for (const jb in DOG_SPRS) {
-    for (const [set, pre] of [["ground", ""], ["space", "space_"]]) {
-      for (const key of ["right", "hurt"]) {
-        const im = new Image();
-        im.onload = () => { DOG_SPRS[jb][set][key].img = im; };
-        im.src = "assets/dogs/" + jb + "_" + pre + key + ".png";
-      }
-    }
-  }
 
-  /* 강아지 무소유가 풀소유로 진화하면 — 진돗개가 금목걸이·바로크 재킷·쇼핑백 차림이 된다.
-     사람 풀소유처럼 우주에서는 우주복이 먼저다. */
-  const DOG_FULL = {
-    right: { img: null, aspect: 0.9219, head: 0.482, cx: 0.688, cy: 0.331, adj: 0.6266 },
-    hurt:  { img: null, aspect: 0.7000, head: 0.371, cx: 0.491, cy: 0.247, adj: 0.4192 }
-  };
-  for (const key of ["right", "hurt"]) {
-    const im = new Image();
-    im.onload = () => { DOG_FULL[key].img = im; };
-    im.src = "assets/dogs/powerp_full_" + key + ".png";
-  }
 
   function sprSet() {
     const jb = state === STATE.READY ? introJob : job;
-    // 강아지 모드 — 직업 강아지 (그림이 아직 안 왔으면 원래 그림으로)
-    if (dogMode && state !== STATE.READY && DOG_SPRS[jb]) {
-      if (jb === "powerp" && fullOwn && !inSpace() && DOG_FULL.right.img) return DOG_FULL;
-      const D = DOG_SPRS[jb][inSpace() ? "space" : "ground"];
-      if (D.right.img) return D;
-    }
     if (inSpace()) {                       // 우주에서는 우주복 차림
       if (jb === "powerp" && fullOwn && SPR_FULL_SPACE.right.img) return SPR_FULL_SPACE;   // 풀소유 우주복 (v0.8.74)
       const SS = JOB_SPRS_SPACE[jb];       // 제 우주복이 있으면 그걸로
@@ -3795,9 +3725,6 @@
       pjs.onload = () => { SPR_PJ_SPACE.hurt.img = pjs; };
       pjs.src = "assets/powerj_space_hurt.png";
     }
-    const pp = new Image();
-    pp.onload = () => { SPR_PP2[key].img = pp; };
-    pp.src = "assets/powerp2_" + key + ".png";
   }
   for (const key of ["right", "hurt"]) {
     /* 방울이(땅)는 새 그림이 아직 떠오르는 모습 하나뿐이다. 맞은 그림은 옛 푸들이라
@@ -3822,21 +3749,6 @@
   }
   /* 방울이만 달리는 그림이 16장 따로 있다.
      차례대로 받아야 순서가 섞이지 않으므로 한 장씩 이어 받는다. */
-  function loadRunFrames(set, prefix, asBase) {
-    const frames = [];
-    const next = (i) => {
-      if (i > 16) return;
-      const f = new Image();
-      f.onload = () => {
-        frames.push(f); set.right.frames = frames;
-        if (asBase && i === 1) set.right.img = f;      // 첫 장이 곧 서 있는 그림
-        next(i + 1);
-      };
-      f.onerror = () => {};              // 없으면 조용히 그만둔다
-      f.src = "assets/" + prefix + i + ".webp";
-    };
-    next(1);
-  }
   let titleArt = null;
   let titleGaveUp = false;          // 정말 못 받았을 때만 예전 인트로로 되돌아간다
   let titleAt = 0;                  // 그림이 도착한 시각 — 0.3초에 걸쳐 떠오르게 한다
@@ -3858,6 +3770,8 @@
       set.right.frames = frames;
       if (asBase) set.right.img = frames[0];     // 첫 칸이 곧 서 있는 그림
     };
+    let tries = 0;
+    sheet.onerror = () => setTimeout(() => { sheet.src = "assets/" + file + "?r" + (++tries); }, 3000);   // v0.9.471 받다 끊기면 다시
     sheet.src = "assets/" + file;
   }
   // 방울이는 걷지 않고 허공에서 개헤엄 친다 — 땅 위·우주복 모두 Ludo 49장
@@ -4016,12 +3930,6 @@
   }
   for (let i = 0; i < 3; i++) longLoad(i);                                   // 처음 꽃밭 부분은 바로
   window.addEventListener("load", () => { let i = 3; const nx = () => { if (i >= LONG_N) return; longLoad(i++); setTimeout(nx, 250); }; nx(); });
-  const ZONE_IMG = [];   // 옛 지대 그림 — 긴 배경이 없을 때(LONG_N 0)만 받는다
-  if (!LONG_N) for (let zi = 0; zi < 18; zi++) {
-    const bi = new Image(), k = zi;
-    bi.onload = () => { ZONE_IMG[k] = bi; };
-    bi.src = "assets/bg/zone" + (zi + 1 < 10 ? "0" : "") + (zi + 1) + ".webp";
-  }
   // 간식 타임 하늘 — 땅 위에서는 황금빛, 우주에서는 보랏빛 워프 (v0.7.98 방울이 그림체로 새로 — OpenAI)
   /* v0.8.23 간식 타임 하늘을 새로 — 높이에 따라 다섯 장 (Codex, 기존 디자인과 무관하게 '보너스 폭주' 느낌으로).
      1 땅 초반(0~2 지대) 파스텔 무지개 빛살 · 2 땅 높은 곳(3~5) 파티 하늘 · 3 우주 낮은 곳(6~9) 빛의 속도 워프 ·
@@ -4526,7 +4434,7 @@
     if (sfxOff) return;
     try {
       if (!ac) ac = new (window.AudioContext || window.webkitAudioContext)();
-      if (ac.state === "suspended") ac.resume();
+      if (ac.state === "suspended" && !document.hidden) ac.resume();
       loadSfx();   // 첫 소리가 나는 순간부터 받아 둔다 (첫 효과음이 삐 소리로 새지 않게)
       const o = ac.createOscillator(), g = ac.createGain();
       o.type = type || "square";
@@ -4564,6 +4472,7 @@
   const SFX_VOL = 0.55;              // 전체 크기
   const sfxBuf = {};
   let sfxAsked = false;
+  const sfxFail = {};                // v0.9.471 받기 실패한 소리 — 매 판 기다리지 않는다
   function loadSfx() {
     if (sfxAsked || !ac) return;
     sfxAsked = true;
@@ -4573,7 +4482,7 @@
         .then(r => r.arrayBuffer())
         .then(b => ac.decodeAudioData(b))
         .then(buf => { sfxBuf[k] = buf; })
-        .catch(() => {});
+        .catch(() => { sfxFail[k] = true; });
     }
   }
   // 맞았을 때 — 그 캐릭터의 아픈 소리 (풀소유는 따로, 없으면 옛 hurt)
@@ -4588,7 +4497,7 @@
     if (sfxOff) return true;         // 껐으면 삐 소리로도 대신하지 않는다
     try {
       if (!ac) ac = new (window.AudioContext || window.webkitAudioContext)();
-      if (ac.state === "suspended") ac.resume();
+      if (ac.state === "suspended" && !document.hidden) ac.resume();
       loadSfx();
       const buf = sfxBuf[name];
       if (!buf) return false;
@@ -4632,7 +4541,7 @@
       magLvl = 0;
     }
     magLvl += (target - magLvl) * 0.14;        // 목표로 부드럽게 따라간다
-    magGain.gain.value = SFX_VOL * (SFX_GAIN.magnet || 1) * magLvl;
+    magGain.gain.value = SFX_VOL * sfxLevel * (SFX_GAIN.magnet || 1) * magLvl;
     if (target <= 0.002 && magLvl < 0.004) {   // 다 잦아들면 끈다
       try { magSrc.stop(); } catch (e) {}
       magSrc = null; magGain = null; magLvl = 0;
@@ -4863,8 +4772,6 @@
   }
   /* 직업마다 제 곡 — 땅 위에서 뛸 때 흐른다. 우주·블랙홀·간식은 그 자리의 곡이 앞선다.
      쉬었음 청년은 원래 곡(play) 그대로. */
-  const JOB_BGM = { fortune: "fortune", levitator: "levitator", fit: "fit", powerj: "powerj",
-                    powerp2: "powerp2", powerp: "powerp", bangul: "bangul" };
   function syncBgm() {
     const inGame = state === STATE.PLAY || state === STATE.AUG || state === STATE.PAUSE;
     // 리듬을 켜 두면 지대와 상관없이 리듬 전용 곡을 돌린다
@@ -5007,20 +4914,6 @@
   function achSave() { achDirty = false; achData.u = [...achU]; try { localStorage.setItem(LS_ACH, JSON.stringify(achData)); } catch (e) {} }
   function achProg(id) { const a = ACH[id]; return a && a.key ? " (" + Math.min(a.n, achData.c[a.key] || 0) + "/" + a.n + ")" : ""; }
   const achNew = [];                         // 아직 안 보여 준 해금 — 게임 오버 화면에서 보여 주고 비운다
-  const achToastQ = []; let achToastOn = false, achToastEl = null;
-  function achToast(txt) {
-    achToastQ.push(txt);
-    if (achToastOn) return;
-    const next = () => {
-      if (!achToastQ.length) { achToastOn = false; return; }
-      achToastOn = true;
-      if (!achToastEl) { achToastEl = document.createElement("div"); achToastEl.id = "achToast"; document.body.appendChild(achToastEl); }
-      achToastEl.textContent = achToastQ.shift();
-      achToastEl.classList.add("on");
-      setTimeout(() => { achToastEl.classList.remove("on"); setTimeout(next, 350); }, 2800);
-    };
-    next();
-  }
   function achUnlock(id) {
     if (achU.has(id) || !ACH[id] || !achLive()) return;
     achU.add(id); achSave();
@@ -5249,10 +5142,10 @@
           if (!pool.length) break;
           const b = pool[Math.floor(Math.random() * pool.length)];
           const nm = nameOf(b);
-          const q = AUG_ROLL.has(b.id) ? rollQ() : 0, tg = augQTag(b, q);   // v0.9.417 품질 (먹기 전 효과량으로 글을 만든다)
+          const q = AUG_ROLL.has(b.id) ? rollQ() : 0, tg = augQTag(b, q), ds = b.dsFn ? b.dsFn() : b.ds;   // v0.9.417 품질 (먹기 전 효과량으로 글을 만든다) · v0.9.471 설명도 먹기 전 것으로
           augApply(b, q);
           got.push(b.ic + " " + nm);
-          twoRandObjs.push([b, nm, tg]);
+          twoRandObjs.push([b, nm, tg, ds]);
         }
         twoRandGot = got;              // 창을 닫은 뒤 무엇을 받았는지 띄운다
       } }
@@ -5323,7 +5216,6 @@
   const REROLLS = 0;       // (옛 주사위 횟수 — 이제 안 쓴다)
   let rerolls = REROLLS, rerollN = 0;
   const btnReroll = document.getElementById("btnReroll");
-  function rerollCost() { return 2 * Math.pow(2, rerollN); }
   function syncReroll() {                    // v0.9.84 코인 다시 뽑기 대신 — 공통 Lv2 부터 판마다 1회
     const show = job !== "powerj" && accOn(2) && rerollN < 1;
     btnReroll.style.display = show ? "" : "none";
@@ -5394,7 +5286,6 @@
     const y = augTitle.offsetTop - (parseFloat(getComputedStyle(augTitle).marginTop) || 0);
     augScreen.style.justifyContent = "flex-start"; augScreen.style.paddingTop = Math.max(0, y) + "px";
   }
-  function augOkReserve() { btnAugOk.hidden = false; btnAugOk.classList.add("rsv"); }   // v0.9.366 카드가 나오기 시작할 때 확인 버튼 자리를 먼저 잡는다
   btnAugOk.addEventListener("click", () => { if (!augOkFn) return; const f = augOkFn; augOkReset(); f(); });
   /* v0.9.438 제이 — 파일철이 다 채워진 뒤 화면을 누르면 체크칸마다 빨간 펜 체크가 쓱 그어지고 넘어간다 */
   function pjCheckGo() {
@@ -5429,16 +5320,12 @@
     if (powerUntil > 0) powerUntil += paused;
     if (invUntil  > 0) invUntil  += paused;
     if (hurtUntil > 0) hurtUntil += paused;
+    if (mindSlowUntil > 0) mindSlowUntil += paused; if (lotusUntil > 0) lotusUntil += paused; if (skillUntil > 0) skillUntil += paused;   // v0.9.471
     // 멈춰 있던 똥이 코앞에 있을 수 있으니 0.5초 무적으로 빠져나갈 틈을 준다
     invUntil = Math.max(invUntil, performance.now() + 500); invQuietUntil = invUntil;   // v0.9.189 증강 고른 뒤 무적은 둘레 빛 없이
-    return;   // v0.9.244 증강 뒤 '준비!' 한 박자는 없앴다 — 0.5초 무적·무적만으로 (v0.9.363 손가락 무시는 없앰) 바로 이어 간다
-    /* '준비' 한 박자 — 카드를 누르던 손가락을 옮길 틈. 일시정지를 풀 때의 3-2-1 과 같은 장치를 짧게(0.6초) 쓴다.
-       멈춘 동안의 시간은 finishResume 이 무적·간식 마감에서 빼 준다 */
-    state = STATE.PAUSE;
-    pauseAt = performance.now();
-    resumeCountEnd = pauseAt + READY_MS;
-    readyBeat = true;
+    // v0.9.244 증강 뒤 '준비!' 한 박자는 없앴다 — 0.5초 무적·무적만으로 (v0.9.363 손가락 무시는 없앰) 바로 이어 간다
   }
+
   const READY_MS = 600;
 
   function showAugmentPick() {
@@ -5531,7 +5418,7 @@
       card.addEventListener("click", () => {
         if (blind && !card.dataset.shown) {   // v0.9.332 뽑기 — 고른 카드의 물음표 커튼이 위로 싹 걷히며 정체를 보여 준 뒤 넘어간다
           card.dataset.shown = "1";
-          augList.style.pointerEvents = "none";
+          augList.style.pointerEvents = "none"; btnReroll.style.display = "none";   // v0.9.471 공개 중엔 다시 뽑기도 막는다
           const cur = document.createElement("span"); cur.className = "gCurtain"; cur.innerHTML = '<img class="qmk" src="assets/ui/qmark.webp" alt="?">';
           ic.textContent = a.ic; nm.textContent = nameOf(a); ds.textContent = a.dsFn ? a.dsFn() : a.ds; { const qt = augQTag(a, card._q); if (qt) ds.appendChild(qt); } tx.append(ds);
           if (a.hidden) { card.classList.add("hid"); const bd = document.createElement("span"); bd.className = "badge"; bd.textContent = "에픽"; card.appendChild(bd); }
@@ -5546,12 +5433,12 @@
         twoRandGot = null;
         const had = augCount[a.id] || 0;
         augApply(a, card._q);
-        if (job === "powerj" && myPerk(2, "B") && had > 0 && (augCount[a.id] || 0) < maxOf(a) && Math.random() < 0.3) {   // v0.9.85 몰빵
+        if (job === "powerj" && myPerk(2, "B") && had > 0 && a.id !== "twoRand" && (!a.cond || a.cond()) && (augCount[a.id] || 0) < maxOf(a) && Math.random() < 0.3) {   // v0.9.85 몰빵
           augApply(a); popText(player.x, player.y - 100, "📋 몰빵!", "#ffd23f", 20);
         }
         if (job === "powerj" && myPerk(4, "B") && ++pjPicks % 5 === 0) {   // v0.9.85 정시 퇴근 — 5개마다 보너스
           const pool2 = AUGMENTS.filter(b => !b.hidden && b.id !== "twoRand" && (augCount[b.id] || 0) < maxOf(b) && (!b.cond || b.cond()) && achOpen(b.id));
-          if (pool2.length) { const b = pool2[Math.floor(Math.random() * pool2.length)]; augApply(b); popText(player.x, player.y - 130, "🕕 정시 퇴근 " + b.ic + " " + nameOf(b), "#9fe8ff", 18, 2.5); }
+          if (pool2.length) { const b = pool2[Math.floor(Math.random() * pool2.length)], bNm = nameOf(b); augApply(b); popText(player.x, player.y - 130, "🕕 정시 퇴근 " + b.ic + " " + bNm, "#9fe8ff", 18, 2.5); }
         }
         if (!pjQuiet && !(a.id === "twoRand" && twoRandObjs.length) && !sfx("aug")) { beep(900, .09, "square", .05); beep(1350, .13, "square", .05); }   // v0.9.375 깜짝 선물도 곧 카드마다 울리니 고를 때는 조용히 · v0.9.366 제이 자동 받기는 카드가 나올 때 이미 울렸다 — 받을 때 또 울리면 두 번 들린다
         const finishPick = () => {
@@ -5566,20 +5453,19 @@
         closeAugScreen();
         const seq = augPickedSeq; augPickedSeq = [];
         const life = seq.length > 1 ? 2.5 : (twoRandGot ? 2.5 : undefined);
-        if (false) seq.forEach(([t, c], i) => popText(player.x, player.y - 70 - (seq.length - 1 - i) * 32, t, c, seq.length > 1 ? 22 : 24, life));
         };
         /* v0.9.337 깜짝 선물 — 받은 두 증강을 카드로 펼쳐 2.2초 보여 준 뒤 넘어간다 (떠오르는 글자만으론 놓치기 쉬웠다) */
         if (a.id === "twoRand" && twoRandObjs.length) {
           augList.innerHTML = ""; augList.style.pointerEvents = "none";
           btnReroll.style.display = "none";
           /* v0.9.441 색동 보자기 — 흔들흔들하다 풀리고, 안에서 증강이 한 장씩 위로 튀어나온다 (확인 버튼 없이 화면을 눌러 넘어감) */
-          twoRandObjs.forEach(([b, nm2, tg], ti) => {
+          twoRandObjs.forEach(([b, nm2, tg, ds2], ti) => {
             const c = document.createElement("div"); c.className = "augCard gReveal bjPop";
             c.style.animationDelay = (BJ_OPEN + ti * BJ_GAP) + "s";
             setTimeout(() => { if (state !== STATE.AUG || augSkipping) return; if (!sfx("aug")) { beep(880 + ti * 220, .07, "square", .05); beep(1320 + ti * 220, .1, "triangle", .04); } }, (BJ_OPEN + ti * BJ_GAP) * 1000);
             c.innerHTML = '<span class="ic"></span><span class="tx"><div class="nm2"></div><div class="ds"></div></span>';
             c.querySelector(".ic").textContent = b.ic; c.querySelector(".nm2").textContent = nm2;
-            c.querySelector(".ds").textContent = b.dsFn ? b.dsFn() : b.ds;
+            c.querySelector(".ds").textContent = ds2;
             if (tg) c.querySelector(".ds").appendChild(tg);
             augList.appendChild(c);
           });
@@ -5662,9 +5548,9 @@
      네트워크가 끊겨도 ART_WAIT_MAX 가 지나면 그냥 시작한다. */
   const ART_WAIT_MAX = 8000;
   function startArtReady() {             // 이 직업 제 그림(sprSet 은 없으면 백수로 대신하므로 직접 본다)과 첫 배경
-    const own = dogMode && DOG_SPRS[job] ? DOG_SPRS[job].ground : JOB_SPRS[job];
+    const own = JOB_SPRS[job];
     const wordsOk = ["READY", "GO!"].every(k => WORD_IMG[k].complete && WORD_IMG[k].naturalWidth);   // v0.9.217 READY·GO! 그림이 와야 — 가끔 글자로 나왔다
-    const voOk = sfxOff || !ac || (sfxBuf.vo_ready && sfxBuf.vo_go);                                  // v0.9.217 목소리도 — 가끔 READY 소리가 안 났다
+    const voOk = sfxOff || !ac || ((sfxBuf.vo_ready || sfxFail.vo_ready) && (sfxBuf.vo_go || sfxFail.vo_go));                                  // v0.9.217 목소리도 — 가끔 READY 소리가 안 났다
     return (!own || !!own.right.img) && longReady() && wordsOk && voOk;
   }
   function startArtWaiting(now) { return startBeat && now - pauseAt < ART_WAIT_MAX && !startArtReady(); }
@@ -6080,301 +5966,12 @@
   /* ---------- 직업별 스테이지 ----------
      직업마다 여덟 판씩, 테마도 곡도 다르다. 백수는 다섯 칸을 오가는 지금 방식 그대로.
      STAGES 는 지금 고른 직업의 목록을 가리킨다 (직업을 바꾸면 이것부터 갈아 끼운다). */
-  /* 부양사 — 다섯 칸이 아니라 하늘 한가운데다. 고리가 사방에서 조여 오고,
-     한 군데 난 틈으로 날아 들어가야 산다. 한 글자가 고리 하나이고,
-     그 글자(0~f, 열여섯 방향)가 틈이 난 쪽이다. 0 이 위, 시계 방향. */
-  const RING_N = 30;                 // 고리 한 바퀴에 똥 서른
-  const RING_R0 = 560;               // 화면 밖에서 생겨난다 (한가운데가 치우쳐도 다 덮게)
-  const RING_HIT = 150;              // 박자에 이 반지름까지 조여든다
-  /* 끝까지 조여들면 서른 개가 한 덩어리로 뭉쳐 보기 흉하다 — 그 전에 사그라진다 */
-  const RING_MIN = 52;               // 여기까지 오면 사그라진다
-  const RING_R = 16;                 // 고리 똥 크기
-  /* 고리 한가운데는 한 자리에 머물지 않고 화면을 천천히 돌아다닌다.
-     가로세로가 서로 다른 주기라 같은 자리를 좀처럼 다시 밟지 않는다 —
-     한 번 피한 자리에 계속 있을 수가 없다. */
-  function ringCx(t, wob) { return W * (0.50 + 0.20 * Math.sin(6.2832 * t * (wob || 0.08))); }
-  function ringCy(t, wob) { return H * (0.42 + 0.11 * Math.sin(6.2832 * t * (wob || 0.08) * 1.618 + 1.1)); }
-  const STAGES_LEV = [
-    { nm: "첫 바람", sub: 0.25, lead: 1.70, lv: 1, gap: 11, wob: 0.055, chart: [
-      "0...........1...",
-      "......2.........",
-      "..3.........4...",
-      "........5.......",
-      "6.........5.....",
-      "..4.......3.....",
-      "..2.......1.....",
-      "....0.......f...",
-      "....e.......d...",
-      "....c.........b.",
-      "......a.......b.",
-      "........c.......",
-      "..d.........e...",
-      "......f.......0.",
-      "......1.......0.",
-      "........f.......",
-      "..e.........d...",
-      "....e.......f...",
-      "....0.........f.",
-      "........e.......",
-      "d...............",
-      "c.......b.......",
-      "a.......9.......",
-      "a...........b...",
-      "....c.......d...",
-      "........e.......",
-      "d.......c.......",
-      "b.......c.......",
-      "....d.......e...",
-      "....f.......e...",
-      "........d.......",
-      "....c..........."
-    ] },
-    { nm: "돌개바람", sub: 0.25, lead: 1.60, lv: 3, gap: 11, wob: 0.065, chart: [
-      "0.........1.....",
-      "....2...........",
-      "3...........4...",
-      "......5.......4.",
-      "......3.........",
-      "2.......1.......",
-      "0.........f.....",
-      "..e.......d.....",
-      "....c.........b.",
-      "........a.......",
-      "b.........a.....",
-      "....9.........8.",
-      "........7.......",
-      "6.........5.....",
-      "....4.........3.",
-      "......4.......5.",
-      "........6.......",
-      "..7.........6...",
-      "....5.........4.",
-      "......3.......4.",
-      "........5.......",
-      "........6.......",
-      "....7.......8...",
-      "........9.......",
-      "....8...........",
-      "7...........6...",
-      "....5.......6...",
-      "....7...........",
-      "8.......9.......",
-      "a.......9.......",
-      "....8...........",
-      "7.......8......."
-    ] },
-    { nm: "숨 고르기", sub: 0.25, lead: 1.52, lv: 5, gap: 10, wob: 0.075, chart: [
-      "0.........1.....",
-      "....2.......1...",
-      "....0.....f.....",
-      "..e.......d.....",
-      "..c.......b.....",
-      "..a.....9.......",
-      "8.....7.......6.",
-      "......5.....4...",
-      "....3.......2...",
-      "..1.......0.....",
-      "f.......0.......",
-      "1.....2.......1.",
-      "....0.....f.....",
-      "e.....d.....e...",
-      "....f.....0.....",
-      "f.....e.....d...",
-      "....c.....b.....",
-      "a...............",
-      "9.......7.......",
-      "....5...........",
-      "4...........3...",
-      "....1...........",
-      "f...........e...",
-      "........c.......",
-      "....b.....a.....",
-      "..9.......8.....",
-      "7.......8.....9.",
-      "......a.....b...",
-      "..c.......b.....",
-      "..a.......9.....",
-      "a.....b.......c.",
-      "......d.....c..."
-    ] },
-    { nm: "맞바람", sub: 0.25, lead: 1.44, lv: 7, gap: 10, wob: 0.085, chart: [
-      "0.........1.....",
-      "....2.........3.",
-      "......4.......5.",
-      "....6.......5...",
-      "....4.......3...",
-      "..2.....1.......",
-      "0.....1.....0...",
-      "....f.....e.....",
-      "..d.....c.....d.",
-      "....e.....f.....",
-      "..0.......1.....",
-      "..2.....1.....0.",
-      "....f.....e.....",
-      "..f.....0.....1.",
-      "......2.......1.",
-      "......0.....f...",
-      "..e.......f.....",
-      "..0.............",
-      "..1.......3.....",
-      "......4.......6.",
-      "..........7.....",
-      "......8.......a.",
-      "..........c.....",
-      "......d.........",
-      "..e.......f.....",
-      "..0.....1.......",
-      "2.......1.......",
-      "0.......f.....e.",
-      "......f.....0...",
-      "....1.....2.....",
-      "1.....0.....f...",
-      "..e.......f....."
-    ] },
-    { nm: "소용돌이", sub: 0.25, lead: 1.36, lv: 9, gap: 9, wob: 0.095, chart: [
-      "0.........1.....",
-      "..2.......3.....",
-      "..4.....3.......",
-      "2.....1.....0...",
-      "....f.......e...",
-      "..d.....c.......",
-      "b.....a.....9...",
-      "..8.......7.....",
-      "6.....5.......4.",
-      "....3.......2...",
-      "..1.....0.......",
-      "f.......0.......",
-      "1.......2.....3.",
-      "......2.......1.",
-      "....0.......f...",
-      "..e.....d.....e.",
-      "......f.....0...",
-      "..f.............",
-      "..e...........c.",
-      "..........a.....",
-      "......9.......7.",
-      "......6.......5.",
-      "..........3.....",
-      "......1.......0.",
-      "......f.......e.",
-      "....d.....c.....",
-      "..d.....e.......",
-      "f.....0.......1.",
-      "......2.....1...",
-      "..0.....f.......",
-      "e.......d.....e.",
-      "......f.....0..."
-    ] },
-    { nm: "역풍", sub: 0.25, lead: 1.28, lv: 11, gap: 9, wob: 0.105, chart: [
-      "0.......1.....2.",
-      "......3.....4...",
-      "....5.....6.....",
-      "7.....8.....9...",
-      "..a...b...c...d.",
-      "..e...f.....0...",
-      "..1.....2.....3.",
-      "....4.....5.....",
-      "6.....7.....8...",
-      "..9.....a.....9.",
-      "..8.....7.....6.",
-      "..5.....6...7...",
-      "..8...7.....6...",
-      "..5.....6...7...",
-      "8...9.....a.....",
-      "9...8...7.....6.",
-      "..7...8.....9...",
-      "..a...........b.",
-      "..........c.....",
-      "....d.........e.",
-      "......f.......1.",
-      "........3.......",
-      "..5.........6...",
-      "......7.........",
-      "8.....9.....a...",
-      "b...c...d...e...",
-      "..f.....0...f...",
-      "..e.....d.....c.",
-      "..b.....a...9...",
-      "8...7...6.....5.",
-      "....4...3...2...",
-      "..3...4...5...6."
-    ] },
-    { nm: "회오리", sub: 0.25, lead: 1.20, lv: 12, gap: 9, wob: 0.115, chart: [
-      "0.......1.....2.",
-      "....3.....4.....",
-      "5.....4.....3...",
-      "4...5...6.....7.",
-      "....8.....9.....",
-      "a.....b.....a...",
-      "9.....8...9.....",
-      "a.....b.....c...",
-      "..d.....c.....b.",
-      "..a.....9.....8.",
-      "..7.....6.....5.",
-      "..6.....7...8...",
-      "9.....8...7...6.",
-      "..5.....6.....7.",
-      "..8.....9.....8.",
-      "....7.....6...7.",
-      "....8...9...a...",
-      "..b...........c.",
-      "..........d.....",
-      "....f.......1...",
-      "......2.........",
-      "4.........6.....",
-      "..7.........9...",
-      "......a.......c.",
-      "......d.....e...",
-      "d...c.....b.....",
-      "a.....9.....8...",
-      "7.....6...5...4.",
-      "..3.....4...5...",
-      "..6.....7.....8.",
-      "..9.....a...b...",
-      "c...d.....e....."
-    ] },
-    { nm: "하늘의 문", sub: 0.25, lead: 1.14, lv: 13, gap: 8, wob: 0.125,
-      boss: { nm: "하늘의 문", ic: "🌀", at: "ring",
-              말: ["더 높이 올라와 봐", "바람이 거세진다", "문이 닫힌다"] }, chart: [
-      "0.....1.....2...",
-      "..3.......4.....",
-      "5.....6...7.....",
-      "8...9.....a...b.",
-      "....c...d...e...",
-      "..f...e...d...c.",
-      "....b...a.....9.",
-      "....8.....7...6.",
-      "..5...4...3.....",
-      "2.....1...0.....",
-      "f...e...d.....c.",
-      "....d.....e...f.",
-      "....0...1...2...",
-      "1.....0...f.....",
-      "e.....f...0.....",
-      "1.....2...3...2.",
-      "....1.....0.....",
-      "1...........2...",
-      "........3.......",
-      "4.........5.....",
-      "..6.........8...",
-      "......a.......c.",
-      "......d.......f.",
-      "........0.......",
-      "..1...2...3.....",
-      "4.....5.....6...",
-      "7.....8...9...a.",
-      "..b...c.....d...",
-      "..e...f...0.....",
-      "f.....e.....d...",
-      "..c.....b...a...",
-      "..9.....8...7..."
-    ] }
-  ];
 
   /* 방울이 — 똥을 피하면서 뼈다귀를 주워 모은다. 벽은 백수와 같은 다섯 칸이고,
      v~z 가 1~5번 칸에 떨어지는 뼈다귀다. 뼈다귀는 안 주워도 안 맞는다.
      다만 정해진 만큼 못 모으면 끝까지 버텨도 클리어가 아니다 — 욕심을 부려야 한다. */
   const BONE_LANE = { v: 1, w: 2, x: 3, y: 4, z: 5 };
+  const RING_MIN = 52;               // 고리 똥 — 여기까지 조여들면 사그라진다
   const STAGES_BANGUL = [
     { nm: "첫 뼈다귀", sub: 0.25, lead: 2.10, lv: 1, need: 22,
       wv: 0.14, wvK: 2, tilt: 0.25, chart: [
@@ -8078,8 +7675,6 @@
   const LANE_GAP = 0.18;           // 칸 사이 간격 (놀이판 가로에 대한 비율)
   const WEAVE_CAP = 0.40;          // 휘는 폭 한계 — 옆 칸에 선 사람과 38px 은 벌어져야 안 맞는다
   function laneX(n) { return W * (0.14 + (n - 1) * 0.18); }
-  function ringCx(t, wob) { return W * (0.50 + 0.20 * Math.sin(6.2832 * t * (wob || 0.08))); }
-  function ringCy(t, wob) { return H * (0.42 + 0.11 * Math.sin(6.2832 * t * (wob || 0.08) * 1.618 + 1.1)); }
   /* 보스 — 예전 보스 판의 이름·한마디를 그대로, 그림은 3D 이모지(기기마다 글자 이모지가 깨지지 않게) */
   const BOSSES = [
     { set: 0, img: "meal" }, { set: 1, img: "plan" }, { set: 2, img: "ladder" }, { set: 3, img: "target" },
@@ -8350,11 +7945,12 @@
   const MB_AT = 7, MB_LEN = 2;   // v0.9.447 6스테이지를 다 지나 7스테이지(우주복)로 넘어가기 직전, 스테이지를 멈추고 2단계(단계마다 한 스테이지 길이)를 버틴다
   let mbStarted = false, mbIn = 0, mbShotT = 0, mbStep = 0, mbPhase = -1, mbDone = false, mbOut = -1, mbX = 0, mbRew = 0, mbQueue = [], mbT = 0;
   function mbCap() { return (MB_AT - 1) * lvSec() - 1e-3; }   // 6스테이지 끝 — 여기서 레벨 시계가 멈춘다
-  function mbGate() { return runMode === "item" && !dogMode && !loopOn && !mbDone && clearT < 0; }
+  function bossClean() { powerUntil = 0; for (let k = items.length - 1; k >= 0; k--) if (items[k].type === "paper") items.splice(k, 1); }   // v0.9.471 보스전엔 간식 타임을 켤 🧻도 없앤다
+  function mbGate() { return runMode === "item" && !loopOn && !mbDone && clearT < 0; }
   /* v0.9.447 보스전 동안은 스테이지가 흐르지 않는다 — 레벨 시계 상한 */
   function bossCap() {
     if (mbGate()) return mbCap();
-    if (runMode === "item" && !dogMode && !loopOn && clearT < 0) return (FB_LV - 1) * lvSec() + 0.01;   // 끝판왕 — 22스테이지에 멈춘다
+    if (runMode === "item" && !loopOn && clearT < 0) return (FB_LV - 1) * lvSec() + 0.01;   // 끝판왕 — 22스테이지에 멈춘다
     return Infinity;
   }
   const mbImg = new Image(); mbImg.src = "assets/ui/mb_cloud.webp";
@@ -8363,7 +7959,7 @@
   function mbGeom(now) {
     const w = W * 0.66, h = w * (mbImg.naturalWidth ? mbImg.naturalHeight / mbImg.naturalWidth : 0.5);
     const shake = mbPhase >= 1 ? Math.sin(now / 37) * 2 : 0;
-    const y = 80 + Math.sin(now / 420) * 5 - (1 - Math.min(1, mbIn)) * (h + 80) * 1.2   // v0.9.447 게이지 바(y 64) 아래 - (mbOut >= 0 ? mbOut * h * 0.9 : 0);
+    const y = 80 + Math.sin(now / 420) * 5 - (1 - Math.min(1, mbIn)) * (h + 80) * 1.2 - (mbOut >= 0 ? mbOut * h * 0.9 : 0);   // v0.9.447 게이지 바(y 64) 아래
     return { x: mbX - w / 2 + shake, y, w, h, bx: mbX + shake, by: y + h * 0.78 };
   }
   function mbShot(x, y, vx, vy, r) {
@@ -8388,7 +7984,7 @@
     if (!mbOn()) return;
     if (!mbStarted) {
       mbStarted = true; mbIn = 0; mbShotT = 1.5; mbStep = 0; mbPhase = -1; mbQueue = []; mbX = W / 2; mbT = 0;
-      powerUntil = 0;                                   // 간식 타임도 끝
+      bossClean();                                      // 간식 타임도 끝
       shake = Math.max(shake, 14);
       popText(W / 2, H * 0.47, "⛈️ 먹구름 대왕 등장! 끝까지 버텨라!", "#e6e0ff", 17, 2.6);
       if (!sfx("angry")) beep(140, .45, "sawtooth", .06);
@@ -8476,7 +8072,7 @@
   const fbTailSheet = new Image(); fbTailSheet.src = "assets/boss_tail_sheet.webp";   // v0.9.88 Ludo 꼬리 흔들기 49장 (7x7)
   function fbHard(it) { return it.thrown && it.dark && fbOn(); }   // v0.9.92 끝판왕이 뿌린 다크똥
   function petsAway() { return clearT >= 0 || riseT >= 0; }   // v0.9.457 끝판왕을 깨고 내려가는 동안·2회차 올라오는 동안은 펫이 안 나온다
-  function fbOn() { return runMode === "item" && !dogMode && !loopOn && (level >= FB_LV || clearT >= 0); }
+  function fbOn() { return runMode === "item" && !loopOn && (level >= FB_LV || clearT >= 0); }
   function fbGeom(now) {                       // 엉덩이 자리 — 화면 폭을 꽉 채우고 위에서 내려와 좌우로 살짝 씰룩
     const w = W * 1.06, h = w * (fbButt.naturalWidth ? fbButt.naturalHeight / fbButt.naturalWidth : 0.34);
     const wig = Math.sin(now / 260) * W * 0.025;
@@ -8492,7 +8088,7 @@
   function fbTick(dt, now) {
     if (!fbStarted) {                          // 등장
       fbStarted = true; fbIn = 0; fbShotT = 1.6; fbStep = 0; fbPhase = -1; fbT = 0;
-      powerUntil = 0;                          // 간식 타임도 끝
+      bossClean();                             // 간식 타임도 끝
       shake = Math.max(shake, 26); feverFlash = Math.max(feverFlash, 0.6);
       // v0.9.351 끝판왕 등장 글자 뺌
       popText(W / 2, H * 0.47, "다크똥만 뿌린다 — 끝까지 버텨라!", "#ffe9a8", 17, 2.6);
@@ -8646,6 +8242,7 @@
       flash = 1;
       popText(W / 2, H * 0.16, "🏡 무사히 지상으로!", "#ffffff", 28, 2.2);   // v0.9.99 얼굴을 가리지 않게 위로
     }
+    if (clearT > D0 + DL + 8) landDone = true;   // v0.9.471 그림을 못 받아 착지 연출이 안 돌아도 멈추지 않게
     if (landDone && state === STATE.PLAY) startLoop(now);   // v0.9.238 미끄러져 사라지면 — 끝내지 않고 이어 간다 (예전: 클리어로 게임 오버)
   }
   function startLoop(now) {
@@ -8943,9 +8540,9 @@
         e.preventDefault();
         if (jobScreen.classList.contains("hidden")) openJobSelect();
       }
-      if ((e.key === "Escape" || e.key === "p" || e.key === "P") && state === STATE.PLAY) {
-        doPause();
-      }
+    }
+    if ((e.key === "Escape" || e.key === "p" || e.key === "P") && state === STATE.PLAY) {
+      doPause();
     }
   });
   window.addEventListener("keyup", e => { keys[e.key] = false; });
@@ -9269,7 +8866,7 @@
   const TAG_CD = 10;
   let tagCd = 0, tagJob0 = null, jobSecs = {}, tagCharms = false;
   const tagBox = document.getElementById("tagBox"), tagBtn = document.getElementById("tagBtn"), tagPick = document.getElementById("tagPick");
-  function tagOn() { return accOn(7) && runMode === "item" && !jobLocked() && !dogMode; }
+  function tagOn() { return accOn(7) && runMode === "item" && !jobLocked(); }
   function tagJobs() { return Object.keys(JOBS).filter(k => !JOBS[k].gone && jobOwned(k) && k !== job); }
   const btnJuggle = document.getElementById("btnJuggle"), btnVacuum = document.getElementById("btnVacuum");
   for (const [b, f] of [[btnJuggle, () => doJuggle()], [btnVacuum, () => doVacuum()]]) {
@@ -9327,7 +8924,7 @@
     if (to === "fit") { aug.maxLives = 30; aug.hitboxMul *= 1.3; }
     if (to === "fortune") fortuneT = FORTUNE_FIRST;
     tagCd = TAG_CD;
-    invUntil = Math.max(invUntil, now + 1000); invQuietUntil = invUntil;   // 바뀌는 순간 1초 무적
+    invUntil = Math.max(invUntil, (inShop ? augPauseAt : now) + 1000); invQuietUntil = invUntil;   // 바뀌는 순간 1초 무적 (v0.9.471 상점에선 나갈 때 머문 시간이 더해지니 들어간 시각 기준)
     burst(player.x, player.y + player.hy, "#ffe08a", 26); burst(player.x, player.y + player.hy, "#ffffff", 14);
     rings.push({ x: player.x, y: player.y + player.hy, t: 0, life: 0.45, r1: 110, color: "#ffe08a" });
     popText(player.x, player.y - 90, "🔄 " + jobShort(to) + " 교대!", "#ffe08a", 22);
@@ -9376,6 +8973,7 @@
   // 일시정지에서 처음으로 — 이번 판은 기록 없이 버리고 시작 화면으로 (v0.9.04)
   document.getElementById("btnPauseHome").addEventListener("click", () => {
     resumeCountEnd = 0;
+    if (tagJob0 && job !== tagJob0) job = tagJob0;            // v0.9.471 구름 상점에서 교대했으면 처음 고른 캐릭터로
     goHome();
   });
   // 일시정지에서 다시하기 — 이번 판은 기록 없이 버리고 (v0.9.277) 같은 캐릭터로 바로 다시
@@ -9460,6 +9058,7 @@
     if (powerUntil > 0) powerUntil += paused;
     if (invUntil  > 0) invUntil  += paused;
     if (hurtUntil > 0) hurtUntil += paused;
+    if (mindSlowUntil > 0) mindSlowUntil += paused; if (lotusUntil > 0) lotusUntil += paused; if (skillUntil > 0) skillUntil += paused;   // v0.9.471
     resumeCountEnd = 0;
     state = STATE.PLAY;
     btnPause.classList.add("on");
@@ -9490,8 +9089,7 @@
   }
   /* 직업 그림 — 강아지 모드면 강아지로 (방울이는 원래 강아지라 그대로) */
   function jobPic(id) {
-    return dogMode && DOG_SPRS[id] ? "assets/dogs/" + id + "_right.png"
-                                   : "assets/" + JOB_IMG[id] + "_right.png";
+    return "assets/" + JOB_IMG[id] + "_right.png";
   }
   function showJobDetail(id) {
     job = id;
@@ -9689,7 +9287,7 @@
   }
   function idlePlay() {
     const d = JOB_IDLE[job];
-    if (!d || dogMode || !jobOwned(job) || !jobList.classList.contains("car")) { idleStop(); return; }
+    if (!d || !jobOwned(job) || !jobList.classList.contains("car")) { idleStop(); return; }
     const card = carCards().find(c => c.dataset.job === job), pic = card && card.querySelector("img.ic");
     if (!pic) { idleStop(); return; }
     if (idleRun && idleRun.pic === pic && idleRun.el) { idleRestart(idleRun, d); return; }   // 이미 겹쳐 둔 그림이 있으면 바꿔 끼우지 않고 다시 돌리기만
@@ -9935,20 +9533,6 @@
     jobTestMode = test === true;
     /* v0.9.49 캐릭터 고르기는 홈 탭에서 — 따로 뜨던 화면 대신 시작 화면 홈으로 */
     goHome(); jobTestMode = test === true; setPage("home");
-    return;
-    if (jobLocked()) {                     // 맨몸대결·똥탑등반 — 방울이·펫 없음으로 정해져 있어 고를 게 없다, 곧장 시작
-      startScreen.classList.add("hidden");
-      overScreen.classList.add("hidden");
-      jobScreen.classList.add("hidden");
-      beep(900, .08, "square", .05);
-      reset(jobTestMode);
-      return;
-    }
-    pickTab = "job";
-    showJobList();
-    startScreen.classList.add("hidden");
-    overScreen.classList.add("hidden");
-    jobScreen.classList.remove("hidden");
   }
 
   document.getElementById("btnJobGo").addEventListener("click", () => {
@@ -10379,7 +9963,8 @@
       const row = document.createElement("div"); row.className = "lvPick" + (cl >= l ? (open ? "" : " ready") : " lock");
       if (lvJustOpen === j + ":" + l) { row.classList.add("pop"); lvJustOpen = ""; }
       const h = document.createElement("div"); h.className = "lvPN";            // v0.9.126 Lv 숫자 · 꼬리표 · (잠김이면) 남은 경험치
-      const hb = document.createElement("b"); hb.textContent = "Lv" + l + (l === 3 ? " ⭐" : "");   // v0.9.165 별은 모든 캐릭터에 적용되는 Lv3 에 h.appendChild(hb);
+      const hb = document.createElement("b"); hb.textContent = "Lv" + l + (l === 3 ? " ⭐" : "");   // v0.9.165 별은 모든 캐릭터에 적용되는 Lv3 에
+      if (cl < l || !open) h.appendChild(hb);   // v0.9.471 고를 수 있는 줄은 꼬리표에 이미 Lv 가 있다
       const fixAb = perkFixed(j, l);   // v0.9.458 Lv2·4 는 고정 — 고르기 없이 그 능력만
       if (cl >= l && open) { const t = document.createElement("i"); t.className = "pk"; t.textContent = "Lv" + l + (fixAb ? " 능력" : " 능력 선택");   /* v0.9.216 앞에 레벨 */ h.appendChild(t); }
       if (l === 3) { const t = document.createElement("small"); t.textContent = "모든 캐릭터에 적용"; h.appendChild(t); }
@@ -10453,23 +10038,6 @@
 
 
   /* v0.9.155 처음 접속 — 이름이 없으면 환영 인사와 함께 바로 이름을 정한다 (바깥을 눌러도 안 닫힌다) */
-  function hiOpen() {
-    if (savedName() || splashOn) return;
-    const p = document.getElementById("hiPop"); if (p.classList.contains("on")) return;
-    document.getElementById("hiErr").textContent = "";
-    lvPopOpen("hiPop"); hiBlink();
-    setTimeout(() => { try { document.getElementById("hiName").focus(); } catch (e) {} }, 250);
-  }
-  let hiBlinkT = 0;
-  function hiBlink() {                         // 방울이 눈 깜빡임 시트(12칸) — 2.5~5초마다 한 번
-    clearTimeout(hiBlinkT);
-    hiBlinkT = setTimeout(() => {
-      const p = document.getElementById("hiPop"), el = p.querySelector(".hiDog");
-      if (!p.classList.contains("on")) return;
-      let f = 0;
-      const t = setInterval(() => { el.style.backgroundPosition = (f / 11 * 100) + "% 0"; if (++f > 11) { clearInterval(t); el.style.backgroundPosition = "0 0"; hiBlink(); } }, 55);
-    }, 2500 + Math.random() * 2500);
-  }
   let hiBusy = false;
   async function hiSave() {
     const inp = document.getElementById("hiName"), n = inp.value.trim();
@@ -10524,7 +10092,7 @@
   function unlockShow() {
     const p = document.getElementById("ulPop");
     if (p.classList.contains("on") || !unlockQ.length) return;
-    if (typeof state !== "undefined" && state === STATE.PLAY) return;     // 게임 중엔 미뤄 둔다 (판이 끝나면 보여 준다)
+    if (typeof state !== "undefined" && (state === STATE.PLAY || state === STATE.PAUSE || state === STATE.AUG)) return;     // 게임 중엔 미뤄 둔다 (판이 끝나면 보여 준다)
     const u = unlockQ.shift();
     const pic = p.querySelector(".ulPic"); pic.innerHTML = "";
     if (u.img) { const im = document.createElement("img"); im.src = u.img; im.alt = ""; pic.appendChild(im); }
@@ -10649,7 +10217,7 @@
   }
   /* 판이 끝나면 경험치를 더하고, 오른 레벨은 게임 오버 화면에 알린다 */
   function lvGain(sec) {
-    if (testMode || !lvSingle() || dogMode) return;
+    if (testMode || !lvSingle()) return;
     const g = Math.max(0, Math.round(sec));
     const a0 = accLv();
     lvData.xp += g;
@@ -10809,6 +10377,7 @@
     const box = document.getElementById("askBox");
     box.querySelector(".askNo").style.display = "none";
     box.querySelector(".askYes").textContent = "확인";
+    box.onclick = e => { if (e.target === box) box.querySelector(".askYes").click(); };   // v0.9.471 바깥을 눌러도 확인과 같게 (기기 옮기기 뒤 재시작이 빠지면 기록이 덮인다)
   }
   /* v0.9.380 비속어 이름은 아래 글씨 대신 창으로 — 확인을 누르면 입력칸으로 돌아가 바로 고칠 수 있게 고른 상태로 */
   function nameBanPop(err, inp) {
@@ -10867,7 +10436,7 @@
     const pop = document.querySelector(".lvPop.on");
     if (pop) { pop.classList.remove("on"); return; }
     const ask = document.getElementById("askBox");
-    if (ask && ask.classList.contains("on")) { ask.classList.remove("on"); return; }
+    if (ask && ask.classList.contains("on")) { const no = ask.querySelector(".askNo"); (no.style.display === "none" ? ask.querySelector(".askYes") : no).click(); return; }
     const tp = document.getElementById("tAugPop");
     if (tp && tp.classList.contains("on")) { tp.classList.remove("on"); return; }
     const cs = document.getElementById("cloudShop");
@@ -10875,6 +10444,7 @@
     if (state === STATE.AUG) return;                         // 증강은 골라야 넘어간다
     if (state === STATE.PLAY) { doPause(); return; }
     if (state === STATE.PAUSE && !pauseScreen.classList.contains("hidden")) { document.getElementById("btnResume").click(); return; }
+    if (state === STATE.PAUSE) return;                       // v0.9.471 준비·이어 하기 카운트다운 중
     if (!overScreen.classList.contains("hidden")) { document.getElementById("btnHome").click(); return; }
     if (!jobScreen.classList.contains("hidden")) { jobScreen.classList.add("hidden"); return; }
     if (typeof curPage !== "undefined" && curPage !== "home") { setPage("home"); return; }
@@ -10895,11 +10465,28 @@
     if (!res.ok) throw new Error("HTTP " + res.status);
     return res.json();
   }
+  let cloudSynced = "";                  // v0.9.471 서버와 맞춘 마지막 저장 — 바뀐 게 없으면 옛 기록을 새 시각으로 올리지 않는다
   async function cloudPush() {
     if (!cloudKey || !cloudReady) return;
+    const snap = saveSnapshot(), js = JSON.stringify(snap);
+    if (js === cloudSynced) return;
     const at = Date.now();
     try { localStorage.setItem(LS_SAVE_AT, String(at)); } catch (e) {}
-    try { await cloudRpc("ddongpi_save_put", { k: cloudKey, d: saveSnapshot(), a: at }); } catch (e) {}
+    try { await cloudRpc("ddongpi_save_put", { k: cloudKey, d: snap, a: at }); cloudSynced = js; } catch (e) {}
+  }
+  function cloudApply(r) {               // 서버 기록으로 바꿔 넣는다 (다시 열어야 적용된다)
+    for (const key of Object.keys(saveSnapshot())) localStorage.removeItem(key);
+    for (const key in r.data) localStorage.setItem(key, r.data[key]);
+    localStorage.setItem(LS_SAVE_AT, String(r.at));
+  }
+  async function cloudRefresh() {        // v0.9.471 다른 기기에서 이어 했으면 첫 화면으로 돌아올 때 받아 온다
+    if (!cloudKey || !cloudReady || startScreen.classList.contains("hidden")) return;
+    let r = null;
+    try { r = await cloudRpc("ddongpi_save_get", { k: cloudKey }); } catch (e) { return; }
+    let localAt = 0; try { localAt = +localStorage.getItem(LS_SAVE_AT) || 0; } catch (e) {}
+    if (!r || !r.data || +r.at <= localAt || JSON.stringify(saveSnapshot()) !== cloudSynced || startScreen.classList.contains("hidden")) return;
+    try { cloudApply(r); } catch (e) { return; }
+    location.reload();
   }
   function cloudSoon() { if (!cloudKey || !cloudReady) return; clearTimeout(cloudTimer); cloudTimer = setTimeout(cloudPush, 4000); }
   {   // 우리 저장(epjpddongpi_*)이 바뀌면 몇 초 뒤 서버에도 — 게임 곳곳의 저장 코드를 건드리지 않고 한곳에서 잡는다
@@ -10921,9 +10508,7 @@
       let done = false; try { done = sessionStorage.getItem("ddp_cloud_restored") === String(r.at); } catch (e) {}
       if (!done) {
         try {
-          for (const key of Object.keys(saveSnapshot())) localStorage.removeItem(key);
-          for (const key in r.data) localStorage.setItem(key, r.data[key]);
-          localStorage.setItem(LS_SAVE_AT, String(r.at));
+          cloudApply(r);
           sessionStorage.setItem("ddp_cloud_restored", String(r.at));
         } catch (e) {}
         location.reload();
@@ -10932,6 +10517,7 @@
     }
     cloudReady = true;
     if (!r || +r.at < localAt || !r.data) cloudPush();        // 서버가 비었거나 옛것이면 지금 것을 올린다
+    else cloudSynced = JSON.stringify(saveSnapshot());
   }
   function aitHook() {
     if (aitHooked || !window.AIT) return;
@@ -10948,7 +10534,7 @@
   if (CAP) { try { CAP.addListener("App", "backButton", aitBack); } catch (e) {} }
   setTimeout(aitHook, 0);                                       // 아래쪽 상수(SB_URL 등)가 다 만들어진 뒤에
   window.addEventListener("ait-ready", aitHook);                // 포장 쪽 스크립트가 늦게 붙어도
-  document.addEventListener("visibilitychange", () => { if (document.hidden) cloudPush(); });
+  document.addEventListener("visibilitychange", () => { if (document.hidden) cloudPush(); else cloudRefresh(); });
   function buyPet(id) {                    // v0.9.193 사기 — 상점 버튼과 첫 안내가 함께 쓴다
     const price = petPrice(id);
     if (hasPet(id) || coins < price) return;
@@ -11009,15 +10595,12 @@
     if (LONG_N) for (let i = 0; i < Math.min(3, LONG_N); i++) if (!LONG_IMG[i]) { longLoad(i); ok = false; }   // 못 받은 건 다시 (한꺼번에)
     return ok;
   }
-  {
-    const b = document.getElementById("btnStart");
-    const tick = () => { const ok = homeArtReady(); b.classList.toggle("loading", !ok); if (!ok) setTimeout(tick, 250); };
-    tick();
-  }
+  function startBtnTick() { const ok = homeArtReady(); document.getElementById("btnStart").classList.toggle("loading", !ok); if (!ok) setTimeout(startBtnTick, 250); }
+  startBtnTick();
   document.getElementById("btnStart").addEventListener("click", () => {
-    if (!homeArtReady()) { document.getElementById("btnStart").classList.add("loading"); return; }   // v0.9.186 준비 중
+    if (!homeArtReady()) { startBtnTick(); return; }   // v0.9.186 준비 중 · v0.9.471 다 받으면 다시 눌리게
     if (!jobOwned(job)) { beep(220, .12, "square", .05); return; }      // 잠긴 캐릭터로는 못 시작한다
-    dogMode = false; partyWant = false;                                 // 시작하기 — 고른 캐릭터로 바로
+    partyWant = false;                                 // 시작하기 — 고른 캐릭터로 바로
     startScreen.classList.add("hidden");
     overScreen.classList.add("hidden");
     jobScreen.classList.add("hidden");
@@ -11044,7 +10627,6 @@
     reset(testMode);
   });
   btnRetryJob.addEventListener("click", () => openJobSelect());
-  // (로고 '저피'를 누르면 옛 강아지로 뛰던 숨은 입구는 v0.8.98 에 뺐다 — dogMode 는 늘 false)
 
   function reset(test) {
     testMode = (test === true);    // 정확히 true 일 때만 테스트 모드 (이벤트 객체가 새어들지 않게)
@@ -11484,7 +11066,7 @@
       const sp = LASER_VY * (H / BASE_H) * aug.fallMul;
       vy = sp * Math.cos(forceAng || 0);
       pvx = sp * Math.sin(forceAng || 0);
-    }
+    } else if (forceX !== undefined) px = forceX;   // v0.9.471 먹구름 특수똥은 구름 아래에서
     items.push({
       type: "poop", emoji: "💩",
       x: px, y: -r - 10,
@@ -11716,7 +11298,7 @@
   }
   /* v0.9.350 떴다 흐리게 사라지는 알림 글자 중 '무엇을 먹었다·무엇이 발동했다' 류는 띄우지 않는다 (화면이 어지러워서).
      맞았다(으악)·스테이지 이름·보스·예언·아슬 콤보처럼 알아야 하는 것은 남긴다. 되살리려면 이 목록에서 빼면 된다. */
-  const POP_MUTE = [/^🌈$/, /^🎺/, /^🦆/, /^🥚/, /^🐈 냥/, /^📦/, /^📋/, /^🕕/, /^💨/, /^🛡/, /^☂️ 방/, /^☁️ 구름 방패/, /방울 팡/,
+  const POP_MUTE = [/^🌈$/, /^🎺/, /^🦆/, /^🥚/, /^🐈 냥/, /^📦/, /^📋/, /^🕕/, /^💨(?! (뿌우|슈우))/, /^🛡/, /^☂️ 방/, /^☁️ 구름 방패/, /방울 팡/,
     /^🫧 대왕/, /^💖/, /^👼/, /^🌂/, /^💪/, /^💥 근육/, /^🙅/, /^📜/, /^🗿/, /^🕰️/, /^돌이 풀렸다/, /^잔상/, /^어퍼컷/, /^🧑‍🚀/,
     /^❤️ \+1/, /^💧$/, /^🌙 가득/, /^🔥 간식 타임/, /^\+\d+$/, /^. \+\d+$/];
   let popPick = false;                          // 증강을 고른 뒤 이름 띄우기도 끈다
@@ -12908,7 +12490,7 @@
               popText(player.x, player.y - 60, "📜 부적!", "#ffe08a", 20);
               if (myPerk(4, "B")) { smashPoopsAround(player.x, player.y + player.hy, 120, true); rings.push({ x: player.x, y: player.y + player.hy, t: 0, life: 0.45, r1: 120, color: "#ffb35a" }); }
               if (!sfx("break")) beep(500, .1, "triangle", .05);
-              items.splice(i, 1);
+              dropItem(it);
               continue;
             }
             if (shields > 0 && !fbHard(it)) {
@@ -12995,12 +12577,12 @@
               if (!hurtSfx(job)) beep(140, .25, "sawtooth", .07);
               if (navigator.vibrate) navigator.vibrate(70);
               if (dirtJob() ? dirt >= DIRT_MAX : lives <= 0) {
-                if (angelSave(now)) { items.splice(i, 1); continue; }   // 아기 천사 — 한 번 되살린다
-                if (reviveSave(now)) { items.splice(i, 1); continue; }  // v0.9.72 성장 부활
+                if (angelSave(now)) { dropItem(it); continue; }   // 아기 천사 — 한 번 되살린다
+                if (reviveSave(now)) { dropItem(it); continue; }  // v0.9.72 성장 부활
                 return startDeath();               // 마지막 똥은 남겨 둔 채 느린 화면으로
               }
             }
-            items.splice(i, 1);
+            dropItem(it);
             continue;
           }
         } else {
@@ -13101,12 +12683,15 @@
 
   /* 아이템 효과 적용. 플레이어가 직접 먹을 때와 '배고픈 뿌잉'이 대신 먹을 때 모두 쓴다.
      달을 먹으면 게임이 멈추므로 true 를 돌려주고, 부른 쪽은 그 프레임 처리를 중단한다. */
+  function dropItem(it) { const k = items.indexOf(it); if (k >= 0) items.splice(k, 1); }   // v0.9.471 폭발로 목록이 줄어든 뒤에도 그 아이템만 지운다
   function collectItem(it, now) {
+    if (dying > 0) return false;             // v0.9.471 쓰러지는 중엔 펫·청소기가 가져와도 효과가 없다
     if (it.type === "cloud") { openCloudShop(); return true; }   // v0.9.84 구름 상점
     achBump("item");   // v0.9.249 똥 청소기 해금
     if (vsOn() && it.type === "moon") { vsTakeMoon(1); return false; }   // 대전모드 — 멈추지 않고 룰렛
     if (partyOn() && it.type === "moon") { paTakeMoon(player); return false; }   // 여럿이 — 바로 무작위 증강
     if (it.type === "paper") {
+      if (bossOn()) return false;            // v0.9.471 보스전엔 간식 타임이 켜지지 않는다
       achBump("fever");
       feverDur = Math.max(2000, 8000 + aug.feverBonus + gSnackMs() + (dailyIs(4) ? 500 : 0));   // v0.9.72 성장 간식 시간
       // 이미 간식 중이면 남은 시간에 이어붙인다 (초기화하면 남은 시간이 버려진다)
@@ -13375,6 +12960,7 @@
       let held = 0;
       for (let i = items.length - 1; i >= 0; i--) {
         const it = items[i];
+        if (!it) continue;                   // v0.9.471 별똥별이 목록을 무더기로 지운 뒤
         if (it.type === "cloud" || it.bounced) continue;   // v0.9.262 다크똥도 · v0.9.267 간식도 빨아들인다 (구름 상점만 빼고)
         const dx = it.x - hx, dy = it.y - hy, d = Math.hypot(dx, dy);
         if (!it.vac) {
@@ -15994,14 +15580,6 @@
     return true;
   }
   // 점술가의 수정 구슬(type 은 옛 이름 fortune 그대로) — 다른 아이템처럼 위에서 떨어진다
-  function spawnFortune() {
-    if (bossOn()) return;
-    const r = 22 * ITEM_SCALE;
-    const vy = (110 + level * 6) * (H / BASE_H) * (0.6 + Math.random() * 0.4);
-    items.push({ type: "fortune", emoji: "🔮", x: r + Math.random() * (W - r * 2), y: -r - 10, r,
-                 vx: (Math.random() - Math.random()) * vy * SPREAD_BONUS, vy,
-                 rot: 0, vr: 0, size: r * 2, bob: Math.random() * 6.28, born: elapsed });
-  }
   // 명당 자리 — 캐릭터 바로 발밑은 피해서, 조금 움직여야 닿는 곳
   function spotPick() {
     for (let k = 0; k < 8; k++) {
@@ -16023,6 +15601,7 @@
     // 방금 것과 같은 예언이 연달아 나오지 않게 — 바뀌는 게 보여야 한다. 똥탑등반에선 점수·간식 예언 빼고
     let pr = second ? pickProph([prophecy, prophecy2], true)
            : (nextProph && nextProph !== prophecy ? nextProph : pickProph([prophecy], false));
+    if (pr.id === "fever" && bossOn()) pr = pickProph([prophecy, prophecy2, pr], !!second);   // v0.9.471 보스전엔 간식 예언 대신 다른 예언
     if (second) { prophecy2 = pr; proph2T = PROPH_SEC; }
     else {
       prophecy = pr; prophT = PROPH_SEC; prophRain = 0;
@@ -16039,7 +15618,7 @@
     }
     if (pr.id === "shield") {                // 수호의 별 — 우산 하나 (헬스걸은 우산이 없는 직업이라 하트)
       if (job === "fit") lives = Math.min(aug.maxLives, lives + 1);
-      else shields = Math.min(shields + 1, 5);
+      else shields = Math.max(shields, Math.min(shields + 1, 5));
     }
     if (pr.id === "fever") {                 // 간식이 온다 — 3초 바로 (간식 연장 증강은 안 붙는다)
       const t0 = now || performance.now();
@@ -16276,6 +15855,7 @@
   function gameOver() {
     if (vsOn()) return vsOver();
     if (partyOn()) return partyOver();
+    const endJob = job;                      // v0.9.471 무소유로 교대해 끝난 판도 흘려보낸 코인 값을 돌려받는다
     if (tagJob0 && job !== tagJob0) job = tagJob0;   // v0.9.225 태그 교대 — 기록·순위·홈 화면은 처음 고른 캐릭터로
     tagBox.classList.remove("on", "open");
     overFirst = firstRunOn();                // v0.9.319 첫 판인지 — 순위 숫자·다른 버튼을 감추고 이름만 받는다
@@ -16289,7 +15869,7 @@
     /* 무소유 — 끝내 손대지 않고 흘려보낸 코인 값만큼 점수가 늘어난다
        (1코인 1%, 3코인 3%, 5코인 5%. 화면에 아직 떠 있던 코인도 안 쥔 것으로 친다).
        따로 알리지 않는다 — 마지막 점수에 이미 담겨 있다. */
-    if (job === "powerp" && !fullOwn) {
+    if ((job === "powerp" || endJob === "powerp") && !fullOwn) {
       const miss = Math.max(0, coinSeenV - coinGotV);
       if (miss > 0) score *= 1 + 0.01 * miss;
     }
@@ -16308,16 +15888,6 @@
     {                                        // v0.9.63 이번에 열린 증강·캐릭터
       const box = document.getElementById("overUnlock"); box.innerHTML = ""; box.hidden = true;
       if (achNew.length) { unlockQ.push(...achNew); achNew.length = 0; setTimeout(unlockShow, 700); }   // v0.9.162 판이 끝나는 순간 알림 창으로 하나씩
-      if (false) {
-        const h = document.createElement("b"); h.textContent = "🏆 새로 열렸어요!"; box.appendChild(h);
-        for (const u of achNew) {
-          const r = document.createElement("div"); r.className = "ur";
-          const n = document.createElement("span"); n.className = "un"; n.textContent = u.k + " · " + u.t;
-          const w = document.createElement("span"); w.className = "uw"; w.textContent = u.how;
-          r.append(n, w); box.appendChild(r);
-        }
-        achNew.length = 0;
-      }
     }
     overScreen.classList.remove("hidden");
     if (!sfx("over")) beep(220, .4, "sawtooth", .06);
@@ -16326,8 +15896,10 @@
     logRun(Math.floor(score));  // 증강 통계 수집 (화면에는 아무것도 보이지 않는다 — 노템전도 속 점수로)
 
     // 전체 랭킹: 최신 TOP 10을 다시 받아보고 진입했으면 이름 입력을 띄운다
-    pendingScore = s; pendingLevel = level; pendingFull = fullOwn; pendingDog = dogMode; pendingMode = runMode;
+    pendingScore = s; pendingLevel = level; pendingFull = fullOwn; pendingMode = runMode;
     myRowKey = null;
+    /* v0.9.471 순위표를 받는 동안 다시 하기를 눌러도 기록이 사라지지 않게 — 이름이 있으면 등록부터 보낸다 */
+    const nm0 = savedName(), sending = nm0 && canSubmit(s) ? submitScore(nm0, s, level).then(() => null, e => e || new Error("submit failed")) : null;
     nameRow.classList.remove("on");
     btnSave.disabled = false;
     btnSave.textContent = "등록";
@@ -16350,7 +15922,8 @@
         nameForm.style.display = "none";
         nameTag.textContent = qualifies(s) ? "🎉 이번 주 " + rank + "위 등록 중…" : "기록 등록 중…"; nameTag.classList.remove("err");
         try {
-          await submitScore(nm, pendingScore, pendingLevel);
+          const sendErr = await (sending || submitScore(nm, pendingScore, pendingLevel).then(() => null, e => e));
+          if (sendErr) throw sendErr;
           myRowKey = nm + "|" + pendingScore;
           await refreshBoards(boardOver);
           refreshBoards(boardStart);
@@ -16494,6 +16067,7 @@
   }
   async function lastProbe(n, jb) {              // 한 주 더 옛날 기록을 미리 받아 둔다 (왼쪽 화살표를 켤지 정하려고)
     if (n > LAST_MAX) return;
+    wkGuard();
     const ck = gameMode + ":" + jb + ":" + n;
     if (!lastCache[ck]) { try { lastCache[ck] = await fetchRange(weekStartMs(n), weekStartMs(n - 1), 100, jb === "all" ? null : jb); } catch (e) { return; } }
     if (jb === lastJob) lastNavSync();
@@ -16538,6 +16112,7 @@
     const sc = Number(best.score);
     el.innerHTML = '<span class="mwL">' + who + ' 내 기록</span><b class="mwR">…</b><span class="mwS">' + sc.toLocaleString() + '점</span>';
     try {
+      wkGuard();
       const ck = gameMode + ":" + jb + ":" + wk;
       if (!myLineCache[ck] || Date.now() - myLineCache[ck].at > 60000)
         myLineCache[ck] = { at: Date.now(), list: await fetchRange(wk, null, 1000, jb === "all" ? null : jb) };
@@ -16645,6 +16220,13 @@
   }
   /* v0.9.304 명예의 전당 창 맨 위 — 고른 주·캐릭터에서 내 최고 기록이 몇 위였는지 */
   const hallMineCache = {};
+  let wkCached = 0;
+  function wkGuard() {                  // v0.9.471 켜 둔 채 월요일을 넘기면 옛 주간 목록을 버린다
+    const w = weekStartMs(0);
+    if (w === wkCached) return;
+    wkCached = w; lastCache = {};
+    for (const k in hallMineCache) delete hallMineCache[k];
+  }
   async function hallMine(ago, jb, from, to) {
     const el = document.getElementById("hallMine"); if (!el) return;
     if (!myMine || myMineMode !== gameMode) { try { await refreshMyRank(true); } catch (e) {} }
@@ -16656,6 +16238,7 @@
     const sc = Number(best.score);
     el.innerHTML = '<span class="mwL">' + who + ' 내 기록</span><b class="mwR">…</b><span class="mwS">' + sc.toLocaleString() + '점</span>';
     try {
+      wkGuard();
       const ck = gameMode + ":" + jb + ":" + ago;
       const list = hallMineCache[ck] || (hallMineCache[ck] = await fetchRange(from, to, 1000, jb === "all" ? null : jb));
       if (ago !== lastAgo || jb !== lastJob) return;
@@ -16723,15 +16306,14 @@
         method: "POST",
         headers: sbHeaders({ "Content-Type": "application/json", Prefer: "return=minimal" }),
         body: JSON.stringify(Object.assign({}, base, { device: deviceId, augs: augCount, job: job,
-                                                        fullown: pendingFull, dog: pendingDog, mode: pendingMode }, myCountry() ? { country: myCountry() } : {}))
+                                                        fullown: pendingFull, mode: pendingMode }, myCountry() ? { country: myCountry() } : {}))
       });
       if (res.ok) return;
       throw new Error(MODES[pendingMode].nm + " 순위판 준비 중 (HTTP " + res.status + ")");
     }
     const cc = myCountry();
     const tries = [
-      Object.assign({}, base, { device: deviceId, augs: augCount, job: job, fullown: pendingFull, dog: pendingDog }, cc ? { country: cc } : {}),   // v0.9.379 나라
-      Object.assign({}, base, { device: deviceId, augs: augCount, job: job, fullown: pendingFull, dog: pendingDog }),
+      Object.assign({}, base, { device: deviceId, augs: augCount, job: job, fullown: pendingFull }, cc ? { country: cc } : {}),   // v0.9.379 나라
       Object.assign({}, base, { device: deviceId, augs: augCount, job: job, fullown: pendingFull }),
       Object.assign({}, base, { device: deviceId, augs: augCount, job: job }),
       Object.assign({}, base, { device: deviceId, augs: augCount }),
@@ -16758,7 +16340,6 @@
      무소유(파워P)로 내되 풀소유까지 진화한 기록은 풀소유 모습으로 세운다. */
   function boardImg(row) {
     const jb = row && row.job && JOB_IMG[row.job] ? row.job : null;   // 옛 도박사 기록도 제 그림으로
-    if (jb && row.dog && (DOG_SPRS[jb] || jb === "gambler")) return "dogs/" + jb;   // 강아지로 뛴 판
     if (jb === "powerp" && row.fullown) return "full";
     return JOB_IMG[jb || "none"];
   }
@@ -16766,12 +16347,6 @@
   /* 그 판에서 데리고 간 펫 — 증강 기록에 'pet:<id>' 로 남아 있다 (펫 없이 뛴 판·예전 판은 없음) */
   function boardPet(row) {
     return null;   // v0.9.46 펫은 이제 판 중 증강이라 순위판엔 캐릭터만 보인다
-    if (!row || !row.augs) return null;
-    for (const k in row.augs) {
-      const id = k.slice(0, 4) === "pet:" ? k.slice(4) : null;
-      if (id && PETS[id] && PETS[id].img) return id;
-    }
-    return null;
   }
   function petIcon(id) {
     const pi = document.createElement("img");
@@ -17068,10 +16643,12 @@
   async function saveMyScore() {
     const name = nameInput.value.trim();
     if (!name) { nameInput.focus(); return; }
+    if (btnSave.disabled) return;
+    btnSave.disabled = true;             // v0.9.471 연타해도 한 번만
     const err = await claimName(name);   // v0.9.218
+    if (err) btnSave.disabled = false;
     if (nameBanPop(err, nameInput)) return;
     if (err) { nameTag.textContent = "⚠️ " + err; nameTag.classList.add("err"); nameInput.focus(); return; }
-    btnSave.disabled = true;
     btnSave.textContent = "등록 중…";
     try {
       await submitScore(name, pendingScore, pendingLevel);
@@ -17085,12 +16662,13 @@
     } catch (e) {
       nameTag.textContent = "등록하지 못했어요 · 다시 눌러 주세요"; nameTag.classList.add("err");
       btnSave.disabled = false;
+      overScreen.classList.remove("firstName");   // v0.9.471 첫 판을 오프라인으로 끝내도 화면을 나갈 수 있게
     }
     btnSave.textContent = "등록";
   }
 
   let overFirst = false;
-  let pendingScore = 0, pendingLevel = 1, pendingFull = false, pendingDog = false, pendingMode = "item";
+  let pendingScore = 0, pendingLevel = 1, pendingFull = false, pendingMode = "item";
   btnSave.addEventListener("click", saveMyScore);
   nameInput.addEventListener("keydown", e => {
     e.stopPropagation();
@@ -17237,7 +16815,6 @@
      그림은 화면보다 세로로 길어 위아래가 잘려 있고, prog 0 일 때 그 여유분의
      맨 위(그림의 아래쪽이 보이는 자리)에서 시작해 1 일 때 맨 아래까지 내려온다.
      되돌아가는 지점은 지대가 바뀌며 두 그림이 겹쳐 녹는 순간이라 보이지 않는다. */
-  const ZONE_FADE = 0.5;   // 다음 지대 그림이 겹쳐 오르는 구간 — 레벨의 뒤 절반
   /* 지금 화면 아래 끝이 긴 그림의 어디(아래에서 잰 px)인지 — 레벨 시계(t = levelTime/lvSec)를 따라 */
   function longOff(t, vh) {
     const lo = vh / 2, hi = Math.max(lo, LONG_H - vh / 2), n = LONG_ANCH.length;
@@ -17590,31 +17167,8 @@
       drawZoneImg(fsky, 1, 0.5);
       bgShown = !!fsky;
     } else {
-      const i0 = zoneIdx(), i1 = Math.min(LAST_Z, i0 + 1);
-      /* 그 지대 안에서의 진행도가 곧 배경이 내려온 정도다.
-         마지막 지대는 진행도가 늘 0 이라 다 내려온 자리에서 멈춘다 —
-         되감으면 간식 하늘과 같은 이유로 튄다.
-         시작화면에서는 아예 흐르지 않는다. 아무것도 안 하고 보고 있는데
-         배경만 계속 내려오면 어지럽다. 지대가 겹쳐 녹는 것은 그대로 둔다. */
-      const idle = state === STATE.READY;
-      /* 레벨이 바뀔 때 멈칫하지 않게 — 예전엔 다음 지대 그림이 레벨 내내 겹쳐 오르는 동안
-         멈춰 있다가(진행도 0) 레벨이 바뀌어서야 흐르기 시작했다. 레벨 끝 무렵엔 거의 그 멈춘
-         그림만 보여서 배경이 잠깐 서는 것처럼 보였다.
-         이제 다음 그림은 레벨의 뒤 절반(ZONE_FADE)에만 겹쳐 오르고, 한 그림은 처음 보이기
-         시작할 때부터 다음 그림에 다 덮일 때까지(1.5 레벨) 한 번도 서지 않고 이어서 흐른다. */
       const t = clearHome ? 0 : levelTime / lvSec() - (loopOn ? loopShift : 0);   // v0.9.238 2회차
-      if (LONG_N) { bgShown = drawLong(t); } else {
-      /* 첫 지대(잔디밭)는 겹쳐 오르는 앞 레벨이 없으니 게임 시작(t=0)에 그림 맨 아래(발밑 잔디 언덕)에서
-         출발한다 — 다른 지대처럼 -ZONE_FADE 에서 셈을 시작하면 시작부터 1/3 올라가 있어 언덕이 안 보였다.
-         흐르는 빠르기는 다른 지대와 같다. */
-      const pgOf = k => Math.max(0, Math.min(1, (t - Math.max(0, k - ZONE_FADE)) / (1 + ZONE_FADE)));
-      drawZoneImg(ZONE_IMG[i0], 1, idle ? 0.5 : pgOf(i0));
-      if (i1 !== i0) {
-        const a1 = idle ? zoneFrac() : Math.max(0, Math.min(1, (t - (i1 - ZONE_FADE)) / ZONE_FADE));
-        drawZoneImg(ZONE_IMG[i1], a1, idle ? 0.5 : pgOf(i1));
-      }
-      bgShown = !!ZONE_IMG[i0];
-      }
+      bgShown = drawLong(t);
     }
 
     // 간식 타임 속도선 — 우주에서는 길게 늘어진 별빛으로
@@ -18769,16 +18323,6 @@
   function drawItems(now) {
     ctx.textAlign = "center";
     ctx.textBaseline = "middle";
-    if (false) {   // v0.9.85 천기누설 — 떨어질 자리 (v0.9.266 '나쁜 예언 3초 전 알림'으로 바꿔서 안 쓴다)
-      ctx.save(); ctx.fillStyle = "rgba(255,80,80,.45)";
-      for (const it of items) {
-        if (it.type !== "poop" || it.bounced || it.skin === "fever" || !(it.vy > 0) || it.hold > 0) continue;
-        const t = (groundY - it.y) / it.vy; if (t < 0 || t > 2.5) continue;
-        const gx = it.x + (it.vx || 0) * t;
-        ctx.beginPath(); ctx.ellipse(gx, groundY + 6, it.r * 0.9, 4, 0, 0, 6.283); ctx.fill();
-      }
-      ctx.restore();
-    }
     for (const it of items) {
       if (it.hold > 0) {                     // v0.9.85 예고 — 나올 자리 맨 위에 깜빡이는 표시
         ctx.save(); ctx.globalAlpha = 0.5 + 0.5 * Math.sin(now / 70);
@@ -19251,24 +18795,6 @@
   /* 무적인 동안 캐릭터 둘레에 옅은 빛 테두리 — 소리를 끄고 해도 무적인 줄 알 수 있게.
      간식 뒤 1.5초, 증강 고른 뒤 0.5초, 맞은 뒤 1초 모두 같은 표시 */
   let invQuietUntil = 0;
-  function drawInvGlow(now) {
-    if (invUntil <= invQuietUntil) return;   // v0.9.189 증강 고른 뒤 0.5초 무적은 동그라미 없이
-    if (now >= invUntil || dying > 0 || fever || clearT >= 0) return;   // v0.9.98 클리어 연출 중엔 무적 테두리 없음
-    const g = bubbleGeom(now);
-    const a = Math.min(1, (invUntil - now) / 250) * (0.6 + 0.25 * Math.sin(now / 80));
-    const R = g.r * 1.4;
-    ctx.save();
-    const rg = ctx.createRadialGradient(g.x, g.y, g.r * 0.55, g.x, g.y, R);
-    rg.addColorStop(0, "rgba(255,244,190,0)");
-    rg.addColorStop(0.72, "rgba(255,236,150," + (0.30 * a).toFixed(3) + ")");
-    rg.addColorStop(1, "rgba(255,236,150,0)");
-    ctx.fillStyle = rg;
-    ctx.beginPath(); ctx.arc(g.x, g.y, R, 0, 6.283); ctx.fill();
-    ctx.strokeStyle = "rgba(255,250,215," + (0.65 * a).toFixed(3) + ")";
-    ctx.lineWidth = 2;
-    ctx.beginPath(); ctx.arc(g.x, g.y, g.r * 1.06, 0, 6.283); ctx.stroke();
-    ctx.restore();
-  }
   const angelRingImg = new Image(); angelRingImg.src = "assets/fx_angelring.webp";   // v0.9.340 아기 천사 보호 고리
   /* 방귀 대시 눈금 — 화면 오른쪽 아래 동그란 표시 (v0.8.01, 예전엔 머리 위라 캐릭터와 겹쳤다).
      다 차면 초록으로 환해지고 💨 가 도드라진다. 차는 중에는 남은 만큼 테두리가 돌아간다.
@@ -19298,47 +18824,6 @@
     ctx.beginPath(); ctx.arc(cx, cy, r + 3, -1.5708, -1.5708 + 6.283 * k); ctx.stroke();
     ctx.restore();
     return;
-  }
-  function drawDashGaugeOld(now) {   // (v0.9.214~253 오른쪽 아래 버튼 — 안 쓴다)
-    if (!aug.dash || dying > 0) return;
-    const ready = dashCd <= 0;
-    const k = ready ? 1 : 1 - dashCd / DASH_CD;      // 0 → 1 로 차오른다
-    if (hudOk(dashBtnImg)) {                          // v0.9.214 그림 버튼 — 차는 중엔 회색, 남은 만큼 어둡게 덮고, 다 차면 통통 뛴다
-      const R = 25, cx = W - 18 - R, cy = H - 24 - R;
-      const sc = ready ? 1 + 0.06 * Math.max(0, Math.sin(now / 160)) : 1, d = R * 2 * sc;
-      ctx.save();
-      if (!ready) { ctx.globalAlpha = 0.75; if (canvasFilterOk) ctx.filter = "grayscale(1) brightness(.8)"; }
-      ctx.drawImage(dashBtnImg, cx - d / 2, cy - d / 2, d, d);
-      ctx.filter = "none"; ctx.globalAlpha = 1;
-      if (!ready) {
-        ctx.fillStyle = "rgba(0,0,0,.38)";            // 남은 시간만큼 어두운 부채꼴
-        ctx.beginPath(); ctx.moveTo(cx, cy); ctx.arc(cx, cy, R * 0.86, -1.5708 + 6.283 * k, -1.5708 + 6.283); ctx.closePath(); ctx.fill();
-        ctx.lineWidth = 3.5; ctx.strokeStyle = "#cdf59a"; ctx.lineCap = "round";
-        ctx.beginPath(); ctx.arc(cx, cy, R + 1, -1.5708, -1.5708 + 6.283 * k); ctx.stroke();
-      } else {
-        ctx.globalAlpha = 0.35 + 0.25 * Math.sin(now / 200);   // 준비됨 — 바깥 빛
-        ctx.strokeStyle = "#e9ffb0"; ctx.lineWidth = 3;
-        ctx.beginPath(); ctx.arc(cx, cy, R * sc + 3, 0, 6.283); ctx.stroke();
-      }
-      ctx.restore();
-      return;
-    }
-    const R = 20, cx = W - 20 - R, cy = H - 26 - R;
-    ctx.save();
-    ctx.beginPath(); ctx.arc(cx, cy, R, 0, 6.283);
-    ctx.fillStyle = ready ? "rgba(120,190,70,.42)" : "rgba(0,0,0,.34)";
-    ctx.fill();
-    ctx.lineWidth = 3;                              // 차오른 만큼 테두리가 돈다 (12시부터 시계방향)
-    ctx.strokeStyle = "rgba(255,255,255,.22)";
-    ctx.beginPath(); ctx.arc(cx, cy, R, 0, 6.283); ctx.stroke();
-    ctx.strokeStyle = ready ? "#cdf59a" : "#b9e08a";
-    ctx.beginPath(); ctx.arc(cx, cy, R, -1.5708, -1.5708 + 6.283 * k); ctx.stroke();
-    ctx.globalAlpha = ready ? 0.9 + 0.1 * Math.sin(now / 200) : 0.45;
-    ctx.font = "700 19px system-ui, sans-serif";
-    ctx.textAlign = "center"; ctx.textBaseline = "middle";
-    ctx.fillStyle = "#ffffff";
-    ctx.fillText("💨", cx, cy + 1);
-    ctx.restore();
   }
   /* v0.9.351 맞음 이펙트 — Codex 쾅! 터짐 그림이 통 커졌다가 흐려진다 */
   const hitImg = new Image(); hitImg.src = "assets/fx_hit.webp";
