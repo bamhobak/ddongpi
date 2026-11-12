@@ -23,7 +23,7 @@
     var lang = (s && LANGS.indexOf(s) >= 0) ? s : (READY[d] ? d : "ko");
     window.GAME_LANG = lang; window.GAME_LANGS = LANGS; window.GAME_LANG_READY = READY;
     /* v0.9.371 제목 로고도 언어마다 (한국어 이피저피똥피 · 영어 ZIG ZAG POOP · 일본어 あっちこっちうんち, 아랫줄 노랑) */
-    window.GAME_LOGO = lang === "ko" ? "assets/logo.webp?2" : "assets/logo_" + lang + ".webp?1";
+    window.GAME_LOGO = lang === "ko" ? "assets/logo.webp?3" : "assets/logo_" + lang + ".webp?2";   // v0.9.474 새 로고(똥이 글자를 내리찍는 판)
     document.write('<link rel="preload" as="image" href="' + window.GAME_LOGO + '">');
     document.documentElement.lang = lang;
     if (lang !== "ko") document.write('<script src="lang/' + lang + '.js?' + LANG_V + '"><\/script>');
@@ -2989,7 +2989,7 @@
   const elTitle = document.getElementById("overTitle");
   const coinNote = document.getElementById("coinNote");
 
-  const GAME_VERSION = "v0.9.473";
+  const GAME_VERSION = "v0.9.474";
   /* 제작사 스플래시(bamhobak friends 로고) — 2026-09-20 끔. 다시 켜려면 true */
   const SPLASH_USE = false;   // 코드를 고칠 때마다 뒤 두 자리를 올린다
   document.getElementById("ver").textContent = GAME_VERSION;
