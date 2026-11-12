@@ -2189,6 +2189,15 @@
     #pgRank #boardStart li.more { font-size: 12.5px; padding: 0 7px; gap: 4px; }
     #pgRank #boardStart li.more .rk { width: 22px; }
   }   /* v0.9.304 나의 순위 판은 뺐다 — 내 기록은 TOP 10 아래 줄과 명예의 전당 창에서 */
+  /* v0.9.475 세로가 짧은 폰(9:16 등) — 캐릭터 탭 7개가 판 아래로 뚫고 나갔다: 탭을 줄이고, 그래도 넘치면 탭 줄만 스크롤 */
+  #pgRank .board.withTabs .jobTabs { overflow-y: auto; scrollbar-width: none; }
+  #pgRank .board.withTabs .jobTabs::-webkit-scrollbar { display: none; }
+  @media (max-height: 760px) {
+    #pgRank #boardSlot > .board.withTabs { grid-template-columns: 42px minmax(0, 1fr); column-gap: 6px; }
+    #pgRank .board.withTabs .jobTabs { grid-auto-rows: 42px; gap: 4px; }
+    #pgRank .board.withTabs .jobTab, #pgRank .board.withTabs .jobTab:not([data-job="all"]) { width: 42px; height: 42px; max-height: 42px; }
+    #pgRank .board.withTabs .jobTab[data-job="all"] { font-size: 11px; }
+  }
   #hallMine { display: flex; align-items: center; justify-content: center; gap: 10px; height: 38px; flex-shrink: 0; margin: 0 0 8px; padding: 0 14px; line-height: 1;
     border-radius: 999px; background: rgba(8,10,34,.72); box-shadow: inset 0 0 0 1.5px rgba(255,216,107,.55); }
   #hallMine:empty { display: none; }
@@ -2989,7 +2998,7 @@
   const elTitle = document.getElementById("overTitle");
   const coinNote = document.getElementById("coinNote");
 
-  const GAME_VERSION = "v0.9.474";
+  const GAME_VERSION = "v0.9.475";
   /* 제작사 스플래시(bamhobak friends 로고) — 2026-09-20 끔. 다시 켜려면 true */
   const SPLASH_USE = false;   // 코드를 고칠 때마다 뒤 두 자리를 올린다
   document.getElementById("ver").textContent = GAME_VERSION;
