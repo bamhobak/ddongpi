@@ -2998,7 +2998,7 @@
   const elTitle = document.getElementById("overTitle");
   const coinNote = document.getElementById("coinNote");
 
-  const GAME_VERSION = "v0.9.475";
+  const GAME_VERSION = "v0.9.476";
   /* 제작사 스플래시(bamhobak friends 로고) — 2026-09-20 끔. 다시 켜려면 true */
   const SPLASH_USE = false;   // 코드를 고칠 때마다 뒤 두 자리를 올린다
   document.getElementById("ver").textContent = GAME_VERSION;
@@ -16139,8 +16139,9 @@
     if (!force && Date.now() - myRankAt < 60000) return;
     myRankAt = Date.now();
     try {
-      const url = SB_URL + "/rest/v1/" + SB_TABLE + "?select=score,job,mode,created_at&device=eq." + encodeURIComponent(deviceId) + "&order=score.desc&limit=2000";
-      const r = await fetch(url, { headers: sbHeaders() });
+      /* v0.9.476 기기 식별값은 이제 공개로 안 읽힌다(남의 기기값으로 기록을 빼 가던 구멍) — 내 기록은 함수로 받는다. 함수가 아직 없으면 예전 방식 */
+      let r = await fetch(SB_URL + "/rest/v1/rpc/ddongpi_my_scores", { method: "POST", headers: sbHeaders({ "Content-Type": "application/json" }), body: JSON.stringify({ dev: deviceId }) });
+      if (!r.ok) r = await fetch(SB_URL + "/rest/v1/" + SB_TABLE + "?select=score,job,mode,created_at&device=eq." + encodeURIComponent(deviceId) + "&order=score.desc&limit=2000", { headers: sbHeaders() });
       if (!r.ok) throw new Error("HTTP " + r.status);
       const mine = (await r.json()).filter(x => (x.mode || "item") === (gameMode || "item"));
       myMine = mine; myMineMode = gameMode; updateMyLine();
